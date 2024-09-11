@@ -74,7 +74,6 @@ static int Receive_drop(int ind);
 static int Receive_fire(int ind);
 static int Receive_stand(int ind);
 static int Receive_stand_one(int ind);
-static int Receive_stand_auto(int ind);
 static int Receive_destroy(int ind);
 static int Receive_look(int ind);
 
@@ -153,7 +152,6 @@ static int Receive_sip(int ind);
 static int Receive_telekinesis(int ind);
 static int Receive_BBS(int ind);
 static int Receive_wield2(int ind);
-static int Receive_wield3(int ind);
 static int Receive_cloak(int ind);
 static int Receive_inventory_revision(int ind);
 static int Receive_account_info(int ind);
@@ -175,19 +173,6 @@ static int Receive_client_setup_F(int ind);
 static int Receive_client_setup_K(int ind);
 static int Receive_client_setup_R(int ind);
 
-static int Receive_audio(int ind);
-static int Receive_font(int ind);
-
-#ifdef ENABLE_SUBINVEN
-static int Receive_si_move(int ind);
-static int Receive_si_remove(int ind);
-#endif
-
-static int Receive_version(int ind);
-static int Receive_plistw_notify(int ind);
-static int Receive_unknownpacket(int ind);
-
-
 int Setup_net_server(void);
 bool Destroy_connection(int ind, char *reason);
 int Check_connection(char *real, char *nick, char *addr);
@@ -196,9 +181,8 @@ int Input(void);
 int Send_reply(int ind, int replyto, int result);
 int Send_leave(int ind, int id);
 int Send_reliable(int ind);
-int Send_sanity(int ind, byte attr, cptr msg, int cur, int max);
+int Send_sanity(int ind, byte attr, cptr msg);
 
-char *compacttime(void);
 char *showtime(void);
 void init_players();
 

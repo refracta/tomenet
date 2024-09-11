@@ -60,8 +60,8 @@ G:&:w
 N:1:Blindness
 G:,:d
 I:80:1:500
-W:3:0:1:0
-A:3/1
+W:5:0:1:0
+A:5/1
 #D:Causes temporary blindness.
 
 N:2:Paranoia
@@ -74,8 +74,8 @@ D:Causes temporary fear and hallucination.
 N:3:Confusion
 G:,:d
 I:80:3:500
-W:3:0:1:0
-A:3/1
+W:5:0:1:0
+A:5/1
 #D:Causes temporary confusion.
 
 N:4:Hallucination
@@ -83,49 +83,49 @@ G:,:d
 I:80:4:500
 W:10:0:1:200
 A:10/1
-D:Chaos damage to your sanity, causing hallucinations. Restores a little mana.
+D:Hurts your sanity and causes temporary hallucination.
 
 N:5:Cure Poison
 G:,:d
 I:80:12:500
-W:5:0:1:40
-A:5/1
+W:10:0:1:30
+A:10/1
 #D:Cures poison.
 
 N:6:Cure Blindness
 G:,:d
 I:80:13:500
-W:3:0:1:8
-A:3/1
+W:10:0:1:8
+A:10/1
 #D:Cures Blindness.
 
 N:7:Cure Paranoia
 G:,:d
 I:80:14:500
-W:8:0:1:40
-A:8/1
+W:10:0:1:40
+A:10/1
 D:Cures fear and hallucination.
 
 N:8:Cure Confusion
 G:,:d
 I:80:15:500
-W:3:0:1:10
-A:3/1
+W:10:0:1:10
+A:10/1
 #D:Cures confusion.
 
 N:9:Weakness
 G:,:d
 I:80:6:500
-W:7:0:1:0
-A:7/1
+W:10:0:1:0
+A:10/1
 P:0:5d5:0:0:0
 #D:Drains strength.
 
 N:10:Unhealth
 G:,:d
 I:80:10:500
-W:5:0:1:0
-A:5/1
+W:15:0:1:0
+A:15/1
 P:0:10d10:0:0:0
 D:Drains constitution and inflicts damage.
 
@@ -146,20 +146,20 @@ D:Restores all drained stats and experience.
 N:13:Stupidity
 G:,:d
 I:80:8:500
-W:10:0:1:0
-A:10/1
+W:15:0:1:0
+A:15/1
 #D:Drains intelligence.
 
 N:14:Naivety
 G:,:d
 I:80:9:500
-W:10:0:1:0
-A:10/1
+W:15:0:1:0
+A:15/1
 #D:Drains wisdom.
 
 N:15:Poison
 G:,:d
-I:80:20:500
+I:80:0:500
 W:5:0:1:0
 A:5/1:5/1
 P:0:4d4:0:0:0
@@ -168,16 +168,16 @@ P:0:4d4:0:0:0
 N:16:Sickness
 G:,:d
 I:80:7:500
-W:7:0:1:0
-A:7/1
+W:10:0:1:0
+A:10/1
 P:0:4d4:0:0:0
 D:Drains constitution and causes damage.
 
 N:17:Paralysis
 G:,:d
 I:80:5:500
-W:8:0:1:0
-A:8/1
+W:20:0:1:0
+A:20/1
 #D:Causes temporary paralysation.
 
 N:18:Restore Strength
@@ -190,16 +190,16 @@ A:10/1
 N:19:Disease
 G:,:d
 I:80:11:500
-W:10:0:1:0
-A:10/1
+W:20:0:1:0
+A:20/1
 P:0:10d10:0:0:0
 D:Drains strength and inflicts damage.
 
 N:20:Cure Serious Wounds
 G:,:d
 I:80:16:500
-W:5:0:1:30
-A:5/1
+W:15:0:1:30
+A:15/1
 #D:Cures serious wounds.
 D:Heals 6d8 hit points and cures blindness, confusion and heals cuts somewhat.
 
@@ -208,43 +208,43 @@ D:Heals 6d8 hit points and cures blindness, confusion and heals cuts somewhat.
 
 N:21:& Ration~ of Food
 G:,:U
-I:80:205:5000
+I:80:35:5000
 W:0:0:10:3
 A:0/1:5/1:10/1
 
 N:22:& Hard Biscuit~
 G:,:U
-I:80:202:1500
+I:80:32:1500
 W:0:0:2:1
 
 N:23:& Strip~ of Venison
 G:,:u
-I:80:203:2000
+I:80:33:2000
 W:0:0:3:2
 
 N:24:& Slime Mold~
 G:,:g
-I:80:206:3000
+I:80:36:3000
 W:1:0:5:2
 A:1/1
 
 # New - now Elvish Waybread works as a scroll of Satisfy Hunger
 N:25:& Lembas~
 G:,:B
-I:80:207:0
+I:80:37:0
 W:5:0:3:50
 A:5/1:10/1:20/1
 D:This blessed food perfectly satisfies your hunger,
-D:cures poison, disease and removes hallucinations.
+D:cures poison and removes hallucinations.
 
 N:26:& Pint~ of Fine Ale
 G:,:y
-I:80:208:500
+I:80:38:500
 W:0:0:5:1
 
 N:27:& Pint~ of Fine Wine
 G:,:r
-I:80:209:1000
+I:80:39:1000
 W:0:0:10:2
 
 
@@ -256,7 +256,7 @@ I:20:7:3
 W:50:0:250:700
 A:50/2
 P:0:1d8:0:0:0
-F:SHOW_MODS | TUNNEL | MUST2H
+F:SHOW_MODS | TUNNEL
 
 # The Blue Stone 'Toris Mejistos' -- see artifact list
 
@@ -324,7 +324,7 @@ W:70:0:180:4000
 A:70/8
 P:0:5d5:5:5:0
 F:RES_CHAOS | CHAOTIC | SHOW_MODS | SHOULD2H
-F:IGNORE_FIRE | IGNORE_ACID | IGNORE_WATER | EVIL
+F:IGNORE_FIRE | IGNORE_ACID | IGNORE_WATER
 
 N:37:& Espadon~
 G:|:W
@@ -445,7 +445,7 @@ N:51:& Two-Handed Flail~
 G:\:y
 I:21:18:0
 W:35:0:280:740
-A:35/1:60/2
+A:35/1
 P:0:4d6:0:0:0
 F:SHOW_MODS | MUST2H
 
@@ -493,7 +493,7 @@ N:57:& Mace~ of Disruption
 G:\:v
 I:21:20:0
 W:80:0:400:4300
-A:80/7
+A:80/5
 P:0:6d8:5:10:0
 F:KILL_UNDEAD | SHOW_MODS | MUST2H
 F:IGNORE_ACID | IGNORE_FIRE
@@ -536,7 +536,7 @@ F:SHOW_MODS | MUST2H
 N:62:& Awl-Pike~
 G:/:s
 I:22:4:0
-W:10:0:140:411
+W:10:0:160:411
 A:10/1
 P:0:2d9:0:0:0
 F:SHOW_MODS | SHOULD2H
@@ -550,7 +550,7 @@ P:0:3d9:0:0:0
 F:SHOW_MODS | MUST2H
 
 N:64:& Spear~
-G:/:u
+G:/:s
 I:22:2:0
 W:5:0:60:36
 A:5/2
@@ -560,7 +560,7 @@ F:SHOW_MODS
 N:65:& Trident~
 G:/:y
 I:22:5:0
-W:5:0:100:362
+W:5:0:90:362
 A:5/1
 P:0:2d7:0:0:0
 F:SHOW_MODS | SHOULD2H
@@ -593,7 +593,7 @@ N:69:& Heavy War Axe~
 G:/:D
 I:24:28:0
 W:30:0:250:750
-A:30/2
+A:30/1
 P:0:4d7:0:0:0
 F:SHOW_MODS | MUST2H
 
@@ -608,7 +608,7 @@ F:SHOW_MODS | COULD2H
 N:71:& Scythe~
 G:/:s
 I:22:17:0
-W:15:0:200:660
+W:15:0:220:800
 A:15/1
 P:0:6d4:0:0:0
 F:SHOW_MODS | MUST2H
@@ -617,7 +617,7 @@ N:72:& Scythe~ of Slicing
 G:/:B
 I:22:30:0
 W:60:0:300:3500
-A:60/5
+A:60/3
 P:0:10d4:5:5:0
 F:SHOW_MODS | MUST2H | VORPAL
 F:IGNORE_ACID | IGNORE_FIRE
@@ -629,7 +629,7 @@ F:IGNORE_ACID | IGNORE_FIRE
 N:73:& Short Bow~
 G:}:U
 I:19:12:0
-W:3:0:30:30
+W:3:0:30:50
 A:3/1:50/2
 F:SHOW_MODS
 D:This ranged weapon requires arrows as ammunition.
@@ -637,7 +637,7 @@ D:This ranged weapon requires arrows as ammunition.
 N:74:& Long Bow~
 G:}:U
 I:19:13:0
-W:10:0:40:80
+W:10:0:40:120
 A:10/1:70/2
 F:SHOW_MODS
 D:This ranged weapon requires arrows as ammunition.
@@ -645,7 +645,7 @@ D:This ranged weapon requires arrows as ammunition.
 N:75:& Light Crossbow~
 G:}:s
 I:19:23:0
-W:15:0:110:100
+W:15:0:110:140
 A:15/1:60/2
 F:SHOW_MODS
 D:This ranged weapon requires bolts as ammunition.
@@ -653,7 +653,7 @@ D:This ranged weapon requires bolts as ammunition.
 N:76:& Heavy Crossbow~
 G:}:s
 I:19:24:0
-W:30:0:200:200
+W:30:0:200:300
 A:30/1:80/2
 F:SHOW_MODS
 D:This ranged weapon requires bolts as ammunition.
@@ -676,16 +676,16 @@ W:3:0:2:1
 A:3/1:15/1:50/1
 P:0:1d4:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for bows and arrow trap kits.
+D:It is ammunition fit for bows.
 
 N:79:& Seeker Arrow~
 G:{:G
 I:17:2:0
 W:55:0:3:25
-A:55/2:65/2
+A:55/2:80/2
 P:0:3d4:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for bows and arrow trap kits.
+D:It is ammunition fit for bows.
 
 N:80:& Bolt~
 G:{:s
@@ -694,16 +694,16 @@ W:3:0:3:2
 A:3/1:25/1:60/1
 P:0:1d5:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for crossbows and bolt trap kits.
+D:It is ammunition fit for crossbows.
 
 N:81:& Seeker Bolt~
 G:{:r
 I:18:2:0
-W:60:0:4:30
-A:60/2:70/2
+W:65:0:4:30
+A:65/2:90/2
 P:0:3d5:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for crossbows and bolt trap kits.
+D:It is ammunition fit for crossbows.
 
 N:82:& Rounded Pebble~
 G:{:u
@@ -712,7 +712,7 @@ W:0:0:1:1
 A:0/1:10/2
 P:0:1d2:0:0:0
 F:SHOW_MODS | IGNORE_WATER
-D:It is ammunition fit for slings and catapult trap kits.
+D:It is ammunition fit for slings.
 
 N:83:& Iron Shot~
 G:{:D
@@ -721,7 +721,7 @@ W:3:0:2:2
 A:3/1:40/2
 P:0:1d4:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for slings and catapult trap kits.
+D:It is ammunition fit for slings.
 
 
 ##### Shovels and Picks #####
@@ -732,7 +732,7 @@ I:20:1:1
 W:1:0:60:30
 A:5/2
 P:0:1d2:0:0:0
-F:SHOW_MODS | TUNNEL | MUST2H
+F:SHOW_MODS | TUNNEL
 
 N:85:& Gnomish Shovel~
 G:\:G
@@ -740,7 +740,7 @@ I:20:2:2
 W:20:0:50:120
 A:20/3
 P:0:1d2:0:0:0
-F:SHOW_MODS | TUNNEL | MUST2H
+F:SHOW_MODS | TUNNEL
 
 N:86:& Dwarven Shovel~
 G:\:B
@@ -748,7 +748,7 @@ I:20:3:3
 W:40:0:120:200
 A:40/4
 P:0:1d3:0:0:0
-F:SHOW_MODS | TUNNEL | MUST2H
+F:SHOW_MODS | TUNNEL
 
 N:87:& Pick~
 G:\:s
@@ -756,7 +756,7 @@ I:20:4:1
 W:5:0:150:80
 A:10/2
 P:0:1d3:0:0:0
-F:SHOW_MODS | TUNNEL | MUST2H
+F:SHOW_MODS | TUNNEL
 
 N:88:& Orcish Pick~
 G:\:g
@@ -764,7 +764,7 @@ I:20:5:2
 W:30:0:180:300
 A:30/3
 P:0:1d3:0:0:0
-F:SHOW_MODS | TUNNEL | MUST2H
+F:SHOW_MODS | TUNNEL
 
 N:89:& Dwarven Pick~
 G:\:b
@@ -772,7 +772,7 @@ I:20:6:3
 W:50:0:200:600
 A:50/4
 P:0:1d4:0:0:0
-F:SHOW_MODS | TUNNEL | MUST2H
+F:SHOW_MODS | TUNNEL
 
 
 ##### Armour #####
@@ -1126,38 +1126,37 @@ $NEW_SHIELDS_NO_AC$F:EASY_KNOW
 
 ##### Rings #####
 
+#(simply dropping +'Ability' and +'Brilliance/Power')
 
 N:132:Might
 G:=:d
 I:45:24:0
-W:15:0:2:500
-A:15/1
+W:25:0:2:500
+A:25/1
 F:STR | CON | HIDE_TYPE
-F:SUST_STR | SUST_CON
 
-N:133:Cunningness
+N:133:Ready Wit
 G:=:d
 I:45:26:0
-W:15:0:2:500
-A:15/1
+W:25:0:2:500
+A:25/1
 F:DEX | INT | HIDE_TYPE
-F:SUST_DEX | SUST_INT
 
 N:134:Toughness
 G:=:d
 I:45:27:0
-W:15:0:2:500
-A:15/1
+W:25:0:2:500
+A:25/1
 F:CON | DEX | HIDE_TYPE
-F:SUST_CON | SUST_DEX
 
-N:135:Prowess
+N:135:Cunningness
 G:=:d
 I:45:25:0
-W:15:0:2:500
-A:15/1
+W:25:0:2:500
+A:25/1
+#STR + INT overpowered? for Rangers more blows AND more mana/better spells..
+#			for Istari the weak strength attribute gets boosted
 F:STR | INT | HIDE_TYPE
-F:SUST_STR | SUST_INT
 
 N:136:Speed
 G:=:d
@@ -1212,8 +1211,8 @@ F:FEATHER | EASY_KNOW
 N:143:Poison Resistance
 G:=:d
 I:45:20:0
-W:30:0:2:7000
-A:30/2
+W:40:0:2:12000
+A:60/2
 F:RES_POIS | EASY_KNOW
 
 N:144:Free Action
@@ -1233,8 +1232,8 @@ F:CURSED | STR | HIDE_TYPE
 N:146:Flames
 G:=:d
 I:45:18:0
-W:25:0:2:5000
-A:25/3
+W:50:0:2:5000
+A:50/1
 P:0:0d0:0:0:15
 F:RES_FIRE | ACTIVATE | BRAND_FIRE
 D:Affects your armour class.
@@ -1242,8 +1241,8 @@ D:Affects your armour class.
 N:147:Acid
 G:=:d
 I:45:17:0
-W:25:0:2:5000
-A:25/3
+W:50:0:2:5000
+A:50/1
 P:0:0d0:0:0:15
 F:RES_ACID | ACTIVATE | BRAND_ACID
 D:Affects your armour class.
@@ -1251,8 +1250,8 @@ D:Affects your armour class.
 N:148:Ice
 G:=:d
 I:45:19:0
-W:25:0:2:5000
-A:25/3
+W:50:0:2:5000
+A:50/1
 P:0:0d0:0:0:15
 F:RES_COLD | ACTIVATE | BRAND_COLD
 D:Affects your armour class.
@@ -1274,15 +1273,15 @@ F:CURSED | INT | HIDE_TYPE
 N:151:Damage
 G:=:d
 I:45:29:0
-W:17:0:2:500
-A:17/1
+W:15:0:2:500
+A:15/1
 D:Affects damage you deal in melee combat.
 
 N:152:Accuracy
 G:=:d
 I:45:28:0
-W:15:0:2:500
-A:15/1
+W:10:0:2:500
+A:10/1
 D:Affects your chance to hit in melee or ranged combat.
 
 N:153:Protection
@@ -1306,53 +1305,47 @@ W:20:0:2:340
 A:30/1
 F:SEE_INVIS | EASY_KNOW
 
-N:156:Steadiness
+N:156:Sustain Might
 G:=:d
 I:45:10:0
-W:15:0:2:500
-A:15/1
-F:CON | WIS | HIDE_TYPE
-F:SUST_CON | SUST_WIS
+W:8:0:2:400
+A:8/2:20/1
+F:SUST_STR | SUST_CON | EASY_KNOW
 
-N:157:Tenacity
+N:157:Sustain Brilliance
 G:=:d
 I:45:11:0
-W:15:0:2:500
-A:15/1
-F:STR | WIS | HIDE_TYPE
-F:SUST_STR | SUST_WIS
+W:8:0:2:400
+A:8/2:20/1
+F:SUST_INT | SUST_WIS | EASY_KNOW
 
-N:158:Preparedness
+N:158:Sustain Ability
 G:=:d
 I:45:12:0
-W:15:0:2:500
-A:15/1
-F:CON | INT | HIDE_TYPE
-F:SUST_CON | SUST_INT
+W:8:0:2:400
+A:8/2:20/1
+F:SUST_STR | SUST_DEX | EASY_KNOW
 
-N:159:Gallantry
+N:159:Sustain Ready Wit
 G:=:d
 I:45:13:0
-W:15:0:2:500
-A:15/1
-F:DEX | WIS | HIDE_TYPE
-F:SUST_DEX | SUST_WIS
+W:8:0:2:400
+A:8/2:20/1
+F:SUST_DEX | SUST_INT | SUST_CHR | EASY_KNOW
 
-#deprecated! (just kept unsealed to not upset characters' flavour-id knowledge, need better solution)
 N:160:Sustain Steadiness
 G:=:d
 I:45:14:0
-W:127:0:2:400
-A:127/0
+W:8:0:2:400
+A:8/2:20/1
 F:SUST_CON | SUST_WIS | EASY_KNOW
 
-#deprecated! (just kept unsealed to not upset characters' flavour-id knowledge, need better solution)
 N:161:Sustain Cunningness
 G:=:d
 I:45:15:0
-W:127:0:2:400
-A:127/0
-F:SUST_STR | SUST_INT | EASY_KNOW
+W:8:0:2:400
+A:8/2:20/1
+F:SUST_STR | SUST_INT | SUST_CHR | EASY_KNOW
 
 N:162:Slaying
 G:=:d
@@ -1377,7 +1370,7 @@ G:":d
 I:40:7:0
 W:20:0:3:500
 A:20/1
-F:CHR | SUST_CHR | HIDE_TYPE
+F:CHR | HIDE_TYPE
 
 N:165:Searching
 G:":d
@@ -1589,7 +1582,7 @@ N:191:*Remove Curse*
 G:?:d
 I:70:15:0
 W:50:0:5:8000
-A:50/8:75/8:85/8:95/4
+A:50/2:75/2:85/2:95/1
 D:Breaks all light and heavy curses on all your items.
 
 N:192:Treasure Detection
@@ -1599,12 +1592,12 @@ W:0:0:5:15
 A:0/1
 D:Detects all nearby treasure.
 
-#N:193:Object Detection
-#G:?:d
-#I:70:27:0
-#W:0:0:5:15
-#A:0/1
-#D:Detects all nearby objects.
+N:193:Object Detection
+G:?:d
+I:70:27:0
+W:0:0:5:15
+A:0/1
+D:Detects all nearby objects.
 
 N:194:Trap Detection
 G:?:d
@@ -1629,11 +1622,11 @@ D:Detects all nearby traps.
 N:196:& Mithril Shot~
 G:{:B
 I:16:2:0
-W:50:0:2:20
-A:50/2:60/2
+W:40:0:2:20
+A:30/2:65/1
 P:0:3d3:5:5:0
 F:SHOW_MODS | IGNORE_ACID
-D:It is ammunition fit for slings and catapult trap kits.
+D:It is ammunition fit for slings.
 
 
 ##### Additional scrolls #####
@@ -1823,7 +1816,7 @@ D:Does not work on vaults or around towns.
 N:222:Slime Mold Juice
 G:!:d
 I:71:2:400
-W:0:0:4:4
+W:0:0:4:2
 A:0/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
@@ -1831,7 +1824,7 @@ F:FOUNTAIN
 N:223:Apple Juice
 G:!:d
 I:71:1:250
-W:0:0:4:5
+W:0:0:4:1
 A:0/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
@@ -1839,7 +1832,7 @@ F:FOUNTAIN
 N:224:Water
 G:!:d
 I:71:0:150
-W:0:0:4:3
+W:0:0:4:1
 A:0/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
@@ -1848,7 +1841,7 @@ N:225:Strength
 G:!:d
 I:71:48:0
 W:20:0:4:8000
-A:20/6:30/3:50/9
+A:20/6:25/3:30/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Restores and permanently increases strength.
@@ -1875,7 +1868,7 @@ N:228:Intelligence
 G:!:d
 I:71:49:0
 W:20:0:4:8000
-A:20/6:30/3:50/9
+A:20/6:25/3:30/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Restores and permanently increases intelligence.
@@ -1902,7 +1895,7 @@ N:231:Wisdom
 G:!:d
 I:71:50:0
 W:20:0:4:8000
-A:20/6:30/3:50/9
+A:20/6:25/3:30/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Restores and permanently increases wisdom.
@@ -1929,7 +1922,7 @@ N:234:Charisma
 G:!:d
 I:71:53:0
 W:20:0:4:1000
-A:20/2:30/1:50/8
+A:20/1:25/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Restores and permanently increases charisma.
@@ -1959,8 +1952,8 @@ W:18:0:4:5000
 A:18/10:40/3
 P:0:1d1:0:0:0
 F:FOUNTAIN
-D:Heals 9d10 hit points, some sanity, and restores all drained stats. Cures
-D:blindness, confusion, stun, poison, disease, cuts, hallucination, gorging.
+D:Heals some hit points, some insanity, and restores all drained stats.
+D:Cures blindness, confusion, stun, poison, cuts, hallucination, being gorged.
 
 # Note! Invulnerability decreases your food...
 
@@ -1995,7 +1988,7 @@ W:5:0:4:100
 A:5/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
-D:Heals 14d8 hit points and cures blindness, most cuts, confusion and stun.
+D:Heals 14d8 hit points and cures blindness, cuts, confusion and stun.
 
 N:242:Healing
 G:!:d
@@ -2004,13 +1997,13 @@ W:15:0:4:400
 A:15/1:30/1:60/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
-D:Heals 300 hit points and cures blindness, most cuts, confusion and stun.
+D:Heals 300 hit points and cures blindness, cuts, confusion, stun and poison.
 
 N:243:Constitution
 G:!:d
 I:71:52:0
 W:20:0:4:8000
-A:20/6:30/3:50/9
+A:20/6:25/3:30/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Restores and permanently increases constitution.
@@ -2021,7 +2014,7 @@ I:71:59:0
 W:65:0:4:25000
 A:65/32
 P:0:1d1:0:0:0
-D:Gives up to 100 000 experience, but at most half of your current experience.
+D:Gives up to 100,000 experience, but at most half of your current experience.
 
 N:245:Sleep
 G:!:d
@@ -2078,7 +2071,7 @@ N:251:Dexterity
 G:!:d
 I:71:51:0
 W:20:0:4:8000
-A:20/6:30/3:50/9
+A:20/6:25/3:30/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Restores and permanently increases dexterity.
@@ -2126,7 +2119,7 @@ A:10/2
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Maps and enlightens the whole map, detects all objects
-D:and identifies all your items. Disperses hallucinations.
+D:and identifies all your items.
 
 N:257:Heroism
 G:!:d
@@ -2144,8 +2137,8 @@ W:3:0:4:250
 A:3/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
-D:Temporarily puts you into berserk rage, removing fear and increasing strength,
-D:hit points and damage, while it makes you reckless, reducing your armour class.
+D:Temporarily removes fear and increases strength, hit points and damage,
+D:while it makes the user reckless, reducing his armour class.
 
 N:259:Boldness
 G:!:d
@@ -2193,7 +2186,7 @@ D:Temporarily lets you see invisible creatures.
 N:264:Slow Poison
 G:!:d
 I:71:26:0
-W:1:0:4:25
+W:1:0:4:15
 A:1/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
@@ -2202,7 +2195,7 @@ D:Slows down the effect of poison. Administer when poisoned.
 N:265:Neutralize Poison
 G:!:d
 I:71:27:0
-W:5:0:4:55
+W:5:0:4:40
 A:5/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
@@ -2263,7 +2256,7 @@ I:65:19:0
 W:20:0:10:800
 A:20/1
 P:0:1d1:0:0:0
-D:Casts a frost bolt for 5..50d23 damage.
+D:Casts a frost bolt for 5..50d8 damage.
 
 N:272:Fire Bolts
 G:-:d
@@ -2271,7 +2264,7 @@ I:65:18:0
 W:30:0:10:1000
 A:30/1
 P:0:1d1:0:0:0
-D:Casts a fire bolt for 7..52d23 damage.
+D:Casts a fire bolt for 7..52d8 damage.
 
 # More common now...
 N:273:Stone to Mud
@@ -2297,7 +2290,7 @@ I:65:0:0
 W:2:0:10:0
 A:2/1
 P:0:1d1:0:0:0
-D:Heals a creature for 3d4 + 10% of its maximum hit points.
+D:Heals a creature for 4d6 hit points.
 
 N:276:Haste Monster
 G:-:d
@@ -2336,7 +2329,7 @@ W:50:0:10:15000
 A:50/5
 P:0:1d1:0:0:0
 D:Damages a monster for 10..20% of its current hit points (max 900)
-D:and returns 1/4 of the life force to you, replenishing your hit points.
+D:and returns some of the life force to you, replenishing your hit points.
 
 N:281:Trap/Door Destruction
 G:-:d
@@ -2392,7 +2385,7 @@ W:35:0:10:1200
 A:35/1
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
-D:Casts a lightning ball for 80..610 damage.
+D:Casts a lightning ball for 40..370 damage.
 
 N:288:Cold Balls
 G:-:d
@@ -2400,7 +2393,7 @@ I:65:23:0
 W:40:0:10:1500
 A:40/1
 P:0:1d1:0:0:0
-D:Casts a frost ball for 100..630 damage.
+D:Casts a frost ball for 50..380 damage.
 
 N:289:Fire Balls
 G:-:d
@@ -2408,7 +2401,7 @@ I:65:22:0
 W:50:0:10:1800
 A:50/1
 P:0:1d1:0:0:0
-D:Casts a fire ball for 110..640 damage.
+D:Casts a fire ball for 70..400 damage.
 
 N:290:Stinking Cloud
 G:-:d
@@ -2424,7 +2417,7 @@ I:65:20:0
 W:50:0:10:1650
 A:50/1
 P:0:1d1:0:0:0
-D:Casts an acid ball for 100..630 damage.
+D:Casts an acid ball for 60..390 damage.
 
 N:292:Wonder
 G:-:d
@@ -2455,7 +2448,7 @@ I:65:16:0
 W:30:0:10:950
 A:30/1
 P:0:1d1:0:0:0
-D:Casts an acid bolt for 6..51d23 damage.
+D:Casts an acid bolt for 6..51d8 damage.
 
 N:295:Dragon's Flame
 G:-:d
@@ -2464,7 +2457,7 @@ W:50:0:10:2400
 A:50/4
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
-D:Casts dragonfire for 300..800 damage.
+D:Casts dragonfire for 300..600 damage.
 
 N:296:Dragon's Frost
 G:-:d
@@ -2473,7 +2466,7 @@ W:50:0:10:2400
 A:50/4
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
-D:Casts dragonfrost for 250..750 damage.
+D:Casts dragonfrost for 260..520 damage.
 
 N:297:Dragon's Breath
 G:-:d
@@ -2482,7 +2475,7 @@ W:60:0:10:2400
 A:60/4
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
-D:Casts a random dragon odem for 240..930 damage.
+D:Casts a random dragon odem for 240..700 damage.
 
 N:298:Annihilation
 G:-:d
@@ -2521,13 +2514,13 @@ A:5/1
 P:0:1d2:0:0:0
 D:Detects all nearby treasure.
 
-#N:302:Object Location
-#G:_:d
-#I:55:11:0
-#W:5:0:50:200
-#A:5/1
-#P:0:1d2:0:0:0
-#D:Detects all nearby objects.
+N:302:Object Location
+G:_:d
+I:55:11:0
+W:5:0:50:200
+A:5/1
+P:0:1d2:0:0:0
+D:Detects all nearby objects.
 
 N:303:Teleportation
 G:_:d
@@ -2620,7 +2613,7 @@ D:Detects all nearby invisible creatures.
 N:314:Speed
 G:_:d
 I:55:22:0
-W:40:0:50:5000
+W:40:0:50:2500
 A:40/1
 P:0:1d2:0:0:0
 D:Temporarily increases your speed by 10.
@@ -2664,8 +2657,7 @@ I:55:17:0
 W:25:0:50:1000
 A:25/1
 P:0:1d2:0:0:0
-D:Cures being gorged, blindness, confusion, stun,
-D:hallucinations, poison, disease and cuts.
+D:Cures gorged, blindness, confusion, stun, hallucinations, poison and cuts.
 
 N:320:Dispel Evil
 G:_:d
@@ -2694,12 +2686,11 @@ D:Darkens your close surroundings or a whole room.
 N:323:Genocide
 G:_:d
 I:55:27:0
-W:70:0:50:7500
+W:70:0:50:5000
 A:70/4
 P:0:1d2:0:0:0
-D:Annihilates a certain type of monster on the level, determined by which
-D:monster is standing closest to you. It drains your hit points for each
-D:monster.
+D:Annihilates a certain type of monster on the level, determined by which monster
+D:is standing closest to you. It drains your hit points for each monster.
 
 N:324:Power
 G:_:d
@@ -2732,7 +2723,7 @@ W:70:0:50:4500
 A:70/2
 P:0:1d2:0:0:0
 D:Dispels evil for 200..500 damage. Also protects you from evil for a while.
-D:Cures poison, disease, cuts, and stun. Removes fear and heals you somewhat.
+D:Cures poison, cuts, and stun. Removes fear and heals you somewhat.
 
 N:328:Enlightenment
 G:_:d
@@ -2749,90 +2740,82 @@ W:70:0:50:5000
 A:70/2
 P:0:1d2:0:0:0
 D:Heals 250 to 400 hit points, depending on magic device skill,
-D:and cures stun and most cuts.
+D:and cures stun and cuts.
 
 
 ##### School Books #####
 
-N:330:& Tome~ of Magical Energy
+$NEW_TOMES!N:330:& Tome~ of Magical Energy
+$NEW_TOMES$N:330:& Tome~ of Magical Energy
 G:?:M
 I:111:0:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_MANA
-# for WIELD_BOOKS:
-F:REGEN_MANA
 
-N:331:& Tome~ of the Eternal Flame
+$NEW_TOMES!N:331:& Tome~ of the Eternal Flame
+$NEW_TOMES$N:331:& Tome~ of the Eternal Flame
 G:?:f
 I:111:1:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_FIRE | IGNORE_WATER
-# for WIELD_BOOKS:
-F:RES_FIRE | SH_FIRE | BRAND_FIRE
 
-N:332:& Tome~ of the Blowing Wind
+$NEW_TOMES!N:332:& Tome~ of the Blowing Wind
+$NEW_TOMES$N:332:& Tome~ of the Blowing Wind
 G:?:e
 I:111:2:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_ELEC | IGNORE_WATER
-# for WIELD_BOOKS:
-F:RES_COLD | SH_COLD | BRAND_COLD
 
-N:333:& Tome~ of the Impenetrable Earth
+$NEW_TOMES!N:333:& Tome~ of the Impenetrable Earth
+$NEW_TOMES$N:333:& Tome~ of the Impenetrable Earth
 G:?:H
 I:111:3:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_ACID | IGNORE_WATER
-# for WIELD_BOOKS:
-F:RES_SHARDS | RES_ACID
 
-N:334:& Tome~ of the Everrunning Wave
+$NEW_TOMES!N:334:& Tome~ of the Everrunning Wave
+$NEW_TOMES$N:334:& Tome~ of the Everrunning Wave
 G:?:Y
 I:111:4:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:RES_WATER
 
-N:335:& Tome~ of Translocation
+$NEW_TOMES!N:335:& Tome~ of Translocation
+$NEW_TOMES$N:335:& Tome~ of Translocation
 G:?:q
 I:111:5:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:RES_TELE
 
-N:336:& Tome~ of the Tree
+$NEW_TOMES!N:336:& Tome~ of the Tree
+$NEW_TOMES$N:336:& Tome~ of the Tree
 G:?:u
 I:111:6:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:REGEN | RES_BLIND
 
-N:337:& Tome~ of Knowledge
+$NEW_TOMES!N:337:& Tome~ of Knowledge
+$NEW_TOMES$N:337:& Tome~ of Knowledge
 G:?:D
 I:111:7:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:RES_CONF
 
 
 ##### Chests #####
@@ -2854,7 +2837,7 @@ P:0:2d5:0:0:0
 N:340:& Small iron chest~
 G:~:s
 I:7:2:0
-W:25:0:400:100
+W:25:0:300:100
 A:25/1
 P:0:2d4:0:0:0
 
@@ -2891,7 +2874,7 @@ A:75/1
 N:345:& Iron Spike~
 G:~:W
 I:5:0:0
-W:1:0:4:1
+W:1:0:10:1
 A:1/1
 P:0:1d1:0:0:0
 D:It can be used to jam doors.
@@ -2903,7 +2886,6 @@ W:1:0:20:2
 A:1/1
 P:0:1d2:0:0:0
 F:EASY_KNOW | LITE1 | FUEL_LITE
-D:Torches that are running out can be combined to extend their lifespan.
 
 N:347:& Brass Lantern~
 G:~:U
@@ -2912,7 +2894,6 @@ W:3:0:35:150
 A:2/1:3/1:4/1:5/1
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_FIRE | LITE2 | FUEL_LITE
-D:A type of lantern that can usually be refilled with flasks of oil.
 
 N:348:& Flask~ of Oil
 G:!:y
@@ -2920,14 +2901,13 @@ I:77:0:7500
 W:1:0:7:3
 A:1/1
 P:0:2d4:0:0:0
-D:Mainly used to refill lanterns, but might have other uses as well.
 #D:Use it to refill lanterns, throw it,
 #D:or use it in the 'flare missile' ranged technique (requires archery skill).
 
 N:349:& Empty Bottle~
 G:!:w
 I:2:1:0
-W:0:0:2:3
+W:0:0:2:1
 A:1/1:10/1:20/1:30/1
 P:0:1d1:0:0:0
 D:It can be filled at fountains.
@@ -2941,7 +2921,6 @@ I:66:28:90
 W:95:0:15:150000
 A:100/50
 P:0:1d1:0:0:0
-F:IGNORE_MANA
 D:Casts havoc at your target, causing an initial blast of 500..800 damage
 D:and a lingering storm dealing 50..100 damage periodically.
 
@@ -3000,7 +2979,7 @@ I:66:21:30
 W:20:0:15:2000
 A:20/1
 P:0:1d1:0:0:0
-D:Casts a lightning bolt for 4..49d13 damage.
+D:Casts a lightning bolt for 4..49d8 damage.
 
 N:358:Frost Bolts
 G:-:d
@@ -3008,7 +2987,7 @@ I:66:23:35
 W:25:0:15:2500
 A:25/1
 P:0:1d1:0:0:0
-D:Casts a frost bolt for 5..50d13 damage.
+D:Casts a frost bolt for 5..50d8 damage.
 
 N:359:Fire Bolts
 G:-:d
@@ -3016,7 +2995,7 @@ I:66:22:40
 W:30:0:15:3000
 A:30/1
 P:0:1d1:0:0:0
-D:Casts a fire bolt for 7..52d13 damage.
+D:Casts a fire bolt for 7..52d8 damage.
 
 N:360:Polymorph
 G:-:d
@@ -3048,8 +3027,8 @@ I:66:18:30
 W:75:0:15:25000
 A:75/4
 P:0:1d1:0:0:0
-D:Damages a monster for 10..15% of its current hit points (max 900)
-D:and returns 1/8 of the life force to you, replenishing your hit points.
+D:Damages a monster for 10..20% of its current hit points (max 900)
+D:and returns some of the life force to you, replenishing your hit points.
 
 N:364:Teleport Other
 G:-:d
@@ -3104,7 +3083,7 @@ I:66:20:40
 W:40:0:15:3500
 A:40/1
 P:0:1d1:0:0:0
-D:Casts an acid bolt for 6..51d13 damage.
+D:Casts an acid bolt for 6..51d8 damage.
 
 N:371:Enlightenment
 G:-:d
@@ -3128,17 +3107,16 @@ I:66:8:35
 W:65:0:15:15000
 A:65/8
 P:0:1d1:0:0:0
-D:Cures being gorged, blindness, confusion, stun,
-D:hallucinations, poison, disease and cuts.
+D:Cures gorged, blindness, confusion, stun, hallucinations, poison and cuts.
 
 N:374:Healing
 G:-:d
 I:66:9:120
-W:70:0:15:20000
-A:70/8
+W:80:0:15:20000
+A:80/8
 P:0:1d1:0:0:0
-D:Heals 100 to 300 hit points, depending on magic device skill,
-D:and cures stun and most cuts.
+D:Heals 100 to 400 hit points, depending on magic device skill,
+D:and cures stun and cuts.
 
 N:375:Detection
 G:-:d
@@ -3146,8 +3124,7 @@ I:66:6:80
 W:30:0:15:5000
 A:30/8
 P:0:1d1:0:0:0
-#D:Detects treasure, objects, traps, secret doors, stairs,
-D:Detects treasure, traps, secret doors, stairs,
+D:Detects treasures, objects, traps, secret doors, stairs,
 D:and non-invisible creatures.
 #note: the stair-detection part is hacked into detect_sdoor()
 
@@ -3162,8 +3139,8 @@ D:Restores all drained stats and drained experience.
 N:377:Speed
 G:-:d
 I:66:11:100
-W:90:0:15:50000
-A:90/16
+W:95:0:15:50000
+A:95/16
 P:0:1d1:0:0:0
 D:Temporarily increases your speed by 10.
 
@@ -3181,26 +3158,22 @@ F:IGNORE_WATER
 $ENABLE_OCCULT$N:379:& Tome~ of Shadows
 $ENABLE_OCCULT$G:?:A
 $ENABLE_OCCULT$I:111:22:0
-$ENABLE_OCCULT$W:50:0:30:25000
+$ENABLE_OCCULT$W:50:0:30:35000
 $ENABLE_OCCULT$A:50/50:100/50
 $ENABLE_OCCULT$P:0:1d1:0:0:0
 $ENABLE_OCCULT$F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-$ENABLE_OCCULT$F:RES_DARK
 
 $ENABLE_OCCULT$N:380:& Tome~ of Spirits
 $ENABLE_OCCULT$G:?:i
 $ENABLE_OCCULT$I:111:23:0
-$ENABLE_OCCULT$W:50:0:30:25000
+$ENABLE_OCCULT$W:50:0:30:35000
 $ENABLE_OCCULT$A:50/50:100/50
 $ENABLE_OCCULT$P:0:1d1:0:0:0
 $ENABLE_OCCULT$F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE
-# for WIELD_BOOKS:
-$ENABLE_OCCULT$F:RES_LITE
 
 N:381:& Snowball~
 G:*:w
-I:13:16:80
+I:13:16:0
 W:127:0:5:0
 A:127/0
 P:0:1d1:0:0:0
@@ -3209,7 +3182,7 @@ D:The weapon of choice in snowball fights.
 
 N:382:& Pint~ of Fine Ale
 G:,:y
-I:80:213:500
+I:80:43:500
 W:15:1:3:5000
 P:0:2d3:0:0:0
 F:INSTA_ART
@@ -3223,15 +3196,13 @@ P:0:1d1:0:0:0
 D:There is enough space on it for some writing.
 
 
-$ENABLE_OHERETICISM$N:384:& Corrupted Tome~ of Chaos
+$ENABLE_OHERETICISM$N:384:& Tome~ of Chaos
 $ENABLE_OHERETICISM$G:?:Z
 $ENABLE_OHERETICISM$I:111:24:0
-$ENABLE_OHERETICISM$W:50:0:30:25000
+$ENABLE_OHERETICISM$W:50:0:30:35000
 $ENABLE_OHERETICISM$A:50/50:100/50
 $ENABLE_OHERETICISM$P:0:1d1:0:0:0
 $ENABLE_OHERETICISM$F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE
-$ENABLE_OHERETICISM$# for WIELD_BOOKS:
-$ENABLE_OHERETICISM$F:RES_CHAOS
 
 
 # Extra weapons to buff some categories away from too high rarity
@@ -3240,24 +3211,23 @@ N:385:& Executioner Axe~
 G:/:r
 I:24:6:0
 W:40:0:300:800
-A:40/3
+A:40/2
 P:0:6d5:0:0:0
 F:SHOW_MODS | MUST2H
 
 N:386:& Hatchet~
-G:/:u
+G:/:s
 I:24:5:0
 W:3:0:70:85
-A:3/1
-#:10/1
+A:3/1:10/1
 P:0:2d3:0:0:0
 F:SHOW_MODS
 
 N:387:& Double-Headed War Axe~
-G:/:D
+G:/:U
 I:24:4:0
 W:60:0:340:1800
-A:60/4
+A:60/3
 P:0:5d8:0:0:0
 F:SHOW_MODS | MUST2H
 
@@ -3265,9 +3235,9 @@ F:SHOW_MODS | MUST2H
 
 ##### For Halloween #####
 
-#N:388:& Candy Corn~   --todo: adjust '> 25' checks in the code, damn hard-coding
+#N:388:& Candy Corn~
 #G:`:o
-#I:80:106:3000
+#I:80:26:3000
 #W:0:0:2:2
 #D:..overeating isn't healthy..
 
@@ -3368,7 +3338,7 @@ N:399:& Great Hammer~
 G:\:D
 I:21:19:0
 W:40:0:300:750
-A:40/2:65/2
+A:40/2
 P:0:5d6:0:0:0
 F:SHOW_MODS | MUST2H
 
@@ -3540,7 +3510,7 @@ I:38:41:0
 W:85:0:200:180000
 A:90/250
 P:30:2d4:-2:0:20
-F:RES_SHARDS | LEVITATE | REFLECT | RES_MANA | RES_COLD
+F:RES_SHARDS | LEVITATE | REFLECT | RES_MANA |
 F:ACTIVATE | IGNORE_ACID | IGNORE_MANA
 
 N:930:Dracolich Bone Armour~
@@ -3640,13 +3610,12 @@ D:Permanently increases all stats.
 
 N:419:*Healing*
 G:!:d
-I:71:37:400
+I:71:37:500
 W:40:0:4:3000
 A:40/4:60/2:80/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
-D:Heals 700 hit points and cures blindness, cuts,
-D:confusion, stun, poison and disease.
+D:Heals 700 hit points and cures blindness, cuts, confusion, stun and poison.
 
 N:420:Life
 G:!:d
@@ -3655,17 +3624,17 @@ W:60:0:4:6500
 A:60/4:100/2
 P:0:1d1:0:0:0
 #F:FOUNTAIN --too bad for vampires? (500 damage)
-D:Heals 700 hit points. Cures blindness, confusion, stun, poison, disease, cuts,
+D:Heals 700 hit points. Cures blindness, confusion, stun, poison, cuts,
 D:hallucination and Black Breath. Restores all drained stats and experience.
 
-N:421:Self-Knowledge
+N:421:Self Knowledge
 G:!:d
 I:71:58:0
 W:40:0:4:2000
 A:40/1
 P:0:1d1:0:0:0
 F:FOUNTAIN
-D:This potion tells you all about yourself and identifies all your items.
+D:This potion tells you all about yourself.
 
 N:422:*Enlightenment*
 G:!:d
@@ -3675,9 +3644,8 @@ A:70/4
 P:0:1d1:0:0:0
 F:FOUNTAIN
 D:Permanently increases intelligence and wisdom. Maps and enlightens the whole
-#D:map and detects treasure, objects, secret doors, stairs and traps nearby.
-D:map and detects treasure, secret doors, stairs and traps nearby.
-D:Identifies all your items, tells you about yourself, disperses hallucinations.
+D:map and detects treasures, objects, secret doors, stairs and traps nearby.
+D:Identifies all your items and tells you about yourself.
 
 #N:423:[Necromantic Incantations]
 #G:?:G
@@ -3703,8 +3671,8 @@ F:RES_FEAR | EASY_KNOW
 N:426:Light and Darkness Resistance
 G:=:d
 I:45:39:0
-W:25:0:2:3000
-A:25/2
+W:30:0:2:3000
+A:30/2
 F:RES_LITE | RES_DARK | EASY_KNOW
 
 N:427:Nether Resistance
@@ -3735,14 +3703,12 @@ W:22:0:2:3000
 A:22/2
 F:RES_CONF | EASY_KNOW
 
-#N:431:Shard Resistance
-N:431:Stone Skin
+N:431:Shard Resistance
 G:=:d
 I:45:44:0
-W:25:0:2:2500
+W:25:0:2:3000
 A:25/2
 F:RES_SHARDS | EASY_KNOW
-D:Affects your armour class.
 
 N:432:Disenchantment Resistance
 G:=:d
@@ -3761,8 +3727,8 @@ F:RES_CHAOS | RES_CONF | EASY_KNOW
 N:434:Blindness Resistance
 G:=:d
 I:45:47:0
-W:20:0:2:4500
-A:20/2
+W:30:0:2:6500
+A:30/2
 F:RES_BLIND | EASY_KNOW
 
 N:435:Lordly Protection
@@ -3848,7 +3814,7 @@ W:10:0:3:100
 A:15/2:30/2
 P:0:1d5:0:0:0
 F:SHOW_MODS | NO_ENCHANT
-D:It is ammunition fit for crossbows and bolt trap kits.
+D:It is ammunition fit for crossbows.
 D:It magically returns to you after you fired it.
 
 N:445:& Magic Shot~
@@ -3858,7 +3824,7 @@ W:10:0:2:100
 A:15/2:30/2
 P:0:1d3:0:0:0
 F:SHOW_MODS | NO_ENCHANT
-D:It is ammunition fit for slings and catapult trap kits.
+D:It is ammunition fit for slings.
 D:It magically returns to you after you fired it.
 
 # for new years eve - C. Blue
@@ -3873,117 +3839,8 @@ F:EASY_KNOW
 D:Releases a magical firework rocket.
 #D:Can only be used during new years eve season.
 
-$ENABLE_OUNLIFE$N:447:& Tainted Tome~ of Unlife
-$ENABLE_OUNLIFE$G:?:n
-$ENABLE_OUNLIFE$I:111:25:0
-$ENABLE_OUNLIFE$W:50:0:30:25000
-$ENABLE_OUNLIFE$A:50/50:100/50
-$ENABLE_OUNLIFE$P:0:1d1:0:0:0
-$ENABLE_OUNLIFE$F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-$ENABLE_OUNLIFE$# for WIELD_BOOKS:
-$ENABLE_OUNLIFE$F:HOLD_LIFE
 
-
-$ENABLE_DEMOLITIONIST$N:448:& Grinding Tool~
-$ENABLE_DEMOLITIONIST$G:~:D
-$ENABLE_DEMOLITIONIST$I:12:8:0
-$ENABLE_DEMOLITIONIST$W:1:0:40:40
-$ENABLE_DEMOLITIONIST$$DEMOLITIONIST_IDDC_ONLY!A:5/10:10/20
-$ENABLE_DEMOLITIONIST$$DEMOLITIONIST_IDDC_ONLY$A:127/0
-$ENABLE_DEMOLITIONIST$P:0:1d2:0:0:0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Used by demolitionists to grind things consisting of wood or metal to bits.
-
-$ENABLE_DEMOLITIONIST$N:449:& Heap~ of Wood Chips
-$ENABLE_DEMOLITIONIST$G:~:u
-$ENABLE_DEMOLITIONIST$I:48:11:0
-$ENABLE_DEMOLITIONIST$W:1:0:5:2
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$P:0:1d1:0:0:0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Can be heated to turn into charcoal by proficient demolitionists.
-
-
-#extra boomerang tier
-N:450:& Small Razor Boomerang~
-G:{:R
-I:15:5:0
-W:55:0:40:40
-A:55/4
-P:0:4d5:0:0:0
-
-N:451:& Razor Boomerang~
-G:{:R
-I:15:6:0
-W:60:0:60:60
-A:60/4
-P:0:4d7:0:0:0
-
-
-##### Special bags (ENABLE_SUBINVEN; unique-carried if SUBINVEN_LIMIT_GROUP) - C. Blue #####
-
-#hmm, maybe use ~ like for chests, for all TV_SUBINVEN? Many colours already used up for ~ though, only o/G/b/B left.
-#then again, & stands for runes already. Maybe ~ is best.
-$ENABLE_SUBINVEN$N:452:& Alchemy Satchel~
-#$ENABLE_SUBINVEN$G:&:y
-$ENABLE_SUBINVEN$G:~:o
-$ENABLE_SUBINVEN$I:126:0:7
-$ENABLE_SUBINVEN$W:1:0:30:300
-#$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$A:10/10:20/20
-$ENABLE_SUBINVEN$P:0:1d1:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-$ENABLE_SUBINVEN$D:A small satchel for storing chemical ingredients.
-
-# Clones of the chests, just with their tval live-converted to TV_SUBINVEN. So these are unfindable.
-
-$ENABLE_SUBINVEN$N:453:& Small wooden chest~
-$ENABLE_SUBINVEN$G:~:s
-$ENABLE_SUBINVEN$I:126:101:2
-$ENABLE_SUBINVEN$W:127:0:250:20
-$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$P:0:2d3:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-
-$ENABLE_SUBINVEN$N:454:& Large wooden chest~
-$ENABLE_SUBINVEN$G:~:s
-$ENABLE_SUBINVEN$I:126:105:3
-$ENABLE_SUBINVEN$W:127:0:500:60
-$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$P:0:2d5:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-
-$ENABLE_SUBINVEN$N:455:& Small iron chest~
-$ENABLE_SUBINVEN$G:~:s
-$ENABLE_SUBINVEN$I:126:102:3
-$ENABLE_SUBINVEN$W:127:0:400:100
-$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$P:0:2d4:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-
-$ENABLE_SUBINVEN$N:456:& Large iron chest~
-$ENABLE_SUBINVEN$G:~:s
-$ENABLE_SUBINVEN$I:126:106:4
-$ENABLE_SUBINVEN$W:127:0:1000:150
-$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$P:0:2d6:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-
-$ENABLE_SUBINVEN$N:457:& Small steel chest~
-$ENABLE_SUBINVEN$G:~:s
-$ENABLE_SUBINVEN$I:126:103:3
-$ENABLE_SUBINVEN$W:127:0:500:200
-$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$P:0:2d4:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-
-$ENABLE_SUBINVEN$N:458:& Large steel chest~
-$ENABLE_SUBINVEN$G:~:s
-$ENABLE_SUBINVEN$I:126:107:4
-$ENABLE_SUBINVEN$W:127:0:1000:250
-$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$P:0:2d6:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
+### Numbers 447-458 unused ###
 
 
 ##### Additional skeletons #####
@@ -4039,7 +3896,7 @@ A:50/4:90/2
 P:0:2d4:0:0:0
 F:SHOW_MODS | KILL_UNDEAD | IGNORE_ACID | IGNORE_FIRE | IGNORE_WATER
 #was SLAY_EVIL
-D:It is ammunition fit for bows and arrow trap kits.
+D:It is ammunition fit for bows.
 
 N:466:& Silver Bolt~
 G:{:w
@@ -4049,7 +3906,7 @@ A:60/4:95/2
 P:0:2d5:0:0:0
 F:SHOW_MODS | KILL_UNDEAD | IGNORE_ACID | IGNORE_FIRE | IGNORE_WATER
 #was SLAY_EVIL
-D:It is ammunition fit for crossbows and bolt trap kits.
+D:It is ammunition fit for crossbows.
 
 N:467:Lightning Resistance
 G:":d
@@ -4410,55 +4267,8 @@ I:45:37:0
 W:100:0:2:5000000
 F:INSTA_ART
 
-# For trappers - they already need to carry all the ammo.
-$ENABLE_SUBINVEN$N:512:& Trap Kit Bag~
-$ENABLE_SUBINVEN$G:~:b
-$ENABLE_SUBINVEN$I:126:1:8
-$ENABLE_SUBINVEN$W:1:0:50:1500
-#$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$A:10/10:20/20
-$ENABLE_SUBINVEN$P:0:1d1:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-$ENABLE_SUBINVEN$D:A bag for compact storing of trap kits.
 
-$ENABLE_SUBINVEN$N:513:& Antistatic Wrapping~
-$ENABLE_SUBINVEN$G:~:W
-$ENABLE_SUBINVEN$I:126:2:5
-$ENABLE_SUBINVEN$W:1:0:50:4500
-#$ENABLE_SUBINVEN$A:127/0
-$ENABLE_SUBINVEN$A:15/20:30/30
-$ENABLE_SUBINVEN$P:0:1d1:0:0:0
-$ENABLE_SUBINVEN$F:EASY_KNOW
-$ENABLE_SUBINVEN$D:A magical cloth for storing devices that don't need to be aimed actively.
-
-
-# Extra mushroom(s)
-N:514:Fast Metabolism
-G:,:r
-I:80:21:500
-W:1:0:1:50
-A:1/1:5/1
-D:Adds a small, flat amount to your natural health regeneration temporarily.
-
-N:515:& Handbook~ of Wind and Weather
-G:?:B
-I:111:64:0
-W:50:0:30:14000
-A:15/30:35/65
-P:0:1d1:0:0:0
-F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-
-N:516:*Immortality*
-G:":n
-I:40:43:0
-W:127:0:3:1
-A:127/0
-F:HIDE_TYPE
-D:Prevents hit points, sanity or experience from dropping below zero.
-
-# HOLE 517-520 (1st hole)
 ### Room for new objects added after 511 (Zangband 2.1.0): 512-575
-
 
 #521 and 522 cannot have EASY_KNOW because they may be cursed
 # ^ atm Anti-Magic amulet is never cursed, so EASY_KNOW now
@@ -4524,12 +4334,12 @@ A:5/10
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_FIRE | LITE1
 
-N:528:& Great Spear~
+N:528:& Trifurcate Spear~
 G:/:o
 I:22:26:0
-W:17:0:160:500
+W:17:0:140:500
 A:17/3
-P:0:3d7:0:0:0
+P:0:3d6:0:0:0
 F:SHOW_MODS | SHOULD2H
 
 N:529:& Three Piece Rod~
@@ -4570,20 +4380,10 @@ N:533:& Cleaver~
 G:/:s
 I:24:1:0
 W:2:0:50:45
-A:2/1
-#:8/1
+A:2/1:8/1
 P:0:1d5:0:0:0
 F:SHOW_MODS
 
-N:534:& Shard~ of twinkling, silvery glass
-G:*:q
-I:11:5:0
-W:127:0:3:0
-A:127/0
-P:0:1d1:0:0:0
-F:EASY_KNOW | ACTIVATE | EASY_USE
-D:A silver glass shard, twinkling magically. Surprisingly, it reflects your
-D:own image, but not your surroundings! Instead, it shows only grey fog..
 
 ##### New armour #####
 
@@ -4607,23 +4407,12 @@ F:IGNORE_WATER | IGNORE_ACID | IGNORE_FIRE | RES_ACID
 ##### New weapons #####
 
 N:537:& Sickle~
-G:/:W
+G:/:s
 I:22:3:0
 W:7:0:50:110
 A:7/2
 P:0:2d3:0:0:0
 F:SHOW_MODS
-
-N:538:& Dragon Lance~
-G:/:w
-I:22:10:0
-W:70:0:340:4800
-A:70/7
-P:0:4d10:0:0:0
-F:SHOW_MODS | MUST2H | KILL_DRAGON | IGNORE_ACID | IGNORE_FIRE
-# | BLESSED or | SLAY_EVIL ?
-
-# HOLE 539-541
 
 N:542:& Club~
 G:\:u
@@ -4634,17 +4423,17 @@ P:0:1d4:0:0:0
 F:SHOW_MODS | IGNORE_WATER | COULD2H
 
 N:543:& Broad Spear~
-G:/:W
+G:/:w
 I:22:7:0
-W:14:0:80:190
+W:14:0:100:190
 A:14/2
 P:0:1d9:0:0:0
 F:SHOW_MODS | COULD2H
 
 N:544:& Rhomphaia~
-G:/:U
+G:/:W
 I:22:9:0
-W:19:0:100:240
+W:19:0:120:240
 A:19/3
 P:0:2d4:0:0:0
 F:SHOW_MODS | COULD2H
@@ -4686,7 +4475,7 @@ F:SHOW_MODS | MUST2H
 N:549:Arrow
 G:`:r
 I:46:2:0
-W:5:0:15:50
+W:10:0:15:50
 A:5/2:10/2:50/2
 F:SHOW_MODS
 D:This trap kit uses arrows.
@@ -4694,7 +4483,7 @@ D:This trap kit uses arrows.
 N:550:Bolt
 G:`:R
 I:46:3:0
-W:10:0:20:70
+W:20:0:20:70
 A:10/2:20/2:50/2
 F:SHOW_MODS
 D:This trap kit uses bolts.
@@ -4776,7 +4565,7 @@ F:IGNORE_WATER
 N:560:Fumes
 G:`:b
 I:46:4:0
-W:3:0:10:50
+W:2:0:10:50
 A:3/2:30/2
 F:EASY_KNOW | IGNORE_FIRE | IGNORE_WATER
 D:This trap kit uses potions or flasks.
@@ -4795,17 +4584,15 @@ G:`:v
 I:46:5:0
 W:5:0:10:50
 A:5/2:15/2:40/2
-F:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_WATER
-F:EASY_KNOW
+F:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_WATER | EASY_KNOW
 D:This trap kit uses scrolls or runes.
 
 N:563:Device
 G:`:s
 I:46:6:0
-W:10:0:15:50
+W:20:0:15:50
 A:10/2:20/2:40/2
-F:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_WATER
-F:EASY_KNOW
+F:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_WATER | EASY_KNOW
 D:This trap kit uses magic devices (wands, staves and rods).
 
 N:564:Nothing
@@ -4927,8 +4714,8 @@ F:SHOW_MODS | MUST2H | REGEN_MANA
 N:578:Lightning
 G:=:d
 I:45:56:0
-W:25:0:2:5000
-A:25/3
+W:50:0:2:5000
+A:50/1
 P:0:0d0:0:0:15
 F:RES_ELEC | IGNORE_ELEC | ACTIVATE | BRAND_ELEC
 D:Affects your armour class.
@@ -4996,10 +4783,10 @@ F:FOUNTAIN
 
 N:586:Invisibility
 G:=:d
-I:45:53:5
+I:45:53:4
 W:50:0:2:50000
 A:50/80
-F:INVIS | STEALTH | HIDE_TYPE
+F:INVIS | HIDE_TYPE
 
 #N:587:Time
 #G:*:G
@@ -5447,32 +5234,32 @@ F:INSTA_ART
 N:648:& Small Wooden Boomerang~
 G:{:y
 I:15:1:0
-W:5:0:30:30
+W:5:0:60:30
 A:5/1
-P:0:2d3:0:0:0
+P:0:2d2:0:0:0
 F:IGNORE_WATER
 
 N:649:& Wooden Boomerang~
 G:{:y
 I:15:2:0
-W:10:0:45:45
+W:10:0:60:45
 A:10/1
-P:0:2d5:0:0:0
+P:0:2d4:0:0:0
 F:IGNORE_WATER
 
 N:650:& Small Metal Boomerang~
 G:{:y
 I:15:3:0
-W:15:0:40:40
+W:15:0:60:40
 A:15/1
-P:0:3d4:0:0:0
+P:0:2d3:0:0:0
 
 N:651:& Metal Boomerang~
 G:{:y
 I:15:4:0
 W:20:0:60:60
 A:20/1
-P:0:3d6:0:0:0
+P:0:2d5:0:0:0
 
 # The Space-Time Anchor -- see artifact list
 N:652:& Anchor~
@@ -5497,7 +5284,6 @@ P:0:0d0:0:0:0
 #W:5:0:5:125
 #A:5/1:15/1:25/1:35/1:65/1:85/1:95/1
 
-# HOLE 655-660
 
 # The Phial of Undeath -- see artifact list. He he he he...
 
@@ -5573,192 +5359,192 @@ F:INSTA_ART
 
 N:679:Light
 G:&:L
-I:107:1:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:0:0
+W:3:0:3:2500
+A:30/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:680:Darkness
 G:&:A
-I:107:2:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:1:0
+W:3:0:3:2500
+A:30/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:681:Nexus
 G:&:x
-I:107:4:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:2:0
+W:3:0:3:2500
+A:30/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:682:Nether
 G:&:n
-I:107:8:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:3:0
+W:3:0:3:2500
+A:30/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:683:Chaos
 G:&:m
-I:107:16:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:4:0
+W:3:0:3:2500
+A:30/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:684:Mana
 G:&:N
-I:107:32:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:5:0
+W:3:0:3:2500
+A:30/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:685:Confusion
 G:&:C
-I:107:3:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:6:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:686:Inertia
 G:&:q
-I:107:5:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:7:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
-N:687:Electricity
+N:687:Lightning
 G:&:e
-I:107:9:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:8:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:688:Fire
 G:&:f
-I:107:17:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:9:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:689:Water
 G:&:Y
-I:107:33:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:10:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:690:Gravity
 G:&:V
-I:107:6:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:11:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:691:Frost
 G:&:c
-I:107:10:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:12:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:692:Acid
 G:&:a
-I:107:18:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:13:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:693:Poison
 G:&:p
-I:107:34:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:14:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
-N:694:Time
-G:&:t
-I:107:12:0
-W:50:0:30:15000
-A:20/30:40/65
+N:694:Shards
+G:&:H
+I:107:15:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 N:695:Sound
 G:&:S
-I:107:20:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:16:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
-N:696:Shards
-G:&:H
-I:107:36:0
-W:50:0:30:15000
-A:20/30:40/65
+N:696:Time
+G:&:t
+I:107:17:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
-N:697:Hellfire
-G:&:X
-I:107:24:0
-W:50:0:30:15000
-A:20/30:40/65
-P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
-
-N:698:Force
-G:&:F
-I:107:40:0
-W:50:0:30:15000
-A:20/30:40/65
-P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
-
-N:699:Disenchantment
+N:697:Disenchantment
 G:&:T
-I:107:48:0
-W:50:0:30:15000
-A:20/30:40/65
+I:107:18:0
+W:3:0:3:5000
+A:50/6
 P:0:1d1:0:0:0
-F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER
-F:IGNORE_MANA | ACTIVATE
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
+
+N:698:Ice
+G:&:i
+I:107:19:0
+W:3:0:3:5000
+A:50/6
+P:0:1d1:0:0:0
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
+
+N:699:Plasma
+G:&:l
+I:107:20:0
+W:3:0:3:5000
+A:50/6
+P:0:1d1:0:0:0
+F:IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC | IGNORE_ACID | IGNORE_WATER | IGNORE_MANA
+F:ACTIVATE
 
 #/* 701 is used. 702-720 is unused */
 
@@ -5787,167 +5573,10 @@ F:IGNORE_MANA | ACTIVATE
 
 N:701:& Sprig~ of Athelas
 G:,:g
-I:80:210:0
+I:80:40:0
 W:25:5:2:450
-A:25/20:55/10:85/10
-D:Food that also cures poison, disease, stun, cuts and even Black Breath.
-
-
-# for new 'Excavation' skill that replaces 'Digging' - C. Blue
-
-$ENABLE_DEMOLITIONIST$N:702:& Blast Charge~
-$ENABLE_DEMOLITIONIST$G:%:o
-$ENABLE_DEMOLITIONIST$I:47:1:3
-$ENABLE_DEMOLITIONIST$W:5:0:10:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to cause a major explosion.
-
-$ENABLE_DEMOLITIONIST$N:703:& Large Blast Charge~
-$ENABLE_DEMOLITIONIST$G:%:o
-$ENABLE_DEMOLITIONIST$I:47:2:5
-$ENABLE_DEMOLITIONIST$W:10:0:20:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to cause a huge explosion.
-
-$ENABLE_DEMOLITIONIST$N:704:& Surgical Charge~
-$ENABLE_DEMOLITIONIST$G:%:o
-$ENABLE_DEMOLITIONIST$I:47:3:5
-$ENABLE_DEMOLITIONIST$W:10:0:20:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to cause cascaded explosions.
-
-$ENABLE_DEMOLITIONIST$N:705:& Ground-shaking Charge~
-$ENABLE_DEMOLITIONIST$G:%:R
-$ENABLE_DEMOLITIONIST$I:47:4:9
-$ENABLE_DEMOLITIONIST$W:30:0:50:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to cause a local earthquake.
-
-$ENABLE_DEMOLITIONIST$N:706:& Destructor-Charge~
-$ENABLE_DEMOLITIONIST$G:%:R
-$ENABLE_DEMOLITIONIST$I:47:5:10
-$ENABLE_DEMOLITIONIST$W:40:0:100:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to *destroy* a large area.
-
-$ENABLE_DEMOLITIONIST$N:707:& Fire Charge~
-$ENABLE_DEMOLITIONIST$G:%:r
-$ENABLE_DEMOLITIONIST$I:47:6:5
-$ENABLE_DEMOLITIONIST$W:5:0:10:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to cause a strong conflagration.
-
-$ENABLE_DEMOLITIONIST$N:708:& Firestorm Charge~
-$ENABLE_DEMOLITIONIST$G:%:r
-$ENABLE_DEMOLITIONIST$I:47:7:9
-$ENABLE_DEMOLITIONIST$W:15:0:25:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to create a storm of conflagration.
-
-$ENABLE_DEMOLITIONIST$N:709:& Firewall Charge~
-$ENABLE_DEMOLITIONIST$G:%:r
-$ENABLE_DEMOLITIONIST$I:47:8:2
-$ENABLE_DEMOLITIONIST$W:10:0:15:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to create an alley of fire.
-
-$ENABLE_DEMOLITIONIST$# create rubble
-$ENABLE_DEMOLITIONIST$N:710:& Wrecking Charge~
-$ENABLE_DEMOLITIONIST$G:%:y
-$ENABLE_DEMOLITIONIST$I:47:9:2
-$ENABLE_DEMOLITIONIST$W:10:0:10:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to block a passage.
-
-$ENABLE_DEMOLITIONIST$# wall creation
-$ENABLE_DEMOLITIONIST$N:711:& Cascading Charge~
-$ENABLE_DEMOLITIONIST$G:%:y
-$ENABLE_DEMOLITIONIST$I:47:10:2
-$ENABLE_DEMOLITIONIST$W:20:0:20:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to chain a series of debris-creating blasts.
-
-$ENABLE_DEMOLITIONIST$# stone prison, leaves the 'epicentre' point unharmed!
-$ENABLE_DEMOLITIONIST$N:712:& Tactical Charge~
-$ENABLE_DEMOLITIONIST$G:%:y
-$ENABLE_DEMOLITIONIST$I:47:11:2
-$ENABLE_DEMOLITIONIST$W:25:0:20:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to collapse structures in a specific way.
-
-$ENABLE_DEMOLITIONIST$# blind effect
-$ENABLE_DEMOLITIONIST$N:713:& Flash bomb~
-$ENABLE_DEMOLITIONIST$G:%:U
-$ENABLE_DEMOLITIONIST$I:47:12:2
-$ENABLE_DEMOLITIONIST$W:10:0:5:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to cause an extremely bright explosion.
-
-$ENABLE_DEMOLITIONIST$# stun effect
-$ENABLE_DEMOLITIONIST$N:714:& Concussive Charge~
-$ENABLE_DEMOLITIONIST$G:%:U
-$ENABLE_DEMOLITIONIST$I:47:13:2
-$ENABLE_DEMOLITIONIST$W:15:0:20:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to emphasize a concussive effect.
-
-$ENABLE_DEMOLITIONIST$# greater stun effect
-$ENABLE_DEMOLITIONIST$N:715:& Large Concussive Charge~
-$ENABLE_DEMOLITIONIST$G:%:U
-$ENABLE_DEMOLITIONIST$I:47:14:3
-$ENABLE_DEMOLITIONIST$W:25:0:30:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to greatly emphasize a concussive effect.
-
-$ENABLE_DEMOLITIONIST$# create water/lava (depending on the dungeon)
-$ENABLE_DEMOLITIONIST$N:716:& Underground Charge~
-$ENABLE_DEMOLITIONIST$G:%:y
-$ENABLE_DEMOLITIONIST$I:47:15:7
-$ENABLE_DEMOLITIONIST$W:20:0:30:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE | HIDE_TYPE
-$ENABLE_DEMOLITIONIST$D:Allows proficient demolitionists to blast open buried water or lava veins.
-
-$ENABLE_DEMOLITIONIST$N:717:& Flask~ of Acid
-$ENABLE_DEMOLITIONIST$G:!:a
-$ENABLE_DEMOLITIONIST$I:77:1:0
-$ENABLE_DEMOLITIONIST$W:15:0:7:25
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$P:0:3d5:0:0:0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW
-#$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-$ENABLE_DEMOLITIONIST$N:718:& Smattering~ of Rust
-$ENABLE_DEMOLITIONIST$G:*:u
-$ENABLE_DEMOLITIONIST$I:48:10:0
-$ENABLE_DEMOLITIONIST$W:1:0:5:2
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-$ENABLE_DEMOLITIONIST$N:719:& # Mixture~
-#$ENABLE_DEMOLITIONIST$G:&:j
-$ENABLE_DEMOLITIONIST$G:&:Q
-$ENABLE_DEMOLITIONIST$I:48:99:0
-$ENABLE_DEMOLITIONIST$W:1:0:10:0
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Mixture of ingredients used by demolitionists for creating explosives.
-
+A:25/2:55/1:85/1
+D:Food that also cures poison, stun, cuts and even Black Breath.
 
 # The Scroll of Deincarnation (now an artifact)
 
@@ -6021,86 +5650,15 @@ W:50:0:10:1000
 A:50/1
 P:0:1d1:0:0:0
 
-
-# Crafting ingredients for blast charges
-$ENABLE_DEMOLITIONIST$N:729:& Piece~ of Charcoal
-$ENABLE_DEMOLITIONIST$G:*:D
-$ENABLE_DEMOLITIONIST$I:48:1:0
-$ENABLE_DEMOLITIONIST$W:1:0:5:2
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-$ENABLE_DEMOLITIONIST$N:730:& Smattering~ of Sulfur
-$ENABLE_DEMOLITIONIST$G:*:y
-$ENABLE_DEMOLITIONIST$I:48:2:0
-$ENABLE_DEMOLITIONIST$W:5:0:5:5
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-$ENABLE_DEMOLITIONIST$N:731:& Smattering~ of Saltpetre
-$ENABLE_DEMOLITIONIST$G:*:W
-$ENABLE_DEMOLITIONIST$I:48:3:0
-$ENABLE_DEMOLITIONIST$W:5:0:5:5
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-#pouch? dash?
-$ENABLE_DEMOLITIONIST$N:732:& Dash~ of Ammonia Salt
-$ENABLE_DEMOLITIONIST$G:*:w
-$ENABLE_DEMOLITIONIST$I:48:4:0
-$ENABLE_DEMOLITIONIST$W:10:0:5:5
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-$ENABLE_DEMOLITIONIST$N:733:& Smattering~ of Reactive Metal Powder
-$ENABLE_DEMOLITIONIST$G:*:s
-$ENABLE_DEMOLITIONIST$I:48:5:0
-$ENABLE_DEMOLITIONIST$W:5:0:5:3
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-#metal hydroxide  -- note: for NO_RUST_NO_HYDROXIDE rename this to (Disabled):
-#$ENABLE_DEMOLITIONIST$N:734:& Dash~ of Caustic Metal Ash
-$ENABLE_DEMOLITIONIST$N:734:& Dash~ of Caustic Metal Ash (Disabled)
-$ENABLE_DEMOLITIONIST$G:*:W
-$ENABLE_DEMOLITIONIST$I:48:6:0
-$ENABLE_DEMOLITIONIST$W:15:0:5:7
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-#metal peroxide -- note: for NO_RUST_NO_HYDROXIDE rename this to metal hydroxide name above:
-#$ENABLE_DEMOLITIONIST$N:735:& Dash~ of Potent Caustic Metal Ash
-$ENABLE_DEMOLITIONIST$N:735:& Dash~ of Caustic Metal Ash
-$ENABLE_DEMOLITIONIST$G:*:y
-$ENABLE_DEMOLITIONIST$I:48:7:0
-$ENABLE_DEMOLITIONIST$W:20:0:5:8
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-#metal perchlorate
-$ENABLE_DEMOLITIONIST$N:736:& Dash~ of Caustic Salt
-$ENABLE_DEMOLITIONIST$G:*:W
-$ENABLE_DEMOLITIONIST$I:48:8:0
-$ENABLE_DEMOLITIONIST$W:25:0:5:12
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
-$ENABLE_DEMOLITIONIST$N:737:& Pinch~ of Vitriol
-$ENABLE_DEMOLITIONIST$G:*:g
-$ENABLE_DEMOLITIONIST$I:48:9:0
-$ENABLE_DEMOLITIONIST$W:15:0:5:9
-$ENABLE_DEMOLITIONIST$A:127/0
-$ENABLE_DEMOLITIONIST$F:EASY_KNOW | ACTIVATE
-$ENABLE_DEMOLITIONIST$D:Ingredient used by proficient demolitionists for creating explosives.
-
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
 
 N:738:& Handbook~ of Beginner Cantrips
 G:?:B
@@ -6138,7 +5696,6 @@ F:IGNORE_WATER | EASY_KNOW
 #A:12/1
 #P:0:1d1:0:0:0
 
-# HOLE 743-748
 
 ## Scroll
 #N:749:Spell
@@ -6183,74 +5740,69 @@ A:20/3
 F:LEVITATE | EASY_KNOW
 
 
-N:756:& Tome~ of the Time
+$NEW_TOMES!N:756:& Tome~ of the Time
+$NEW_TOMES$N:756:& Tome~ of the Time
 G:?:t
 I:111:8:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_ACID
-# for WIELD_BOOKS:
-F:RES_TIME
 
 $NEW_TOMES!N:757:& Spellbook~ of #
 $NEW_TOMES$N:757:& Spell Scroll~ of #
 G:?:s
 I:111:255:0
-$NEW_TOMES!W:5:0:20:200
-$NEW_TOMES$W:5:0:10:200
-A:5/1
+$NEW_TOMES!W:10:0:20:200
+$NEW_TOMES$W:10:0:10:200
+A:10/10:50/10:100/10
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
 D:Spell scrolls can be reused infinitely.
 
 #removed Meta school (spells went to Mana and Nature)
-#N:758:& Tome~ of Meta Spells
+#$NEW_TOMES!N:758:& Tome~ of Meta Spells
+#$NEW_TOMES$N:758:& Tome~ of Meta Spells
 #G:?:F
 #I:111:9:0
 #W:50:0:30:25000
 #A:50/50:100/50
 #P:0:1d1:0:0:0
 #F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-#F:FREE_ACT
 
-#removed Mind school (spells went to Udun and Divination)
-#N:759:& Tome~ of the Mind
-#G:?:z
-#I:111:10:0
+$NEW_TOMES!N:759:& Tome~ of the Mind
+$NEW_TOMES$N:759:& Tome~ of the Mind
+G:?:z
+I:111:10:0
+W:50:0:30:25000
+A:50/50:100/50
+P:0:1d1:0:0:0
+F:FULL_NAME | EASY_KNOW | IGNORE_WATER
+
+#N:760:& Holy Tome~ of Eru Iluvatar
+#G:?:G
+#I:111:20:0
 #W:50:0:30:25000
-#A:50/50:100/50
+#A:50/4
 #P:0:1d1:0:0:0
 #F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-#F:RES_CONF
-
-##N:760:& Holy Tome~ of Eru Iluvatar
-##G:?:G
-##I:111:20:0
-##W:50:0:30:25000
-##A:50/4
-##P:0:1d1:0:0:0
-##F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-##
-##N:761:& Holy Tome~ of Manwe Sulimo
-##G:?:B
-##I:111:21:0
-##W:50:0:30:25000
-##A:50/4
-##P:0:1d1:0:0:0
-##F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-##
-##N:762:& War Tome~ of Tulkas
-##G:?:R
-##I:111:22:0
-##W:50:0:30:25000
-##A:50/4
-##P:0:1d1:0:0:0
-##F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-##
-
+#
+#N:761:& Holy Tome~ of Manwe Sulimo
+#G:?:B
+#I:111:21:0
+#W:50:0:30:25000
+#A:50/4
+#P:0:1d1:0:0:0
+#F:FULL_NAME | EASY_KNOW | IGNORE_WATER
+#
+#N:762:& War Tome~ of Tulkas
+#G:?:R
+#I:111:22:0
+#W:50:0:30:25000
+#A:50/4
+#P:0:1d1:0:0:0
+#F:FULL_NAME | EASY_KNOW | IGNORE_WATER
+#
 N:763:& Unholy Tome~ of the Hellflame
 G:?:X
 I:111:11:0
@@ -6258,19 +5810,20 @@ W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE
-# for WIELD_BOOKS:
-F:RES_FIRE | SH_FIRE | BRAND_FIRE
+#
+#N:764:& Corrupted Tome~ of Melkor
+#G:?:D
+#I:111:23:0
+#W:50:0:30:25000
+#A:50/4
+#P:0:1d1:0:0:0
+#F:FULL_NAME | EASY_KNOW | IGNORE_WATER
 
-##
-##N:764:& Corrupted Tome~ of Melkor
-##G:?:D
-##I:111:23:0
-##W:50:0:30:25000
-##A:50/4
-##P:0:1d1:0:0:0
-##F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-
-# HOLE 765-769
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
 
 # The Ring of Phasing -- see artifact list
 
@@ -6281,7 +5834,6 @@ W:127:0:2:3000000
 #A:110/5
 F:INSTA_ART
 
-# HOLE 771-775
 
 # Rod tip of Home Summoning: now an artifact
 #N:776:& Great Rod Tip~ of Home Summoning
@@ -6298,7 +5850,7 @@ F:INSTA_ART
 N:777:& Shadow Blade~
 G:|:D
 I:23:32:2
-W:50:0:45:2000
+W:50:900:45:2000
 A:48/4:60/4:80/4
 P:0:3d4:-2:2:0
 F:RES_DARK | STEALTH
@@ -6307,9 +5859,9 @@ F:IGNORE_ACID | IGNORE_WATER
 N:778:& Bluesteel Blade~
 G:|:b
 I:23:31:0
-W:60:0:60:6000
+W:60:1800:60:6000
 A:60/20
-P:0:3d4:5:2:0
+P:0:3d5:5:2:0
 F:SHOW_MODS | VORPAL | IGNORE_WATER
 
 # Amulet
@@ -6374,7 +5926,7 @@ F:SPECIAL_GENE | FULL_NAME
 N:786:Climbing Set~
 G:`:B
 I:12:0:0
-W:40:0:80:15000
+W:40:0:80:50000
 A:40/3
 F:CLIMB | EASY_KNOW
 D:Arms and fingers are required to use this tool.
@@ -6386,7 +5938,6 @@ I:8:50:0
 W:0:0:5:1
 A:0/10
 
-# HOLE 788-792
 
 # Rods
 
@@ -6449,7 +6000,7 @@ A:0/10
 # Greater Ration of Health - artifact food item (!)
 #N:801:& Greater Ration~ of Health
 #G:,:g
-#I:80:211:0
+#I:80:41:0
 #W:90:5:2:60000
 #A:90/50
 #T:80:40
@@ -6502,7 +6053,7 @@ F:SLAY_ANIMAL | SHOW_MODS | MUST2H
 
 N:807:& Fortune cookie~
 G:,:U
-I:80:212:500
+I:80:42:500
 W:0:0:2:10
 A:0/1:5/1:10/1
 D:It usually contains a small paper strip with a random message.
@@ -6576,7 +6127,7 @@ I:45:60:0
 W:30:0:2:1000
 A:30/1
 F:ACTIVATE | HIDE_TYPE | EASY_USE
-D:Those adept in mimicry can make use of this.
+#D:Mimicry users can use this to transform.
 
 N:811:& Magic Arrow~
 G:{:v
@@ -6585,7 +6136,7 @@ W:10:0:2:100
 A:15/2:30/2
 P:0:1d4:0:0:0
 F:SHOW_MODS | NO_ENCHANT
-D:It is ammunition fit for bows and arrow trap kits.
+D:It is ammunition fit for bows.
 D:It magically returns to you after you fired it.
 
 N:812:Life
@@ -6603,7 +6154,7 @@ I:65:33:0
 W:15:0:10:600
 A:15/1
 P:0:1d1:0:0:0
-D:Casts a lightning bolt for 4..49d23 damage.
+D:Casts a lightning bolt for 4..49d8 damage.
 
 ##Now Norcocth can go wild :) ##
 
@@ -6616,12 +6167,11 @@ D:Allows for friendly duels. Inscribe it @P<playername> and read it.
 
 N:815:Unmagic
 G:,:d
-I:80:0:50
-W:10:0:2:75
-A:10/1
+I:80:50:50
+W:15:0:2:75
+A:15/1
 D:Removes all kinds of temporary magical effects.
 
-# HOLE 816-838
 
 ##### Keys #####
 
@@ -6639,51 +6189,33 @@ W:0:0:1:10000
 ##### Extra food #####
 N:841:& Potato~
 G:,:u
-I:80:100:1250
-W:1:0:2:1
+I:80:20:1250
+W:0:0:2:1
 
 N:842:& Head~ of Cabbage
 G:,:G
-I:80:101:1650
-W:1:0:3:1
+I:80:21:1650
+W:0:0:3:1
 
 N:843:& Carrot~
 G:,:o
-I:80:102:750
-W:1:0:1:2
+I:80:22:750
+W:0:0:1:2
 
 N:844:& Beet~
 G:,:r
-I:80:103:1000
-W:1:0:1:2
+I:80:23:1000
+W:0:0:1:2
 
 N:845:& Squash
 G:,:y
-I:80:104:1000
-W:1:0:3:1
+I:80:24:1000
+W:0:0:3:1
 
 N:846:& Ear~ of Corn
 G:`:y
-I:80:105:2000
-W:1:0:2:2
-
-# HOLE 847-848
-
-N:848:& Handbook~ of Manipulation
-G:?:y
-I:111:63:0
-W:50:0:30:14000
-A:15/30:35/65
-P:0:1d1:0:0:0
-F:FULL_NAME | EASY_KNOW
-
-N:849:& Handbook~ of Alleviation
-G:?:g
-I:111:62:0
-W:50:0:30:14000
-A:20/30:40/65
-P:0:1d1:0:0:0
-F:FULL_NAME | EASY_KNOW
+I:80:25:2000
+W:0:0:2:2
 
 # secondary probabilities for pieces
 N:850:& Massive Piece~ of Wood
@@ -6766,7 +6298,7 @@ I:52:8:0
 W:30:0:400:5000
 A:25/400:50/200
 P:0:1d1:0:0:0
-D:A part made of hardened clay, required to build a golem.
+D:A part required to build a golem.
 
 N:859:& Golem Leg~
 G:*:v
@@ -6774,7 +6306,7 @@ I:52:9:0
 W:30:0:400:5000
 A:25/400:50/200
 P:0:1d1:0:0:0
-D:A part made of hardened clay, required to build a golem.
+D:A part required to build a golem.
 
 N:860:& Golem Scroll~ of Attack
 G:?:D
@@ -6812,8 +6344,6 @@ I:70:55:0
 W:10:0:5:1250
 A:10/20:20/10
 D:Creates a golem provided you carry all required parts in your backpack.
-
-# HOLE 864-880
 
 N:881:House creation
 G:?:d
@@ -6917,8 +6447,7 @@ G:":d
 I:40:9:0
 W:40:0:3:10000
 A:40/4
-F:REFLECT | RES_LITE
-D:Affects your armour class.
+F:REFLECT
 
 # The potions of cure insanity, in light, medium, regular, and full
 # versions.
@@ -7037,25 +6566,21 @@ W:10:0:2:500
 A:10/3
 F:HIDE_TYPE | DISARM | EASY_KNOW
 
-#--the former device of theft prevention, now backpack safety lock,
-#  may fulfil both functions: protect inven + purse.
-$TOOL_NOTHEFT_COMBO!N:904:& Money Belt~
-$TOOL_NOTHEFT_COMBO!G:`:B
-$TOOL_NOTHEFT_COMBO!I:12:3:0
-$TOOL_NOTHEFT_COMBO!W:10:0:10:1000
-$TOOL_NOTHEFT_COMBO!A:10/3
-$TOOL_NOTHEFT_COMBO!F:IGNORE_WATER | EASY_KNOW
-$TOOL_NOTHEFT_COMBO!D:When equipped it protects your purse from thieves.
+N:904:& Money Belt~
+G:`:B
+I:12:3:0
+W:10:0:10:1000
+A:10/3
+F:IGNORE_WATER | EASY_KNOW
+D:Protects your purse from thieves.
 
-N:905:& Backpack Safety Lock~
+N:905:& Device~ of Theft Prevention
 G:`:B
 I:12:4:0
-W:35:0:12:15000
+W:35:0:12:30000
 A:35/20
 F:EASY_KNOW
-$TOOL_NOTHEFT_COMBO!D:When equipped it protects your inventory items from thieves and traps.
-$TOOL_NOTHEFT_COMBO$D:When equipped it very efficiently protects the items in your
-$TOOL_NOTHEFT_COMBO$D:inventory and the money in your purse from thieves and traps.
+D:Protects your backpack from thieves.
 
 N:906:& Tarpaulin~
 G:`:D
@@ -7063,7 +6588,7 @@ I:12:5:0
 W:15:0:60:1000
 A:15/5
 F:EASY_KNOW
-D:When equipped it protects your items from taking damage from water.
+D:Protects your items from taking damage from water.
 
 # Parchment to help dead beginners
 N:907:The Book of the Dead [Press 'r' to read]
@@ -7079,8 +6604,7 @@ N:908:The Gazette [Press 'r' to read]
 G:?:o
 I:8:52:0
 W:0:0:5:1
-#A:0/12
-A:127/0
+A:0/12
 
 N:909:Learning
 G:!:d
@@ -7104,7 +6628,7 @@ N:911:& Flint~
 G:~:r
 I:12:6:0
 W:0:0:3:100
-A:3/7:5/4:7/10
+A:3/3:5/3:7/3
 P:0:1d1:0:0:0
 F:EASY_KNOW
 D:Automatically refills your light source if you carry appropriate items.
@@ -7142,7 +6666,7 @@ I:21:21:0
 W:20:0:60:190
 A:20/2
 P:0:3d2:0:0:0
-F:SHOW_MODS | STARTUP
+F:SHOW_MODS
 
 N:916:& Mummy Wrapping~
 G:`:D
@@ -7200,18 +6724,17 @@ N:919:& Thunder Axe~
 G:/:b
 I:24:33:0
 W:60:0:380:2900
-A:70/8
+A:70/5
 P:0:6d8:5:5:0
 F:SHOW_MODS | MUST2H | SLAY_GIANT | BRAND_ELEC
 F:IGNORE_FIRE | IGNORE_ACID
 
 N:920:*Invincibility*
-G:":l
+G:":d
 I:40:37:0
 W:127:0:3:1
 A:127/0
 F:HIDE_TYPE
-D:Absolute authority renders the wielder untouchable by any harm and peril.
 
 #new potion since mana shield was changed a big deal
 N:921:*Restore Mana*
@@ -7225,17 +6748,17 @@ D:Restores 1000 MP.
 
 # Tomes with Priest/Paladin prayers (svals 18,19 still free)
 
-N:922:& Tome~ of Holy Offense
+$NEW_TOMES!N:922:& Tome~ of Holy Offense
+$NEW_TOMES$N:922:& Tome~ of Holy Offense
 G:?:J
 I:111:12:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:LITE1
 
-N:923:& Tome~ of Holy Defense
+$NEW_TOMES!N:923:& Tome~ of Holy Defense
+$NEW_TOMES$N:923:& Tome~ of Holy Defense
 #G:?:S <-very similar to Astral Grimoire
 G:?:V
 I:111:13:0
@@ -7243,60 +6766,53 @@ W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE | IGNORE_ACID
-# for WIELD_BOOKS:
-F:HOLD_LIFE
 
-N:924:& Tome~ of Holy Curing
+$NEW_TOMES!N:924:& Tome~ of Holy Curing
+$NEW_TOMES$N:924:& Tome~ of Holy Curing
 G:?:g
 I:111:14:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:REGEN
 
-N:925:& Tome~ of Holy Support
-G:?:C
+$NEW_TOMES!N:925:& Tome~ of Holy Support
+$NEW_TOMES$N:925:& Tome~ of Holy Support
+G:?:U
 I:111:15:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:SLOW_DIGEST
 
 # Tomes for Druid
 
-#N:950:& Tome~ of Druidism
+#$NEW_TOMES!N:950:& Tome~ of Druidism
+#$NEW_TOMES$N:950:& Tome~ of Druidism
 #G:?:G
 #I:111:16:0
 #W:50:0:30:37500
 #A:50/4
 #P:0:1d1:0:0:0
 #F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-## for WIELD_BOOKS:
-#F:REGEN
 
-N:950:& Tome~ of Arcane Lore
+$NEW_TOMES!N:950:& Tome~ of Arcane Lore
+$NEW_TOMES$N:950:& Tome~ of Arcane Lore
 G:?:K
 I:111:16:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:REGEN_MANA
 
-N:951:& Tome~ of Physical Lore
+$NEW_TOMES!N:951:& Tome~ of Physical Lore
+$NEW_TOMES$N:951:& Tome~ of Physical Lore
 G:?:G
 I:111:17:0
 W:50:0:30:25000
 A:50/50:100/50
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER
-# for WIELD_BOOKS:
-F:REGEN
 
 
 N:926:& Heavy Ball~
@@ -7622,8 +7138,7 @@ I:37:31:0
 W:95:0:360:45000
 A:95/48
 P:72:4d4:-6:0:10
-F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH
-F:OFTEN_EGO
+F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH | OFTEN_EGO
 
 N:965:Heavy Adamantite Plate Armour~
 G:[:v
@@ -7631,8 +7146,7 @@ I:37:32:0
 W:105:0:380:50000
 A:105/48
 P:76:4d4:-6:0:10
-F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH
-F:OFTEN_EGO
+F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH | OFTEN_EGO
 
 N:966:Heavy Ribbed Adamantite Armour~
 G:[:v
@@ -7640,8 +7154,7 @@ I:37:33:0
 W:115:0:400:55000
 A:115/48
 P:80:4d4:-6:0:10
-F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH
-F:OFTEN_EGO
+F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH | OFTEN_EGO
 
 N:967:& Mithril Helm~
 G:]:B
@@ -7703,12 +7216,14 @@ F:IGNORE_WATER
 #974 is Astral Grimoire
 
 N:975:*Invulnerability*
-G:":V
-I:40:41:0
+G:":d
+I:40:41:3
 W:127:0:3:1
 A:127/0
 F:HIDE_TYPE
-D:Prevents any damage to hit points, experience or sanity.
+# | ESP_ALL
+# | SPEED | STR | DEX | CON | INT | WIS | CHR
+# | LIFE
 
 # 'Reward Tokens' for Highlander Tournament or other events. - C. Blue
 # Can be traded in town store or so, for items, temporary blessings or whatever.
@@ -7746,8 +7261,6 @@ F:AUTO_ID | LITE1 | WHITE_LIGHT | EASY_KNOW
 F:ESP_ALL | SEE_INVIS
 D:This amulet can be combined with other amulets of the highlands!
 
-#980: Handbook of Deception
-
 # Goggles that allow a player to spot hidden DMs (for testing purpose)
 N:981:Goggles
 G:]:v
@@ -7761,7 +7274,7 @@ F:INSTA_ART | EASY_KNOW
 N:982:& Handbook~ of Dungeon Keeping
 G:?:E
 I:111:58:0
-W:127:0:30:1
+W:127:0:30:0
 A:127/0
 P:0:1d1:0:0:0
 F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE | IGNORE_ACID
@@ -7771,7 +7284,7 @@ N:983:& Demon Hammer~
 G:\:r
 I:21:22:0
 W:65:0:360:4000
-A:60/6
+A:60/12
 P:0:6d6:3:4:0
 F:SHOW_MODS | MUST2H | KILL_DEMON
 F:IGNORE_FIRE | IGNORE_ACID
@@ -7789,7 +7302,7 @@ N:985:& Hunting Spear~
 G:/:g
 I:22:1:0
 W:5:0:60:200
-A:5/4:15/4
+A:5/5
 P:0:1d6:7:0:0
 F:SHOW_MODS | SLAY_ANIMAL
 
@@ -7810,8 +7323,7 @@ W:110:0:160:25000
 A:110/24
 $USE_NEW_SHIELDS$P:30:1d1:0:0:0
 $USE_NEW_SHIELDS!P:20:1d1:0:0:10
-F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH
-F:OFTEN_EGO
+F:IGNORE_ACID | IGNORE_WATER | IGNORE_MANA | WINNERS_ONLY | FORCE_DEPTH | OFTEN_EGO
 $NEW_SHIELDS_NO_AC$F:EASY_KNOW
 
 N:988:& Adamantite Helm~
@@ -7829,7 +7341,7 @@ W:3:0:1:0
 A:127/0
 P:0:0d0:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for slings and catapult trap kits.
+D:It is ammunition fit for slings.
 
 N:990:& Charred Arrow~
 G:{:D
@@ -7838,7 +7350,7 @@ W:3:0:1:0
 A:127/0
 P:0:0d0:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for bows and arrow trap kits.
+D:It is ammunition fit for bows.
 
 N:991:& Charred Bolt~
 G:{:D
@@ -7847,7 +7359,7 @@ W:3:0:1:0
 A:127/0
 P:0:0d0:0:0:0
 F:SHOW_MODS
-D:It is ammunition fit for crossbows and bolt trap kits.
+D:It is ammunition fit for crossbows.
 
 N:992:Master Gladiator's Deed
 G:?:r
@@ -7886,41 +7398,28 @@ D:This deed can be turned in at the mayor's office in Bree.
 $ENABLE_MCRAFT$N:996:& Greater Crystal~ of Psycho-Power
 $ENABLE_MCRAFT$G:*:T
 $ENABLE_MCRAFT$I:111:19:0
-$ENABLE_MCRAFT$W:50:0:30:25000
+$ENABLE_MCRAFT$W:50:0:30:35000
 $ENABLE_MCRAFT$A:50/50:100/50
 $ENABLE_MCRAFT$P:0:1d1:0:0:0
 $ENABLE_MCRAFT$F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE | IGNORE_ACID
-$ENABLE_MCRAFT$# for WIELD_BOOKS:
-$ENABLE_MCRAFT$F:FREE_ACT
 
 $ENABLE_MCRAFT$N:997:& Greater Crystal~ of Attunement
 $ENABLE_MCRAFT$G:*:i
 $ENABLE_MCRAFT$I:111:20:0
-$ENABLE_MCRAFT$W:50:0:30:25000
+$ENABLE_MCRAFT$W:50:0:30:35000
 $ENABLE_MCRAFT$A:50/50:100/50
 $ENABLE_MCRAFT$P:0:1d1:0:0:0
 $ENABLE_MCRAFT$F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE | IGNORE_ACID
-$ENABLE_MCRAFT$# for WIELD_BOOKS:
-$ENABLE_MCRAFT$F:ESP_UNIQUE
 
 $ENABLE_MCRAFT$N:998:& Greater Crystal~ of Mental Intrusion
 $ENABLE_MCRAFT$G:*:P
 $ENABLE_MCRAFT$I:111:21:0
-$ENABLE_MCRAFT$W:50:0:30:25000
+$ENABLE_MCRAFT$W:50:0:30:35000
 $ENABLE_MCRAFT$A:50/50:100/50
 $ENABLE_MCRAFT$P:0:1d1:0:0:0
 $ENABLE_MCRAFT$F:FULL_NAME | EASY_KNOW | IGNORE_WATER | IGNORE_FIRE | IGNORE_ACID
-$ENABLE_MCRAFT$# for WIELD_BOOKS:
-$ENABLE_MCRAFT$F:RES_CONF
 
-N:999:& Infernal Axe~
-G:/:R
-I:24:32:0
-W:65:0:360:2100
-A:65/8
-P:0:7d6:0:0:0
-#P:0:5d9:0:0:0
-F:SHOW_MODS | MUST2H | IGNORE_FIRE | IGNORE_ACID | BRAND_FIRE | EVIL
+#999 unused
 
 #Placeholder that prevents item corruption in case k_info.txt doesn't meet
 #saved items in the server's savefile anymore after having been edited. - C. Blue
@@ -8185,7 +7684,7 @@ P:0:1d1:0:0:0
 D:A potion of fresh blood, it will go bad quickly.
 
 # The Smokin' Boots of Moltor, the Dwarven Archer
-N:1030:Smokin' Boots~
+N:1030:& Smokin' Boots~
 G:]:r
 I:30:9:0
 W:24:30:30:50000
@@ -8208,7 +7707,7 @@ G:\:D
 I:20:8:1
 W:10:10:150:5000
 P:0:1d4:9:12:0
-F:INSTA_ART | TUNNEL | MUST2H
+F:INSTA_ART | TUNNEL
 
 N:1033:& Tomahawk~
 G:/:u
@@ -8266,7 +7765,7 @@ I:8:66:0
 W:127:0:5:0
 A:127/0
 F:EASY_KNOW
-D:This deed can be turned in for a reward at the mayor's office in Bree.
+D:This deed can be turned in at the mayor's office in Bree.
 
 N:1039:Horned Reaper's Autograph
 G:?:b
@@ -8274,7 +7773,7 @@ I:8:67:0
 W:127:0:5:0
 A:127/0
 F:EASY_KNOW
-D:This deed can be turned in for a luck buff at the mayor's office in Bree.
+D:This deed can be turned in at the mayor's office in Bree.
 
 # For new quest_info: A special, custom quest item. - C. Blue
 N:1040:& quest item~
@@ -8283,8 +7782,7 @@ I:127:2:0
 W:127:0:1:0
 A:127/0
 P:0:1d1:0:0:0
-F:IGNORE_WATER | IGNORE_FIRE | IGNORE_ACID | IGNORE_COLD | IGNORE_ELEC
-F:EASY_KNOW | IGNORE_MANA
+F:EASY_KNOW | IGNORE_WATER | IGNORE_FIRE | IGNORE_ACID | IGNORE_COLD | IGNORE_ELEC | IGNORE_MANA
 D:(This is a quest item)
 
 # 1041 = Handbook of Transportation
@@ -8294,8 +7792,8 @@ D:(This is a quest item)
 #N:(No.):(name)
 #G:(appearence):(colour)
 #I:tval:sval:pval  [ie. TV_SHIELD, SV_SMALL_LEATHER_SHIELD, +0] (defines.h)
-#W:(depth):(rarity[arts only] 0..255):(weight):(price)
-#A:(depth)/(chance[1/value])   [multiple definitions are possible; chance=0 makes the item unfindable]
+#W:(depth):(rarity[arts only]):(weight):(price)
+#A:(depth)/(chance[1/value])   [multiple definitions are possible]
 #P:(AC):(base dam.):(to-hit):(to-dam):(+AC)
 #F:(Flag) |...
 # Note that W and A lines are not in effect for INSTA_ARTs. Only a_info counts for those.

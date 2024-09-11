@@ -322,28 +322,28 @@ byte adj_wis_msane[] = {
 	128 + -2	/* 7 */,
 	128 + -1	/* 8 */,
 	128 + -1	/* 9 */,
-	128 + 0		/* 10 */,
-	128 + 0		/* 11 */,
-	128 + 0		/* 12 */,
-	128 + 0		/* 13 */,
-	128 + 1		/* 14 */,
-	128 + 1		/* 15 */,
-	128 + 1		/* 16 */,
-	128 + 2		/* 17 */,
-	128 + 2		/* 18/00-18/09 */,
-	128 + 2		/* 18/10-18/19 */,
-	128 + 3		/* 18/20-18/29 */,
-	128 + 3		/* 18/30-18/39 */,
-	128 + 4		/* 18/40-18/49 */,
-	128 + 4		/* 18/50-18/59 */,
-	128 + 5		/* 18/60-18/69 */,
-	128 + 5		/* 18/70-18/79 */,
-	128 + 6		/* 18/80-18/89 */,
-	128 + 6		/* 18/90-18/99 */,
-	128 + 7		/* 18/100-18/109 */,
-	128 + 8		/* 18/110-18/119 */,
-	128 + 8		/* 18/120-18/129 */,
-	128 + 9		/* 18/130-18/139 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 1	/* 14 */,
+	128 + 1	/* 15 */,
+	128 + 1	/* 16 */,
+	128 + 2	/* 17 */,
+	128 + 2	/* 18/00-18/09 */,
+	128 + 2	/* 18/10-18/19 */,
+	128 + 3	/* 18/20-18/29 */,
+	128 + 3	/* 18/30-18/39 */,
+	128 + 4	/* 18/40-18/49 */,
+	128 + 4	/* 18/50-18/59 */,
+	128 + 5	/* 18/60-18/69 */,
+	128 + 5	/* 18/70-18/79 */,
+	128 + 6	/* 18/80-18/89 */,
+	128 + 6	/* 18/90-18/99 */,
+	128 + 7	/* 18/100-18/109 */,
+	128 + 8	/* 18/110-18/119 */,
+	128 + 8	/* 18/120-18/129 */,
+	128 + 9	/* 18/130-18/139 */,
 	128 + 10	/* 18/140-18/149 */,
 	128 + 10	/* 18/150-18/159 */,
 	128 + 11	/* 18/160-18/169 */,
@@ -454,32 +454,32 @@ byte adj_dex_ta[] = {
 	128 + -3	/* 4 */,
 	128 + -2	/* 5 */,
 	128 + -1	/* 6 */,
-	128 + 0		/* 7 */,
-	128 + 0		/* 8 */,
-	128 + 0		/* 9 */,
-	128 + 0		/* 10 */,
-	128 + 0		/* 11 */,
-	128 + 0		/* 12 */,
-	128 + 0		/* 13 */,
-	128 + 0		/* 14 */,
-	128 + 1		/* 15 */,
-	128 + 1		/* 16 */,
-	128 + 1		/* 17 */,
-	128 + 2		/* 18/00-18/09 */,
-	128 + 2		/* 18/10-18/19 */,
-	128 + 2		/* 18/20-18/29 */,
-	128 + 2		/* 18/30-18/39 */,
-	128 + 2		/* 18/40-18/49 */,
-	128 + 3		/* 18/50-18/59 */,
-	128 + 3		/* 18/60-18/69 */,
-	128 + 3		/* 18/70-18/79 */,
-	128 + 4		/* 18/80-18/89 */,
-	128 + 5		/* 18/90-18/99 */,
-	128 + 6		/* 18/100-18/109 */,
-	128 + 7		/* 18/110-18/119 */,
-	128 + 8		/* 18/120-18/129 */,
-	128 + 9		/* 18/130-18/139 */,
-	128 + 9		/* 18/140-18/149 */,
+	128 + 0	/* 7 */,
+	128 + 0	/* 8 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 0	/* 14 */,
+	128 + 1	/* 15 */,
+	128 + 1	/* 16 */,
+	128 + 1	/* 17 */,
+	128 + 2	/* 18/00-18/09 */,
+	128 + 2	/* 18/10-18/19 */,
+	128 + 2	/* 18/20-18/29 */,
+	128 + 2	/* 18/30-18/39 */,
+	128 + 2	/* 18/40-18/49 */,
+	128 + 3	/* 18/50-18/59 */,
+	128 + 3	/* 18/60-18/69 */,
+	128 + 3	/* 18/70-18/79 */,
+	128 + 4	/* 18/80-18/89 */,
+	128 + 5	/* 18/90-18/99 */,
+	128 + 6	/* 18/100-18/109 */,
+	128 + 7	/* 18/110-18/119 */,
+	128 + 8	/* 18/120-18/129 */,
+	128 + 9	/* 18/130-18/139 */,
+	128 + 9	/* 18/140-18/149 */,
 	128 + 10	/* 18/150-18/159 */,
 	128 + 10	/* 18/160-18/169 */,
 	128 + 11	/* 18/170-18/179 */,
@@ -499,34 +499,34 @@ byte adj_str_td[] = {
 	128 + -2	/* 4 */,
 	128 + -1	/* 5 */,
 	128 + -1	/* 6 */,
-	128 + 0		/* 7 */,
-	128 + 0		/* 8 */,
-	128 + 0		/* 9 */,
-	128 + 0		/* 10 */,
-	128 + 0		/* 11 */,
-	128 + 0		/* 12 */,
-	128 + 0		/* 13 */,
-	128 + 1		/* 14 */,
-	128 + 1		/* 15 */,
-	128 + 1		/* 16 */,
-	128 + 1		/* 17 */,
-	128 + 2		/* 18/00-18/09 */,
-	128 + 2		/* 18/10-18/19 */,
-	128 + 2		/* 18/20-18/29 */,
-	128 + 3		/* 18/30-18/39 */,
-	128 + 3		/* 18/40-18/49 */,
-	128 + 3		/* 18/50-18/59 */,
-	128 + 4		/* 18/60-18/69 */,
-	128 + 4		/* 18/70-18/79 */,
-	128 + 4		/* 18/80-18/89 */,
-	128 + 5		/* 18/90-18/99 */,
-	128 + 5		/* 18/100-18/109 */,
-	128 + 6		/* 18/110-18/119 */,
-	128 + 6		/* 18/120-18/129 */,
-	128 + 7		/* 18/130-18/139 */,
-	128 + 7		/* 18/140-18/149 */,
-	128 + 8		/* 18/150-18/159 */,
-	128 + 9		/* 18/160-18/169 */,
+	128 + 0	/* 7 */,
+	128 + 0	/* 8 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 1	/* 14 */,
+	128 + 1	/* 15 */,
+	128 + 1	/* 16 */,
+	128 + 1	/* 17 */,
+	128 + 2	/* 18/00-18/09 */,
+	128 + 2	/* 18/10-18/19 */,
+	128 + 2	/* 18/20-18/29 */,
+	128 + 3	/* 18/30-18/39 */,
+	128 + 3	/* 18/40-18/49 */,
+	128 + 3	/* 18/50-18/59 */,
+	128 + 4	/* 18/60-18/69 */,
+	128 + 4	/* 18/70-18/79 */,
+	128 + 4	/* 18/80-18/89 */,
+	128 + 5	/* 18/90-18/99 */,
+	128 + 5	/* 18/100-18/109 */,
+	128 + 6	/* 18/110-18/119 */,
+	128 + 6	/* 18/120-18/129 */,
+	128 + 7	/* 18/130-18/139 */,
+	128 + 7	/* 18/140-18/149 */,
+	128 + 8	/* 18/150-18/159 */,
+	128 + 9	/* 18/160-18/169 */,
 	128 + 10	/* 18/170-18/179 */,
 	128 + 11	/* 18/180-18/189 */,
 	128 + 12	/* 18/190-18/199 */,
@@ -541,85 +541,85 @@ byte adj_str_td[] = {
  */
 #if 0 /* this was used when adj_dex_th and adj_str_th both affect to_hit (vanilla) */
 byte adj_dex_th[] = {
-	128 + -3	/* 3 */,
-	128 + -2	/* 4 */,
-	128 + -2	/* 5 */,
-	128 + -1	/* 6 */,
-	128 + -1	/* 7 */,
-	128 + 0		/* 8 */,
-	128 + 0		/* 9 */,
-	128 + 0		/* 10 */,
-	128 + 0		/* 11 */,
-	128 + 0		/* 12 */,
-	128 + 0		/* 13 */,
-	128 + 0		/* 14 */,
-	128 + 0		/* 15 */,
-	128 + 1		/* 16 */,
-	128 + 2		/* 17 */,
-	128 + 3		/* 18/00-18/09 */,
-	128 + 3		/* 18/10-18/19 */,
-	128 + 3		/* 18/20-18/29 */,
-	128 + 3		/* 18/30-18/39 */,
-	128 + 3		/* 18/40-18/49 */,
-	128 + 4		/* 18/50-18/59 */,
-	128 + 4		/* 18/60-18/69 */,
-	128 + 4		/* 18/70-18/79 */,
-	128 + 4		/* 18/80-18/89 */,
-	128 + 5		/* 18/90-18/99 */,
-	128 + 6		/* 18/100-18/109 */,
-	128 + 7		/* 18/110-18/119 */,
-	128 + 8		/* 18/120-18/129 */,
-	128 + 9		/* 18/130-18/139 */,
-	128 + 9		/* 18/140-18/149 */,
-	128 + 10	/* 18/150-18/159 */,
-	128 + 11	/* 18/160-18/169 */,
-	128 + 12	/* 18/170-18/179 */,
-	128 + 13	/* 18/180-18/189 */,
-	128 + 14	/* 18/190-18/199 */,
-	128 + 15	/* 18/200-18/209 */,
-	128 + 16	/* 18/210-18/219 */,
-	128 + 17	/* 18/220+ */
+	128 + -3/* 3 */,
+	128 + -2/* 4 */,
+	128 + -2/* 5 */,
+	128 + -1/* 6 */,
+	128 + -1/* 7 */,
+	128 + 0/* 8 */,
+	128 + 0/* 9 */,
+	128 + 0/* 10 */,
+	128 + 0/* 11 */,
+	128 + 0/* 12 */,
+	128 + 0/* 13 */,
+	128 + 0/* 14 */,
+	128 + 0/* 15 */,
+	128 + 1/* 16 */,
+	128 + 2/* 17 */,
+	128 + 3/* 18/00-18/09 */,
+	128 + 3/* 18/10-18/19 */,
+	128 + 3/* 18/20-18/29 */,
+	128 + 3/* 18/30-18/39 */,
+	128 + 3/* 18/40-18/49 */,
+	128 + 4/* 18/50-18/59 */,
+	128 + 4/* 18/60-18/69 */,
+	128 + 4/* 18/70-18/79 */,
+	128 + 4/* 18/80-18/89 */,
+	128 + 5/* 18/90-18/99 */,
+	128 + 6/* 18/100-18/109 */,
+	128 + 7/* 18/110-18/119 */,
+	128 + 8/* 18/120-18/129 */,
+	128 + 9/* 18/130-18/139 */,
+	128 + 9/* 18/140-18/149 */,
+	128 + 10/* 18/150-18/159 */,
+	128 + 11/* 18/160-18/169 */,
+	128 + 12/* 18/170-18/179 */,
+	128 + 13/* 18/180-18/189 */,
+	128 + 14/* 18/190-18/199 */,
+	128 + 15/* 18/200-18/209 */,
+	128 + 16/* 18/210-18/219 */,
+	128 + 17/* 18/220+ */
 };
 #else /* this is used for when only adj_dex_th affects to-hit, to make DEX more important */
 byte adj_dex_th[] = {
-	128 + -7	/* 3 */,
-	128 + -6	/* 4 */,
-	128 + -5	/* 5 */,
-	128 + -4	/* 6 */,
-	128 + -3	/* 7 */,
-	128 + -2	/* 8 */,
-	128 + -1	/* 9 */,
-	128 + 0		/* 10 */,
-	128 + 0		/* 11 */,
-	128 + 1		/* 12 */,
-	128 + 2		/* 13 */,
-	128 + 3		/* 14 */,
-	128 + 4		/* 15 */,
-	128 + 5		/* 16 */,
-	128 + 6		/* 17 */,
-	128 + 7		/* 18/00-18/09 */,
-	128 + 8		/* 18/10-18/19 */,
-	128 + 9		/* 18/20-18/29 */,
-	128 + 10	/* 18/30-18/39 */,
-	128 + 11	/* 18/40-18/49 */,
-	128 + 11	/* 18/50-18/59 */,
-	128 + 12	/* 18/60-18/69 */,
-	128 + 12	/* 18/70-18/79 */,
-	128 + 13	/* 18/80-18/89 */,
-	128 + 13	/* 18/90-18/99 */,
-	128 + 14	/* 18/100-18/109 */,
-	128 + 14	/* 18/110-18/119 */,
-	128 + 15	/* 18/120-18/129 */,
-	128 + 15	/* 18/130-18/139 */,
-	128 + 16	/* 18/140-18/149 */,
-	128 + 16	/* 18/150-18/159 */,
-	128 + 17	/* 18/160-18/169 */,
-	128 + 17	/* 18/170-18/179 */,
-	128 + 18	/* 18/180-18/189 */,
-	128 + 18	/* 18/190-18/199 */,
-	128 + 19	/* 18/200-18/209 */,
-	128 + 19	/* 18/210-18/219 */,
-	128 + 20	/* 18/220+ */
+	128 + -7/* 3 */,
+	128 + -6/* 4 */,
+	128 + -5/* 5 */,
+	128 + -4/* 6 */,
+	128 + -3/* 7 */,
+	128 + -2/* 8 */,
+	128 + -1/* 9 */,
+	128 + 0/* 10 */,
+	128 + 0/* 11 */,
+	128 + 1/* 12 */,
+	128 + 2/* 13 */,
+	128 + 3/* 14 */,
+	128 + 4/* 15 */,
+	128 + 5/* 16 */,
+	128 + 6/* 17 */,
+	128 + 7/* 18/00-18/09 */,
+	128 + 8/* 18/10-18/19 */,
+	128 + 9/* 18/20-18/29 */,
+	128 + 10/* 18/30-18/39 */,
+	128 + 11/* 18/40-18/49 */,
+	128 + 11/* 18/50-18/59 */,
+	128 + 12/* 18/60-18/69 */,
+	128 + 12/* 18/70-18/79 */,
+	128 + 13/* 18/80-18/89 */,
+	128 + 13/* 18/90-18/99 */,
+	128 + 14/* 18/100-18/109 */,
+	128 + 14/* 18/110-18/119 */,
+	128 + 15/* 18/120-18/129 */,
+	128 + 15/* 18/130-18/139 */,
+	128 + 16/* 18/140-18/149 */,
+	128 + 16/* 18/150-18/159 */,
+	128 + 17/* 18/160-18/169 */,
+	128 + 17/* 18/170-18/179 */,
+	128 + 18/* 18/180-18/189 */,
+	128 + 18/* 18/190-18/199 */,
+	128 + 19/* 18/200-18/209 */,
+	128 + 19/* 18/210-18/219 */,
+	128 + 20/* 18/220+ */
 };
 #endif
 
@@ -676,32 +676,32 @@ byte adj_str_th[] = {
 	128 + -2	/* 4 */,
 	128 + -1	/* 5 */,
 	128 + -1	/* 6 */,
-	128 + 0		/* 7 */,
-	128 + 0		/* 8 */,
-	128 + 0		/* 9 */,
-	128 + 0		/* 10 */,
-	128 + 0		/* 11 */,
-	128 + 0		/* 12 */,
-	128 + 0		/* 13 */,
-	128 + 0		/* 14 */,
-	128 + 0		/* 15 */,
-	128 + 0		/* 16 */,
-	128 + 0		/* 17 */,
-	128 + 1		/* 18/00-18/09 */,
-	128 + 1		/* 18/10-18/19 */,
-	128 + 1		/* 18/20-18/29 */,
-	128 + 1		/* 18/30-18/39 */,
-	128 + 1		/* 18/40-18/49 */,
-	128 + 1		/* 18/50-18/59 */,
-	128 + 1		/* 18/60-18/69 */,
-	128 + 2		/* 18/70-18/79 */,
-	128 + 3		/* 18/80-18/89 */,
-	128 + 4		/* 18/90-18/99 */,
-	128 + 5		/* 18/100-18/109 */,
-	128 + 6		/* 18/110-18/119 */,
-	128 + 7		/* 18/120-18/129 */,
-	128 + 8		/* 18/130-18/139 */,
-	128 + 9		/* 18/140-18/149 */,
+	128 + 0	/* 7 */,
+	128 + 0	/* 8 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 0	/* 14 */,
+	128 + 0	/* 15 */,
+	128 + 0	/* 16 */,
+	128 + 0	/* 17 */,
+	128 + 1	/* 18/00-18/09 */,
+	128 + 1	/* 18/10-18/19 */,
+	128 + 1	/* 18/20-18/29 */,
+	128 + 1	/* 18/30-18/39 */,
+	128 + 1	/* 18/40-18/49 */,
+	128 + 1	/* 18/50-18/59 */,
+	128 + 1	/* 18/60-18/69 */,
+	128 + 2	/* 18/70-18/79 */,
+	128 + 3	/* 18/80-18/89 */,
+	128 + 4	/* 18/90-18/99 */,
+	128 + 5	/* 18/100-18/109 */,
+	128 + 6	/* 18/110-18/119 */,
+	128 + 7	/* 18/120-18/129 */,
+	128 + 8	/* 18/130-18/139 */,
+	128 + 9	/* 18/140-18/149 */,
 	128 + 10	/* 18/150-18/159 */,
 	128 + 11	/* 18/160-18/169 */,
 	128 + 12	/* 18/170-18/179 */,
@@ -867,29 +867,29 @@ byte adj_str_blow[] = {
 	15	/* 15 */,
 	16	/* 16 */,
 	17	/* 17 */,
-	20	/* 18/00-18/09 */,
-	30	/* 18/10-18/19 */,
-	40	/* 18/20-18/29 */,
-	50	/* 18/30-18/39 */,
-	60	/* 18/40-18/49 */,
-	70	/* 18/50-18/59 */,
-	80	/* 18/60-18/69 */,
-	90	/* 18/70-18/79 */,
-	100	/* 18/80-18/89 */,
-	110	/* 18/90-18/99 */,
-	120	/* 18/100-18/109 */,
-	130	/* 18/110-18/119 */,
-	140	/* 18/120-18/129 */,
-	150	/* 18/130-18/139 */,
-	160	/* 18/140-18/149 */,
-	170	/* 18/150-18/159 */,
-	180	/* 18/160-18/169 */,
-	190	/* 18/170-18/179 */,
-	200	/* 18/180-18/189 */,
-	210	/* 18/190-18/199 */,
-	220	/* 18/200-18/209 */,
-	230	/* 18/210-18/219 */,
-	240	/* 18/220+ */
+	20 /* 18/00-18/09 */,
+	30 /* 18/10-18/19 */,
+	40 /* 18/20-18/29 */,
+	50 /* 18/30-18/39 */,
+	60 /* 18/40-18/49 */,
+	70 /* 18/50-18/59 */,
+	80 /* 18/60-18/69 */,
+	90 /* 18/70-18/79 */,
+	100 /* 18/80-18/89 */,
+	110 /* 18/90-18/99 */,
+	120 /* 18/100-18/109 */,
+	130 /* 18/110-18/119 */,
+	140 /* 18/120-18/129 */,
+	150 /* 18/130-18/139 */,
+	160 /* 18/140-18/149 */,
+	170 /* 18/150-18/159 */,
+	180 /* 18/160-18/169 */,
+	190 /* 18/170-18/179 */,
+	200 /* 18/180-18/189 */,
+	210 /* 18/190-18/199 */,
+	220 /* 18/200-18/209 */,
+	230 /* 18/210-18/219 */,
+	240 /* 18/220+ */
 /*	266 (to get 6 bpr at 400 lb weapon weight) not possible since type is byte. Work-around via hack in calc_blows. - C. Blue */
 };
 
@@ -913,29 +913,29 @@ byte adj_str_armor[] = {
 	11	/* 15 */,
 	13	/* 16 */,
 	14	/* 17 */,
-	15	/* 18/00-18/09 */,
-	16	/* 18/10-18/19 */,
-	18	/* 18/20-18/29 - 200 is max. weight for TV_SOFT_ARMOR */,
-	20	/* 18/30-18/39 - 200 is min. weight for TV_HARD_ARMOR */,
-	22	/* 18/40-18/49 */,
-	24	/* 18/50-18/59 */,
-	26	/* 18/60-18/69 */,
-	28	/* 18/70-18/79 */,
-	30	/* 18/80-18/89 */,
-	32	/* 18/90-18/99 */,
-	35	/* 18/100-18/109 */,
-	38	/* 18/110-18/119 */,
-	41	/* 18/120-18/129 */,
-	44	/* 18/130-18/139 */,
-	47	/* 18/140-18/149 */,
-	50	/* 18/150-18/159 */,
-	50	/* 18/160-18/169 */,
-	50	/* 18/170-18/179 */,
-	50	/* 18/180-18/189 */,
-	50	/* 18/190-18/199 */,
-	50	/* 18/200-18/209 */,
-	50	/* 18/210-18/219 */,
-	50	/* 18/220+ - 500 is just a limit value in create_reward() */
+	15 /* 18/00-18/09 */,
+	16 /* 18/10-18/19 */,
+	18 /* 18/20-18/29 - 200 is max. weight for TV_SOFT_ARMOR */,
+	20 /* 18/30-18/39 - 200 is min. weight for TV_HARD_ARMOR */,
+	22 /* 18/40-18/49 */,
+	24 /* 18/50-18/59 */,
+	26 /* 18/60-18/69 */,
+	28 /* 18/70-18/79 */,
+	30 /* 18/80-18/89 */,
+	32 /* 18/90-18/99 */,
+	35 /* 18/100-18/109 */,
+	38 /* 18/110-18/119 */,
+	41 /* 18/120-18/129 */,
+	44 /* 18/130-18/139 */,
+	47 /* 18/140-18/149 */,
+	50 /* 18/150-18/159 */,
+	50 /* 18/160-18/169 */,
+	50 /* 18/170-18/179 */,
+	50 /* 18/180-18/189 */,
+	50 /* 18/190-18/199 */,
+	50 /* 18/200-18/209 */,
+	50 /* 18/210-18/219 */,
+	50 /* 18/220+ - 500 is just a limit value in create_reward() */
 };
 
 
@@ -1084,22 +1084,22 @@ byte adj_con_mhp[] = {
 	128 + -2	/* 6 */,
 	128 + -1	/* 7 */,
 	128 + -1	/* 8 */,
-	128 + 0		/* 9 */,
-	128 + 0		/* 10 */,
-	128 + 0		/* 11 */,
-	128 + 0		/* 12 */,
-	128 + 1		/* 13 */,
-	128 + 1		/* 14 */,
-	128 + 1		/* 15 */,
-	128 + 2		/* 16 */,
-	128 + 2		/* 17 */,
-	128 + 3		/* 18/00-18/09 */,
-	128 + 4		/* 18/10-18/19 */,
-	128 + 5		/* 18/20-18/29 */,
-	128 + 6		/* 18/30-18/39 */,
-	128 + 7		/* 18/40-18/49 */,
-	128 + 8		/* 18/50-18/59 */,
-	128 + 9		/* 18/60-18/69 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 1	/* 13 */,
+	128 + 1	/* 14 */,
+	128 + 1	/* 15 */,
+	128 + 2	/* 16 */,
+	128 + 2	/* 17 */,
+	128 + 3	/* 18/00-18/09 */,
+	128 + 4	/* 18/10-18/19 */,
+	128 + 5	/* 18/20-18/29 */,
+	128 + 6	/* 18/30-18/39 */,
+	128 + 7	/* 18/40-18/49 */,
+	128 + 8	/* 18/50-18/59 */,
+	128 + 9	/* 18/60-18/69 */,
 	128 + 10	/* 18/70-18/79 */,
 	128 + 11	/* 18/80-18/89 */,
 	128 + 12	/* 18/90-18/99 */,
@@ -1358,7 +1358,7 @@ s32b player_exp[PY_MAX_LEVEL + 1] = {
 	87000000L,//       70000000L,
 
 	97000000L,//	    78000000L,
-	108000000L,//	    86000000L,
+        108000000L,//	    86000000L,
 	120000000L,//       94000000L,
 	133000000L,//      102000000L,//75
 	147000000L,//      110000000L,
@@ -1393,7 +1393,7 @@ s32b player_exp[PY_MAX_LEVEL + 1] = {
 	999999000L,//      440000000L,//100 PY_MAX_LEVEL
 	999999998L,//      460000000L,//<-not sure why 101 and the 'dummy' one for 102 are needed tho
 
-	999999999L // dummy, == PY_MAX_EXP in defines.h
+	999999999L // dummy, == PY_MAX_EXP
 };
 
 
@@ -1410,14 +1410,6 @@ s32b player_exp[PY_MAX_LEVEL + 1] = {
  *    class-choices
  *    mana %  (<- obsolete)
  */
-
-/* Note about skill boni/mali wording in the guide:
-   'slight':  +/- 0.05       (5%)
-   -:         +/- 0.1        (10%)
-   'large':   +/- 0.15..0.2  (15-20%)
-   'huge':     anything differing even more
-*/
-
 player_race race_info[MAX_RACE] = {
 	{ "Human",
 		{  0,  0,  0,  0,  0,  0 },
@@ -1436,10 +1428,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 115, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 115, },
+			'+', 50, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 100, },
+			'+', 50, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1464,10 +1456,7 @@ player_race race_info[MAX_RACE] = {
 			'%', 110, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
-		{ SKILL_SWIM,
-			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_NATURE,
 			'+', 0,
 			'%', 105, },
@@ -1479,6 +1468,9 @@ player_race race_info[MAX_RACE] = {
 			'+', 0,
 			'%', 95, },
 #endif
+		{ SKILL_SWIM,
+			'+', 0,
+			'+', 50, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1532,10 +1524,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 110, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 100, },
+			'+', 50, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1567,10 +1559,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 110, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 100, },
+			'+', 50, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1601,10 +1593,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 115, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 100, },
+			'+', 50, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1625,14 +1617,14 @@ player_race race_info[MAX_RACE] = {
 			'+', 0,
 			'%', 110, },
 		{ SKILL_DIG,
-			'+', 4000,
+			'+', 5000,
 			'%', 130, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 145, },
+			'+', 60, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 85, },
+			'+', 40, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1674,10 +1666,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 80, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 85, },
+			'+', 40, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1715,10 +1707,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 50, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 85, },
+			'+', 30, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 60, },
+			'+', 30, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1727,7 +1719,7 @@ player_race race_info[MAX_RACE] = {
 	{ "Dunadan",
 		{  1,  2,  2,  2,  3,  2 },
 		4,  3,  5,  0, 3, 13, 15, 10,
-		10,  160,//170
+		10,  170,
 		50, 20,
 		82, 5, 190, 20,
 		78,  6, 180, 15,
@@ -1749,10 +1741,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 110, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 115, },
+			'+', 60, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1761,7 +1753,7 @@ player_race race_info[MAX_RACE] = {
 	{ "High-Elf",
 		{  1,  3, -1,  3,  1,  3 },
 		4,  20, 20,  3,  3, 14, 10, 25,
-		10,  200,//230
+		10,  250,
 		100, 30,
 		90, 10, 190, 20,
 		82, 10, 180, 15,
@@ -1786,13 +1778,6 @@ player_race race_info[MAX_RACE] = {
 			'+', 0,
 			'%', 90, },
 #endif
-    /* Runeskill for the Eldar, who practiced their crafts in Aman. - Kurzel */
-		{ SKILL_R_LITE,
-			'+', 500,
-			'%', 110, },
-		{ SKILL_R_MANA,
-			'+', 500,
-			'%', 110, },
 		{ SKILL_STEALTH,
 			'+', 0,
 			'%', 110, },
@@ -1807,10 +1792,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 115, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 115, },
+			'+', 60, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1829,10 +1814,10 @@ player_race race_info[MAX_RACE] = {
 
 		{{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 115, },
+			'+', 60, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1879,10 +1864,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 90, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 100,},
+			'+', 50,},
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -1891,13 +1876,13 @@ player_race race_info[MAX_RACE] = {
 	{ "Ent",
 		{ 8, -4, +2, -4,  8, -4 },
 		-4, 0, 20, -6, 5, 4, 5, -20,
-		14, 280,//320
+		14, 320,
 		255, 70,
 		72, 6, 100, 25,
 		66, 4, 100, 20,
 		0,
 		//No archer, rogue
-		CF_ALL & ~CFR & ~CFA,
+		CF_ALL&~CFR&~CFA,
 		90,
 
 		{{ SKILL_AXE,
@@ -1949,7 +1934,7 @@ player_race race_info[MAX_RACE] = {
 		{ SKILL_CLIMB,
 			'+', 0,
 			'+', 0, },
-		{ SKILL_SWIM, /* has intrinsic pass_water ability instead, cannot propel the way swimmers do anyway :p */
+		{ SKILL_SWIM,
 			'+', 0,
 			'%', 0, },
 		{ SKILL_SHOOT_TILL_KILL,
@@ -1963,7 +1948,7 @@ player_race race_info[MAX_RACE] = {
 		//{  6,  2,  1,  1,  3,  5 },
 		{  4,  2,  2,  1,  3,  2 },
 		0,  7,  10,  -5,  10,  10,  15,  5,
-		12,  300,//350
+		12,  350,
 		14,  6,
 		180,  6, 255, 25,
 		150,  4, 230, 20,
@@ -1974,34 +1959,23 @@ player_race race_info[MAX_RACE] = {
 		{{ SKILL_POLEARM,
 			'+', 0,
 			'%', 110, },
-		/* Runeskill for Dragonriders, who may "go between" (teleport). - Kurzel */
-		{ SKILL_R_NEXU,
-			'+', 500,
-			'%', 110, },
 		{ SKILL_DEVICE,
 			'+', 0,
 			'%', 110, },
-		{ SKILL_ATTUNEMENT,
+		{ SKILL_TCONTACT,
 			'+', 0,
 			'%', 110, },
-		/* Dragons are especially fearsome, if not very stealthy. - Kurzel*/
-		{ SKILL_AURA_FEAR,
-			'+', 0,
-			'%', 120, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 115, },
+			'+', 60, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
 #ifdef ENABLE_DRACONIAN_TRAITS
 		{ SKILL_BREATH,
-			'+', 1000,
-			'+', 0, },
-		{ SKILL_PICK_BREATH,
 			'+', 1000,
 			'+', 0, },
 #endif
@@ -2021,19 +1995,16 @@ player_race race_info[MAX_RACE] = {
 
 		{{ SKILL_TRAPPING,
 			'+', 0,
-			'%', 115, },
-		{ SKILL_DIG,
-			'+', 3000,
-			'%', 120, },
+			'%', 110, },
 		{ SKILL_SNEAKINESS,
 			'+', 0,
 			'%', 105, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 150,
-			'+', 145, },
+			'+', 70, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -2043,13 +2014,13 @@ player_race race_info[MAX_RACE] = {
 	{ "Dark-Elf",
 		{  0,  2, 1,  3,  1,  -6 },
 		7,  3, 6,  4, 10, 6, 15, 15,
-		10,  140,//150
+		10,  150,
 		100, 30,
 		90, 10, 180, 20,
 		82, 10, 180, 15,
 		8,
 		// no Paladins
-		CF_ALL & ~CFL,
+		CF_ALL&~CFL,
 		115,
 
 		{
@@ -2095,10 +2066,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 110, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 100, },
+			'+', 50, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -2107,16 +2078,17 @@ player_race race_info[MAX_RACE] = {
 	{ "Vampire",
 		{  2,  2,  -1,  2,  0,  3 },
 		-2,  3, 20,  2,  -4, 13, 10, -10,
-		11,  240,//270
+//		11,  240,
+		11,  220,
 		100, 30,
 		90, 10, 180, 20,
 		82, 10, 170, 15,
 		15,
 		//No paladin,druid,priest,shaman/mimic
 #ifdef ENABLE_DEATHKNIGHT
-		(CF_ALL & ~CFD & ~CFP & ~CFM & ~CFS) | CFK,
+		(CF_ALL&~CFD&~CFP&~CFM&~CFS)|CFK,
 #else
-		CF_ALL & ~CFL & ~CFD & ~CFP & ~CFM & ~CFS,
+		CF_ALL&~CFL&~CFD&~CFP&~CFM&~CFS,
 #endif
 		125,
 
@@ -2132,11 +2104,6 @@ player_race race_info[MAX_RACE] = {
 		{ SKILL_NATURE,
 			'+', 0,
 			'%', 0, },
-#if 0
-		{ SKILL_MIND,
-			'+', 0,
-			'%', 110, },
-#endif
 		{ SKILL_HOFFENSE,
 			'+', 0,
 			'%', 0, },
@@ -2156,11 +2123,6 @@ player_race race_info[MAX_RACE] = {
 		{ SKILL_OSPIRIT,
 			'+', 0,
 			'%', 0, },
- #ifdef ENABLE_OUNLIFE
-		{ SKILL_OUNLIFE,
-			'+', 0,
-			'%', 115, },
- #endif
 #endif
 		{ SKILL_R_LITE, /* cannot train Light runecraft well */
 			'+', 0,
@@ -2194,10 +2156,10 @@ player_race race_info[MAX_RACE] = {
 			'%', 115, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
-		{ SKILL_SWIM, /* magically cannot cope with flowing water */
+			'+', 40, },
+		{ SKILL_SWIM,
 			'+', 0,
-			'+', 60, },
+			'+', 30, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -2226,7 +2188,7 @@ player_race race_info[MAX_RACE] = {
 		10,
 		/* Warrior and archer are disabled since they do not have MP */
 		/* ENABLE_HELLKNIGHT/ENABLE_CPRIEST note: These shouldn't have flags to be allowed, since they cannot be 'created' on birth: */
-		CF_ALL & ~CFW & ~CFA,
+		CF_ALL&~CFW&~CFA,
 		125,
 
 		{
@@ -2263,11 +2225,6 @@ Only 70%-ify the skills that could potentially be updated when the player mutate
 			'+', 0,
 			'%', 70, },
  #endif
- #ifdef ENABLE_OUNLIFE
-		{ SKILL_OUNLIFE,
-			'+', 0,
-			'%', 70, },
- #endif
 #endif
 		{ SKILL_SNEAKINESS,
 			'+', 0,
@@ -2292,10 +2249,10 @@ Only 70%-ify the skills that could potentially be updated when the player mutate
 			'%', 70, },
 		{ SKILL_CLIMB,
 			'+', 0,
-			'+', 100, },
+			'+', 40, },
 		{ SKILL_SWIM,
 			'+', 0,
-			'+', 100, },
+			'%', 50, },
 		{ SKILL_SHOOT_TILL_KILL,
 			'+', 1000,
 			'+', 0, },
@@ -2322,16 +2279,16 @@ Only 70%-ify the skills that could potentially be updated when the player mutate
 
  /* Lookup for the race name */
 char *special_prace_lookup[MAX_RACE] = {
-/* RACE_HUMAN */	"Human",
-/* RACE_HALF_ELF */	"Half-Elven",
-/* RACE_ELF */		"Elven",
-/* RACE_HOBBIT */	"Hobbitonian",
-/* RACE_GNOME */	"Gnome",
-/* RACE_DWARF */	"Dwarven",
-/* RACE_HALF_ORC */	"Half-Orc",
-/* RACE_HALF_TROLL */	"Half-Troll",
+/* RACE_HUMAN */ 	"Human",
+/* RACE_HALF_ELF */ 	"Half-Elven",
+/* RACE_ELF */ 		"Elven",
+/* RACE_HOBBIT */ 	"Hobbitonian",
+/* RACE_GNOME */ 	"Gnome",
+/* RACE_DWARF */ 	"Dwarven",
+/* RACE_HALF_ORC */ 	"Half-Orc",
+/* RACE_HALF_TROLL */ 	"Half-Troll",
 
-/* RACE_DUNADAN */	"Western",
+/* RACE_DUNADAN */ 	"Western",
 /* According to Vir:
  *  Dunedain: men of the West,
  *  Dunadan:  man of the West.
@@ -2341,54 +2298,18 @@ char *special_prace_lookup[MAX_RACE] = {
  * Yes, I got the whole history off him =)
  * Sticking with "Western" for now, then. */
 
-/* RACE_HIGH_ELF */	"High-Elven",
-/* RACE_YEEK */		"Yeek",
-/* RACE_GOBLIN */	"Goblin",
-/* RACE_ENT */		"Ent",
-/* RACE_DRACONIAN */	"Draconian",
+/* RACE_HIGH_ELF */ 	"High-Elven",
+/* RACE_YEEK */ 	"Yeek",
+/* RACE_GOBLIN */ 	"Goblin",
+/* RACE_ENT */ 		"Ent",
+/* RACE_DRACONIAN */ 	"Draconian",
 #ifdef ENABLE_KOBOLD
  /* RACE_KOBOLD*/	"Kobold",
 #endif
-/* RACE_DARK_ELF */	"Dark-Elven",
-/* RACE_VAMPIRE */	"Vampire",
+/* RACE_DARK_ELF */ 	"Dark-Elven",
+/* RACE_VAMPIRE */ 	"Vampire",
 #ifdef ENABLE_MAIA
 /* RACE_MAIA */		"Maia",
-#endif
-};
-
-/* Extra trailing space.. */
-char *special_prace_lookup2[MAX_RACE] = {
-/* RACE_HUMAN */	"Human ",
-/* RACE_HALF_ELF */	"Half-Elven ",
-/* RACE_ELF */		"Elven ",
-/* RACE_HOBBIT */	"Hobbitonian ",
-/* RACE_GNOME */	"Gnome ",
-/* RACE_DWARF */	"Dwarven ",
-/* RACE_HALF_ORC */	"Half-Orc ",
-/* RACE_HALF_TROLL */	"Half-Troll ",
-
-/* RACE_DUNADAN */	"Western ",
-/* According to Vir:
- *  Dunedain: men of the West,
- *  Dunadan:  man of the West.
- * "You can't bend in English since it's not"...
- * "dun" == west, "edain" is men of the three great houses who travelled
- *  towards the light in the west in the first age befriending the elves.
- * Yes, I got the whole history off him =)
- * Sticking with "Western" for now, then. */
-
-/* RACE_HIGH_ELF */	"High-Elven ",
-/* RACE_YEEK */		"Yeek ",
-/* RACE_GOBLIN */	"Goblin ",
-/* RACE_ENT */		"Ent ",
-/* RACE_DRACONIAN */	"Draconian ",
-#ifdef ENABLE_KOBOLD
- /* RACE_KOBOLD*/	"Kobold ",
-#endif
-/* RACE_DARK_ELF */	"Dark-Elven ",
-/* RACE_VAMPIRE */	"Vampire ",
-#ifdef ENABLE_MAIA
-/* RACE_MAIA */		"Maia ",
 #endif
 };
 
@@ -2429,7 +2350,7 @@ player_class class_info[MAX_CLASS] = {
 	{ "Warrior",
 		TERM_UMBER, FALSE, 0,
 		{ 5, -2, -2, 2, 2, -1},
-		{ 22 + 100, 0, 0, 10 + 100, 0, 0},
+		{ 22+100, 0, 0, 10+100, 0, 0},
 		20, 18, 18, 1,  14, 2, 70, 55,
 		10, 8,  10, 0,  0,  0,  45, 40,
 		10, 0,//6,  10,//9, 10,
@@ -2482,20 +2403,17 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0,
 			'+', 700, },
 		{ SKILL_DEVICE,
-			'+', 0,
+			'+', 1000,
 			'+', 700, },
 		{ SKILL_SNEAKINESS,
-			'+', 0,
-			'+', 700, },
+			'+', 1000,
+			'+', 800, },//900,
 		{ SKILL_STEALTH,
-			'+', 0,
+			'+', 1000,
 			'+', 600, },
 		{ SKILL_DISARM,
-			'+', 0,
+			'+', 1000,
 			'+', 900, },
-		{ SKILL_TRAPPING,
-			'+', 0,
-			'+', 600, },
 		{ SKILL_DODGE,
 			'+', 0,/*1000*/
 			'+', 800, },
@@ -2518,7 +2436,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1000, },
 		{ SKILL_ANTIMAGIC,
 			'+', 0,
-			'+', 500, },//700
+			'+', 500, },//700 
 			/* Health tree */
 		{ SKILL_HEALTH,
 			'+', 2000,
@@ -2527,7 +2445,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0,
 			'%', 120, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 1200, },
 		{ SKILL_INTERCEPT,
 			'+', 1000,
@@ -2537,7 +2455,7 @@ player_class class_info[MAX_CLASS] = {
 	{ "Istar",
 		TERM_RED, FALSE, 0,
 		{-5, 3, 0, 1, -2, 1},
-		{0, 0 + 100, 0, 0, 0, 0},
+		{0, 0+100, 0, 0, 0, 0},
 		30, 36, 30, 2,  16, 20, 34, 20,
 		7,  10, 9,  0,  0,  0,  15, 15,
 		0, 35,//0,30
@@ -2585,42 +2503,42 @@ player_class class_info[MAX_CLASS] = {
 			'+', 600, },
 		{ SKILL_MANA,
 			'+', 1000,	/* Allow to cast Manathrust */
-			'+', 1500, },
+			'+', 1900, },
 		{ SKILL_FIRE,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_AIR,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_EARTH,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_WATER,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_NATURE,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_DIVINATION,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_CONVEYANCE,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 #if 0
 		{ SKILL_META,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
+#endif
 		{ SKILL_MIND,
 			'+', 0,
-			'+', 1500, },
-#endif
+			'+', 1600, },
 		{ SKILL_TEMPORAL,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_UDUN,
 			'+', 0,
-			'+', 1500, },
+			'+', 1600, },
 		{ SKILL_NECROMANCY, /* Necromancy for this class - experimental */
 			'+', 0,
 			'+', 1100, },
@@ -2642,9 +2560,9 @@ player_class class_info[MAX_CLASS] = {
 		TERM_GREEN, FALSE, 0,
 		{-1, -3, 3, -1, 0, 2},
 #if 0 /* disabled recommendations for STR/DEX because STR cannot even be reached by dwarven priests.. */
-		{19, 0, 0 + 100, 10, 0, 0},
+		{19, 0, 0+100, 10, 0, 0},
 #else
-		{0, 0, 0 + 100, 0, 0, 0},
+		{0, 0, 0+100, 0, 0, 0},
 #endif
 		25, 25, 32, 2,  16, 8, 48, 35,
 		7,   9, 12, 0,  0,  0, 20, 15,
@@ -2685,16 +2603,16 @@ player_class class_info[MAX_CLASS] = {
 			},,*/
 		{ SKILL_HOFFENSE,
 			'+', 0,
-			'+', 1400, },
+			'+', 1500, },
 		{ SKILL_HDEFENSE,
 			'+', 0,
-			'+', 1400, },
+			'+', 1500, },
 		{ SKILL_HCURING,
 			'+', 1000,
-			'+', 1600, },
+			'+', 1700, },
 		{ SKILL_HSUPPORT,
 			'+', 0,
-			'+', 1400, },
+			'+', 1500, },
 #ifdef ENABLE_OCCULT
 		{ SKILL_OSHADOW,
 			'+', 0,
@@ -2723,14 +2641,14 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0,
 			'+', 900, },
 		{ SKILL_INTERCEPT,
-			'+', 0,
+			'+', 1000,
 			'+', 600, }, //400
 		}, },
 
 	{ "Rogue",
 		TERM_BLUE, FALSE, 0,
 		{ 2, 1, -2, 3, 1, -1},
-		{15, 0, 0, 19 + 100, 0, 0},
+		{15, 0, 0, 19+100, 0, 0},
 		45, 28, 28, 5, 32, 24, 60, 66,
 		15, 9, 10, 0, 10, 10, 40, 40,// ..0,0,40,30
 		5, 15, //3, 25,//5, 25
@@ -2751,7 +2669,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0, },
 #endif
 		{ SKILL_SWORD,
-			'+', 1000,
+			'+', 0,
 			'+', 600, },
 		{ SKILL_CRITS,
 			'+', 0,
@@ -2847,9 +2765,6 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_SWIM,
 			'+', 0,
 			'%', 120, },
-		{ SKILL_CLIMB,
-			'+', 0,
-			'%', 110, },
 		{ SKILL_DIG,
 			'+', 0,
 			'+', 1100, },
@@ -2862,8 +2777,8 @@ player_class class_info[MAX_CLASS] = {
 		 TERM_L_WHITE, FALSE, 0, //confusing colour
 		// TERM_ORANGE, <- more confusing since they're supposed to use a monster form
 		{ 1, 0, 0, 1, 1, -4},
-		{19 + 100, 0, 0, 10 + 100, 0, 0},//21,19
-		25, 30, 28, 1, 18, 18, 60, 46,
+		{19+100, 0, 0, 10+100, 0, 0},//21,19
+		25, 34, 28, 1, 18, 18, 60, 46,
 		 9, 9, 10, 0,  0,  0, 40, 25,
 		6, 30,//3, 40,//4, 25
 		//8, 40,
@@ -2956,7 +2871,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 900, },
 		{ SKILL_DIG,
 			'+', 0,
-			'+', 1100, },
+			'+', 1200, },
 			/* Misc tree */
 		{ SKILL_CALMNESS,
 			'+', 0,
@@ -2966,7 +2881,7 @@ player_class class_info[MAX_CLASS] = {
 	{ "Archer",
 		TERM_ORANGE, FALSE, 0,
 		{ 1, 0, 2, 3, 1, -1},
-		{0, 0, 0, 18 + 100, 0, 0},
+		{0, 0, 0, 18+100, 0, 0},
 		30, 22, 28, 2,  24, 20, 56, 72,
 		8,  8, 10, 0,  0,  0,  30, 50,
 		5, 10,//3, 15,//5, 15
@@ -3034,9 +2949,6 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_DISARM,
 			'+', 500,
 			'+', 500, },
-		{ SKILL_TRAPPING,
-			'+', 0,
-			'+', 600, },
 		{ SKILL_DODGE,
 			'+', 0,/*1000*/
 			'+', 700, /*500, but motivating light armour hereby*/ },
@@ -3057,7 +2969,7 @@ player_class class_info[MAX_CLASS] = {
 	{ "Paladin",
 		TERM_YELLOW, FALSE, 0,
 		{ 3, -3, 1, 0, 2, 2},
-		{20 + 100, 0, 0 + 100, 10, 0, 0},
+		{20+100, 0, 0+100, 10, 0, 0},
 /*   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp*/
@@ -3123,13 +3035,13 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0,
 			'+', 700, },
 		{ SKILL_HDEFENSE,
-			'+', 0, /* be able to use the startup eq spellbook of blessing */
+			'+', 1000, /* be able to use the startup eq spellbook of blessing */
 			'+', 800, },
 		{ SKILL_HCURING,
 			'+', 0,
 			'+', 700, },
 		{ SKILL_HSUPPORT,
-			'+', 1000,
+			'+', 0,
 			'+', 800, },
 		{ SKILL_DEVICE,
 			'+', 1000,
@@ -3150,7 +3062,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 2000,
 			'+', 1000, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 700, },
 		{ SKILL_CALMNESS,
 			'+', 0,
@@ -3163,7 +3075,7 @@ player_class class_info[MAX_CLASS] = {
 	{ "Ranger",
 		TERM_L_UMBER, FALSE, 0,
 		{ 2, 2, -1, 1, 2, 0},
-		{19 + 100, 0 + 100, 0, 10 + 100, 0, 0},//21,19
+		{19+100, 0+100, 0, 10+100, 0, 0},//21,19
 /*   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp*/
@@ -3182,7 +3094,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1000,
 			'+', 0, },
 #ifdef DUAL_WIELD /* rangers get an exception for now. hoping it'll balance out with giving them stances as well! */
-		{ /* dual-wield */ SKILL_DUAL,
+			{ /* dual-wield */ SKILL_DUAL,
 			'+', 1000,
 			'+', 0, },
 #endif
@@ -3219,7 +3131,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 450, },//350
 		{ SKILL_BOOMERANG,
 			'+', 0,
-			'+', 650, },
+			'+', 600, },
 		{ SKILL_MARTIAL_ARTS, /* let's keep it low for now - offbalancing */
 			'+', 0,
 			'+', 500, },
@@ -3230,7 +3142,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0,
 			'+', 450, },
 		{ SKILL_MANA,
-			'+', 0,
+			'+', 1000,	/* Allow to cast Manathrust */
 			'+', 700, },//was 600 hmm
 		{ SKILL_FIRE,
 			'+', 0,
@@ -3257,10 +3169,10 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_META,
 			'+', 0,
 			'+', 800, },
+#endif
 		{ SKILL_MIND,
 			'+', 0,
 			'+', 800, },
-#endif
 #if 1
 		{ SKILL_TEMPORAL,
 			'+', 0,
@@ -3290,11 +3202,8 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_SWIM,
 			'+', 0,
 			'%', 120, },
-		{ SKILL_CLIMB,
-			'+', 0,
-			'%', 110, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 1200, },
 		{ SKILL_CALMNESS,
 			'+', 0,
@@ -3389,10 +3298,10 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_META,
 			'+', 0,
 			'+', 300, },
+#endif
 		{ SKILL_MIND,
 			'+', 0,
 			'+', 500, },//600, //500
-#endif
 #if 1
 		{ SKILL_TEMPORAL,
 			'+', 0,
@@ -3425,7 +3334,7 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_PPOWER,
 			'+', 0,
 			'+', 500, },
-		{ SKILL_ATTUNEMENT,
+		{ SKILL_TCONTACT,
 			'+', 0,
 			'+', 500, },
 		{ SKILL_MINTRUSION,
@@ -3440,11 +3349,6 @@ player_class class_info[MAX_CLASS] = {
 			'+', 450, },
  #ifdef ENABLE_OHERETICISM
 		{ SKILL_OHERETICISM,
-			'+', 0,
-			'+', 450, },
- #endif
- #ifdef ENABLE_OUNLIFE
-		{ SKILL_OUNLIFE,
 			'+', 0,
 			'+', 450, },
  #endif
@@ -3485,9 +3389,6 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_STEALING,
 			'+', 0,
 			'+', 600, },
-		{ SKILL_BACKSTAB,
-			'+', 0,
-			'+', 600, },
 		{ SKILL_DODGE,
 			'+', 0,
 			'+', 600, },
@@ -3515,9 +3416,6 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_SWIM,
 			'+', 0,
 			'%', 140, },
-		{ SKILL_CLIMB,
-			'+', 0,
-			'%', 140, },
 		{ SKILL_DIG,
 			'+', 1000,
 			'+', 1400, },
@@ -3532,7 +3430,7 @@ player_class class_info[MAX_CLASS] = {
 	{ "Druid",	/* by the_sandman -- w00t w00t -- a shapechanger+magical class */
 		TERM_L_GREEN, FALSE, 0,
 		{ 1, 0, 2, -2, -2, 1},
-		{0, 0, 0 + 100, 0, 0, 0},
+		{0, 0, 0+100, 0, 0, 0},
 /*   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp*/
@@ -3556,10 +3454,10 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_XBOW,
 			'+', 0,
 			'+', 250, },
-#endif
 		{ SKILL_BOOMERANG,
 			'+', 0,
-			'+', 500, },
+			'+', 350, },
+#endif
 		{ SKILL_MARTIAL_ARTS,
 			'+', 1000, /* make newbies' lives easier */
 			'+', 650, },
@@ -3584,7 +3482,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0,
 			'+', 1100, }, //900,
 		{ SKILL_DRUID_ARCANE,
-			'+', 0,
+			'+', 1000,
 			'+', 1200, }, //1500,
 		{ SKILL_DRUID_PHYSICAL,
 			'+', 1000,
@@ -3593,10 +3491,10 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1000,
 			'+', 0, },
 		{ SKILL_DEVICE,
-			'+', 0,
+			'+', 1000,
 			'+', 1000, },
 		{ SKILL_SNEAKINESS,
-			'+', 0,
+			'+', 1000,
 			'+', 600, },//750,
 		{ SKILL_DISARM,
 			'+', 0,/*1000*/
@@ -3618,7 +3516,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 0,
 			'%', 120, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 1200, },
 		}, },
 
@@ -3683,10 +3581,10 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_META,
 			'+', 0,
 			'+', 500, },
+ #endif
 		{ SKILL_MIND,
 			'+', 0,
 			'+', 1000, },
- #endif
 		{ SKILL_HOFFENSE,
  #ifdef ENABLE_OCCULT /* Occult */
 			'+', 0,
@@ -3740,7 +3638,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1000,
 			'+', 1000, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 1000, },
 		{ SKILL_CALMNESS,
 			'+', 0,
@@ -3749,19 +3647,19 @@ player_class class_info[MAX_CLASS] = {
 	 since offensive spells are lacking, until spell system gets reworked */
 		{ SKILL_AXE,
 			'+', 0,
-			'+', 450, },
+			'+', 400, },
 		{ SKILL_BLUNT,
 			'+', 0,
-			'+', 450, },
+			'+', 400, },
 		{ SKILL_POLEARM,
 			'+', 0,
-			'+', 450, },
+			'+', 400, },
 		{ SKILL_MARTIAL_ARTS,
 			'+', 0,
 			'+', 400, },
 		{ SKILL_COMBAT,
 			'+', 0,
-			'+', 300,},//priests=750,istari=300
+			'+', 300,},//priests=750,istari=300 
 		{ SKILL_MASTERY,
 			'+', 0,
 			'+', 150, },
@@ -3811,10 +3709,10 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_META,
 			'+', 0,
 			'+', 500, },
+ #endif
 		{ SKILL_MIND,
 			'+', 0,
 			'+', 1000, },
- #endif
 		{ SKILL_HOFFENSE,
  #ifdef ENABLE_OCCULT /* Occult */
 			'+', 0,
@@ -3869,7 +3767,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1000,
 			'+', 1000, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 1000, },
 			/* Misc tree - let's keep it actually! */
 		{ SKILL_CALMNESS,
@@ -3887,7 +3785,7 @@ player_class class_info[MAX_CLASS] = {
 			 */
 		TERM_L_BLUE, FALSE, 0,
 		{ 0, 2, -2, 2, -2, 0}, //More towards rogue for STR/WIS, but more like an istar for CON. - Kurzel
-		{15, 0 + 100, 0, 19 + 100, 0, 0},
+		{15, 0+100, 0, 19+100, 0, 0},
 /*   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp*/
@@ -3908,7 +3806,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 900, },
 		{ SKILL_CRITS,
 			'+', 0,
-			'+', 600, },
+			'+', 400, },
 		{ SKILL_AXE,
 			'+', 0,
 			'+', 800, },
@@ -3937,11 +3835,6 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_MAGIC,
 			'+', 1000,
 			'+', 800, },
-		/* Re-added devices with all the changes (especially stacking), even archers/warriors can skill it!
-		   Ratio as with ranger (between rogue/istar); expecting to see this on mana runies. - Kurzel */
-		{ SKILL_DEVICE,
-			'+', 1000,
-			'+', 1000, },
 			/* Sneakiness tree */
 		{ SKILL_SNEAKINESS,
 			'+', 1000,
@@ -4009,9 +3902,6 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_SWIM,
 			'+', 0,
 			'%', 110, },
-		{ SKILL_CLIMB,
-			'+', 0,
-			'%', 120, },
 		{ SKILL_DIG,
 			'+', 1000,
 			'+', 1600, },
@@ -4024,8 +3914,8 @@ player_class class_info[MAX_CLASS] = {
 		TERM_SLATE, FALSE, 0,
 		//{ -1, 3, 0, -1, -1, 1},
 		{ 2, 2, 0, 0, 0, 1},
-		//{21 + 100, 0 + 100, 0, 19 + 100, 0, 0}, 18/30;10 pretty unreachable with {0,2,0,0,0,1}
-		{19 + 100, 0 + 100, 0, 10 + 100, 0, 0},
+		//{21+100, 0+100, 0, 19+100, 0, 0}, 18/30;10 pretty unreachable with {0,2,0,0,0,1}
+		{19+100, 0+100, 0, 10+100, 0, 0},
 /*   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp*/
@@ -4043,11 +3933,6 @@ player_class class_info[MAX_CLASS] = {
 			//'+', 400,
 			//'+', 600,
 			'+', 800, },
-#ifdef ENABLE_STANCES
-		{ SKILL_STANCE,
-			'+', 1000,
-			'+', 0, },
-#endif
 		{ SKILL_TECHNIQUE,
 			'+', 1000,
 			'+', 0, },
@@ -4092,7 +3977,7 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_PPOWER,
 			'+', 0,
 			'+', 1500, },
-		{ SKILL_ATTUNEMENT,
+		{ SKILL_TCONTACT,
 			'+', 0,
 			'+', 1500, },
 		{ SKILL_MINTRUSION,
@@ -4100,7 +3985,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1500, },
 		{ SKILL_SNEAKINESS,
 			'+', 1000,
-			'+', 750, },
+			'+', 700, },
 		{ SKILL_STEALTH,
 			'+', 1000,
 			'+', 700, /* high stealth- jedi hand wave? */ },
@@ -4115,7 +4000,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1500, },
 		{ SKILL_INTERCEPT,
 			'+', 0,
-			'+', 700, },
+			'+', 600, },
  #ifdef EXP_NECRO
 		{ SKILL_NECROMANCY,
 			'+', 0,
@@ -4138,7 +4023,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 1000,
 			'+', 1000, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 900, },
 		}, },
 #endif
@@ -4147,11 +4032,11 @@ player_class class_info[MAX_CLASS] = {
 	{ "Death Knight",
 		TERM_L_DARK, TRUE, 6,
 		{ 3, -3, 1, 0, 2, 2},
-		{20 + 100, 0, 0 + 100, 10, 0, 0},
+		{20+100, 0, 0+100, 10, 0, 0},
 /*   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp*/
-		10, 28, 54, 1,  13, 16, 60, 40,
+		10, 21, 54, 1,  13, 16, 60, 40,
 		2, 8,  10, 0,  0,  2,  35, 10,
 		8, 30,
 
@@ -4196,16 +4081,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 600, },
  #ifdef ENABLE_OCCULT /* Occult */
 		{ SKILL_OSHADOW,
-  #ifndef ENABLE_OUNLIFE
 			'+', 1000,
-  #else
-			'+', 1000, // <- actually start with 1.000 here too, since 'Cause Fear I' is level 1, while 'Fatigue I' is level 5 -_-
-  #endif
-			'+', 700, },
- #endif
- #ifdef ENABLE_OUNLIFE
-		{ SKILL_OUNLIFE,
-			'+', 0, // <- should have 1.000, but it's too much to start with that in two schools at once. Shadow is picked instead for now because of Cause Fear I.
 			'+', 700, },
  #endif
  #if 0
@@ -4247,7 +4123,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 2000,
 			'+', 1000, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 700, },
 		{ SKILL_CALMNESS,
 			'+', 0,
@@ -4261,16 +4137,15 @@ player_class class_info[MAX_CLASS] = {
 	{ "Hell Knight",
 		TERM_L_DARK, TRUE, 6,
 		{ 3, -3, 1, 0, 2, 2},
-		{20 + 100, 0, 0 + 100, 10, 0, 0},
+		{20+100, 0, 0+100, 10, 0, 0},
 /*   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp*/
-		10, 25, 54, 1,  13, 16, 60, 40,
+		10, 21, 54, 1,  13, 16, 60, 40,
 		2, 8,  10, 0,  0,  2,  35, 10,
 		8, 30,
 
 		// --- Lots of skills that differ from Paladin template are HARDCODED in shape_Maia_skills()! :( ---
-		// This skill chart is basically just for reference, it has no actual effect in-game. All skills are derived from "Paladin" and then possibly modified in a hard-coded way on initiation.
 		{{  SKILL_COMBAT,
 			'+', 2700,
 			'+', 1400, },
@@ -4280,71 +4155,55 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_TECHNIQUE,
 			'+', 1000,
 			'+', 0, },
-#ifdef ENABLE_STANCES
+ #ifdef ENABLE_STANCES
 		{ SKILL_STANCE,
 			'+', 1000,
 			'+', 0, },
-#endif
-#ifdef DUAL_WIELD /* experimental - khorne berzerkers ^^ */
-		{ /* dual-wield */ SKILL_DUAL,
-			'+', 1000,
-			'+', 0, },
-#endif
+ #endif
 		{ SKILL_SWORD,
 			'+', 0,
-			'+', 750, }, //will get x1.1'd (replacement for MA x1.3 bonus we're missing out on)
-#if 1 /* re-allow */
-		{ SKILL_BLUNT,
-			'+', 0,
-			'+', 660, }, //swapped with former axe ratio, x1.1 (replacement for MA x1.3 bonus we're missing out on)
-#endif
+			'+', 750, },
 		{ SKILL_AXE,
 			'+', 0,
-			'+', 750, }, //swapped with former blunt ratio, will get x1.3'ed to 975
+			'+', 750, },
 		{ SKILL_POLEARM,
 			'+', 0,
-			'+', 750, }, //falls through
+			'+', 700, },
 		{ SKILL_BOW,
 			'+', 0,
 			'+', 300, },
 		{ SKILL_XBOW,
 			'+', 0,
 			'+', 300, },
-#if 0 /* same as paladin */
+ #if 0 /* same as paladin */
 		{  SKILL_MARTIAL_ARTS, /* let's keep it low for now - offbalancing */
 			'+', 0,
 			'+', 500, },
-#endif
+ #endif
 		{ SKILL_MAGIC,
 			'+', 1000,
 			'+', 600, },
-#ifdef ENABLE_OCCULT /* Occult */
- #ifdef ENABLE_OHERETICISM
+ #ifdef ENABLE_OCCULT /* Occult */
+  #ifdef ENABLE_OHERETICISM
 		{ SKILL_OHERETICISM,
-			'+', 1000,
-			'+', 700, },
- #else
-		{ SKILL_OSHADOW, /* emergency replacement skill if Hereticism isn't available for some reason */
-			'+', 1000,
-			'+', 700, },
- #endif
-#endif
-#if 1 /* EXPERIMENTAL: Allow Udun access for HK/CP? */
-		{ SKILL_UDUN,
 			'+', 0,
-			//'+', 441, }, //pseudo '600' (this skill doesn't receive the initial Maia x0.7 modifier, hence..)
-			'+', 368, }, //pseudo '500' (this skill doesn't receive the initial Maia x0.7 modifier, hence..)
-#endif
-#if 0
+			'+', 700, },
+  #else
+		{ SKILL_OSHADOW, /* emergency replacement skill if Hereticism isn't available for some reason */
+			'+', 0,
+			'+', 700, },
+  #endif
+ #endif
+ #if 0
 		{ SKILL_SPELL,
 			'+', 0,
 			'+', 350, },
-#endif
-#if 1
+ #endif
+ #if 1
 		{ SKILL_NECROMANCY,
 			'+', 0,
 			'+', 1300, },
-#endif
+ #endif
 		{ SKILL_TRAUMATURGY,
 			'+', 0,
 			'+', 1500, },
@@ -4354,11 +4213,11 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_AURA_SHIVER,
 			'+', 0,
 			'+', 1400, },
-#if 1
+ #if 1
 		{ SKILL_AURA_DEATH,
 			'+', 0,
 			'+', 1300, },
-#endif
+ #endif
 		{ SKILL_DEVICE,
 			'+', 1000,
 			'+', 800, },
@@ -4378,7 +4237,7 @@ player_class class_info[MAX_CLASS] = {
 			'+', 2000,
 			'+', 1000, },
 		{ SKILL_DIG,
-			'+', 0,
+			'+', 1000,
 			'+', 700, },
 		{ SKILL_CALMNESS,
 			'+', 0,
@@ -4393,34 +4252,27 @@ player_class class_info[MAX_CLASS] = {
 		TERM_GREEN, TRUE, 2,
 		{-1, -3, 3, -1, 0, 2},
 #if 0 /* disabled recommendations for STR/DEX because STR cannot even be reached by dwarven priests.. */
-		{19, 0, 0 + 100, 10, 0, 0},
+		{19, 0, 0+100, 10, 0, 0},
 #else
-		{0, 0, 0 + 100, 0, 0, 0},
+		{0, 0, 0+100, 0, 0, 0},
 #endif
 		25, 25, 32, 2,  16, 8, 48, 35,
 		7,   9, 12, 0,  0,  0, 20, 15,
 		5, 20, //2, 20,//4,20
 		//7, 20,
 
-		// This skill chart is basically just for reference, it has no actual effect in-game. All skills are derived from normal "Priest" and then possibly modified in a hard-coded way on initiation.
 		{{ SKILL_COMBAT,
 			'+', 0,
 			'+', 750,}, //x1.5
 		{ SKILL_MASTERY,
 			'+', 0,
 			'+', 400, },//800
-		{ SKILL_SWORD, //additionally to blunt! (or instead of it, under 1st CPRIEST version, before blunt was re-allowed), gets x1.3 to 650
-			'+', 0,
-			'+', 500, },
-#if 1 /* re-allow */
-		{ SKILL_BLUNT,
+		{ SKILL_SWORD, //instead of blunt
 			'+', 0,
 			'+', 600, },
-#endif
 		{ SKILL_MARTIAL_ARTS,
 			'+', 0,
-//			'+', 650, }, //450
-			'+', 500, }, //450 --normal priests have 500. gets boosted by Corrupted trait x1.3 -> 0.65
+			'+', 500, }, //450
 		{ SKILL_MAGIC,
 			'+', 2000,
 			'+', 900, },
@@ -4437,23 +4289,14 @@ player_class class_info[MAX_CLASS] = {
 			'+', 900,
 			},,*/
 #ifdef ENABLE_OCCULT
- #ifdef ENABLE_OHERETICISM
 		{ SKILL_OSHADOW,
 			'+', 0,
 			'+', 800, },
+ #ifdef ENABLE_OHERETICISM
 		{ SKILL_OHERETICISM,
-			'+', 1000,
-			'+', 1050, },
- #else
-		{ SKILL_OSHADOW,
-			'+', 1000,
+			'+', 0,
 			'+', 800, },
  #endif
-#endif
-#if 1 /* EXPERIMENTAL: Allow Udun access for HK/CP? */
-		{ SKILL_UDUN,
-			'+', 0,
-			'+', 515, }, //pseudo '700' (this skill doesn't receive the initial Maia x0.7 modifier, hence..)
 #endif
 		{ SKILL_DEVICE,
 			'+', 1000,
@@ -4480,11 +4323,12 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_INTERCEPT,
 			'+', 1000,
 			'+', 600, }, //400
-#if 1
+
+ #if 1
 		{ SKILL_NECROMANCY,
 			'+', 0,
 			'+', 1400, },
-#endif
+ #endif
 		{ SKILL_TRAUMATURGY,
 			'+', 0,
 			'+', 1400, },
@@ -4494,11 +4338,11 @@ player_class class_info[MAX_CLASS] = {
 		{ SKILL_AURA_SHIVER,
 			'+', 0,
 			'+', 1300, },
-#if 1
+ #if 1
 		{ SKILL_AURA_DEATH,
 			'+', 0,
 			'+', 1300, },
-#endif
+ #endif
 		}, },
 #endif
 };
@@ -4764,7 +4608,7 @@ cptr player_title[MAX_CLASS][11][4] = {
 		{"Path Finder", "Path Finder", "Path Finder", "Path Finder", },
 		{"Deputy", "Deputy", "Deputy", "Deputy", },
 		{"Guard", "Guard", "Guard", "Guard", },
-		{"Scout", "Scout", "Scout", "Scout", },
+		{"Scout","Scout", "Scout","Scout", },
 		{"Sentry", "Sentry", "Sentry", "Sentry", },
 		{"Overseer", "Overseer", "Overseer", "Overseer", },
 		{"Guard Captain", "Guard Captain", "Guard Captain", "Guard Captain", },
@@ -4798,7 +4642,7 @@ cptr player_title[MAX_CLASS][11][4] = {
 		{"Tree Hugger", "Tree Hugger", "Tree Hugger", "Tree Hugger", },
 		{"Flower Boy", "Flower Girl", "Flower Boy", "Flower Girl", },
 		{"Herbalist", "Herbalist", "Herbalist", "Herbalist", },
-		{"Spiritualist", "Spiritualist", "Spiritualist", "Spiritualist", },
+		{"Spiritualist","Spiritualist", "Spiritualist","Spiritualist", },
 		{"Elder", "Elder", "Elder", "Elder", },
 		{"Druid", "Druid", "Druid", "Druid", },
 		{"High Druid", "High Druid", "High Druid", "High Druid", },
@@ -4830,14 +4674,14 @@ cptr player_title[MAX_CLASS][11][4] = {
 		{"Rock Collector", "Rock Collector", "R.Collector", "R.Collector", },
 		//{"Rock Painter", "Rock Painter", "Rock Painter", "Rock Painter", },
 		{"Fire Starter", "Fire Starter", "Fire Starter", "Fire Starter", },
-		{"Treasure Hunter", "Treasure Hunter", "Tr.Hunter", "Tr.Hunter", },
-		//{"Archaeologist", "Archaeologist", "Professor", "Professor", }, //too cool for 12 letters? ^^
+		{"Treasure Hunter", "Treasure Hunter", "T.Hunter", "T.Hunter", },
+		//{"Archaeologist", "Archaeologist", "Professor", "Professor," }, //too cool for 12 letters? ^^
 		{"Archaeologist", "Archaeologist", "Archaelgst.", "Archaelgst.", },
 		{"Earth Guard", "Earth Guard", "Earth Guard", "Earth Guard", },
 		{"Rune Knight", "Rune Knight", "Rune Knight", "Rune Knight", },
 		{"Rune Keeper", "Rune Keeper", "Rune Keeper", "Rune Keeper", },
 		{"Runemaster", "Runemistress", "Runemaster", "Runemistress", },
-		{"Grand Runemaster", "Grand Runemistress", "GrRunemaster", "GrRunemstrss", },
+		{"Grand Runemaster", "Grand Runemistress", "G-Runemaster", "G-Runemstrss", },
 	},
 
 	/* Mindcrafter */
@@ -4856,7 +4700,7 @@ cptr player_title[MAX_CLASS][11][4] = {
 		{"Telepath", "Telepath", "Telepath", "Telepath", },
 		{"Manipulator", "Manipulator", "Manipulator", "Manipulator", },
 		{"Controller", "Controller", "Controller", "Controller", },
-		{"Master Mindcrafter", "Master Mindcrafter", "Master Mdcr.", "Master Mdcr.", },
+		{"Master Mindcrafter", "Master Mindcrafter", "M-Mindcrftr.", "M-Mindcrftr.", },
 	},
 
 #ifdef ENABLE_DEATHKNIGHT
@@ -4869,9 +4713,9 @@ cptr player_title[MAX_CLASS][11][4] = {
 		{"Tainted", "Tainted", "Tainted", "Tainted", }, //maybe hellish
 		{"Unhallowed", "Unhallowed", "Unhallowed", "Unhallowed", },
 		{"Dark Adept", "Dark Adept", "Dark Adept", "Dark Adept", },
-		{"Crypt Keeper", "Crypt Keeper", "Crypt Keeper", "Crypt Keeper", },
-		{"Fallen Champion", "Fallen Champion", "Fal.Champion", "Fal.Champion", },
-		{"Antipaladin", "Antipaladin", "Antipaladin", "Antipaladin", },
+		{"Crypt Keeper", "Crypt Keeper", "Crypt Keeper", "Crpyt Keeper", },
+		{"Fallen Champion", "Fallen Champion", "F.Champion", "F.Champion", },
+		{"Antipaladin", "Antipaladin", "A.Paladin", "A.Paladin", },
 		{"Death Knight", "Death Knight", "Death Knight", "Death Knight", },
 	},
 #endif
@@ -4886,13 +4730,12 @@ cptr player_title[MAX_CLASS][11][4] = {
  #if 0
 		{"Tainted", "Tainted", "Tainted", "Tainted", },
 		{"Heretic", "Heretic", "Heretic", "Heretic", },
-		//Apostate
 		{"Dark Adept", "Dark Adept", "Dark Adept", "Dark Adept", },
 		//{"Sacrificer", "Sacrificer", "Sacricifer", "Sacrificer", },
 		{"Chosen", "Chosen", "Chosen", "Chosen", },
 		//{"Corruptor", "Corruptor", "Corruptor", "Corruptor", },
-		{"Unholy Zealot", "Unholy Zealot", "Unh.Zealot", "Unh.Zealot", },
-		{"Antipaladin", "Antipaladin", "Antipaladin", "Antipaladin", },
+		{"Unholy Zealot", "Unholy Zealot", "U.Zealot", "U.Zealot", },
+		{"Antipaladin", "Antipaladin", "A.Paladin", "A.Paladin", },
 		{"Hell Knight", "Hell Knight", "Hell Knight", "Hell Knight", },
  #else /* re-use up to the first four titles */
 		{"Traitor", "Traitor", "Traitor", "Traitor", },
@@ -4900,7 +4743,7 @@ cptr player_title[MAX_CLASS][11][4] = {
 		{"Cultist", "Cultist", "Cultist", "Cultist", },
 		{"Heretic", "Heretic", "Heretic", "Heretic", },
 		{"Chosen", "Chosen", "Chosen", "Chosen", },
-		{"Unholy Zealot", "Unholy Zealot", "Unh.Zealot", "Unh.Zealot", },
+		{"Unholy Zealot", "Unholy Zealot", "U.Zealot", "U.Zealot", },
 		{"Hell Knight", "Hell Knight", "Hell Knight", "Hell Knight", },
  #endif
 	},
@@ -4981,9 +4824,8 @@ cptr player_title_special[MAX_CLASS][5][4] = {
 		{"Nightmare", "Nightmare", "Nightmare", "Nightmare", },
 		{"Terror", "Terror", "Terror", "Terror" },
 		//{"Mythical Assassin", "Mythical Assassin", "Myt.Assassin", "Myt.Assassin", },
-		//{"Death Fate", "Death Fate", "Death Fate", "Death Fate", },
-		{"Death's Hand", "Death's Hand", "Death's Hand", "Death's Hand", },
-		/* it's fitting, but let's not make the game too JOKEANGBANDish anyway^^ */
+		{"Death Fate", "Death Fate", "Death Fate", "Death Fate", },
+		/* yeah it's fitting, but let's not make the game JOKEBAND anyway */
 		//{"RNG", "RNG", }, //LOL! Perfect, do you not think so? :) -adam
 	},
 
@@ -5071,8 +4913,8 @@ cptr player_title_special[MAX_CLASS][5][4] = {
 	{
 		{"Master Manipulator", "Master Manipulator", "M.Manipultr.", "M.Manipultr.", },
 		{"Master Controller", "Master Controller", "M.Controllr.", "M.Controllr.", },
-		{"Reality Shifter", "Reality Shifter", "Real.Shifter", "Real.Shifter", },
 		{"Alterator", "Alterator", "Alterator", "Alterator", },
+		{"Reality Shifter", "Reality Shifter", "Real.Shifter", "Real.Shifter", },
 		{"Truth", "Truth", "Truth", "Truth", },
 	},
 
@@ -5083,17 +4925,17 @@ cptr player_title_special[MAX_CLASS][5][4] = {
 		{"Herald of Ruin", "Herald of Ruin", "Herald o.R.", "Herald o.R.", },
 		{"Dark Legate", "Dark Legate", "Dark Legate", "Dark Legate", },
 		{"Unholy King", "Unholy Queen", "Unholy King", "Unholy Queen", },
-		{"Nemesis", "Nemesis", "Nemesis", "Nemesis", },
+		{"Death's Hand", "Death's Hand", "Death's Hand", "Death's Hand", },
 	},
 #endif
 #ifdef ENABLE_HELLKNIGHT
 	/* Hell Knight (Corrupted Paladin) */
 	{
-		{"Plaguebringer", "Plaguebringer", "Pl.bringer", "Pl.bringer", },
+		{"Plague Champion", "Plague Champion", "Pl. Champion", "Pl. Champion", },
 		{"Grand Tormentor", "Grand Tormentor", "Gr.Tormentor", "Gr.Tormentor", },
 		{"Vizier of Chaos", "Vizier of Chaos", "Vizier o.C.", "Vizier o.C.", },
-		{"Demon Prince", "Demon Princess", "Demon Prince", "Dmn.Princess", },
 		{"Demon King", "Demon Queen", "Demon King", "Demon Queen", },
+		{"Devil's Hand", "Devil's Hand", "Devil's Hand", "Devil's Hand", },
 	},
 #endif
 #ifdef ENABLE_CPRIEST
@@ -5342,31 +5184,22 @@ int p_tough_ac[51] = {
 
 /* For fighting techniques */
 byte mtech_lev[MAX_CLASS][16] = {
-    //	sprint,	taunt,	dirt,	bash,	distr,	poison,	trackan,detnoi, flashb,	steamb,	spin,	assass,	berser,	jump,	s-jump,	s-run
-	{2,	4,	0,	5,	0,	0,	0,	0,	0,	0,	6,	0,	20,	0,	0,	0},	//warrior
+    //	sprint,	taunt,	jump,	distr,	poison,	knockb,	trackan,detnoi, flashb,	cloak,	spin,	assass,	berser,	s-jump,	s-run,	instant cloak
+	{2,	4,	0,	0,	0,	0,	0,	0,	0,	0,	6,	0,	20,	0,	0,	0},	//warrior
 	{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//istar
 	{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//priest
 #ifdef ENABLE_ASSASSINATE
-	{2,	3,	3,	0,	4,	5,	0,	8,	11,	0,	0,	35,	0,	0,	0,	50},	//rogue
+	{2,	3,	0,	4,	5,	0,	0,	8,	11,	0,	0,	35,	0,	0,	50,	0},	//rogue
 #else
-	{2,	3,	3,	0,	4,	5,	0,	8,	11,	0,	0,	0,	0,	0,	0,	50},	//rogue
+	{2,	3,	0,	4,	5,	0,	0,	8,	11,	0,	0,	0,	0,	0,	50,	0},	//rogue
 #endif
-	{4,	7,	0,	13,	0,	0,	0,	0,	0,	0,	20,	0,	0,	0,	0,	0},	//mimic
+	{4,	7,	0,	0,	0,	0,	0,	0,	0,	0,	20,	0,	0,	0,	0,	0},	//mimic
 	{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//archer
-	{5,	7,	0,	9,	0,	0,	0,	0,	0,	0,	20,	0,	0,	0,	0,	0},	//paladin
-	{3,	8,	0,	13,	0,	0,	7,	0,	0,	0,	17,	0,	0,	0,	0,	0},	//ranger
-	{3,	5,	9,	13,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//adventurer
+	{5,	9,	0,	0,	0,	0,	0,	0,	0,	0,	20,	0,	0,	0,	0,	0},	//paladin
+	{3,	8,	0,	0,	0,	0,	7,	0,	0,	0,	17, 	0,	0,	0,	0,	0},	//ranger
+	{3,	5,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//adventurer
 	{5,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//druid
 	{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//shaman
-	{4,	6,	8,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//runemaster
-	{0,	8,	0,	13,	12,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//mindcrafter
-#ifdef ENABLE_DEATHKNIGHT
-	{5,	9,	0,	10,	0,	0,	0,	0,	0,	0,	20,	0,	0,	0,	0,	0},	//death knight
-#endif
-#ifdef ENABLE_HELLKNIGHT
-	{5,	9,	0,	11,	0,	0,	0,	0,	0,	0,	20,	0,	35,	0,	0,	0},	//hell knight
-#endif
-#ifdef ENABLE_CPRIEST
-	{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//corrupted priest
-#endif
+	{4,	6,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},	//runemaster
+	{0,	8,	0,	12,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0}	//mindcrafter
 };

@@ -1,11 +1,6 @@
 -- $Id: c-init.lua,v 1.8 2002/09/03 14:01:38 darkgod Exp $
 -- Client side LUA initialization of TomeNET
 
--- Ensure backward client compatibility for renaming of this skill
-if SKILL_TCONTACT ~= nil then
-    SKILL_ATTUNEMENT=SKILL_TCONTACT
-end
-
 -- Beware of the scary undefined globals
 function safe_getglobal(x)
 	local v = rawget(globals(), x)
@@ -53,7 +48,6 @@ pern_dofile(Ind, "s_aux.lua")
 
 -- Add the schools of magic
 pern_dofile(Ind, "spells.lua")
-pern_dofile(Ind, "runecraft.lua")
 
 -- Data tables
 pern_dofile(Ind, "races.lua")
@@ -61,6 +55,3 @@ pern_dofile(Ind, "classes.lua")
 pern_dofile(Ind, "traits.lua")
 --done in init_lua() already, for early access
 --pern_dofile(Ind, "guide.lua")
-pern_dofile(Ind, "bpr.lua")
-pern_dofile(Ind, "mimicry.lua")
-pern_dofile(Ind, "activations.lua")

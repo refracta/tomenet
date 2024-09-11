@@ -71,12 +71,18 @@ function showskills(name)
 	if get_skill_value(p, SKILL_DRUID_PHYSICAL) > 0 then	msg_print(Ind, "     . Physical Lore              " .. get_skill_formatted(p, SKILL_DRUID_PHYSICAL)) end
 	if get_skill_value(p, SKILL_ASTRAL) > 0 then		msg_print(Ind, "     . Astral Knowledge           " .. get_skill_formatted(p, SKILL_ASTRAL)) end
 	if get_skill_value(p, SKILL_PPOWER) > 0 then		msg_print(Ind, "     . Psycho-Power               " .. get_skill_formatted(p, SKILL_PPOWER)) end
-	if get_skill_value(p, SKILL_ATTUNEMENT) > 0 then	msg_print(Ind, "     . Attunement                 " .. get_skill_formatted(p, SKILL_ATTUNEMENT)) end
+	if get_skill_value(p, SKILL_TCONTACT) > 0 then		msg_print(Ind, "     . Attunement                 " .. get_skill_formatted(p, SKILL_TCONTACT)) end
 	if get_skill_value(p, SKILL_MINTRUSION) > 0 then	msg_print(Ind, "     . Mental Intrusion           " .. get_skill_formatted(p, SKILL_MINTRUSION)) end
+-- Occult
+--if (def_hack("TEST_SERVER", nil)) then
+if (def_hack("TEMP3", nil)) then
 	if get_skill_value(p, SKILL_OSHADOW) > 0 then		msg_print(Ind, "     . Shadow                     " .. get_skill_formatted(p, SKILL_OSHADOW)) end
 	if get_skill_value(p, SKILL_OSPIRIT) > 0 then		msg_print(Ind, "     . Spirit                     " .. get_skill_formatted(p, SKILL_OSPIRIT)) end
 	if get_skill_value(p, SKILL_OHERETICISM) > 0 then	msg_print(Ind, "     . Hereticism                 " .. get_skill_formatted(p, SKILL_OHERETICISM)) end
-	if get_skill_value(p, SKILL_OUNLIFE) > 0 then		msg_print(Ind, "     . Unlife                     " .. get_skill_formatted(p, SKILL_OUNLIFE)) end
+elseif (def_hack("TEMP2", nil)) then
+	if get_skill_value(p, SKILL_OSHADOW) > 0 then		msg_print(Ind, "     . Shadow                     " .. get_skill_formatted(p, SKILL_OSHADOW)) end
+	if get_skill_value(p, SKILL_OSPIRIT) > 0 then		msg_print(Ind, "     . Spirit                     " .. get_skill_formatted(p, SKILL_OSPIRIT)) end
+end
 	if get_skill_value(p, SKILL_RUNEMASTERY ) > 0 then	msg_print(Ind, " . Runemastery                    " .. get_skill_formatted(p, SKILL_RUNEMASTERY)) end
 	if get_skill_value(p, SKILL_SCHOOL_RUNECRAFT) > 0 then	msg_print(Ind, " . Runecraft                      " .. get_skill_formatted(p, SKILL_SCHOOL_RUNECRAFT)) end
 	if get_skill_value(p, SKILL_R_FIRECOLD) > 0 then	msg_print(Ind, "     . Fire/Cold                  " .. get_skill_formatted(p, SKILL_R_FIRECOLD)) end
@@ -126,7 +132,7 @@ function update_p(name)
 -- PU_SKILL_INFO	0x00000004L	Update client skill info
 -- PU_SANITY		0x00000008L	Calculate csane and msane
 -- PU_HP		0x00000010L	Calculate chp and mhp
--- PU_MANA		0x00000020L	Calculate cmp and mmp
+-- PU_MANA		0x00000020L	Calculate csp and msp
 -- PU_SKILL_MOD		0x00000080L	Update client skill values/...
 -- PU_VIEW		0x00100000L	Update view
 -- PU_LITE		0x00200000L	Update lite

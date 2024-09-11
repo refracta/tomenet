@@ -129,7 +129,8 @@ bool askfor_aux(char *buf, int len, char private)
 
 
 	/* Process input */
-	while (!done) {
+	while (!done)
+	{
 		/* Place cursor */
 		Term_gotoxy(x + k, y);
 
@@ -137,23 +138,33 @@ bool askfor_aux(char *buf, int len, char private)
 		i = inkey();
 
 		/* Analyze the key */
-		switch (i) {
-		case ESCAPE:
+		switch (i)
+		{
+			case ESCAPE:
 			k = 0;
 			done = TRUE;
 			break;
-		case '\n':
-		case '\r':
+
+			case '\n':
+			case '\r':
 			k = strlen(buf);
 			done = TRUE;
 			break;
-		case 0x7F:
-		case '\010':
+
+			case 0x7F:
+			case '\010':
 			if (k > 0) k--;
 			break;
-		default:
-			if ((k < len) && (isprint(i))) buf[k++] = i;
-			else bell();
+
+			default:
+			if ((k < len) && (isprint(i)))
+			{
+				buf[k++] = i;
+			}
+			else
+			{
+				bell();
+			}
 			break;
 		}
 
@@ -161,12 +172,15 @@ bool askfor_aux(char *buf, int len, char private)
 		buf[k] = '\0';
 
 		/* Update the entry */
-		if (!private) {
+		if (!private)
+		{
 			Term_erase(x, y, len);
 			Term_putstr(x, y, -1, TERM_WHITE, buf);
-		} else {
-			Term_erase(x + k, y, len - k);
-			if (k) Term_putch(x + k - 1, y, TERM_WHITE, 'x');
+		}
+		else
+		{
+			Term_erase(x+k, y, len-k);
+			if(k) Term_putch(x+k-1, y, TERM_WHITE, 'x');
 		}
 	}
 
@@ -485,11 +499,11 @@ int usleep(huge microSeconds)
 	if (select(nfds, no_fds, no_fds, no_fds, &Timer) < 0)
 	{
 		/* Hack -- ignore interrupts */
-		if (errno != EINTR) return(-1);
+		if (errno != EINTR) return -1;
 	}
 
 	/* Success */
-	return(0);
+	return 0;
 }
 
 # endif /* HAS_USLEEP */

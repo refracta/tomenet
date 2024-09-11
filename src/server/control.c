@@ -20,7 +20,7 @@
 #ifdef SERVER_GWPORT
 #if 0
 /* Server gateway stuff */
-void SGWHit(int read_fd, int arg) {
+void SGWHit(int read_fd, int arg){
 	int newsock = 0;
 	char *sdb;
 	int size = 0;
@@ -35,7 +35,6 @@ void SGWHit(int read_fd, int arg) {
 		sdb = C_NEW(4096, char);
 		if (sdb != (char*)NULL) {
 			int i;
-
 			time(&now);
 			size += sprintf(sdb, "runtime=%d\n", (int)(now - cfg.runtime));
 			size += sprintf(&sdb[size], "turn=%d\n", turn);
@@ -43,7 +42,7 @@ void SGWHit(int read_fd, int arg) {
 			size += sprintf(&sdb[size], "year=%d\n", bst(YEAR, turn)); /* starting year const */
 			/* let the script count or we'll give away
 			   the dungeon masters. */
-			/* size+=sprintf(&sdb[size], "num=%d\n", NumPlayers);*/
+			/* size+=sprintf(&sdb[size],"num=%d\n", NumPlayers);*/
 			for (i = 1; i <= NumPlayers; i++) {
 				if (Players[i]->admin_dm && cfg.secret_dungeon_master) continue;
 				size += sprintf(&sdb[size], "player=%s\n", Players[i]->name);
@@ -70,26 +69,26 @@ int gw_conns_num;
 static int Packet_getln(sockbuf_t *s, char *buf) {
 	char *scan;
 	int len;
-
+	
 	for (scan = s->ptr; scan < s->buf + s->len; scan++) {
 		if (*scan == '\n') {
 			/* Calculate the length and limit to MSG_LEN - 1 */
 			len = MIN(scan - s->ptr, MSG_LEN - 1);
-
+			
 			/* Copy the line */
 			memcpy(buf, s->ptr, len);
-
+			
 			/* Terminate */
 			buf[len] = '\0';
-
+			
 			/* Move the socket buffer pointer forward */
 			s->ptr = scan + 1;
-
-			return(len);
+			
+			return len;
 		}
 	}
-
-	return(0);
+	
+	return 0;
 }
 
 /* Write formatted ouput terminated with a newline into a socket buffer */
@@ -98,12 +97,12 @@ static int Packet_println(sockbuf_t *s, cptr fmt, ...) {
 	char buf[4096];
 	int n;
 	int rval;
-
+	
 	va_start(ap, fmt);
-
+	
 	/* Use vsnprintf to do the formatting */
 	n = vsnprintf(buf, 4095, fmt, ap);
-
+	
 	if (n >= 0) {
 		/* Write the output to the socket buffer */
 		buf[n++] = '\n';
@@ -112,10 +111,10 @@ static int Packet_println(sockbuf_t *s, cptr fmt, ...) {
 		/* Some error */
 		rval = 0;
 	}
-
+	
 	va_end(ap);
-
-	return(rval);
+	
+	return rval;
 }
 
 /* GW connection handler */
@@ -178,7 +177,7 @@ void SGWHit(int read_fd, int arg) {
 	/* Find the matching connection */
 	for (i = 0; i < MAX_GW_CONNS; i++) {
 		gw_connection_t *gw_conn2 = &gw_conns[i];
-
+			
 		if (gw_conn2->state == CONN_CONNECTED && gw_conn2->sock == read_fd) {
 			gw_conn = gw_conn2;
 			break;
@@ -234,7 +233,6 @@ void SGWHit(int read_fd, int arg) {
 			player_type *p_ptr;
 			int players = 0;
 			int day = bst(DAY, turn);
-
 			now = time(NULL);
 
 			/* Count players */
@@ -431,9 +429,9 @@ void SGWTimeout() {
 	int i;
 	gw_connection_t *gw_conn;
 	time_t now;
-
+	
 	now = time(NULL);
-
+	
 	/* Go through all gateway connections */
 	for (i = 0; i < MAX_GW_CONNS; i++) {
 		gw_conn = &gw_conns[i];
@@ -577,7 +575,7 @@ static void console_uniques()
 			}
 		}
 	}
-
+	
 	/* Write the number of uniques */
 	Packet_printf(&console_buf, "%d", count);
 
@@ -591,10 +589,10 @@ static void console_uniques()
 			if (r_ptr->r_sights) {
 				int i;
 				byte ok = FALSE;
-
+			
 				/* Format message */
 				sprintf(buf, "%s has been killed by:\n", r_name + r_ptr->name);
-
+				
 				for (i = 1; i <= NumPlayers; i++) {
 					player_type *q_ptr = Players[i];
 
@@ -661,7 +659,7 @@ static void console_change_unique(int unique, cptr killer)
 	r_ptr = &r_info[unique];
 
 	/* Check for uniqueness */
-	if (!(r_ptr->flags1 & RF1_UNIQUE)) {
+	if (!r_ptr->flags1 & RF1_UNIQUE) {
 		/* Failed */
 		Packet_printf(&console_buf, "%c%c", CONSOLE_CHANGE_UNIQUE, 0);
 
@@ -679,7 +677,7 @@ static void console_change_unique(int unique, cptr killer)
 		if (!r_ptr->max_num)
 		{	/* the_sandman: added colour */
 			snprintf(buf, 80, "\374\377v%s rises from the dead!",(r_name + r_ptr->name));
-
+    			
 			/* Tell every player */
 			msg_broadcast(0,buf);
 		}
@@ -757,7 +755,7 @@ void NewConsole(int read_fd, int arg)
 
 	/* Make a TCP connection */
 	/* Hack -- check if this data has arrived on the contact socket or not.
-	 * If it has, then we have not created a connection with the client yet,
+	 * If it has, then we have not created a connection with the client yet, 
 	 * and so we must do so.
 	 */
 	if (read_fd == ConsoleSocket)
@@ -817,7 +815,8 @@ void NewConsole(int read_fd, int arg)
 	}
 
 	/* Determine what the command is */
-	switch (ch) {
+	switch(ch)
+	{
 		/* Wants to see the player list */
 		case CONSOLE_STATUS:
 			console_status();
@@ -916,16 +915,18 @@ void NewConsole(int read_fd, int arg)
 /*
  * Initialize the stuff for the new console
  */
-bool InitNewConsole(int write_fd) {
+bool InitNewConsole(int write_fd)
+{
 	/* Initialize buffer */
-	if (Sockbuf_init(&console_buf, write_fd, 8192, SOCKBUF_READ | SOCKBUF_WRITE)) {
+	if (Sockbuf_init(&console_buf, write_fd, 8192, SOCKBUF_READ | SOCKBUF_WRITE))
+	{
 		/* Failed */
 		s_printf("No memory for console buffer.\n");
 
-		return(FALSE);
+		return FALSE;
 	}
 
-	return(TRUE);
+	return TRUE;
 }
 
 #endif

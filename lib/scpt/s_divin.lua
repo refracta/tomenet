@@ -3,12 +3,12 @@
 
 STARIDENTIFY = add_spell {
 	["name"] = 	"Greater Identify",
-	["name2"] = 	"GID",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	35,
 	["mana"] = 	30,
 	["mana_max"] = 	30,
 	["fail"] = 	10,
+--	["stat"] = 	A_WIS,
 	["extra"] = 	function () return get_check2("Cast on yourself?", FALSE) end,
 	["spell"] = 	function (args)
 			if args.aux == TRUE then
@@ -28,12 +28,12 @@ STARIDENTIFY = add_spell {
 
 IDENTIFY_I = add_spell {
 	["name"] = 	"Identify I",
-	["name2"] = 	"ID I",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	8,
 	["mana"] = 	10,
 	["mana_max"] = 	10,
 	["fail"] = 	30,
+--	["stat"] = 	A_WIS,
 	["spell"] = 	function()
 			ident_spell(Ind)
 	end,
@@ -44,12 +44,12 @@ IDENTIFY_I = add_spell {
 }
 IDENTIFY_II = add_spell {
 	["name"] = 	"Identify II",
-	["name2"] = 	"ID II",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	25,
 	["mana"] = 	30,
 	["mana_max"] = 	30,
 	["fail"] = 	-15,
+--	["stat"] = 	A_WIS,
 	["spell"] = 	function()
 			identify_pack(Ind)
 	end,
@@ -60,12 +60,12 @@ IDENTIFY_II = add_spell {
 }
 IDENTIFY_III = add_spell {
 	["name"] = 	"Identify III",
-	["name2"] = 	"ID III",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	35,
 	["mana"] = 	50,
 	["mana_max"] = 	50,
 	["fail"] = 	-40,
+--	["stat"] = 	A_WIS,
 	["spell"] = 	function()
 			identify_pack(Ind)
 			fire_ball(Ind, GF_IDENTIFY, 0, 1, get_level(Ind, IDENTIFY_I, 3), "")
@@ -74,18 +74,18 @@ IDENTIFY_III = add_spell {
 			return "rad "..(get_level(Ind, IDENTIFY_I, 3))
 	end,
 	["desc"] = 	{
-			"Identifies all objects in your inventory and in a radius on the floor,",
-			"as well as probing monsters in that radius."
+			"Identifies all objects in your inventory and in a radius",
+			"on the floor, as well as probing monsters in that radius."
 	}
 }
 
 VISION_I = add_spell {
 	["name"] = 	"Vision I",
-	["name2"] = 	"Vis I",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	18,
 	["mana"] = 	7,
 	["mana_max"] = 	7,
+--	["stat"] = 	A_WIS,
 	["fail"] = 	0,
 	["spell"] = 	function()
 			fire_ball(Ind, GF_SEEMAP_PLAYER, 0, 1, 2, "")
@@ -101,11 +101,11 @@ VISION_I = add_spell {
 }
 VISION_II = add_spell {
 	["name"] = 	"Vision II",
-	["name2"] = 	"Vis II",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	40,
 	["mana"] = 	55,
 	["mana_max"] = 	55,
+--	["stat"] = 	A_WIS,
 	["fail"] = 	-30,
 	["spell"] = 	function()
 			fire_ball(Ind, GF_SEEMAP_PLAYER, 0, 1, 2, "")
@@ -122,12 +122,12 @@ VISION_II = add_spell {
 
 SENSEHIDDEN_I = add_spell {
 	["name"] = 	"Sense Hidden I",
-	["name2"] = 	"SHidden I",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	5,
 	["mana"] = 	2,
 	["mana_max"] = 	2,
 	["fail"] = 	10,
+--	["stat"] = 	A_WIS,
 	["spell"] = 	function()
 			fire_ball(Ind, GF_DETECTTRAP_PLAYER, 0, 1, 2, "")
 			detect_trap(Ind, 10 + get_level(Ind, SENSEHIDDEN_I, 40, 0))
@@ -142,12 +142,12 @@ SENSEHIDDEN_I = add_spell {
 }
 SENSEHIDDEN_II = add_spell {
 	["name"] = 	"Sense Hidden II",
-	["name2"] = 	"SHidden II",
 	["school"] = 	{SCHOOL_DIVINATION},
 	["level"] = 	20,
 	["mana"] = 	10,
 	["mana_max"] = 	10,
 	["fail"] = 	-10,
+--	["stat"] = 	A_WIS,
 	["spell"] = 	function()
 			fire_ball(Ind, GF_DETECTTRAP_PLAYER, 0, 1, 2, "")
 			detect_trap(Ind, 10 + get_level(Ind, SENSEHIDDEN_I, 40, 0))
@@ -167,12 +167,12 @@ SENSEHIDDEN_II = add_spell {
 
 REVEALWAYS = add_spell {
 	["name"] = 	"Reveal Ways",
-	["name2"] = 	"Reveal",
 	["school"] = 	{SCHOOL_DIVINATION},
-	["level"] = 	6,
+	["level"] = 	9,
 	["mana"] = 	3,
 	["mana_max"] = 	15,
 	["fail"] = 	10,
+--	["stat"] = 	A_WIS,
 	["spell"] = 	function()
 			fire_ball(Ind, GF_DETECTDOOR_PLAYER, 0, 1, 2, "")
 			detect_sdoor(Ind, 10 + get_level(Ind, REVEALWAYS, 40, 0))
@@ -188,9 +188,8 @@ REVEALWAYS = add_spell {
 
 DETECTMONSTERS = add_spell {
 	["name"] = 	"Detect Monsters",
-	["name2"] = 	"DetMon",
 	["school"] = 	{SCHOOL_DIVINATION},
-	["level"] = 	4,
+	["level"] = 	3,
 	["mana"] = 	3,
 	["mana_max"] = 	3,
 	["fail"] = 	10,
@@ -205,26 +204,5 @@ DETECTMONSTERS = add_spell {
 	["desc"] = 	{
 			"Detects all nearby non-invisible creatures.",
 			"***Automatically projecting***",
-	}
-}
-
-SENSEMONSTERS = add_spell {
-	["name"] = 	"Sense Minds",
-	["name2"] = 	"Sense",
-	["school"] = 	{SCHOOL_DIVINATION},
-	["level"] = 	40,
-	["mana"] = 	25,
-	["mana_max"] = 	25,
-	--["fail"] = 	-15, (was at level 30)
-	["fail"] = 	-30,
-	["am"] = 	75,
-	["spell"] = function()
-		set_tim_esp(Ind, 22 + randint(10) + get_level(Ind, SENSEMONSTERS, 28))
-		end,
-	["info"] = function()
-		return "dur "..(22 + get_level(Ind, SENSEMONSTERS, 28)).."+d10"
-		end,
-	["desc"] = {
-		"Sense all monsters' minds for a while.",
 	}
 }

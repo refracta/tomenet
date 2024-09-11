@@ -120,7 +120,7 @@ int monster_check_experience(int m_idx, bool silent) {
 		levup = TRUE;
 
 #if 0 /* Check the return code now for level ups */
-		if (m_ptr->owner) {
+		if (m_ptr->owner ) {
 			for (i = 1; i <= NumPlayers; i++) {
 				if (Players[i]->id == m_ptr->owner)
 					msg_print(i, "\377UYour pet looks more experienced!");
@@ -137,7 +137,6 @@ int monster_check_experience(int m_idx, bool silent) {
 		/* Gain speed */
 		if (magik(50)) { //30
 			int speed = randint(2);
-
 			/* adjust cur and base speed */
 			m_ptr->speed += speed;
 			m_ptr->mspeed += speed;
@@ -148,11 +147,13 @@ int monster_check_experience(int m_idx, bool silent) {
 		}
 
 		/* Gain ac */
-		if (magik(30)) m_ptr->ac += (r_ptr->ac / 15) ? r_ptr->ac / 15 : 1;
+		if (magik(30)) {
+			m_ptr->ac += (r_ptr->ac / 15)?r_ptr->ac / 15:1;
+		}
 
 		/* Gain melee power */
 		/* XXX 20d1 monster can be too horrible (20d5) */
-		//if (magik(50))
+//		if (magik(50))
 		if (magik(80)) levels_gained++;
 	}
 
@@ -164,7 +165,7 @@ int monster_check_experience(int m_idx, bool silent) {
 	/* L+40 -> x25, L+35 -> x20, L+30 -> x16, L+25 -> x12, L+20 -> x9, L+15 -> x6, L+10 -> x4, L+5 -> x2 */
 	if (levels_gained != 0) levels_gained = 100000 / ((100000 / levels_gained) + 1000);
 	/* cap stronger for higher monsters */
-	//if (levels_gained != 0) levels_gained = 100000 / ((100000 / levels_gained) + 1000 - (10000 / (r_ptr->level + 10)));
+//	if (levels_gained != 0) levels_gained = 100000 / ((100000 / levels_gained) + 1000 - (10000/(r_ptr->level+10)));
 
 	/* for more accurate results, add 2 figures */
 	levels_gained *= 100;
@@ -174,7 +175,7 @@ int monster_check_experience(int m_idx, bool silent) {
 	levels_gained += 100;
 
 	/* very low level monsters get a boost for damage output */
-	//levels_gained += 1600 / (r_ptr->level + 10);
+//	levels_gained += 1600 / (r_ptr->level + 10);
 	levels_gained += ((levels_gained - 100) * 57) / (r_ptr->level + 10);
 
 	/* calculate square root of the factor, to apply to dice & dice sides - C. Blue */
@@ -261,7 +262,7 @@ int monster_check_experience(int m_idx, bool silent) {
 
 	/* Insanity caps */
 	for (i = 0; i < 4; i++) {
-		if ((m_ptr->blow[i].effect == RBE_SANITY) && m_ptr->blow[i].d_dice && m_ptr->blow[i].d_side) {
+        	if ((m_ptr->blow[i].effect == RBE_SANITY) && m_ptr->blow[i].d_dice && m_ptr->blow[i].d_side) {
 			while (((m_ptr->blow[i].d_dice + 1) * m_ptr->blow[i].d_side) / 2 > 55) {
 				if (m_ptr->blow[i].d_dice >= m_ptr->blow[i].d_side)
 					m_ptr->blow[i].d_dice--;
@@ -293,13 +294,13 @@ int monster_check_experience(int m_idx, bool silent) {
 			if (((m_ptr->blow[i].d_dice + 1) * m_ptr->blow[i].d_side) / 2 <= 125) continue;
 			tmp++;
 			if (tmp == try) {
-				/* Don't reduce by too great steps */
-				if (m_ptr->blow[i].d_dice <= 10) m_ptr->blow[i].d_side--;
-				else if (m_ptr->blow[i].d_side <= 10) m_ptr->blow[i].d_dice--;
+                                /* Don't reduce by too great steps */
+                                if (m_ptr->blow[i].d_dice <= 10) m_ptr->blow[i].d_side--;
+                                else if (m_ptr->blow[i].d_side <= 10) m_ptr->blow[i].d_dice--;
 				/* Otherwise reduce randomly */
 				else if (rand_int(2)) m_ptr->blow[i].d_side--;
 				else m_ptr->blow[i].d_dice--;
-			}
+                        }
 		}
 	}
 
@@ -307,7 +308,7 @@ int monster_check_experience(int m_idx, bool silent) {
 	   (as a side effect, resetting possible GF_OLD_SLOW effects and similar - doesn't matter really). */
 	if (levup) m_ptr->mspeed = m_ptr->speed;
 
-	return(old_level - m_ptr->level == 0 ? 0 : 1);
+	return (old_level - m_ptr->level == 0 ? 0 : 1);
 }
 
 /* Monster gain some xp */
@@ -316,7 +317,7 @@ int monster_gain_exp(int m_idx, u32b exp, bool silent) {
 
 	m_ptr->exp += exp;
 
-	return(monster_check_experience(m_idx, silent));
+	return monster_check_experience(m_idx, silent);
 }
 
 
@@ -339,7 +340,7 @@ void delete_monster_idx(int i, bool unfound_arts) {
 	struct worldpos *wpos;
 	cave_type **zcave;
 	monster_type *m_ptr = &m_list[i];
-	int this_o_idx, next_o_idx = 0;
+	u16b this_o_idx, next_o_idx = 0;
 
 	monster_race *r_ptr = race_inf(m_ptr);
 
@@ -353,7 +354,7 @@ void delete_monster_idx(int i, bool unfound_arts) {
 		s_printf("delete_monster_idx: Deleting questor (midx%d,Q%d,qidx%d) at %d,%d,%d.\n", i, m_ptr->quest, m_ptr->questor_idx, wpos->wx, wpos->wy, wpos->wz);
 
 #ifdef MONSTER_ASTAR
-	if ((r_ptr->flags7 & RF7_ASTAR) && (m_ptr->astar_idx != -1))
+	if ((r_ptr->flags0 & RF0_ASTAR) && (m_ptr->astar_idx != -1))
 		astar_info_open[m_ptr->astar_idx].m_idx = -1;
 #endif
 
@@ -417,13 +418,9 @@ void delete_monster_idx(int i, bool unfound_arts) {
 
 	/* terminate mindcrafter charm effect */
 	if (m_ptr->charmedignore) {
-		int Ind = find_player(m_ptr->charmedignore);
-
-		if (Ind) Players[Ind]->mcharming--;
+		Players[m_ptr->charmedignore]->mcharming--;
 		m_ptr->charmedignore = 0;
 	}
-
-	if (m_ptr->r_idx == RI_MORGOTH && !in_irondeepdive(wpos)) Morgoth_x = -1;
 
 	/* Wipe the Monster */
 	FREE(m_ptr->r_ptr, monster_race);
@@ -439,7 +436,6 @@ void delete_monster(struct worldpos *wpos, int y, int x, bool unfound_arts) {
 
 	/* Paranoia */
 	cave_type **zcave;
-
 	if (!in_bounds(y, x)) return;
 	if ((zcave = getcave(wpos))) {
 		/* Check the grid */
@@ -448,8 +444,7 @@ void delete_monster(struct worldpos *wpos, int y, int x, bool unfound_arts) {
 		if (c_ptr->m_idx > 0) delete_monster_idx(c_ptr->m_idx, unfound_arts);
 	} else { /* still delete the monster, just slower method */
 		int i;
-
-		for (i = 1; i < m_max; i++) {
+		for (i = 1; i < m_max; i++){
 			monster_type *m_ptr = &m_list[i];
 			if (m_ptr->r_idx && inarea(wpos, &m_ptr->wpos)) {
 				if (y == m_ptr->fy && x == m_ptr->fx)
@@ -476,13 +471,13 @@ void delete_monster(struct worldpos *wpos, int y, int x, bool unfound_arts) {
  * if 'purge', non-allocated wilderness monsters will be purged.
  */
 void compact_monsters(int size, bool purge) {
-	int	     i, num, cnt, Ind;
-	int	     cur_lev, cur_dis, chance;
+	int             i, num, cnt, Ind;
+	int             cur_lev, cur_dis, chance;
 	cave_type **zcave;
 	struct worldpos *wpos;
 	quest_info *q_ptr;
 
-	int this_o_idx, next_o_idx = 0;
+	u16b this_o_idx, next_o_idx = 0;
 
 	/* Message (only if compacting) */
 	if (size) s_printf("Compacting monsters...\n");
@@ -505,8 +500,8 @@ void compact_monsters(int size, bool purge) {
 
 #if 0
 			/* Skip monsters that are 'trapped' in houses */
-			//& CAVE_ICKY
-			//if ((zcave = getcave(wpos))) zcave[ny][nx].m_idx = i;
+	//		& CAVE_ICKY
+//			if((zcave = getcave(wpos))) zcave[ny][nx].m_idx = i;
 #else
 			/* Skip golems/pets */
 			if (m_ptr->pet || m_ptr->owner) continue;
@@ -531,7 +526,7 @@ void compact_monsters(int size, bool purge) {
 			chance = 90;
 
 			/* Only compact "Quest" Monsters in emergencies */
-			//if ((r_ptr->flags1 & RF1_QUESTOR) && (cnt < 1000)) chance = 100; --GENO_NO_THIN is used for this atm
+			if ((r_ptr->flags1 & RF1_QUESTOR) && (cnt < 1000)) chance = 100;
 
 			/* Try not to compact Unique Monsters */
 			if (r_ptr->flags1 & RF1_UNIQUE) chance = 99;
@@ -539,7 +534,7 @@ void compact_monsters(int size, bool purge) {
 			/* Monsters in town don't have much of a chance */
 			if (istown(&m_ptr->wpos)) chance = 70;
 
-			//if (!getcave(&m_ptr->wpos)) chance = 0;
+//			if (!getcave(&m_ptr->wpos)) chance = 0;
 
 			/* All monsters get a saving throw */
 			if (rand_int(100) < chance) continue;
@@ -563,7 +558,7 @@ void compact_monsters(int size, bool purge) {
 		if (m_ptr->r_idx) {
 			/* Skip golems/pets/questors always
 			   NOTE: This will even keep them alive in the dungeon although
-				 the dungeon floor might've gotten deallocated already. */
+			         the dungeon floor might've gotten deallocated already. */
 			if (m_ptr->pet || m_ptr->owner || m_ptr->questor) continue;
 
 			if ((!m_ptr->wpos.wz && !purge) || getcave(&m_ptr->wpos) || sustained_wpos(&m_ptr->wpos)) continue;
@@ -579,7 +574,6 @@ void compact_monsters(int size, bool purge) {
 		if (i != m_max) {
 			int ny = m_list[m_max].fy;
 			int nx = m_list[m_max].fx;
-
 			wpos = &m_list[m_max].wpos;
 
 			/* Update the cave */
@@ -636,9 +630,7 @@ void compact_monsters(int size, bool purge) {
 			if (m_list[i].r_idx /* alive monster? */
 			    && m_list[i].astar_idx != -1) {
 				astar_info_open[m_list[i].astar_idx].m_idx = i;
- #if 0 /* Kinda unnecessary info in the log file? */
-				s_printf("ASTAR_COMPACT_MONSTERS: Reassigned m_idx %d to slot %d.\n", i, m_list[i].astar_idx);
- #endif
+				s_printf("ASTAR_COMPACT_MONSTERS: Reassigned m_idx %d to %d.\n", i, m_list[i].astar_idx);
 			}
 #endif
 
@@ -692,9 +684,10 @@ void wipe_m_list(struct worldpos *wpos) {
 		monster_type *m_ptr = &m_list[i];
 
 		if (inarea(&m_ptr->wpos,wpos)) {
-			if (season_halloween && m_ptr->r_idx == RI_PUMPKIN) {
+			if (season_halloween &&
+			    (m_ptr->r_idx == RI_PUMPKIN1 || m_ptr->r_idx == RI_PUMPKIN2 || m_ptr->r_idx == RI_PUMPKIN3)) {
 				great_pumpkin_duration = 0;
-				great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */
+				great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */ 
 				//s_printf("HALLOWEEN: Pumpkin set to fast respawn\n");
 			}
 			delete_monster_idx(i, TRUE);
@@ -715,9 +708,10 @@ void wipe_m_list_admin(struct worldpos *wpos) {
 		if (m_ptr->pet || m_ptr->special || m_ptr->questor) continue;
 
 		if (inarea(&m_ptr->wpos,wpos)) {
-			if (season_halloween && m_ptr->r_idx == RI_PUMPKIN) {
+			if (season_halloween &&
+			    (m_ptr->r_idx == RI_PUMPKIN1 || m_ptr->r_idx == RI_PUMPKIN2 || m_ptr->r_idx == RI_PUMPKIN3)) {
 				great_pumpkin_duration = 0;
-				great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */
+				great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */ 
 				//s_printf("HALLOWEEN: Pumpkin set to fast respawn\n");
 			}
 			delete_monster_idx(i, TRUE);
@@ -740,9 +734,10 @@ void wipe_m_list_special(struct worldpos *wpos) {
 		monster_type *m_ptr = &m_list[i];
 
 		if (inarea(&m_ptr->wpos,wpos)) {
-			if (season_halloween && m_ptr->r_idx == RI_PUMPKIN) {
+			if (season_halloween &&
+			    (m_ptr->r_idx == RI_PUMPKIN1 || m_ptr->r_idx == RI_PUMPKIN2 || m_ptr->r_idx == RI_PUMPKIN3)) {
 				great_pumpkin_duration = 0;
-				great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */
+				great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */ 
 				//s_printf("HALLOWEEN: Pumpkin set to fast respawn\n");
 			}
 			delete_monster_idx(i, TRUE);
@@ -787,7 +782,8 @@ void thin_surface_spawns() {
 		}
 
 		/* if we erase the Great Pumpkin then reset its timer */
-		if (season_halloween && m_ptr->r_idx == RI_PUMPKIN) {
+		if (season_halloween &&
+		    (m_ptr->r_idx == RI_PUMPKIN1 || m_ptr->r_idx == RI_PUMPKIN2 || m_ptr->r_idx == RI_PUMPKIN3)) {
 			great_pumpkin_duration = 0;
 			great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */
 			//s_printf("HALLOWEEN: Pumpkin set to fast respawn\n");
@@ -814,7 +810,8 @@ void geno_towns() {
 
 		if (istown(&m_ptr->wpos) &&
 		    !(r_info[m_ptr->r_idx].flags8 & RF8_GENO_PERSIST)) {
-			if (season_halloween && /* hardcoded -_- */ m_ptr->r_idx == RI_PUMPKIN) {
+			if (season_halloween && /* hardcoded -_- */
+			    (m_ptr->r_idx == RI_PUMPKIN1 || m_ptr->r_idx == RI_PUMPKIN2 || m_ptr->r_idx == RI_PUMPKIN3)) {
 				great_pumpkin_duration = 0;
 				great_pumpkin_timer = rand_int(2); /* fast respawn if not killed! */
 				//s_printf("HALLOWEEN: Pumpkin set to fast respawn\n");
@@ -831,11 +828,9 @@ void geno_towns() {
 void wipe_m_list_roaming(struct worldpos *wpos) {
 	int i;
 	cave_type **zcave;
-
 	if (!(zcave = getcave(wpos))) return;
 	for (i = m_max - 1; i >= 1; i--) {
 		monster_type *m_ptr = &m_list[i];
-
 		if (inarea(&m_ptr->wpos,wpos)) {
 			if (zcave[m_ptr->fy][m_ptr->fx].info & CAVE_ICKY) continue;
 			delete_monster_idx(i, TRUE);
@@ -877,6 +872,7 @@ void heal_m_list(struct worldpos *wpos) {
 s16b m_pop(void) {
 	int i, n, k;
 
+
 	/* Normal allocation */
 	if (m_max < MAX_M_IDX) {
 		/* Access the next hole */
@@ -889,8 +885,9 @@ s16b m_pop(void) {
 		m_fast[m_top++] = i;
 
 		/* Return the index */
-		return(i);
+		return (i);
 	}
+
 
 	/* Check for some space */
 	for (n = 1; n < MAX_M_IDX; n++) {
@@ -919,14 +916,15 @@ s16b m_pop(void) {
 		m_fast[m_top++] = i;
 
 		/* Use this monster */
-		return(i);
+		return (i);
 	}
+
 
 	/* Warn the player */
 	if (server_dungeon) s_printf("Too many monsters!\n");
 
 	/* Try not to crash */
-	return(0);
+	return (0);
 }
 
 
@@ -937,84 +935,88 @@ s16b m_pop(void) {
 //bool apply_rule(monster_race *r_ptr, byte rule)
 static bool apply_rule(monster_race *r_ptr, rule_type *rule) {
 	switch (rule->mode) {
-	case DUNGEON_MODE_NONE:
-		return(TRUE);
+		case DUNGEON_MODE_NONE:
+			return TRUE;
 
-	case DUNGEON_MODE_AND:
-	case DUNGEON_MODE_NAND: {
-		int a;
+		case DUNGEON_MODE_AND:
+		case DUNGEON_MODE_NAND:
+		{
+			int a;
 
-		if (rule->mflags1) {
-			if ((rule->mflags1 & r_ptr->flags1) != rule->mflags1)
-				return(FALSE);
-		}
-		if (rule->mflags2) {
-			if ((rule->mflags2 & r_ptr->flags2) != rule->mflags2)
-				return(FALSE);
-		}
-		if (rule->mflags3) {
-			if ((rule->mflags3 & r_ptr->flags3) != rule->mflags3)
-				return(FALSE);
-		}
-		if (rule->mflags4) {
-			if ((rule->mflags4 & r_ptr->flags4) != rule->mflags4)
-				return(FALSE);
-		}
-		if (rule->mflags5) {
-			if ((rule->mflags5 & r_ptr->flags5) != rule->mflags5)
-				return(FALSE);
-		}
-		if (rule->mflags6) {
-			if ((rule->mflags6 & r_ptr->flags6) != rule->mflags6)
-				return(FALSE);
-		}
-		if (rule->mflags7) {
-			if ((rule->mflags7 & r_ptr->flags7) != rule->mflags7)
-				return(FALSE);
-		}
-		if (rule->mflags8) {
-			if ((rule->mflags8 & r_ptr->flags8) != rule->mflags8)
-				return(FALSE);
-		}
-		if (rule->mflags9) {
-			if ((rule->mflags9 & r_ptr->flags9) != rule->mflags9)
-				return(FALSE);
-		}
-		if (rule->mflags0) {
-			if ((rule->mflags0 & r_ptr->flags0) != rule->mflags0)
-				return(FALSE);
-		}
+			if (rule->mflags1) {
+				if ((rule->mflags1 & r_ptr->flags1) != rule->mflags1)
+					return FALSE;
+			}
+			if (rule->mflags2) {
+				if ((rule->mflags2 & r_ptr->flags2) != rule->mflags2)
+					return FALSE;
+			}
+			if (rule->mflags3) {
+				if ((rule->mflags3 & r_ptr->flags3) != rule->mflags3)
+					return FALSE;
+			}
+			if (rule->mflags4) {
+				if ((rule->mflags4 & r_ptr->flags4) != rule->mflags4)
+					return FALSE;
+			}
+			if (rule->mflags5) {
+				if ((rule->mflags5 & r_ptr->flags5) != rule->mflags5)
+					return FALSE;
+			}
+			if (rule->mflags6) {
+				if ((rule->mflags6 & r_ptr->flags6) != rule->mflags6)
+					return FALSE;
+			}
+			if (rule->mflags7) {
+				if ((rule->mflags7 & r_ptr->flags7) != rule->mflags7)
+					return FALSE;
+			}
+			if (rule->mflags8) {
+				if ((rule->mflags8 & r_ptr->flags8) != rule->mflags8)
+					return FALSE;
+			}
+			if (rule->mflags9) {
+				if ((rule->mflags9 & r_ptr->flags9) != rule->mflags9)
+					return FALSE;
+			}
+			if (rule->mflags0) {
+				if ((rule->mflags0 & r_ptr->flags0) != rule->mflags0)
+					return FALSE;
+			}
 
-		for (a = 0; a < 5; a++)
-			if (rule->r_char[a] && (rule->r_char[a] != r_ptr->d_char)) return(FALSE);
+			for (a = 0; a < 5; a++) {
+				if (rule->r_char[a] && (rule->r_char[a] != r_ptr->d_char)) return FALSE;
+			}
 
-		/* All checks passed ? lets go ! */
-		return(TRUE);
-		}
-	case DUNGEON_MODE_OR:
-	case DUNGEON_MODE_NOR: {
-		int a;
-
-		if (rule->mflags1 && (r_ptr->flags1 & rule->mflags1)) return(TRUE);
-		if (rule->mflags2 && (r_ptr->flags2 & rule->mflags2)) return(TRUE);
-		if (rule->mflags3 && (r_ptr->flags3 & rule->mflags3)) return(TRUE);
-		if (rule->mflags4 && (r_ptr->flags4 & rule->mflags4)) return(TRUE);
-		if (rule->mflags5 && (r_ptr->flags5 & rule->mflags5)) return(TRUE);
-		if (rule->mflags6 && (r_ptr->flags6 & rule->mflags6)) return(TRUE);
-		if (rule->mflags7 && (r_ptr->flags7 & rule->mflags7)) return(TRUE);
-		if (rule->mflags8 && (r_ptr->flags8 & rule->mflags8)) return(TRUE);
-		if (rule->mflags9 && (r_ptr->flags9 & rule->mflags9)) return(TRUE);
-		if (rule->mflags0 && (r_ptr->flags0 & rule->mflags0)) return(TRUE);
-
-		for (a = 0; a < 5; a++)
-			if (rule->r_char[a] == r_ptr->d_char) return(TRUE);
-
-		/* All checks failled ? Sorry ... */
-		return(FALSE);
+			/* All checks passed ? lets go ! */
+			return TRUE;
 		}
 
-	default:
-		return(FALSE);
+		case DUNGEON_MODE_OR:
+		case DUNGEON_MODE_NOR:
+		{
+			int a;
+
+			if (rule->mflags1 && (r_ptr->flags1 & rule->mflags1)) return TRUE;
+			if (rule->mflags2 && (r_ptr->flags2 & rule->mflags2)) return TRUE;
+			if (rule->mflags3 && (r_ptr->flags3 & rule->mflags3)) return TRUE;
+			if (rule->mflags4 && (r_ptr->flags4 & rule->mflags4)) return TRUE;
+			if (rule->mflags5 && (r_ptr->flags5 & rule->mflags5)) return TRUE;
+			if (rule->mflags6 && (r_ptr->flags6 & rule->mflags6)) return TRUE;
+			if (rule->mflags7 && (r_ptr->flags7 & rule->mflags7)) return TRUE;
+			if (rule->mflags8 && (r_ptr->flags8 & rule->mflags8)) return TRUE;
+			if (rule->mflags9 && (r_ptr->flags9 & rule->mflags9)) return TRUE;
+			if (rule->mflags0 && (r_ptr->flags0 & rule->mflags0)) return TRUE;
+
+			for (a = 0; a < 5; a++)
+				if (rule->r_char[a] == r_ptr->d_char) return TRUE;
+
+			/* All checks failled ? Sorry ... */
+			return FALSE;
+		}
+
+		default:
+			return FALSE;
 	}
 }
 
@@ -1052,7 +1054,7 @@ int restrict_monster_to_dungeon(int r_idx, int dun_type) {
 	percents = (percents * factor) / 10000;
 
 	/* Return percentage */
-	return(percents);
+	return percents;
 }
 
 
@@ -1099,7 +1101,7 @@ errr get_mon_num_prep(int dun_type, char *reject_monsters) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -1109,10 +1111,11 @@ bool mon_allowed(monster_race *r_ptr) {
 	int i = randint(100);
 
 	/* Pet/neutral monsters allowed? */
-	if ((r_ptr->flags7 & (RF7_PET | RF7_NEUTRAL)) && i > cfg.pet_monsters) return(FALSE);
+	if ((r_ptr->flags7 & (RF7_PET | RF7_NEUTRAL)) && i > cfg.pet_monsters)
+		return(FALSE);
 
 	/* No quest NPCs - they are to be created explicitely by quest code */
-	//if ((r_ptr->flags1 & RF1_QUESTOR)) return(FALSE);
+	if ((r_ptr->flags1 & RF1_QUESTOR)) return(FALSE);
 
 	/* Base monsters allowed ? or not ? */
 	if ((r_ptr->flags8 & RF8_ANGBAND) && i > cfg.vanilla_monsters) return(FALSE);
@@ -1141,25 +1144,25 @@ bool mon_allowed_chance(monster_race *r_ptr) {
 	if (r_ptr->flags7 & (RF7_PET | RF7_NEUTRAL)) return(cfg.pet_monsters);
 
 	/* No quest NPCs - they are to be created explicitely by quest code */
-	//if ((r_ptr->flags1 & RF1_QUESTOR)) return(FALSE);
+	if ((r_ptr->flags1 & RF1_QUESTOR)) return(FALSE);
 
 	/* Base monsters allowed ? or not ? */
 	if (r_ptr->flags8 & RF8_ANGBAND) return(cfg.vanilla_monsters);
 
 	/* Zangbandish monsters allowed ? or not ? */
-	if (r_ptr->flags8 & RF8_ZANGBAND) return(cfg.zang_monsters);
+	if(r_ptr->flags8 & RF8_ZANGBAND) return(cfg.zang_monsters);
 
 	/* Joke monsters allowed ? or not ? */
 	if (r_ptr->flags8 & RF8_JOKEANGBAND) return(cfg.joke_monsters);
 
 	/* Lovercraftian monsters allowed ? or not ? */
-	if (r_ptr->flags8 & RF8_CTHANGBAND) return(cfg.cth_monsters);
+	if(r_ptr->flags8 & RF8_CTHANGBAND) return(cfg.cth_monsters);
 
 	/* C. Blue's monsters allowed ? or not ? */
-	if (r_ptr->flags8 & RF8_BLUEBAND) return(cfg.cblue_monsters);
+	if(r_ptr->flags8 & RF8_BLUEBAND) return(cfg.cblue_monsters);
 
 	/* Pernian monsters allowed ? or not ? */
-	if (r_ptr->flags8 & RF8_PERNANGBAND) return(cfg.pern_monsters);
+	if(r_ptr->flags8 & RF8_PERNANGBAND) return(cfg.pern_monsters);
 
 	return(100); /* or 0? =p */
 }
@@ -1169,10 +1172,11 @@ bool mon_allowed_view(monster_race *r_ptr) {
 	int i = TELL_MONSTER_ABOVE;
 
 	/* Pet/neutral monsters allowed? */
-	if (i > cfg.pet_monsters && (r_ptr->flags7 & (RF7_PET | RF7_NEUTRAL))) return(FALSE);
+	if (i > cfg.pet_monsters && (r_ptr->flags7 & (RF7_PET | RF7_NEUTRAL)))
+		return(FALSE);
 
 	/* No quest NPCs - they are to be created explicitely by quest code */
-	//if ((r_ptr->flags1 & RF1_QUESTOR)) return(FALSE);
+	if ((r_ptr->flags1 & RF1_QUESTOR)) return(FALSE);
 
 	/* Base monsters allowed ? or not ? */
 	if (i > cfg.vanilla_monsters && (r_ptr->flags8 & RF8_ANGBAND)) return(FALSE);
@@ -1234,7 +1238,6 @@ bool mon_allowed_view(monster_race *r_ptr) {
  *          if 'monster_level' is already specifying an OoD request
  *          and therefore must not be boosted further by get_mon_num()'s
  *          own built-in OoD code.
- *          Now also using 'dlevel' for additional OoD check for low/mid floors.
  */
 
 //s16b get_mon_num(int level)
@@ -1264,28 +1267,23 @@ s16b get_mon_num(int level, int dlevel) {
 	   second in here by boosting the level even further in the code above.) */
 	if (level > dlevel + 40) level = dlevel + 40;
 
-	/* 2022: Extra, smooth OoD cap for low/mid dungeon levels - C. Blue */
-	if (dlevel < 50) {
-		i = dlevel - 10 + (dlevel > 20 ? dlevel : 20);
-		if (level > i) level = i;
-	}
-#if 0
-	/* Halls of Mandos: No towns there, prevent super-ood to make life easier? */
-	//if (d_ptr->type == DI_MANDOS && dlev + 20 < level) level = dlev + 20;
-#endif
-
 	/* Reset total */
 	total = 0L;
 
 	if (monster_level_min == -1) {
 		/* Automatic minimum level */
-		if (level >= 98) monster_level_min_int = 69; /* 64..69 somewhere is a good start for nasty stuff - C. Blue */
-		else monster_level_min_int = (level * 2) / 3;
+		if (level >= 98) {
+			monster_level_min_int = 69;	/* 64..69 somewhere is a good start for nasty stuff - C. Blue */
+		} else {
+			monster_level_min_int = (level * 2) / 3;
+		}
 	}
 
 	/* Hack -- No town monsters in the dungeon */
 	if (level > 0) {
-		if (monster_level_min_int < 1) monster_level_min_int = 1;
+		if (monster_level_min_int < 1) {
+			monster_level_min_int = 1;
+		}
 	}
 
 	/* Cap maximum level */
@@ -1295,9 +1293,6 @@ s16b get_mon_num(int level, int dlevel) {
 	begin = alloc_race_index_level[monster_level_min_int];
 	n = alloc_race_index_level[level + 1];
 
-#ifdef TEST_SERVER
-//s_printf("depth %d:", dlevel);
-#endif
 	/* Process probabilities */
 	for (i = begin; i < n; i++) {
 		/* Get the entry */
@@ -1319,35 +1314,33 @@ s16b get_mon_num(int level, int dlevel) {
 		r_ptr = &r_info[r_idx];
 
 		/* Depth Monsters never appear out of depth */
-		/* This is currently only effectively used by Tik (other than dungeon bosses, which are already floor-locked anyway). */
-		if ((r_ptr->flags1 & RF1_FORCE_DEPTH) && (entry->level > dlevel)) continue;
+		/* FIXME: This might cause FORCE_DEPTH monsters to appear out of depth */
+		if ((r_ptr->flags1 & RF1_FORCE_DEPTH) && (entry->level > level))
+			continue;
 
 		/* Depth Monsters never appear out of their depth */
 		/* level = base_depth + depth, be careful(esp.wilderness)
 		 * Appearently only used for Moldoux atm. */
-		if ((r_ptr->flags9 & (RF9_ONLY_DEPTH)) && (entry->level != dlevel)) continue;
+		if ((r_ptr->flags9 & (RF9_ONLY_DEPTH)) && (entry->level != level))
+			continue;
 
 		/* Prevent certain monsters from being generated too much OoD */
-		if ((r_ptr->flags7 & RF7_OOD_10) && (entry->level > dlevel + 10)) continue;
-		if ((r_ptr->flags7 & RF7_OOD_15) && (entry->level > dlevel + 15)) continue;
-		if ((r_ptr->flags7 & RF7_OOD_20) && (entry->level > dlevel + 20)) continue;
+		if ((r_ptr->flags7 & RF7_OOD_10) && (entry->level > level + 10))
+			continue;
+		if ((r_ptr->flags7 & RF7_OOD_15) && (entry->level > level + 15))
+			continue;
+		if ((r_ptr->flags7 & RF7_OOD_20) && (entry->level > level + 20))
+			continue;
 
 		/* Accept */
 		entry->prob3 = p;
 
 		/* Total */
 		total += p;
-
-#ifdef TEST_SERVER
-//s_printf(" %d(%d)", entry->level, r_idx);
-#endif
 	}
-#ifdef TEST_SERVER
-//s_printf("\n");
-#endif
 
 	/* No legal monsters */
-	if (total <= 0) return(0);
+	if (total <= 0) return (0);
 
 	/* Pick a monster */
 	value = rand_int(total);
@@ -1408,7 +1401,7 @@ s16b get_mon_num(int level, int dlevel) {
 	}
 
 	/* Result */
-	return(table[i].index);
+	return (table[i].index);
 }
 
 
@@ -1421,7 +1414,7 @@ static cptr r_name_garbled_get(int *r_idx) {
 		*r_idx = rand_int(MAX_R_IDX - 1);
 		if (!r_info[*r_idx].name) continue;
 		else if (!mon_allowed_chance(&r_info[*r_idx])) continue;
-		else return(r_name + r_info[*r_idx].name);
+		else return (r_name + r_info[*r_idx].name);
 
 		if (!tries--) {
 			*r_idx = 0;
@@ -1460,7 +1453,7 @@ static cptr r_name_garbled_get(int *r_idx) {
  *
  * Mode Flags:
  *   0x01 --> Objective (or Reflexive)
- *   0x02 --> Possessive (or Reflexive) - no article
+ *   0x02 --> Possessive (or Reflexive)
  *   0x04 --> Use indefinites for hidden monsters ("something")
  *   0x08 --> Use indefinites for visible monsters ("a kobold")
  *   0x10 --> Pronominalize hidden monsters
@@ -1483,13 +1476,13 @@ static cptr r_name_garbled_get(int *r_idx) {
 /* FIXME: 'The The Borshin' when hallucinating */
 void monster_desc(int Ind, char *desc, int m_idx, int mode) {
 	player_type *p_ptr;
-	cptr	    res;
+	cptr            res;
 
 	monster_type    *m_ptr = &m_list[m_idx];
 	monster_race    *r_ptr = race_inf(m_ptr);
 
-	cptr	    name = r_name_get(m_ptr);
-	bool	    seen, pron;
+	cptr            name = r_name_get(m_ptr);
+	bool            seen, pron;
 
 	/* Check for bad player number */
 	if (Ind > 0) {
@@ -1582,18 +1575,12 @@ void monster_desc(int Ind, char *desc, int m_idx, int mode) {
 			(void)strcpy(desc, name);
 		}
 
-		/* Omit article */
-		else if (mode & 0x01) (void)strcpy(desc, name);
-
 		/* It could be an indefinite monster */
 		else if (mode & 0x08) {
 			/* XXX Check plurality for "some" */
 			if ((r_ptr->flags8 & RF8_PLURAL))
 				(void)strcpy(desc, name);
 			else {
-				/* Hack: It's not 'the mirror image' but 'your mirror image' */
-				if (m_ptr->r_idx == RI_MIRROR) (void)strcpy(desc, "your ");
-				else
 				/* Indefinite monsters need an indefinite article */
 				(void)strcpy(desc, is_a_vowel(name[0]) ? "an " : "a ");
 				(void)strcat(desc, name);
@@ -1602,9 +1589,6 @@ void monster_desc(int Ind, char *desc, int m_idx, int mode) {
 
 		/* It could be a normal, definite, monster */
 		else {
-			/* Hack: It's not 'the mirror image' but 'your mirror image' */
-			if (m_ptr->r_idx == RI_MIRROR) (void)strcpy(desc, "your ");
-			else
 			/* Definite monsters need a definite article */
 			(void)strcpy(desc, "the ");
 			(void)strcat(desc, name);
@@ -1622,10 +1606,10 @@ void monster_desc(int Ind, char *desc, int m_idx, int mode) {
 
 /* added for quests: takes m_ptr instead of m_idx (and no player) */
 void monster_desc2(char *desc, monster_type *m_ptr, int mode) {
-	cptr	    res;
+	cptr            res;
 	monster_race    *r_ptr = race_inf(m_ptr);
-	cptr	    name = r_name_get(m_ptr);
-	bool	    seen, pron;
+	cptr            name = r_name_get(m_ptr);
+	bool            seen, pron;
 
 	seen = (m_ptr && ((mode & 0x80) || (!(mode & 0x40))));
 
@@ -1704,18 +1688,12 @@ void monster_desc2(char *desc, monster_type *m_ptr, int mode) {
 			(void)strcpy(desc, name);
 		}
 
-		/* Omit article */
-		else if (mode & 0x01) (void)strcpy(desc, name);
-
 		/* It could be an indefinite monster */
 		else if (mode & 0x08) {
 			/* XXX Check plurality for "some" */
 			if ((r_ptr->flags8 & RF8_PLURAL))
 				(void)strcpy(desc, name);
 			else {
-				/* Hack: It's not 'the mirror image' but 'your mirror image' */
-				if (m_ptr->r_idx == RI_MIRROR) (void)strcpy(desc, "your ");
-				else
 				/* Indefinite monsters need an indefinite article */
 				(void)strcpy(desc, is_a_vowel(name[0]) ? "an " : "a ");
 				(void)strcat(desc, name);
@@ -1724,9 +1702,6 @@ void monster_desc2(char *desc, monster_type *m_ptr, int mode) {
 
 		/* It could be a normal, definite, monster */
 		else {
-			/* Hack: It's not 'the mirror image' but 'your mirror image' */
-			if (m_ptr->r_idx == RI_MIRROR) (void)strcpy(desc, "your ");
-			else
 			/* Definite monsters need a definite article */
 			(void)strcpy(desc, "the ");
 			(void)strcat(desc, name);
@@ -1744,10 +1719,10 @@ void monster_desc2(char *desc, monster_type *m_ptr, int mode) {
 
 void monster_race_desc(int Ind, char *desc, int r_idx, int mode) {
 	player_type *p_ptr;
-	cptr	    res;
+	cptr            res;
 	monster_race    *r_ptr = &r_info[r_idx];
-	cptr	    name = r_name + r_ptr->name;
-	bool	    seen = FALSE, pron = FALSE;
+	cptr            name = r_name + r_ptr->name;
+	bool            seen = FALSE, pron = FALSE;
 
 	/* Check for bad player number */
 	if (Ind > 0) {
@@ -1867,9 +1842,9 @@ void monster_race_desc(int Ind, char *desc, int r_idx, int mode) {
 /* Similar to monster_desc, but it handles the players instead. - Jir - */
 void player_desc(int Ind, char *desc, int Ind2, int mode) {
 	player_type *p_ptr, *q_ptr = Players[Ind2];
-	cptr	    res;
-	cptr	    name = q_ptr->name;
-	bool	    seen, pron;
+	cptr            res;
+	cptr            name = q_ptr->name;
+	bool            seen, pron;
 
 	/* Check for bad player number */
 	if (Ind > 0) {
@@ -2037,14 +2012,14 @@ static void sanity_blast(int Ind, int m_idx, bool necro) {
 	if (p_ptr->admin_dm) return;
 
 	if (!necro) {
-		char m_name[MNAME_LEN];
-		monster_race *r_ptr;
+		char		m_name[MNAME_LEN];
+		monster_race	*r_ptr;
 		int res = p_ptr->reduce_insanity;
 
 		if (m_ptr != NULL) r_ptr = race_inf(m_ptr);
 		else return;
 
-		power = (m_ptr->level) + 10;
+		power = (m_ptr->level)+10;
 
 		monster_desc(Ind, m_name, m_idx, 0);
 
@@ -2067,18 +2042,17 @@ static void sanity_blast(int Ind, int m_idx, bool necro) {
 
 		if (randint(power) < p_ptr->skill_sav) return; /* Save, no adverse effects */
 		/* extra ways to resist */
+		if (p_ptr->suscep_life) res = 2;
 		if (p_ptr->pclass == CLASS_MINDCRAFTER || p_ptr->prace == RACE_VAMPIRE) res = 4;
-#ifdef ENABLE_HELLKNIGHT
-		if (p_ptr->pclass == CLASS_HELLKNIGHT) res = 5;
-#endif
 		if (rand_int(6) < res) return;
+
 
 		if (p_ptr->image) {
 			/* Something silly happens... */
 			msg_format(Ind, "You behold the %s visage of %s!",
-			    funny_desc[(randint(MAX_FUNNY)) - 1], m_name);
+			    funny_desc[(randint(MAX_FUNNY))-1], m_name);
 			if (randint(3) == 1) {
-				msg_print(Ind, funny_comments[randint(MAX_COMMENT) - 1]);
+				msg_print(Ind, funny_comments[randint(MAX_COMMENT)-1]);
 				p_ptr->image = (p_ptr->image + randint(m_ptr->level));
 			}
 			return; /* Never mind; we can't see it clearly enough */
@@ -2086,7 +2060,7 @@ static void sanity_blast(int Ind, int m_idx, bool necro) {
 
 		/* Something frightening happens... */
 		msg_format(Ind, "You behold the %s visage of %s!",
-		    horror_desc[(randint(MAX_HORROR)) - 1], m_name);
+		    horror_desc[(randint(MAX_HORROR))-1], m_name);
 
 #ifdef OLD_MONSTER_LORE
 		r_ptr->r_flags2 |= RF2_ELDRITCH_HORROR;
@@ -2106,7 +2080,7 @@ static void sanity_blast(int Ind, int m_idx, bool necro) {
 		if (!p_ptr->resist_conf)
 			(void)set_confused(Ind, p_ptr->confused + rand_int(4) + 4);
 		if ((!p_ptr->resist_chaos) && (randint(3) == 1))
-			(void)set_image(Ind, p_ptr->image + rand_int(100) + 100);
+			(void) set_image(Ind, p_ptr->image + rand_int(250) + 150);
 		return;
 	}
 
@@ -2127,7 +2101,7 @@ static void sanity_blast(int Ind, int m_idx, bool necro) {
 		while (rand_int(100) > p_ptr->skill_sav && p_ptr->stat_cur[A_WIS] > 3)
 			(void)do_dec_stat(Ind, A_WIS, STAT_DEC_NORMAL);
 		if (!p_ptr->resist_chaos)
-			(void)set_image(Ind, p_ptr->image + rand_int(100) + 100);
+			(void) set_image(Ind, p_ptr->image + rand_int(250) + 150);
 		return;
 	}
 
@@ -2155,7 +2129,7 @@ static void sanity_blast(int Ind, int m_idx, bool necro) {
 	}
 
 	while (!happened) {
-		switch (randint(4)) {
+		switch(randint(4)) {
 			case 1:
 				if (!(p_ptr->muta3 & MUT3_MORONIC)) {
 					msg_print("You turn into an utter moron!");
@@ -2328,7 +2302,7 @@ void update_mon(int m_idx, bool dist) {
 			dx = (p_ptr->px > fx) ? (p_ptr->px - fx) : (fx - p_ptr->px);
 
 			/* Approximate distance */
-			d = (dy > dx) ? (dy + (dx >> 1)) : (dx + (dy >> 1));
+			d = (dy > dx) ? (dy + (dx>>1)) : (dx + (dy>>1));
 
 			/* Save the distance (in a byte) */
 			m_ptr->cdis = (d < 255) ? d : 255;
@@ -2338,7 +2312,7 @@ void update_mon(int m_idx, bool dist) {
 			dx = (p_ptr->px > fx) ? (p_ptr->px - fx) : (fx - p_ptr->px);
 
 			/* Approximate distance */
-			d = (dy > dx) ? (dy + (dx >> 1)) : (dx + (dy >> 1));
+			d = (dy > dx) ? (dy + (dx>>1)) : (dx + (dy>>1));
 		}
 
 
@@ -2405,7 +2379,7 @@ void update_mon(int m_idx, bool dist) {
 				if ((p_ptr->telepathy & ESP_DRAGONRIDER) && (r_ptr->flags3 & RF3_DRAGONRIDER)) see = TRUE;
 				if ((p_ptr->telepathy & ESP_GOOD) && (r_ptr->flags3 & RF3_GOOD)) see = TRUE;
 				if ((p_ptr->telepathy & ESP_NONLIVING) && (r_ptr->flags3 & RF3_NONLIVING)) see = TRUE;
-				if ((p_ptr->telepathy & ESP_UNIQUE) && (r_ptr->flags1 & RF1_UNIQUE)) see = TRUE;
+				if ((p_ptr->telepathy & ESP_UNIQUE) && ((r_ptr->flags1 & RF1_UNIQUE) || (r_ptr->flags3 & RF3_UNIQUE_4))) see = TRUE;
 				if (p_ptr->telepathy & ESP_ALL) see = TRUE;
 
 				if (see && (p_ptr->mode & MODE_HARD) && (m_ptr->cdis > MAX_SIGHT)) see = FALSE;
@@ -2594,7 +2568,7 @@ void update_mon_flicker(int m_idx) {
  * This function simply updates all the (non-dead) monsters (see above).
  */
 void update_monsters(bool dist) {
-	int	  i;
+	int          i;
 
 	/* Efficiency -- Clear multihued flag */
 	scan_monsters = FALSE;
@@ -2758,7 +2732,7 @@ void update_player(int Ind) {
 			    ((q_ptr->inventory[INVEN_OUTER].k_idx) &&
 			    (q_ptr->inventory[INVEN_OUTER].tval == TV_CLOAK) &&
 			    (q_ptr->inventory[INVEN_OUTER].sval == SV_SHADOW_CLOAK)))
-			    && !(q_ptr->temp_misc_1 & 0x08)) { //snowed by a snowball? =p
+			    && !q_ptr->dummy_option_8) { //snowed by a snowball? =p
 				/* in PvP, invis shouldn't help too greatly probably */
 				if ((q_ptr->lev > p_ptr->lev && !hostile) ||
 				    q_ptr->invis_phase >= (hostile ? 85 : 20))
@@ -2769,7 +2743,7 @@ void update_player(int Ind) {
 			if (q_ptr->cloaked == 1 && !q_ptr->cloak_neutralized &&
 			    !player_in_party(p_ptr->party, Ind)
 			    && !(q_ptr->mode & MODE_PVP)
-			    && !(q_ptr->temp_misc_1 & 0x08)) //snowed by a snowball? =p
+			    && !q_ptr->dummy_option_8) //snowed by a snowball? =p
 				flag = FALSE;
 
 			/* Dungeon masters can see invisible players */
@@ -2917,33 +2891,33 @@ static bool allow_unique_level(int r_idx, struct worldpos *wpos) {
 		/* Is the player on the level and did he killed the unique already ? */
 		if (p_ptr->r_killed[r_idx] != 1 && (inarea(wpos, &p_ptr->wpos))) {
 			/* One is enough */
-			return(TRUE);
+			return (TRUE);
 		}
 	}
 
 	/* Yeah but we need at least ONE */
-	return(FALSE);
+	return (FALSE);
 }
 
 /* Pick a random vermin-like monster to spawn in prison houses -- SUPER HARDCODED :/ */
 static int get_prison_monster(void) {
 	switch (rand_int(14)) {
-	case 0: return(27); /* rats and mice */
-	case 1: return(86);
-	case 2: return(156);
-	case 3: return(1005);
-	case 4: return(31); /* worms (low) */
-	case 5: return(58);
-	case 6: return(78);
-	case 7: return(89);
-	case 8: return(105);
-	case 9: return(20); /* mold (except for disenchanter/red) */
-	case 10: return(76);
-	case 11: return(113);
-	case 12: return(146);
-	case 13: return(190);
+	case 0: return 27; /* rats and mice */
+	case 1: return 86;
+	case 2: return 156;
+	case 3: return 1005;
+	case 4: return 31; /* worms (low) */
+	case 5: return 58;
+	case 6: return 78;
+	case 7: return 89;
+	case 8: return 105;
+	case 9: return 20; /* mold (except for disenchanter/red) */
+	case 10: return 76;
+	case 11: return 113;
+	case 12: return 146;
+	case 13: return 190;
 	}
-	return(7); /* compiler paranoia dog */
+	return 7; /* compiler paranoia dog */
 }
 
 /*
@@ -2974,27 +2948,29 @@ int place_monster_one(struct worldpos *wpos, int y, int x, int r_idx, int ego, i
 	char		buf[MNAME_LEN];
 	/* for final guardians, finally! - C. Blue */
 	struct dungeon_type *d_ptr = getdungeon(wpos);
+	dungeon_info_type *dinfo_ptr;
 	bool netherrealm_level = in_netherrealm(wpos);
 	bool nr_bottom;
 	cave_type **zcave;
-	dungeon_info_type *dinfo_ptr =
+
 #ifdef IRONDEEPDIVE_MIXED_TYPES
-	    in_irondeepdive(wpos) ? (d_ptr ? &d_info[iddc[ABS(wpos->wz)].type] : NULL) :
+	if (in_irondeepdive(wpos)) dinfo_ptr = d_ptr ? &d_info[iddc[ABS(wpos->wz)].type] : NULL;
+	else
 #endif
-	    (d_ptr ? &d_info[d_ptr->theme ? d_ptr->theme : d_ptr->type] : NULL);
+	dinfo_ptr = d_ptr ? &d_info[d_ptr->theme ? d_ptr->theme : d_ptr->type] : NULL;
 
 #ifdef PMO_DEBUG
 if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 0\n");
 #endif
-	if (!(zcave = getcave(wpos))) return(1);
+	if (!(zcave = getcave(wpos))) return 1;
 	/* Verify location */
-	if (!in_bounds(y, x)) return(2);
+	if (!in_bounds(y, x)) return 2;
 	/* Require empty space */
-	if (!cave_empty_bold(zcave, y, x)) return(3);
+	if (!cave_empty_bold(zcave, y, x)) return 3;
 	/* Paranoia */
-	if (!r_idx) return(4);
+	if (!r_idx) return 4;
 	/* Paranoia */
-	if (!r_ptr->name) return(5);
+	if (!r_ptr->name) return 5;
 
 	dlev = getlevel(wpos);
 	nr_bottom = netherrealm_level && dlev == netherrealm_end;
@@ -3010,16 +2986,16 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 1\n");
 	    !level_generation_time &&
 	    in_irondeepdive(wpos)
 	    && !clo && !clone_summoning)
-		return(6);
+		return 6;
 
 	/* new: no Darkling/Candlebearer live spawns (not needed because of granted spawn on level generation;
-		and no dungeon boss live spawn either (experimental)?
-		and no unmakers, hm! */
+	        and no dungeon boss live spawn either (experimental)?
+	        and no unmakers, hm! */
 	if (!level_generation_time && !(summon_override_checks & SO_BOSS_MONSTERS) &&
 	    (r_idx == RI_DARKLING || r_idx == RI_CANDLEBEARER
-	    || (r_ptr->flags8 & RF8_FINAL_GUARDIAN)
+	    || (r_ptr->flags0 & RF0_FINAL_GUARDIAN)
 	    || (r_idx == RI_UNMAKER && !clo && !clone_summoning)
-	    )) return(50);
+	    )) return 50;
 
 #ifdef PMO_DEBUG
 if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 2\n");
@@ -3027,22 +3003,22 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 2\n");
 	if (!(summon_override_checks & SO_PROTECTED)) {
 		/* require non-protected field. - C. Blue
 		    Note that there are two ways (technically) to protect a field:
-		    1) use CAVE_PROT or CAVE_NO_MONSTER which can be toggled on runtime as required
-		    2) use features (FEAT_INN/FEAT_PROTECT/FEAT_XPROTECT) which have FF1_PROTECTED flag for predefined map setups (which is a "protected brown '.' floor tile")
+		    1) use feature 210 for predefined map setups (which is a "protected brown '.' floor tile")
+		    2) use CAVE_PROT which can be toggled on runtime as required
 		*/
-		if (zcave[y][x].info & (CAVE_PROT | CAVE_NO_MONSTER)) return(7);
-		if (f_info[zcave[y][x].feat].flags1 & FF1_PROTECTED) return(8);
+		if (zcave[y][x].info & CAVE_PROT) return 7;
+		if (f_info[zcave[y][x].feat].flags1 & FF1_PROTECTED) return 8;
 
 #if 0 /* instead: no spawns in any dungeon town! */
  #ifdef IRONDEEPDIVE_FIXED_TOWNS
 		/* hack: use for static deep dive dungeon towns too */
-		if (is_fixed_irondeepdive_town(wpos, dlev)) return(9);
+		if (is_fixed_irondeepdive_town(wpos, dlev)) return 9;
  #endif
 #else
-		if (isdungeontown(wpos)) return(10);
+		if (isdungeontown(wpos)) return 10;
 #endif
 		/* Keep Ironman Deep Dive Challenge entrance sector clean too */
-		if (wpos->wx == WPOS_IRONDEEPDIVE_X && wpos->wy == WPOS_IRONDEEPDIVE_Y && !wpos->wz) return(11);
+		if (wpos->wx == WPOS_IRONDEEPDIVE_X && wpos->wy == WPOS_IRONDEEPDIVE_Y && !wpos->wz) return 11;
 	}
 
 	if (!(summon_override_checks & SO_GRID_EMPTY)) {
@@ -3052,9 +3028,9 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 2\n");
 		    !(cave_empty_mountain(zcave, y, x) &&
 		     ((r_ptr->flags8 & RF8_WILD_MOUNTAIN) ||
 		     (r_ptr->flags8 & RF8_WILD_VOLCANO) ||
-		     (r_ptr->flags7 & RF7_CAN_CLIMB))
+		     (r_ptr->flags0 & RF0_CAN_CLIMB))
 		     ))))
-			return(12);
+			return 12;
 #endif
 	}
 
@@ -3068,14 +3044,14 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 2\n");
 			/* Better debugging */
 			/* s_printf("place_monster_one refused monster (terrain): r_idx = %d, feat = %d at (%d, %d, %d), y = %d, x = %d\n",
 				 r_idx, zcave[y][x].feat, wpos->wx, wpos->wy, wpos->wz, y, x); */
-			return(13);
+			return 13;
 		}
 	}
 
 	if (!(summon_override_checks & SO_GRID_GLYPH)) {
 		/* Hack -- no creation on glyph of warding */
-		if (zcave[y][x].feat == FEAT_GLYPH) return(14);
-		if (zcave[y][x].feat == FEAT_RUNE) return(15);
+		if (zcave[y][x].feat == FEAT_GLYPH) return 14;
+		if (zcave[y][x].feat == FEAT_RUNE) return 15;
 	}
 
 #ifdef PMO_DEBUG
@@ -3087,7 +3063,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 3\n");
 		if (istownarea(wpos, MAX_TOWNAREA) && (zcave[y][x].info & CAVE_ICKY)) {
 			/* exception: spawn certain vermin in prisons :) */
 			if (zcave[y][x].info & CAVE_STCK) r_idx = get_prison_monster();
-			else return(16);
+			else return 16;
 		}
 	}
 
@@ -3096,16 +3072,16 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 4\n");
 #endif
 #ifdef RPG_SERVER /* no spawns in Training Tower at all */
 	if (!(summon_override_checks & SO_TT_RPG)) {
-		if (in_trainingtower(wpos)) return(17);
+		if (in_trainingtower(wpos)) return 17;
 	}
 #endif
 
 	if (!(summon_override_checks & SO_EVENTS)) {
 		/* No live spawns allowed in training tower during global event */
-		if (ge_special_sector && in_arena(wpos)) return(18);
+		if (ge_special_sector && in_arena(wpos)) return 18;
 
 		/* No spawns in 0,0 pvp arena tower */
-		if (in_pvparena(wpos)) return(19);
+		if (in_pvparena(wpos)) return 19;
 
 		/* Note: Spawns in 0,0 surface during events are caught in wild_add_monster() */
 	}
@@ -3119,7 +3095,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 5\n");
 		    zcave[y][x].feat == FEAT_WAY_LESS ||
 		    zcave[y][x].feat == FEAT_WAY_MORE ||
 		    zcave[y][x].feat == FEAT_LESS ||
-		    zcave[y][x].feat == FEAT_MORE)) return(20);
+		    zcave[y][x].feat == FEAT_MORE)) return 20;
 	}
 
 #ifdef PMO_DEBUG
@@ -3129,25 +3105,20 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6\n");
 		/* Nether Realm bottom */
 		if (nr_bottom) {
 			/* No live spawns after initial spawn allowed */
-			if (!level_generation_time) return(21);
+			if (!level_generation_time) return 21;
 
 #if 0 /* FINAL_GUARDIAN now */
 			/* Special hack - level is empty except for Zu-Aon */
 			r_idx = RI_ZU_AON;
 #else
-			if (r_idx != RI_ZU_AON) return(22);
+			if (r_idx != RI_ZU_AON) return 22;
 #endif
 		}
 
 		/* Valinor - No monster spawn, except for.. */
 		if (in_valinor(wpos) &&
 		    (r_idx != RI_BRIGHTLANCE ) && (r_idx != RI_OROME)) /* Brightlance, Orome */
-			return(23);
-
-		if (l_ptr) {
-			if ((l_ptr->flags2 & LF2_NO_LIVE_SPAWN) && !level_generation_time) return(54);
-			if (l_ptr->flags2 & LF2_NO_SPAWN) return(55);
-		}
+			return 23;
 	}
 #ifdef PMO_DEBUG
 if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
@@ -3155,13 +3126,13 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
 
 	if (!(summon_override_checks & SO_BOSS_MONSTERS)) {
 		/* Dungeon boss? */
-		if ((r_ptr->flags8 & RF8_FINAL_GUARDIAN)) {
+		if ((r_ptr->flags0 & RF0_FINAL_GUARDIAN)) {
 			/* May only spawn when a floor is being generated */
 			if (!d_ptr || !level_generation_time) {
 #if DEBUG_LEVEL > 2
 				s_printf("rejected FINAL_GUARDIAN %d (LIVE)\n", r_idx);
 #endif
-				return(24);
+				return 24;
 			}
 
 			/* wrong monster, or not at the bottom of the dungeon? */
@@ -3175,7 +3146,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
  #if DEBUG_LEVEL > 2
 					s_printf("rejected FINAL_GUARDIAN %d in IDDC\n", r_idx);
  #endif
-					return(25);
+					return 25;
 				}
 			} else
 #endif
@@ -3187,7 +3158,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
  #if DEBUG_LEVEL > 2
 					s_printf("rejected FINAL_GUARDIAN %d in Halls of Mandos\n", r_idx);
  #endif
-					return(25);
+					return 25;
 				}
 			} else
 			if (r_idx != dinfo_ptr->final_guardian ||
@@ -3195,43 +3166,40 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
 #if DEBUG_LEVEL > 2
 				s_printf("rejected FINAL_GUARDIAN %d\n", r_idx);
 #endif
-				return(25);
+				return 25;
 			}
 			/* generating the boss is ok. go on. */
-			//s_printf("allowed FINAL_GUARDIAN %d\n", r_idx);
+//			s_printf("allowed FINAL_GUARDIAN %d\n", r_idx);
 		}
 
 		/* Also use for DUN_xx dungeon-restricted monsters */
 		if (r_ptr->restrict_dun) {
-			if (!d_ptr) return(26);
+			if (!d_ptr) return 26;
 #ifdef IRONDEEPDIVE_MIXED_TYPES
 			if (in_irondeepdive(wpos)) {
-				if (r_ptr->restrict_dun != iddc[ABS(wpos->wz)].type) return(27);
+				if (r_ptr->restrict_dun != iddc[ABS(wpos->wz)].type) return 27;
 			} else
 #endif
 			if (d_ptr->theme) {
-				if (r_ptr->restrict_dun != d_ptr->theme) return(28);
+				if (r_ptr->restrict_dun != d_ptr->theme) return 28;
 			} else {
-				if (r_ptr->restrict_dun != d_ptr->type) return(27);
+				if (r_ptr->restrict_dun != d_ptr->type) return 27;
 			}
 		}
 
-		/* Hack: Bahamut is restricted to Cloud Planes only, upper levels only */
-		if (r_idx == RI_BAHAMUT && (dlev < 144 || dlev > 149)) return(53); //(DI_CLOUD_PLANES + depth restriction)
-
 		/* Couple of Nether Realm-only monsters hardcoded here */
 		if ((r_ptr->flags8 & RF8_NETHER_REALM) && !netherrealm_level)
-			return(29);
+			return 29;
 
 		/* Hellraiser may not occur right on the 1st floor of the Nether Realm */
-		if ((r_idx == RI_HELLRAISER) && dlev < (netherrealm_start + 1)) return(30);
+		if ((r_idx == RI_HELLRAISER) && dlev < (netherrealm_start + 1)) return 30;
 
 		/* Dor may not occur on 'easier' (lol) NR levels */
-		if ((r_idx == RI_DOR) && dlev < (netherrealm_start + 9)) return(31);
+		if ((r_idx == RI_DOR) && dlev < (netherrealm_start + 9)) return 31;
 
 #if 0 /* FINAL_GUARDIAN now */
 		/* Zu-Aon guards the bottom of the Nether Realm now */
-		if ((r_idx == RI_ZU_AON) && !nr_bottom) return(32);
+		if ((r_idx == RI_ZU_AON) && !nr_bottom) return 32;
 #endif
 
 		/* Nether Guard isn't a unique but there's only 1 guard per level */
@@ -3240,13 +3208,13 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
 			s_printf("Checking for old Nether Guards\n");
 #endif
 			for (i = m_top - 1; i >= 0; i--) {
-				m_idx = m_fast[i];
+		        	m_idx = m_fast[i];
 				m_ptr = &m_list[m_idx];
 				if (!m_ptr->r_idx) {
 					m_fast[i] = m_fast[--m_top];
 					continue;
 				}
-				if ((m_ptr->r_idx == RI_NETHER_GUARD) && inarea(wpos, &m_ptr->wpos)) return(33);
+				if ((m_ptr->r_idx == RI_NETHER_GUARD) && inarea(wpos, &m_ptr->wpos)) return 33;
 			}
 		}
 
@@ -3260,10 +3228,10 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
 			if (!level_generation_time) {
 				/* No, it's a live spawn! (!level_generation_time) */
  #if DEBUG_LEVEL > 2
-				s_printf("Morgoth live spawn prevented (MORGOTH_NO_TELE_VAULTS)\n");
+			        s_printf("Morgoth live spawn prevented (MORGOTH_NO_TELE_VAULTS)\n");
  #endif
 				/* Prevent that. */
-				return(34);
+				return 34;
 			} else {
 #endif
 				for (i = 1; i <= NumPlayers; i++) {
@@ -3271,23 +3239,23 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6a\n");
 					if (is_admin(p_ptr)) continue;
 					if (inarea(&p_ptr->wpos, wpos) &&
 					    (p_ptr->total_winner || (p_ptr->r_killed[RI_SAURON] != 1))) {
-						/* log */
+					        /* log */
  #if DEBUG_LEVEL > 2
 						if (level_generation_time) {
 							if (p_ptr->total_winner) {
-								s_printf("Morgoth generation prevented due to winner %s\n", p_ptr->name);
+							        s_printf("Morgoth generation prevented due to winner %s\n", p_ptr->name);
 							} else {
-								s_printf("Morgoth generation prevented due to Sauron-misser %s\n", p_ptr->name);
+							        s_printf("Morgoth generation prevented due to Sauron-misser %s\n", p_ptr->name);
 							}
 						} else {
 							if (p_ptr->total_winner) {
-								s_printf("Morgoth live spawn prevented due to winner %s\n", p_ptr->name);
+							        s_printf("Morgoth live spawn prevented due to winner %s\n", p_ptr->name);
 							} else {
-								s_printf("Morgoth live spawn prevented due to Sauron-misser %s\n", p_ptr->name);
+							        s_printf("Morgoth live spawn prevented due to Sauron-misser %s\n", p_ptr->name);
 							}
 						}
  #endif
-						return(35);
+						return 35;
 					}
 				}
 #ifdef MORGOTH_NO_LIVE_SPAWN
@@ -3303,14 +3271,13 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6b\n");
 
 		/* "unique" monsters.. */
 		if (r_ptr->flags1 & RF1_UNIQUE) {
-			int on_level = 0, who_killed = 0;
-			int admin_on_level = 0, admin_who_killed = 0;
-
 			/* Disallow unique spawns in dungeon towns? */
-			if (l_ptr && (l_ptr->flags1 & LF1_DUNGEON_TOWN)) return(36);
+			if (l_ptr && (l_ptr->flags1 & LF1_DUNGEON_TOWN)) return 36;
 
 			/* If the monster is unique and all players on this level already killed
 			   the monster, don't spawn it. (For Morgoth, especially) -C. Blue */
+			int on_level = 0, who_killed = 0;
+			int admin_on_level = 0, admin_who_killed = 0;
 			for (i = 1; i <= NumPlayers; i++) {
 				/* Count how many players are here */
 				if (inarea(&Players[i]->wpos, wpos)) {
@@ -3326,33 +3293,30 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6b\n");
 			/* If all of them already killed it it must not be spawned */
 			/* If players are on the level, they exclusively determine the unique summonability. */
 			if ((on_level > 0) && (on_level <= who_killed)) {
-				return(37); /* should be '==', but for now lets be tolerant */
+				return 37; /* should be '==', but for now lets be tolerant */
 			}
 			/* If only admins are on the level, allow unique creation
 			   if it fits the admins' unique masks */
 			if ((on_level == 0) && (admin_on_level <= admin_who_killed)) {
-				return(38);
+				return 38;
 			}
 
 			/* are allowed to appear at all? */
 			if (!allow_unique_level(r_idx, wpos)) {
-				return(39);
+				return 39;
 			}
 		}
 
-		if (r_idx == RI_PUMPKIN) {
-			/* Don't spawn the pumpkin _solely_ for the last 2 persons who killed him last time.
-			   Note: This means that a party of at least 3 can still permanently spawn him though
-			   if they take turns creating the next floor. Same applies for non-partied characters however, so seems fine. */
+		if (r_idx == RI_PUMPKIN1 || r_idx == RI_PUMPKIN2 || r_idx == RI_PUMPKIN3) {
+			/* Don't spawn the pumpkin _solely_ for the person who killed him last time. */
 			bool admins_only = TRUE;
 			int Ind = 0;
-
 			for (i = 1; i <= NumPlayers; i++) {
 				if (!inarea(&Players[i]->wpos, wpos)) continue;
 				if (Players[i]->admin_dm) continue;
 				admins_only = FALSE;
-				if (streq(Players[i]->accountname, great_pumpkin_killer1) ||
-				    streq(Players[i]->accountname, great_pumpkin_killer2)) {
+				//if (Players[i]->id == great_pumpkin_killer) {
+				if (streq(Players[i]->accountname, great_pumpkin_killer)) {
 					Ind = i;
 					continue;
 				}
@@ -3360,7 +3324,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 6b\n");
 			}
 			if (Ind && i == NumPlayers + 1 && !admins_only) {
 				//mad spam-  s_printf("Great Pumpkin Generation prevented just for last-killer '%s'\n", Players[Ind]->name);
-				return(52);
+				return 52;
 			}
 		}
 	}
@@ -3373,7 +3337,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 7\n");
 	if ((r_ptr->flags1 & RF1_UNIQUE) &&
 	    !(summon_override_checks & (SO_BOSS_MONSTERS | SO_SURFACE))) {
 		/* may not appear on the world surface */
-		if (wpos->wz == 0) return(40);
+		if (wpos->wz == 0) return 40;
 	}
 #ifdef PMO_DEBUG
 if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 8\n");
@@ -3383,37 +3347,31 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 8\n");
 		/* Depth monsters may NOT be created out of depth */
 		if ((r_ptr->flags1 & RF1_FORCE_DEPTH) && (dlev < r_ptr->level)) {
 			/* Cannot create */
-			return(41);
+			return 41;
 		}
 		if ((r_ptr->flags9 & RF9_ONLY_DEPTH) && (dlev != r_ptr->level)) {
 			/* Cannot create */
-			return(42);
+			return 42;
 		}
 		if ((r_ptr->flags7 & RF7_OOD_10) && (dlev + 10 < r_ptr->level))
-			return(43);
+			return 43;
 		if ((r_ptr->flags7 & RF7_OOD_15) && (dlev + 15 < r_ptr->level))
-			return(44);
+			return 44;
 		if ((r_ptr->flags7 & RF7_OOD_20) && (dlev + 20 < r_ptr->level))
-			return(45);
-
-		/* 2022 - For low dungeon levels, make OoD less harsh: [10..40] levels OoD from depth (20..50), narrowly prohibiting Nazgul in the Orc Caves. */
-		if (wpos->wz && dlev < 50 && r_ptr->level > dlev - 10 + (dlev > 20 ? dlev : 20)) return(45);
-#if 0
-		/* Halls of Mandos: No towns there, prevent super-ood to make life easier? */
-		if (d_ptr->type == DI_MANDOS && dlev + 20 < r_ptr->level) return(45);
-#endif
+			return 45;
 	}
 #ifdef PMO_DEBUG
 if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 9\n");
 #endif
 
+
 	/* Uniques monster consistency - stuff that is exempt from overriding really */
 	if (r_ptr->flags1 & RF1_UNIQUE) {
 		/* Ego Uniques are NOT to be created */
-		if (ego || randuni) return(46);
+		if (ego || randuni) return 46;
 
 		/* prevent duplicate uniques on a floor */
-		for (i = 1; i < m_max; i++) {
+		for(i = 1; i < m_max; i++) {
 			m_ptr = &m_list[i];
 			if (m_ptr->r_idx == r_idx) {
 				if (inarea(wpos, &m_ptr->wpos)) {
@@ -3427,7 +3385,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 9\n");
 		if ((r_ptr->cur_num >= r_ptr->max_num && !in_irondeepdive(wpos))
 		    || already_on_level) {
 			/* Cannot create */
-			return(47);
+			return 47;
 		}
 	}
 
@@ -3453,7 +3411,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 10\n");
 
 			/* open area means: No permawalls
 			   (anti vault-cheeze, but also for rough level border structures) */
-			if ((flags & FF1_PERMANENT)) return(48);
+			if ((flags & FF1_PERMANENT)) return 48;
 		}
 	}
 
@@ -3461,14 +3419,15 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG 10\n");
 	c_ptr = &zcave[y][x];
 
 	/* does monster *prefer* roaming freely and isn't found in vaults/pits/nests usually? */
-	if ((r_ptr->flags2 & RF2_ROAMING)
+	if ((r_ptr->flags0 & RF0_ROAMING)
 	    && !(summon_override_checks & (SO_GRID_EMPTY | SO_GRID_TERRAIN))) {
-		if ((c_ptr->info & (CAVE_ICKY | CAVE_NEST_PIT))) return(51);
+		if ((c_ptr->info & (CAVE_ICKY | CAVE_NEST_PIT))) return 51;
 	}
 
 #ifdef PMO_DEBUG
 if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 #endif
+
 
 	/* Now could we generate an Ego Monster */
 	r_ptr = race_info_idx(r_idx, ego, randuni);
@@ -3477,7 +3436,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 	c_ptr->m_idx = m_pop();
 
 	/* Mega-Hack -- catch "failure" */
-	if (!c_ptr->m_idx) return(49);
+	if (!c_ptr->m_idx) return 49;
 
 	/* Get a new monster record */
 	m_ptr = &m_list[c_ptr->m_idx];
@@ -3511,17 +3470,6 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 	else
 		m_ptr->maxhp = damroll(r_ptr->hdice, r_ptr->hside);
 
-	if (r_idx == RI_PUMPKIN) {
-		/* Hack for the Great Pumpkin: HP varies. */
-		if (dlev >= HALLOWEEN_DLEV_TOUGHEST) ; /* Keep its native (aka maximum) HP */
-		else if (dlev >= HALLOWEEN_DLEV_TOUGHER) /* Vary between 2/3 and full HP */
-			m_ptr->maxhp = (m_ptr->maxhp * (200 + ((dlev - HALLOWEEN_DLEV_TOUGHER) * 100) / (HALLOWEEN_DLEV_TOUGHEST - HALLOWEEN_DLEV_TOUGHER))) / 300;
-		else if (dlev >= HALLOWEEN_DLEV_TOUGH) /* Vary between 1/3 and 2/3 HP */
-			m_ptr->maxhp = (m_ptr->maxhp * (100 + ((dlev - HALLOWEEN_DLEV_TOUGH) * 100) / (HALLOWEEN_DLEV_TOUGHER - HALLOWEEN_DLEV_TOUGH))) / 300;
-		else /* Stay at minimum: 1/3 HP */
-			m_ptr->maxhp = m_ptr->maxhp / 3;
-	}
-
 	/* And start out fully healthy */
 	m_ptr->hp = m_ptr->maxhp;
 
@@ -3552,7 +3500,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 			if (m_ptr->speed < j) m_ptr->speed = 255;//overflow paranoia
 		}
 
-		//if (i) m_ptr->speed += rand_spread(0, i);
+//		if (i) m_ptr->speed += rand_spread(0, i);
 	}
 	/* Set monster cur speed to normal base speed */
 	m_ptr->mspeed = m_ptr->speed;
@@ -3620,8 +3568,6 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 		m_ptr->energy = -rand_int(((level_speed(wpos) - 1750) * 3) / 2);//delay by 0..2/3s - " -, very lenient ^^
 	}
 #endif
-	/* short break at the start */
-	if (r_idx == RI_MIRROR) m_ptr->suspended = turn + cfg.fps * 3;
 
 
 	strcpy(buf, (r_name + r_ptr->name));
@@ -3636,11 +3582,10 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 	/* Enforce sleeping if needed */
 	if (slp && r_ptr->sleep) {
 		int val = r_ptr->sleep;
-
 		m_ptr->csleep = ((val * 2) + randint(val * 10));
 	}
 
-	/*if (m_ptr->hold_o_idx) {
+/*	if(m_ptr->hold_o_idx){
 		s_printf("AHA! monster created with an object in hand!\n");
 		m_ptr->hold_o_idx = 0;
 	}*/
@@ -3657,7 +3602,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 	m_ptr->org_maxhp = m_ptr->maxhp;
 
 #ifdef MONSTER_ASTAR
-	if (r_ptr->flags7 & RF7_ASTAR) {
+	if (r_ptr->flags0 & RF0_ASTAR) {
 		/* search for an available A* table to use */
 		for (j = 0; j < ASTAR_MAX_INSTANCES; j++) {
 			/* found an available instance? */
@@ -3675,7 +3620,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 	} else m_ptr->astar_idx = -1;
 #endif
 
-	if ((r_ptr->flags8 & RF8_FINAL_GUARDIAN)) {
+	if ((r_ptr->flags0 & RF0_FINAL_GUARDIAN)) {
 		s_printf("FINAL_GUARDIAN %d spawned\n", r_idx);
 		if (level_generation_time && l_ptr) l_ptr->flags2 |= LF2_DUN_BOSS; /* Floor feeling (IDDC) */
 	}
@@ -3691,7 +3636,6 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 				m_ptr->hp = (m_ptr->hp * 1) / 2;
 				m_ptr->maxhp = (m_ptr->maxhp * 1) / 2;
 				s_printf("Sauron was created on %d (weakened)\n", dlev);
-				//note: we don't reset the weakened-flag here, in case player decides not to take on this particular spawned instance of Sauron but chooses to regenerate the floor instead
 			} else s_printf("Sauron was created on %d\n", dlev);
 		} else {
 			if (sauron_weakened) {
@@ -3700,13 +3644,12 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 				m_ptr->hp = (m_ptr->hp * 1) / 2;
 				m_ptr->maxhp = (m_ptr->maxhp * 1) / 2;
 				s_printf("Sauron was created on %d (weakened)\n", dlev);
-				//note: we don't reset the weakened-flag here, in case player decides not to take on this particular spawned instance of Sauron but chooses to regenerate the floor instead
 			} else s_printf("Sauron was created on %d\n", dlev);
 		}
 	}
 #ifdef ENABLE_MAIA
-	//if (r_idx == RI_CANDLEBEARER) s_printf("Candlebearer was created on %d\n", dlev);
-	//if (r_idx == RI_DARKLING) s_printf("Darkling was created on %d\n", dlev);
+//	if (r_idx == RI_CANDLEBEARER) s_printf("Candlebearer was created on %d\n", dlev);
+//	if (r_idx == RI_DARKLING) s_printf("Darkling was created on %d\n", dlev);
 #endif
 	if (r_idx == RI_MORGOTH) {
 		s_printf("Morgoth was created on %d\n", dlev);
@@ -3725,13 +3668,6 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 			}
 		/* if it was a live spawn, adjust his power according to amount of players on his floor */
 		if (!level_generation_time) check_Morgoth(0);
-
-		/* Just for some misc death message stuff */
-		if (!in_irondeepdive(wpos)) {
-			Morgoth_x = wpos->wx;
-			Morgoth_y = wpos->wy;
-			Morgoth_z = wpos->wz;
-		}
 	}
 	if (r_idx == RI_TIK_SRVZLLAT) s_printf("Tik'Svrzllat was created on %d\n", dlev);
 	if (r_idx == RI_HELLRAISER) s_printf("The Hellraiser was created on %d\n", dlev);
@@ -3741,14 +3677,12 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 		s_printf("Zu-Aon, The Cosmic Border Guard was created on %d\n", dlev);
 		if (l_ptr) l_ptr->flags1 |= (LF1_NO_GENO | LF1_NO_DESTROY);
 	}
-	if (r_idx == RI_PUMPKIN) s_printf("HALLOWEEN: The Great Pumpkin (%d) was created on %d,%d,%d (%d HP)\n", r_idx, wpos->wx, wpos->wy, wpos->wz, m_ptr->maxhp);
-	if (r_idx == RI_MIRROR) s_printf("Mirror was created on %d\n", dlev);
+	if (r_idx == RI_PUMPKIN1 || r_idx == RI_PUMPKIN2 || r_idx == RI_PUMPKIN3)
+		s_printf("HALLOWEEN: The Great Pumpkin (%d) was created on %d,%d,%d\n", r_idx, wpos->wx, wpos->wy, wpos->wz);
 
 	/* Handle floor feelings */
 	/* Special events don't necessarily influence floor feelings */
-	if (l_ptr
-	    /* don't disclose pumpkin presence */
-	    && r_idx != RI_PUMPKIN
+	if (l_ptr && (r_idx != RI_PUMPKIN1 && r_idx != RI_PUMPKIN2 && r_idx != RI_PUMPKIN3)
 	    /* for now ignore live-spawns. maybe change that?: */
 	    && level_generation_time) {
 		if ((r_ptr->flags1 & RF1_UNIQUE)) l_ptr->flags2 |= LF2_UNIQUE;
@@ -3770,7 +3704,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 	}
 
 	/* monster creation attempt passed! */
-	return(0);
+	return 0;
 }
 
 /*
@@ -3785,7 +3719,7 @@ if (PMO_DEBUG == r_idx) s_printf("PMO_DEBUG ok\n");
 static bool place_monster_group(struct worldpos *wpos, int y, int x, int r_idx, bool slp, bool little, int s_clone, int clone_summoning) {
 	monster_race *r_ptr = &r_info[r_idx];
 
-	int n, i, dlev;
+	int n, i;
 	int total = 0, extra = 0;
 
 	int hack_n = 0;
@@ -3793,22 +3727,22 @@ static bool place_monster_group(struct worldpos *wpos, int y, int x, int r_idx, 
 	byte hack_y[GROUP_MAX];
 	byte hack_x[GROUP_MAX];
 	cave_type **zcave;
-
 	if (!(zcave = getcave(wpos))) return(FALSE);
-
-	dlev = getlevel(wpos);
 
 	/* Pick a group size */
 	total = randint(13);
 
 	/* Hard monsters, small groups */
-	if (r_ptr->level > dlev) {
-		extra = r_ptr->level - dlev;
+	if (r_ptr->level > getlevel(wpos))
+	{
+		extra = r_ptr->level - getlevel(wpos);
 		extra = 0 - randint(extra);
 	}
+
 	/* Easy monsters, large groups */
-	else if (r_ptr->level < dlev) {
-		extra = dlev - r_ptr->level;
+	else if (r_ptr->level < getlevel(wpos))
+	{
+		extra = getlevel(wpos) - r_ptr->level;
 		extra = randint(extra);
 	}
 
@@ -3833,13 +3767,15 @@ static bool place_monster_group(struct worldpos *wpos, int y, int x, int r_idx, 
 	hack_y[0] = y;
 
 	/* Puddle monsters, breadth first, up to total */
-	for (n = 0; (n < hack_n) && (hack_n < total); n++) {
+	for (n = 0; (n < hack_n) && (hack_n < total); n++)
+	{
 		/* Grab the location */
 		int hx = hack_x[n];
 		int hy = hack_y[n];
 
 		/* Check each direction, up to total */
-		for (i = 0; (i < 8) && (hack_n < total); i++) {
+		for (i = 0; (i < 8) && (hack_n < total); i++)
+		{
 			int mx = hx + ddx_ddd[i];
 			int my = hy + ddy_ddd[i];
 
@@ -3849,7 +3785,7 @@ static bool place_monster_group(struct worldpos *wpos, int y, int x, int r_idx, 
 			if (!cave_empty_bold(zcave, my, mx)) continue;
 #endif
 			/* Attempt to place another monster */
-			if (place_monster_one(wpos, my, mx, r_idx, pick_ego_monster(r_idx, dlev), 0, slp, s_clone, clone_summoning) == 0) {
+			if (place_monster_one(wpos, my, mx, r_idx, pick_ego_monster(r_idx, getlevel(wpos)), 0, slp, s_clone, clone_summoning) == 0) {
 				/* Add it to the "hack" set */
 				hack_y[hack_n] = my;
 				hack_x[hack_n] = mx;
@@ -3859,7 +3795,7 @@ static bool place_monster_group(struct worldpos *wpos, int y, int x, int r_idx, 
 	}
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -3876,22 +3812,22 @@ static bool place_monster_okay_escort(int r_idx) {
 	monster_race *z_ptr = &r_info[r_idx];
 
 	/* Require similar "race" */
-	if (z_ptr->d_char != r_ptr->d_char) return(FALSE);
+	if (z_ptr->d_char != r_ptr->d_char) return (FALSE);
 
 	/* Skip more advanced monsters */
-	if (z_ptr->level > r_ptr->level) return(FALSE);
+	if (z_ptr->level > r_ptr->level) return (FALSE);
 
 	/* Skip Black Dogs, Wild Rabbits and a few high-profile mimic forms.. */
-	if (z_ptr->flags2 & RF2_NO_GROUP_MASK) return(FALSE);
+	if (z_ptr->flags0 & RF0_NO_GROUP_MASK) return (FALSE);
 
 	/* Skip unique monsters */
-	if (z_ptr->flags1 & RF1_UNIQUE) return(FALSE);
+	if (z_ptr->flags1 & RF1_UNIQUE) return (FALSE);
 
 	/* Paranoia -- Skip identical monsters */
-	if (place_monster_idx == r_idx) return(FALSE);
+	if (place_monster_idx == r_idx) return (FALSE);
 
 	/* Okay */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -3917,32 +3853,30 @@ int place_monster_aux(struct worldpos *wpos, int y, int x, int r_idx, bool slp, 
 	int i;
 	monster_race *r_ptr = &r_info[r_idx];
 	cave_type **zcave;
-	int dlevel = getlevel(wpos), res;
+	int level = getlevel(wpos), res;
+	if (!(zcave = getcave(wpos))) return -1;
 
-	if (!(zcave = getcave(wpos))) return(-1);
 #ifdef ARCADE_SERVER
-	if (in_trainingtower(wpos)) return(-2);
+	if (in_trainingtower(wpos)) return -2;
 #endif
 
 	if (!(summon_override_checks & SO_SURFACE)) {
 		/* Do not allow breeders to spawn in the wilderness - the_sandman */
-		if ((r_ptr->flags7 & RF7_MULTIPLY) && !(wpos->wz)) return(-3);
+		if ((r_ptr->flags7 & RF7_MULTIPLY) && !(wpos->wz)) return -3;
 	}
 
 	/* Place one monster, or fail */
-	if ((res = place_monster_one(wpos, y, x, r_idx, pick_ego_monster(r_idx, dlevel), 0, slp, clo, clone_summoning)) != 0) {
+	if ((res = place_monster_one(wpos, y, x, r_idx, pick_ego_monster(r_idx, level), 0, slp, clo, clone_summoning)) != 0) {
 		// DEBUG
 		/* s_printf("place_monster_one failed at (%d, %d, %d), y = %d, x = %d, r_idx = %d, feat = %d\n",
 			wpos->wx, wpos->wy, wpos->wz, y, x, r_idx, zcave[y][x].feat); */
-		/* Failure (!=0) */
-		return(res);
+		return res;
 	}
-	/* Success (==0) */
 
 	/* Require the "group" flag */
-	if (!grp) return(0);
+	if (!grp) return 0;
 #ifdef BLOODLETTER_SUMMON_NERF
-	if (r_idx == RI_BLOODLETTER && !level_generation_time) return(0);
+	if (r_idx == RI_BLOODLETTER && !level_generation_time) return 0;
 #endif
 
 	/* Friend for certain monsters */
@@ -3962,7 +3896,6 @@ int place_monster_aux(struct worldpos *wpos, int y, int x, int r_idx, bool slp, 
 	if (r_ptr->flags1 & RF1_ESCORT) {
 		dungeon_type *dt_ptr = getdungeon(wpos);
 		int dun_type = 0;
-
 #ifdef IRONDEEPDIVE_MIXED_TYPES
 		if (in_irondeepdive(wpos)) dun_type = iddc[ABS(wpos->wz)].type;
 		else
@@ -3991,7 +3924,7 @@ int place_monster_aux(struct worldpos *wpos, int y, int x, int r_idx, bool slp, 
 			get_mon_num_prep(dun_type, NULL);
 
 			/* Pick a random race */
-			z = get_mon_num((r_ptr->level * 4) / 5, dlevel); //not too high level escort for lower level boss
+			z = get_mon_num(r_ptr->level, r_ptr->level - 20); //not too high level escort for lower level boss
 
 
 			/* Remove restriction */
@@ -4001,7 +3934,7 @@ int place_monster_aux(struct worldpos *wpos, int y, int x, int r_idx, bool slp, 
 			if (!z) break;
 
 			/* Place a single escort */
-			(void)place_monster_one(wpos, ny, nx, z, pick_ego_monster(z, dlevel), 0, slp, clo, clone_summoning);
+			(void)place_monster_one(wpos, ny, nx, z, pick_ego_monster(z, level), 0, slp, clo, clone_summoning);
 
 #ifdef TEST_SERVER
 			if (r_ptr->flags1 & RF1_ESCORTS)
@@ -4009,7 +3942,8 @@ int place_monster_aux(struct worldpos *wpos, int y, int x, int r_idx, bool slp, 
 #else
 			/* Place a "group" of escorts if needed */
 			if ((r_info[z].flags1 & RF1_FRIENDS) ||
-			    (r_ptr->flags1 & RF1_ESCORTS)) {
+			    (r_ptr->flags1 & RF1_ESCORTS))
+			{
 				/* Place a group of monsters */
 #if 0
 				(void)place_monster_group(wpos, ny, nx, z, slp, FALSE, clo, clone_summoning);
@@ -4023,7 +3957,7 @@ int place_monster_aux(struct worldpos *wpos, int y, int x, int r_idx, bool slp, 
 
 
 	/* Success */
-	return(0);
+	return 0;
 }
 
 
@@ -4035,23 +3969,17 @@ int place_monster_aux(struct worldpos *wpos, int y, int x, int r_idx, bool slp, 
 bool place_monster(struct worldpos *wpos, int y, int x, bool slp, bool grp) {
 	int r_idx = 0, i;
 	player_type *p_ptr;
-	int dlev = getlevel(wpos); /* HALLOWEEN; and new: anti-double-OOD */
+	int lev = getlevel(wpos); /* HALLOWEEN; and new: anti-double-OOD */
 //#ifdef RPG_SERVER
 	struct dungeon_type *d_ptr = getdungeon(wpos);
 //#endif
 	struct dun_level *l_ptr = getfloor(wpos);
 
 
-	if (season_halloween && great_pumpkin_timer == 0 && wpos->wz != 0
-	    && level_generation_time /* spawn it only on level generation time? yes, because of high-lev camping TT while lowbies frequent it, spawning it for him */
-	    && (dlev <= HALLOWEEN_MAX_DLEV)
-#if 1 /* not in Training Tower? */
-	    && !(d_ptr->flags2 & DF2_NO_DEATH)
-#endif
+	if (season_halloween && great_pumpkin_timer == 0 && wpos->wz != 0 &&
+	    level_generation_time && /* spawn it only on level generation time? yes, because of high-lev camping TT while lowbies frequent it, spawning it for him */
 	    /* Don't waste Great Pumpkins on low-level IDDC floors */
-	    && (!in_irondeepdive(wpos) || wpos->wz >= HALLOWEEN_IDDC_DLEV)
-	    /* Don't generate Pumpkin on floors created by someone using probability travel or player-ghost,
-	       as this can easily lock out everyone from Pumpkin spawns, ie 'ddos' the Pumpkin.. */
+	    (!in_irondeepdive(wpos) || wpos->wz >= 10)
 	    && !(l_ptr && (l_ptr->flags1 & LF1_FAST_DIVE))) {
 		bool no_high_level_players = TRUE;
 
@@ -4061,19 +3989,50 @@ bool place_monster(struct worldpos *wpos, int y, int x, bool slp, bool grp) {
 			//if (is_admin(p_ptr)) continue;
 			if (p_ptr->admin_dm) continue;
 			if (!inarea(&p_ptr->wpos, wpos)) continue;
-			if (p_ptr->max_lev <= HALLOWEEN_MAX_PLEV) continue;
-			//spam	s_printf("Great Pumpkin spawn prevented by player>%d %s\n", HALLOWEEN_MAX_PLEV, p_ptr->name);
+#ifndef RPG_SERVER
+			if (p_ptr->max_lev <= 30) continue;
+//spam				s_printf("Great Pumpkin spawn prevented by player>35 %s\n", p_ptr->name);
+#else
+			if (p_ptr->max_lev <= 35) continue;
+//spam				s_printf("Great Pumpkin spawn prevented by player>40 %s\n", p_ptr->name);
+#endif
 			no_high_level_players = FALSE;
 			break;
 		}
 
 		/* Place a Great Pumpkin sometimes -- WARNING: HARDCODED r_idx */
-		if (no_high_level_players) {
-			r_idx = RI_PUMPKIN;
-			summon_override_checks = SO_FORCE_DEPTH;
+#ifndef RPG_SERVER
+		if (no_high_level_players && (lev <= 35)
+ #if 1 /* not in Training Tower? */
+		    && !(d_ptr->flags2 & DF2_NO_DEATH)
+ #endif
+		    ) {
+			if (lev > 20) r_idx = RI_PUMPKIN3;//10k HP
+			else {
+				if (lev > 10) r_idx = RI_PUMPKIN2;//6k HP
+				else r_idx = RI_PUMPKIN1;//3k HP, smallest version
+
+ #if 0 /* sometimes tougher? */
+				if (magik(15)) r_idx = RI_PUMPKIN2; /* sometimes tougher */
+				else if (magik(15)) r_idx = RI_PUMPKIN3; /* sometimes tougher */
+ #endif
+			}
+#else
+		if (no_high_level_players && (lev <= 40) && !(d_ptr->flags2 & DF2_NO_DEATH)) { /* not in Training Tower */
+			if (lev > 30) r_idx = RI_PUMPKIN3;//6.6k HP
+			else {
+				if (lev > 15) r_idx = RI_PUMPKIN2;//4k HP
+				else r_idx = RI_PUMPKIN1;//2k HP, smallest version
+
+ #if 0 /* sometimes tougher? */
+				if (magik(15)) r_idx = RI_PUMPKIN2; /* sometimes tougher */
+				else if (magik(15)) r_idx = RI_PUMPKIN3; /* sometimes tougher */
+ #endif
+			}
+#endif
+
 			if (place_monster_aux(wpos, y, x, r_idx, FALSE, FALSE, 0, 0) == 0) {
-				summon_override_checks = SO_NONE;
-				//spam--  s_printf("%s HALLOWEEN: Generated Great Pumpkin (%d) on %d,%d,%d (lev %d)\n", showtime(), r_idx, wpos->wx, wpos->wy, wpos->wz, lev);
+//spam				s_printf("%s HALLOWEEN: Generated Great Pumpkin (%d) on %d,%d,%d (lev %d)\n", showtime(), r_idx, wpos->wx, wpos->wy, wpos->wz, lev);
 				great_pumpkin_timer = -1; /* put generation on hold */
 				great_pumpkin_duration = 60; /* last for 60 minutes till it despawns on its own, to give other players a chance to find it */
 
@@ -4082,7 +4041,6 @@ bool place_monster(struct worldpos *wpos, int y, int x, bool slp, bool grp) {
 
 				return(TRUE);
 			}
-			summon_override_checks = SO_NONE;
 			/* oupsee */
 #if 0 /* not necessary/wrong even (if place_monster_aux() fails -> problem) */
 			great_pumpkin_timer = 1; /* <- just paranoia: no mass-emptiness in case above always fails for unknown reasons */
@@ -4104,15 +4062,14 @@ bool place_monster(struct worldpos *wpos, int y, int x, bool slp, bool grp) {
 	if (d_ptr && (d_ptr->r_char[0] || d_ptr->nr_char[0])) {
 		int i, j = 0;
 		monster_race *r_ptr;
-
-		while ((r_idx = get_mon_num(monster_level, dlev))) {
+		while ((r_idx = get_mon_num(monster_level, lev))) {
 			if (j++ > 250) break;
 			r_ptr = &r_info[r_idx];
 			if (d_ptr->r_char[0]) {
 				for (i = 0; i < 10; i++) {
 					if (r_ptr->d_char == d_ptr->r_char[i]) break;
 				}
-				if (i < 10) break;
+				if(i < 10) break;
 				continue;
 			}
 			if (d_ptr->nr_char[0]) {
@@ -4129,7 +4086,6 @@ bool place_monster(struct worldpos *wpos, int y, int x, bool slp, bool grp) {
 		cave_type **zcave;
 		dungeon_type *dt_ptr = getdungeon(wpos);
 		int dun_type = 0;
-
 #ifdef IRONDEEPDIVE_MIXED_TYPES
 		if (in_irondeepdive(wpos)) dun_type = iddc[ABS(wpos->wz)].type;
 		else
@@ -4150,20 +4106,20 @@ bool place_monster(struct worldpos *wpos, int y, int x, bool slp, bool grp) {
 		get_mon_num_prep(dun_type, l_ptr ? l_ptr->uniques_killed : NULL);
 
 		/* Pick a monster */
-		r_idx = get_mon_num(monster_level, dlev);
+		r_idx = get_mon_num(monster_level, lev);
 
 		/* Reset restriction */
 		get_mon_num2_hook = NULL;
 	}
 
 	/* Handle failure */
-	if (!r_idx) return(FALSE);
+	if (!r_idx) return (FALSE);
 
 	/* Attempt to place the monster */
-	if (place_monster_aux(wpos, y, x, r_idx, slp, grp, FALSE, 0) == 0) return(TRUE);
+	if (place_monster_aux(wpos, y, x, r_idx, slp, grp, FALSE, 0) == 0) return (TRUE);
 
 	/* Oops */
-	return(FALSE);
+	return (FALSE);
 }
 
 /*
@@ -4230,11 +4186,10 @@ bool place_monster(struct worldpos *wpos, int y, int x, bool slp, bool grp) {
  * Use "monster_level" for the monster level
  */
 bool alloc_monster(struct worldpos *wpos, int dis, int slp) {
-	int		     y, x, i, d, min_dis = 999;
-	int		     tries = 0;
+	int                     y, x, i, d, min_dis = 999;
+	int                     tries = 0;
 	player_type *p_ptr;
 	cave_type **zcave;
-
 	if (!(zcave = getcave(wpos))) return(FALSE);
 
 	/* Find a legal, distant, unoccupied, space */
@@ -4250,7 +4205,8 @@ bool alloc_monster(struct worldpos *wpos, int dis, int slp) {
 		if (!cave_naked_bold(zcave, y, x)) continue;
 
 		/* Accept far away grids */
-		for (i = 1; i <= NumPlayers; i++) {
+		for (i = 1; i <= NumPlayers; i++)
+		{
 			p_ptr = Players[i];
 
 			/* Skip him if he's not playing */
@@ -4258,7 +4214,7 @@ bool alloc_monster(struct worldpos *wpos, int dis, int slp) {
 				continue;
 
 			/* Skip him if he's not on this depth */
-			if (!inarea(wpos, &p_ptr->wpos))
+			if(!inarea(wpos, &p_ptr->wpos))
 				continue;
 
 			if ((d = distance(y, x, p_ptr->py, p_ptr->px)) < min_dis)
@@ -4271,15 +4227,15 @@ bool alloc_monster(struct worldpos *wpos, int dis, int slp) {
 
 	/* Abort */
 	if (tries >= 50)
-		return(FALSE);
+		return (FALSE);
 
 	/*printf("Trying to place a monster at %d, %d.\n", y, x);*/
 
 	/* Attempt to place the monster, allow groups */
-	if (place_monster(wpos, y, x, slp, TRUE)) return(TRUE);
+	if (place_monster(wpos, y, x, slp, TRUE)) return (TRUE);
 
 	/* Nope */
-	return(FALSE);
+	return (FALSE);
 }
 
 /* Used for dungeon bosses, aka FINAL_GUARDIAN - C. Blue */
@@ -4288,9 +4244,8 @@ int alloc_monster_specific(struct worldpos *wpos, int r_idx, int dis, int slp) {
 	int tries = 2000;
 	player_type *p_ptr;
 	cave_type **zcave;
+	if (!(zcave = getcave(wpos))) return -1;
 	dun_level *l_ptr = getfloor(wpos);
-
-	if (!(zcave = getcave(wpos))) return(-1);
 
 	/* Find a legal, distant, unoccupied, space */
 	while (--tries) { /* try especially hard to succeed */
@@ -4337,7 +4292,7 @@ int alloc_monster_specific(struct worldpos *wpos, int r_idx, int dis, int slp) {
 			if (broke) continue;
 		}
 		/* does monster *prefer* roaming freely and isn't found in vaults/pits/nests usually? */
-		if ((r_info[r_idx].flags2 & RF2_ROAMING)
+		if ((r_info[r_idx].flags0 & RF0_ROAMING)
 		    && !(summon_override_checks & (SO_GRID_EMPTY | SO_GRID_TERRAIN))) {
 			if ((zcave[y][x].info & (CAVE_ICKY | CAVE_NEST_PIT))) continue;
 		}
@@ -4353,7 +4308,7 @@ int alloc_monster_specific(struct worldpos *wpos, int r_idx, int dis, int slp) {
 				continue;
 
 			/* Skip him if he's not on this depth */
-			if (!inarea(wpos, &p_ptr->wpos))
+			if(!inarea(wpos, &p_ptr->wpos))
 				continue;
 
 			if ((d = distance(y, x, p_ptr->py, p_ptr->px)) < min_dis)
@@ -4370,17 +4325,17 @@ int alloc_monster_specific(struct worldpos *wpos, int r_idx, int dis, int slp) {
 	if (!tries) {
 		/* fun stuff. it STILL fails here "relatively" often.. -_- */
 		s_printf("allocate_monster_specific() out of tries for r_idx %d on %s.\n", r_idx, wpos_format(0, wpos));
-		return(-2);
+		return -2;
 	}
 
 	/* Attempt to place the monster, allow groups */
-	if ((res = place_monster_aux(wpos, y, x, r_idx, slp, TRUE, FALSE, 0)) == 0) return(0);
+	if ((res = place_monster_aux(wpos, y, x, r_idx, slp, TRUE, FALSE, 0)) == 0) return 0;
 
 	/* Nope */
 	if (res != 37) /* no spam for players who have killed the boss already */
 		s_printf("allocate_monster_specific()->place_monster_aux() failed for r_idx %d on %s (%d).\n", r_idx, wpos_format(0, wpos), res);
 
-	return(res);
+	return res;
 }
 
 /*
@@ -4400,241 +4355,247 @@ static bool summon_specific_okay(int r_idx) {
 	bool okay = FALSE;
 
 	/* Dungeon bosses are never okay; they can only be generated on level creation time */
-	if ((r_ptr->flags8 & RF8_FINAL_GUARDIAN)) return(FALSE);
+	if ((r_ptr->flags0 & RF0_FINAL_GUARDIAN)) return FALSE;
 
 	/* Hack -- no specific type specified */
-	if (!summon_specific_type) return(TRUE); /* 'SUMMON_ALL' */
+	if (!summon_specific_type) return TRUE; /* 'SUMMON_ALL' */
 
 	/* Check our requirements */
 	switch (summon_specific_type) {
-	case SUMMON_ALL_U98:
-		okay = (r_ptr->level <= 98 ||
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_MONSTER:
-		okay = (!(r_ptr->flags1 & RF1_UNIQUE) &&
-		    r_ptr->d_char != 'A'); //hm, actually disallow Angels for generic monster summoning..
-		break;
-	case SUMMON_ANT:
-		okay = (r_ptr->d_char == 'a' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_SPIDER:
-		okay = (r_ptr->d_char == 'S' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_HOUND:
-		okay = ((r_ptr->d_char == 'C' || r_ptr->d_char == 'Z') &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_HYDRA:
-		okay = (r_ptr->d_char == 'M' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_ANGEL:
-		okay = (r_ptr->d_char == 'A' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_DEMON:
-		okay = ((r_ptr->flags3 & RF3_DEMON) &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_UNDEAD:
-		okay = ((r_ptr->flags3 & RF3_UNDEAD) &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_DRAGON:
-		okay = ((r_ptr->flags3 & RF3_DRAGON) &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_HI_UNDEAD:
-		okay = ((r_ptr->d_char == 'L' || r_ptr->d_char == 'V' || r_ptr->d_char == 'W') &&
-		    r_ptr->level >= 45
+		case SUMMON_ALL_U98:
+			okay = (r_ptr->level <= 98 ||
+			    !(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_MONSTER:
+			okay = (!(r_ptr->flags1 & RF1_UNIQUE) &&
+			    (r_ptr->d_char != 'A')); //hm, actually disallow Angels for generic monster summoning..
+			break;
+		case SUMMON_ANT:
+			okay = ((r_ptr->d_char == 'a') &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_SPIDER:
+			okay = ((r_ptr->d_char == 'S') &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_HOUND:
+			okay = (((r_ptr->d_char == 'C') || (r_ptr->d_char == 'Z')) &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_HYDRA:
+			okay = ((r_ptr->d_char == 'M') &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_ANGEL:
+			okay = ((r_ptr->d_char == 'A') &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_DEMON:
+			okay = ((r_ptr->flags3 & RF3_DEMON) &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_UNDEAD:
+			okay = ((r_ptr->flags3 & RF3_UNDEAD) &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_DRAGON:
+			okay = ((r_ptr->flags3 & RF3_DRAGON) &&
+				!(r_ptr->flags1 & RF1_UNIQUE));
+			break;
+		case SUMMON_HI_UNDEAD:
+			okay = (((r_ptr->d_char == 'L') ||
+				(r_ptr->d_char == 'V') ||
+				(r_ptr->d_char == 'W')) &&
+				(r_ptr->level >= 45)
 #ifdef EXPLICITE_UNIQUE_SUMMONING
-		    && (!(r_ptr->flags1 & RF1_UNIQUE)
-		    || (r_ptr->flags7 & RF7_NAZGUL)) /* exception: allow Nazgul! */
+				&& (!(r_ptr->flags1 & RF1_UNIQUE)
+				    || (r_ptr->flags7 & RF7_NAZGUL)) /* exception: allow Nazgul! */
 #endif
-		    );
-		break;
-	case SUMMON_HI_DRAGON:
-		okay = (r_ptr->d_char == 'D'
+				);
+			break;
+		case SUMMON_HI_DRAGON:
+			okay = (r_ptr->d_char == 'D'
 #ifdef EXPLICITE_UNIQUE_SUMMONING
-		    && !(r_ptr->flags1 & RF1_UNIQUE)
+				&& !(r_ptr->flags1 & RF1_UNIQUE)
 #endif
-		    );
-		break;
-	case SUMMON_NAZGUL:
-		okay = (r_ptr->flags7 & RF7_NAZGUL);
-		break;
-	case SUMMON_UNIQUE:
-		okay = (r_ptr->flags1 & RF1_UNIQUE);
-		break;
+				);
+			break;
+		case SUMMON_NAZGUL:
+			okay = ((r_ptr->flags7 & RF7_NAZGUL));
+			break;
+		case SUMMON_UNIQUE:
+			okay = ((r_ptr->flags1 & RF1_UNIQUE));
+			break;
 
-	/* PernA-addition
-	 * many of them are unused for now.	- Jir -
-	 * */
-	case SUMMON_BIZARRE1:
-		okay = (r_ptr->d_char == 'm' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_BIZARRE2:
-		okay = (r_ptr->d_char == 'b' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_BIZARRE3:
-		okay = (r_ptr->d_char == 'Q' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_BIZARRE4:
-		okay = (r_ptr->d_char == 'v' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_BIZARRE5:
-		okay = (r_ptr->d_char == '$' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_BIZARRE6:
-		okay = ((r_ptr->d_char == '!' || r_ptr->d_char == '?' || r_ptr->d_char == '=' ||
-		    r_ptr->d_char == '$' || r_ptr->d_char == '|' || (r_ptr->flags9 & RF9_MIMIC)) &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-		case SUMMON_HI_DEMON:
-		okay = ((r_ptr->flags3 & RF3_DEMON) &&
-		    r_ptr->d_char == 'U' &&
-		    r_ptr->level >= 49 &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
+		/* PernA-addition
+		 * many of them are unused for now.	- Jir -
+		 * */
+		case SUMMON_BIZARRE1:
+			okay = ((r_ptr->d_char == 'm') &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_BIZARRE2:
+			okay = ((r_ptr->d_char == 'b') &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_BIZARRE3:
+			okay = ((r_ptr->d_char == 'Q') &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_BIZARRE4:
+			okay = ((r_ptr->d_char == 'v') &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_BIZARRE5:
+			okay = ((r_ptr->d_char == '$') &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_BIZARRE6:
+			okay = (((r_ptr->d_char == '!') ||
+			         (r_ptr->d_char == '?') ||
+			         (r_ptr->d_char == '=') ||
+			         (r_ptr->d_char == '$') ||
+			         (r_ptr->d_char == '|') ||
+				(r_ptr->flags9 & (RF9_MIMIC)) ) &&
+			        !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+                case SUMMON_HI_DEMON:
+			okay = ((r_ptr->flags3 & (RF3_DEMON)) &&
+			        (r_ptr->d_char == 'U') &&
+				(r_ptr->level >= 49) &&
+			       !(r_ptr->flags1 & RF1_UNIQUE));
+			break;
 #if 1	// welcome, Julian Lighton Hack ;)
-	case SUMMON_KIN:
-		okay = (r_ptr->d_char == summon_kin_type &&
-		    !(r_ptr->flags1 & RF1_UNIQUE) &&
-		    (r_ptr->flags8 & RF8_DUNGEON)); //<-hack: rat king shouldn't summon wild rabbits
-		break;
+		case SUMMON_KIN:
+			okay = ((r_ptr->d_char == summon_kin_type) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)) &&
+			       (r_ptr->flags8 & (RF8_DUNGEON))); //<-hack: rat king shouldn't summon wild rabbits
+			break;
 #endif	// 0
-	case SUMMON_DAWN:
-		okay = (r_idx == RI_WARRIOR_DAWN &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_ANIMAL:
-		okay = ((r_ptr->flags3 & RF3_ANIMAL) &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_ANIMAL_RANGER:
-		okay = ((r_ptr->flags3 & RF3_ANIMAL) &&
-		    strchr("abcflqrwBCIJKMRS", r_ptr->d_char) &&
-		    !(r_ptr->flags3 & RF3_DRAGON) &&
-		    !(r_ptr->flags3 & RF3_EVIL) &&
-		    !(r_ptr->flags3 & RF3_UNDEAD)&&
-		    !(r_ptr->flags3 & RF3_DEMON) &&
-		    !(r_ptr->flags4 || r_ptr->flags5 || r_ptr->flags6) &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_HI_UNDEAD_NO_UNIQUES:
-		okay = ((r_ptr->d_char == 'L' || r_ptr->d_char == 'V' || r_ptr->d_char == 'W') &&
-		    r_ptr->level >= 45 &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_HI_DRAGON_NO_UNIQUES:
-		okay = (r_ptr->d_char == 'D' &&
-		    !(r_ptr->flags1 &RF1_UNIQUE));
-		break;
-	case SUMMON_NO_UNIQUES:
-		okay = (!(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_PHANTOM:
-		okay = (strstr(r_name + r_ptr->name, "hantom") &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_ELEMENTAL:
-		okay = (strstr(r_name + r_ptr->name , "lemental") &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_DRAGONRIDER:
-		okay = ((r_ptr->flags3 & RF3_DRAGONRIDER)
+		case SUMMON_DAWN:
+			okay = ((strstr((r_name + r_ptr->name),"the Dawn")) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_ANIMAL:
+			okay = ((r_ptr->flags3 & (RF3_ANIMAL)) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_ANIMAL_RANGER:
+			okay = ((r_ptr->flags3 & (RF3_ANIMAL)) &&
+			       (strchr("abcflqrwBCIJKMRS", r_ptr->d_char)) &&
+			       !(r_ptr->flags3 & (RF3_DRAGON))&&
+			       !(r_ptr->flags3 & (RF3_EVIL)) &&
+			       !(r_ptr->flags3 & (RF3_UNDEAD))&&
+			       !(r_ptr->flags3 & (RF3_DEMON)) &&
+			       !(r_ptr->flags4 || r_ptr->flags5 || r_ptr->flags6) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_HI_UNDEAD_NO_UNIQUES:
+			okay = (((r_ptr->d_char == 'L') ||
+			         (r_ptr->d_char == 'V') ||
+			         (r_ptr->d_char == 'W')) &&
+				 (r_ptr->level >= 45) &&
+			        !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_HI_DRAGON_NO_UNIQUES:
+			okay = ((r_ptr->d_char == 'D') &&
+			       !(r_ptr->flags1 &(RF1_UNIQUE)));
+			break;
+		case SUMMON_NO_UNIQUES:
+			okay = (!(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_PHANTOM:
+			okay = ((strstr((r_name + r_ptr->name),"Phantom")) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_ELEMENTAL:
+			okay = ((strstr((r_name + r_ptr->name),"lemental")) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_DRAGONRIDER:
+			okay = ((r_ptr->flags3 & RF3_DRAGONRIDER)
 #ifdef EXPLICITE_UNIQUE_SUMMONING
-		    && !(r_ptr->flags1 & RF1_UNIQUE)
+			       && !(r_ptr->flags1 & RF1_UNIQUE)
 #endif
-		    && r_ptr->level < 70 /* Don't summon Gold DRs, too easy to obtain mimicry form */
-		    );
-		break;
-	case SUMMON_BLUE_HORROR:
-		okay = (r_idx == RI_BLUE_HORROR &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_BUG:
-		okay = (r_idx == RI_SOFTWARE_BUG &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_RNG:
-		okay = (r_idx == RI_RNG &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_IMMOBILE:
-		okay = ((r_ptr->flags2 & RF2_NEVER_MOVE)
+			       && (r_ptr->level < 70) /* Don't summon Gold DRs, too easy to obtain mimicry form */
+				);
+			break;
+		case SUMMON_BLUE_HORROR:
+			okay = ((strstr((r_name + r_ptr->name),"lue horror")) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_BUG:
+			okay = ((strstr((r_name + r_ptr->name),"Software bug")) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_RNG:
+			okay = ((strstr((r_name + r_ptr->name),"Random Number Generator")) &&
+			       !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_IMMOBILE:
+			okay = ((r_ptr->flags1 & RF1_NEVER_MOVE)
 #ifdef EXPLICITE_UNIQUE_SUMMONING
-		    && !(r_ptr->flags1 & RF1_UNIQUE)
+				&& !(r_ptr->flags1 & RF1_UNIQUE)
 #endif
-		    );
-		break;
-	case SUMMON_HUMAN:
-		okay = (r_ptr->d_char == 'p' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_SHADOW:
-		okay = (r_ptr->d_char == 'G' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_QUYLTHULG:
-		okay = (r_ptr->d_char == 'Q' &&
-		    !(r_ptr->flags1 & RF1_UNIQUE));
-		break;
-	case SUMMON_VERMIN:
-		okay = ((r_ptr->flags7 & RF7_MULTIPLY)
+				);
+			break;
+		case SUMMON_HUMAN:
+			okay = ((r_ptr->d_char == 'p') &&
+			        !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_SHADOW:
+			okay = ((r_ptr->d_char == 'G') &&
+			        !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_QUYLTHULG:
+			okay = ((r_ptr->d_char == 'Q') &&
+				!(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		case SUMMON_VERMIN:
+			okay = ((r_ptr->flags7 & RF7_MULTIPLY)
 #ifdef EXPLICITE_UNIQUE_SUMMONING /* paranoia - there cannot be unique multiplying vermin, but whatever */
-		    && !(r_ptr->flags1 & RF1_UNIQUE)
+			       && !(r_ptr->flags1 & RF1_UNIQUE)
 #endif
-		    );
-		break;
-	case SUMMON_PATIENT:
-		okay = ((r_ptr->flags2 & RF2_NEVER_MOVE) &&
-		    !(r_ptr->flags4 || r_ptr->flags5 || r_ptr->flags6 || r_ptr->flags0)
+				);
+			break;
+		case SUMMON_PATIENT:
+			okay = ((r_ptr->flags1 & RF1_NEVER_MOVE) &&
+				!(r_ptr->flags4 || r_ptr->flags5 || r_ptr->flags6 || (r_ptr->flags0 & RF0_ACTIVE_MASK))
 #ifdef EXPLICITE_UNIQUE_SUMMONING
-		    && !(r_ptr->flags1 & RF1_UNIQUE)
+				&& !(r_ptr->flags1 & RF1_UNIQUE)
 #endif
-		    );
-		break;
+				);
+			break;
 #ifdef USE_LUA
 #if 0	// let's leave it to DG :)
-	case SUMMON_LUA:
-		okay = summon_lua_okay(r_idx);
-		break;
+		case SUMMON_LUA:
+			okay = summon_lua_okay(r_idx);
+			break;
 #endif
 #endif
-	case SUMMON_HI_MONSTER:
-		okay = (r_ptr->level >= 60
-		    //&& r_ptr->d_char != 'A' /* this would be ok if enabled, because SUMMON_HI_MONSTER is only called by Sauron, Morgoth, Tzeentch, but not by Michael. */
+		case SUMMON_HI_MONSTER:
+			okay = (r_ptr->level >= 60
 #ifdef EXPLICITE_UNIQUE_SUMMONING
-		    && !(r_ptr->flags1 & RF1_UNIQUE)
+				&& !(r_ptr->flags1 & RF1_UNIQUE)
 #endif
-		    );
-		break;
-	case SUMMON_HI_UNIQUE:
-		okay = ((r_ptr->flags1 & RF1_UNIQUE)
-		    && r_ptr->d_char != 'A' /* this is ok because SUMMON_HI_UNIQUE is only called by Sauron, Morgoth, Tik, but not by Michael. */
-		    && r_ptr->level >= 60);
-		break;
-	case SUMMON_SPOOK:
-		okay = ((r_ptr->d_char == 'G')
-		    && (r_ptr->flags2 & RF2_INVISIBLE) /* hm, no phantom warriors (also excludes spectres) */
+				);
+			break;
+		case SUMMON_HI_UNIQUE:
+			okay = ((r_ptr->flags1 & RF1_UNIQUE)
+				&& (r_ptr->level >= 60));
+			break;
+		case SUMMON_SPOOK:
+			okay = ((r_ptr->d_char == 'G')
+				&& (r_ptr->flags2 & RF2_INVISIBLE) /* hm, no phantom warriors (also excludes spectres) */
 #ifdef EXPLICITE_UNIQUE_SUMMONING
-		    && !(r_ptr->flags1 & RF1_UNIQUE)
+			       && !(r_ptr->flags1 & RF1_UNIQUE)
 #endif
-		    && r_ptr->level <= 31); /* 31 for Ghost, 33 also allows Shade (somewhat nasty) */
-		break;
+				&& (r_ptr->level <= 31)); /* 31 for Ghost, 33 also allows Shade (somewhat nasty) */
+			break;
 	}
 
 	/* Result */
-	return(okay);
+	return (okay);
 }
 
 
@@ -4665,14 +4626,10 @@ static bool summon_specific_okay(int r_idx) {
  * Note that this function may not succeed, though this is very rare.
  */
 bool summon_specific(struct worldpos *wpos, int y1, int x1, int lev, int s_clone, int type, int allow_sidekicks, int clone_summoning) {
-	int i, x, y, r_idx, dlev;
-	dun_level *l_ptr;
+	int i, x, y, r_idx;
+	dun_level *l_ptr = getfloor(wpos);
 	cave_type **zcave;
-
-	if (!(zcave = getcave(wpos))) return(FALSE);
-
-	l_ptr = getfloor(wpos);
-	dlev = getlevel(wpos);
+	if(!(zcave = getcave(wpos))) return(FALSE);
 
 	/* Look for a location */
 	for (i = 0; i < 20; ++i) {
@@ -4694,7 +4651,7 @@ bool summon_specific(struct worldpos *wpos, int y1, int x1, int lev, int s_clone
 	}
 
 	/* Failure */
-	if (i == 20) return(FALSE);
+	if (i == 20) return (FALSE);
 
 
 	/* Save the "summon" type */
@@ -4713,25 +4670,40 @@ bool summon_specific(struct worldpos *wpos, int y1, int x1, int lev, int s_clone
 	 * This fix presumes Morgie and Morgie only has level 100 */
 
 	for (i = 0; i < 10; i++) { /* try a couple of times */
+#if 0 /* incorporated it directly into summon_specific_type, as it should be */
+		/* Hack for RF0_S_HI_ flags */
+		if (type == SUMMON_HI_MONSTER || type == SUMMON_HI_UNIQUE) {
+			/* Ok, now let them summon what they can */
+			r_idx = get_mon_num(100 + 5, 100);
+			if (r_info[r_idx].level < 60) {
+				r_idx = 0; /* failure - see below */
+				continue;
+			}
+		} else {
+			/* Ok, now let them summon what they can */
+			r_idx = get_mon_num((getlevel(wpos) + lev) / 2 + 5, (getlevel(wpos) + lev) / 2);
+		}
+#else
 		/* Ok, now let them summon what they can */
-		r_idx = get_mon_num((dlev + lev) / 2 + 5, dlev);
+		r_idx = get_mon_num((getlevel(wpos) + lev) / 2 + 5, (getlevel(wpos) + lev) / 2);
+#endif
 		break;
 	}
 
 	/* Don't allow uniques if escorts/friends (sidekicks) weren't allowed */
-	if (!allow_sidekicks && (r_info[r_idx].flags1 & RF1_UNIQUE)) return(FALSE);
+	if (!allow_sidekicks && (r_info[r_idx].flags1 & RF1_UNIQUE)) return (FALSE);
 
 	/* Remove restriction */
 	set_mon_num_hook(wpos);
 
 	/* Handle failure */
-	if (!r_idx) return(FALSE);
+	if (!r_idx) return (FALSE);
 
 	/* Attempt to place the monster (awake, allow groups) */
-	if (place_monster_aux(wpos, y, x, r_idx, FALSE, allow_sidekicks ? TRUE : FALSE, s_clone, clone_summoning) != 0) return(FALSE);
+	if (place_monster_aux(wpos, y, x, r_idx, FALSE, allow_sidekicks ? TRUE : FALSE, s_clone, clone_summoning) != 0) return (FALSE);
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 /* summon a specific race near this location */
@@ -4739,11 +4711,10 @@ bool summon_specific(struct worldpos *wpos, int y1, int x1, int lev, int s_clone
 bool summon_specific_race(struct worldpos *wpos, int y1, int x1, int r_idx, int s_clone, unsigned char size) {
 	int c, i, x, y;
 	cave_type **zcave;
-
 	if (!(zcave = getcave(wpos))) return(FALSE);
 
 	/* Handle failure */
-	if (!r_idx) return(FALSE);
+	if (!r_idx) return (FALSE);
 
 	/* for each monster we are summoning */
 	for (c = 0; c < size; c++) {
@@ -4767,27 +4738,26 @@ bool summon_specific_race(struct worldpos *wpos, int y1, int x1, int r_idx, int 
 		}
 
 		/* Failure */
-		if (i == 20) return(FALSE);
+		if (i == 20) return (FALSE);
 
 		/* Attempt to place the monster (awake, don't allow groups) */
 		if (place_monster_aux(wpos, y, x, r_idx, FALSE, FALSE,
 		    s_clone == 101 ? 100 : s_clone, s_clone == 101 ? 1000 : 0) != 0)
-			return(FALSE);
+			return (FALSE);
 
 	}
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 
 /* summon a specific race at a random location */
 bool summon_specific_race_somewhere(struct worldpos *wpos, int r_idx, int s_clone, unsigned char size) {
-	int		     y, x;
-	int		     tries = 0;
+	int                     y, x;
+	int                     tries = 0;
 
 	cave_type **zcave;
-
 	if (!(zcave = getcave(wpos))) return(FALSE);
 
 	/* Find a legal, distant, unoccupied, space */
@@ -4802,8 +4772,10 @@ bool summon_specific_race_somewhere(struct worldpos *wpos, int r_idx, int s_clon
 		/* Require "naked" floor grid */
 		if (!cave_naked_bold(zcave, y, x)) continue;
 
+
 		/* Abort */
-		if (tries >= 50) return(FALSE);
+		if (tries >= 50)
+			return (FALSE);
 
 		/* We have a valid location */
 		break;
@@ -4814,17 +4786,16 @@ bool summon_specific_race_somewhere(struct worldpos *wpos, int r_idx, int s_clon
 #endif
 
 	/* Attempt to place the monster */
-	if (summon_specific_race(wpos, y, x, r_idx, s_clone, size)) return(TRUE);
-	return(FALSE);
+	if (summon_specific_race(wpos, y, x, r_idx, s_clone, size)) return TRUE;
+	return (FALSE);
 }
 
 /* summon a single monster in every detail in a random location */
 int summon_detailed_one_somewhere(struct worldpos *wpos, int r_idx, int ego, bool slp, int s_clone) {
-	int		     y, x;
-	int		     tries = 0;
+	int                     y, x;
+	int                     tries = 0;
 
 	cave_type **zcave;
-
 	if (!(zcave = getcave(wpos))) return(FALSE);
 
 	/* Find a legal, distant, unoccupied, space */
@@ -4847,8 +4818,10 @@ int summon_detailed_one_somewhere(struct worldpos *wpos, int r_idx, int ego, boo
 		if (zcave[y][x].feat == FEAT_GLYPH) continue;
 		if (zcave[y][x].feat == FEAT_RUNE) continue;
 
+
 		/* Abort */
-		if (tries >= 50) return(FALSE);
+		if (tries >= 50)
+			return (FALSE);
 
 		/* We have a valid location */
 		break;
@@ -4859,10 +4832,10 @@ int summon_detailed_one_somewhere(struct worldpos *wpos, int r_idx, int ego, boo
 #endif
 
 	if (place_monster_one(wpos, y, x, r_idx, ego, FALSE, slp, s_clone == 101 ? 100 : s_clone, s_clone == 101 ? 1000 : 0) != 0)
-		return(FALSE);
+		return (FALSE);
 
 	/* Success */
-	return(zcave[y][x].m_idx);
+	return (zcave[y][x].m_idx);
 }
 
 
@@ -4883,23 +4856,23 @@ bool multiply_monster(int m_idx) {
 	struct worldpos *wpos = &m_ptr->wpos;
 	cave_type **zcave;
 
-	if (!(zcave = getcave(wpos))) return(FALSE);
+	if (!(zcave = getcave(wpos))) return FALSE;
 
 	/* Not in town -_- */
-	if (istown(wpos)) return(FALSE);
+	if (istown(wpos)) return FALSE;
 
 	/* Don't keep cloning forever */
-	if (m_ptr->clone > 90) return(FALSE);
+	if (m_ptr->clone > 90) return FALSE ;
 
 	/* No uniques or special event monsters */
 	if ((r_ptr->flags1 & RF1_UNIQUE) || (r_ptr->flags8 & RF8_PSEUDO_UNIQUE)
 	    /* No special 'flavour' monsters */
-	    || (r_ptr->flags7 & RF7_NO_DEATH) || (r_ptr->flags8 & RF8_GENO_NO_THIN)
+	    || (r_ptr->flags7 & RF7_NO_DEATH)
 	    /* No questors */
 	    || m_ptr->questor
 	    /* No non-spawning monsters */
 	    || !r_ptr->rarity)
-		return(FALSE);
+		return FALSE;
 
 	/* Try up to 18 times */
 	for (i = 0; i < 18; i++) {
@@ -4918,7 +4891,7 @@ bool multiply_monster(int m_idx) {
 	}
 
 	/* Result */
-	return(result);
+	return (result);
 }
 
 
@@ -4929,16 +4902,15 @@ bool multiply_monster(int m_idx) {
  * Technically should attempt to treat "Beholder"'s as jelly's
  */
 void message_pain(int Ind, int m_idx, int dam) {
-	long		oldhp, newhp, tmp;
-	int		percentage;
+	long                    oldhp, newhp, tmp;
+	int                             percentage;
 
-	monster_type	*m_ptr = &m_list[m_idx];
-	monster_race	*r_ptr = race_inf(m_ptr);
+	monster_type		*m_ptr = &m_list[m_idx];
+	monster_race            *r_ptr = race_inf(m_ptr);
 
-	char		m_name[MNAME_LEN];
+	char                    m_name[MNAME_LEN];
 
 	char uniq = 'w';
-
 	if ((r_ptr->flags1 & RF1_UNIQUE) &&
 	    Players[Ind]->r_killed[m_ptr->r_idx] == 1) {
 		uniq = 'D';
@@ -4972,7 +4944,7 @@ void message_pain(int Ind, int m_idx, int dam) {
 		}
 		return;
 	/* some monsters don't react at all */
-	} else if (r_ptr->flags2 & RF2_NEVER_ACT) {
+	} else if (r_ptr->flags7 & RF7_NEVER_ACT) {
 		if (r_ptr->flags1 & RF1_UNIQUE)
 			msg_format(Ind, "\377%c%^s remains unmoving and takes \377e%d \377%cdamage.", uniq, m_name, dam, uniq);
 		else
@@ -4995,12 +4967,7 @@ void message_pain(int Ind, int m_idx, int dam) {
 
 	/* DEG Modified to give damage information */
 	/* Jelly's, Mold's, Vortex's, Quthl's */
-	if (r_ptr->flags3 & RF3_NONLIVING) { /* Constructs: No message. Note that this means vortices too (handled below otherwise). */
-		if (r_ptr->flags1 & RF1_UNIQUE)
-			msg_format(Ind, "\377%c%^s takes \377e%d \377%cdamage.", uniq, m_name, dam, uniq);
-		else
-			msg_format(Ind, "%^s takes \377g%d \377wdamage.", m_name, dam);
-	} else if (strchr("jmvQE", r_ptr->d_char)) {
+	if (strchr("jmvQE", r_ptr->d_char)) {
 		if (r_ptr->flags1 & RF1_UNIQUE) {
 			if (percentage > 95)
 				msg_format(Ind, "\377%c%^s barely notices the \377e%d \377%cdamage.", uniq, m_name, dam, uniq);
@@ -5143,11 +5110,14 @@ void message_pain(int Ind, int m_idx, int dam) {
 /*
  * Learn about an "observed" resistance.
  */
-void update_smart_learn(int Ind, int m_idx, int what) {
+void update_smart_learn(int m_idx, int what) {
+
 #ifdef DRS_SMART_OPTIONS
+
 	monster_type *m_ptr = &m_list[m_idx];
+
 	monster_race *r_ptr = race_inf(m_ptr);
-	player_type *p_ptr = Players[Ind];
+
 
 	/* Not allowed to learn */
 	if (!smart_learn) return;
@@ -5162,105 +5132,95 @@ void update_smart_learn(int Ind, int m_idx, int what) {
 	/* XXX XXX XXX */
 
 	/* Analyze the knowledge */
-	switch (what) {
-	case DRS_ACID:
+	switch (what)
+	{
+		case DRS_ACID:
 		if (p_ptr->resist_acid) m_ptr->smart |= SM_RES_ACID;
 		if (p_ptr->oppose_acid) m_ptr->smart |= SM_OPP_ACID;
 		if (p_ptr->immune_acid) m_ptr->smart |= SM_IMM_ACID;
 		break;
 
-	case DRS_ELEC:
+		case DRS_ELEC:
 		if (p_ptr->resist_elec) m_ptr->smart |= SM_RES_ELEC;
 		if (p_ptr->oppose_elec) m_ptr->smart |= SM_OPP_ELEC;
 		if (p_ptr->immune_elec) m_ptr->smart |= SM_IMM_ELEC;
 		break;
 
-	case DRS_FIRE:
+		case DRS_FIRE:
 		if (p_ptr->resist_fire) m_ptr->smart |= SM_RES_FIRE;
 		if (p_ptr->oppose_fire) m_ptr->smart |= SM_OPP_FIRE;
 		if (p_ptr->immune_fire) m_ptr->smart |= SM_IMM_FIRE;
 		break;
 
-	case DRS_COLD:
+		case DRS_COLD:
 		if (p_ptr->resist_cold) m_ptr->smart |= SM_RES_COLD;
 		if (p_ptr->oppose_cold) m_ptr->smart |= SM_OPP_COLD;
 		if (p_ptr->immune_cold) m_ptr->smart |= SM_IMM_COLD;
 		break;
 
-	case DRS_POIS:
+		case DRS_POIS:
 		if (p_ptr->resist_pois) m_ptr->smart |= SM_RES_POIS;
 		if (p_ptr->oppose_pois) m_ptr->smart |= SM_OPP_POIS;
-		if (p_ptr->immune_poison) m_ptr->smart |= SM_IMM_POIS;
 		break;
 
-	case DRS_NETH:
+
+		case DRS_NETH:
 		if (p_ptr->resist_neth) m_ptr->smart |= SM_RES_NETH;
-		if (p_ptr->immune_neth) m_ptr->smart |= SM_IMM_NETH;
+		if (p_ptr->immune_neth) m_ptr->smart |= SM_RES_NETH;
 		break;
 
-	case DRS_WATER:
-		if (p_ptr->resist_neth) m_ptr->smart |= SM_RES_WATE;
-		if (p_ptr->immune_neth) m_ptr->smart |= SM_IMM_WATE;
-		break;
-
-	case DRS_LITE:
+		case DRS_LITE:
 		if (p_ptr->resist_lite) m_ptr->smart |= SM_RES_LITE;
 		break;
 
-	case DRS_DARK:
+		case DRS_DARK:
 		if (p_ptr->resist_dark) m_ptr->smart |= SM_RES_DARK;
 		break;
 
-	case DRS_FEAR:
+		case DRS_FEAR:
 		if (p_ptr->resist_fear) m_ptr->smart |= SM_RES_FEAR;
 		break;
 
-	case DRS_CONF:
+		case DRS_CONF:
 		if (p_ptr->resist_conf) m_ptr->smart |= SM_RES_CONF;
 		break;
 
-	case DRS_CHAOS:
+		case DRS_CHAOS:
 		if (p_ptr->resist_chaos) m_ptr->smart |= SM_RES_CHAOS;
 		break;
 
-	case DRS_DISEN:
+		case DRS_DISEN:
 		if (p_ptr->resist_disen) m_ptr->smart |= SM_RES_DISEN;
 		break;
 
-	case DRS_BLIND:
+		case DRS_BLIND:
 		if (p_ptr->resist_blind) m_ptr->smart |= SM_RES_BLIND;
 		break;
 
-	case DRS_NEXUS:
+		case DRS_NEXUS:
 		if (p_ptr->resist_nexus) m_ptr->smart |= SM_RES_NEXUS;
 		break;
 
-	case DRS_SOUND:
+		case DRS_SOUND:
 		if (p_ptr->resist_sound) m_ptr->smart |= SM_RES_SOUND;
 		break;
 
-	case DRS_SHARD:
+		case DRS_SHARD:
 		if (p_ptr->resist_shard) m_ptr->smart |= SM_RES_SHARD;
 		break;
 
-	case DRS_TIME:
-		if (p_ptr->resist_time) m_ptr->smart |= SM_RES_TIME;
-		break;
 
-	case DRS_MANA:
-		if (p_ptr->resist_mana) m_ptr->smart |= SM_RES_MANA;
-		break;
-
-	case DRS_FREE:
+		case DRS_FREE:
 		if (p_ptr->free_act) m_ptr->smart |= SM_IMM_FREE;
 		break;
 
-	case DRS_SMANA:
-		if (!p_ptr->mmp) m_ptr->smart |= SM_IMM_MANA;
+		case DRS_MANA:
+		if (!p_ptr->msp) m_ptr->smart |= SM_IMM_MANA;
 		break;
-
 	}
+
 #endif /* DRS_SMART_OPTIONS */
+
 }
 
 /*
@@ -5274,7 +5234,7 @@ void setup_monsters(void) {
 
 	for (i = 1; i < m_max; i++) {
 		r_ptr = &m_list[i];
-		/* setup the cave m_idx if the level has been
+		/* setup the cave m_idx if the level has been 
 		 * allocated.
 		 */
 		if ((zcave = getcave(&r_ptr->wpos)))
@@ -5289,20 +5249,22 @@ int race_index(char * name) {
 	int i;
 
 	/* for each monster race */
-	for (i = 1; i < MAX_R_IDX - 1; i++)
-		if (r_info[i].name)
-			if (!strcmp(&r_name[r_info[i].name],name)) return(i);
-	return(0);
+	for (i = 1; i < MAX_R_IDX - 1; i++) {
+		if (r_info[i].name) {
+			if (!strcmp(&r_name[r_info[i].name],name)) return i;
+		}
+	}
+	return 0;
 }
 
 monster_race* r_info_get(monster_type *m_ptr) {
 	/* golem or new questor? */
-	if (m_ptr->special || m_ptr->questor) return(m_ptr->r_ptr);
+	if (m_ptr->special || m_ptr->questor) return (m_ptr->r_ptr);
 #ifdef RANDUNIS
-	else if (m_ptr->ego) return(race_info_idx((m_ptr)->r_idx, (m_ptr)->ego, (m_ptr)->name3));
-	else return(&r_info[m_ptr->r_idx]);
+	else if (m_ptr->ego) return (race_info_idx((m_ptr)->r_idx, (m_ptr)->ego, (m_ptr)->name3));
+	else return (&r_info[m_ptr->r_idx]);
 #else
-	else return(&r_info[m_ptr->r_idx]);
+	else return (&r_info[m_ptr->r_idx]);
 #endif	// RANDUNIS
 }
 
@@ -5313,11 +5275,11 @@ cptr r_name_get(monster_type *m_ptr) {
 		if (q_info[m_ptr->quest].defined && q_info[m_ptr->quest].questors > m_ptr->questor_idx) {
 			if (strlen(q_info[m_ptr->quest].questor[m_ptr->questor_idx].name)) {
 				snprintf(buf, sizeof(buf), "%s", q_info[m_ptr->quest].questor[m_ptr->questor_idx].name);
-				return(buf);
-			} else return(r_name + m_ptr->r_ptr->name);
+				return buf;
+			} else return (r_name + m_ptr->r_ptr->name);
 		} else {
 			s_printf("QUESTOR DEPRECATED (r_name_get)\n");
-			return(r_name + m_ptr->r_ptr->name);
+			return (r_name + m_ptr->r_ptr->name);
 		}
 	} else if (m_ptr->special) {
 		cptr p = (m_ptr->owner) ? lookup_player_name(m_ptr->owner) : "**INTERNAL BUG**";
@@ -5358,7 +5320,7 @@ cptr r_name_get(monster_type *m_ptr) {
 				snprintf(buf, sizeof(buf), "%s'%s Adamantite Golem", p, bgen);
 				break;
 		}
-		return(buf);
+		return (buf);
 	}
 #ifdef RANDUNIS
 	else if (m_ptr->ego) {
@@ -5369,32 +5331,34 @@ cptr r_name_get(monster_type *m_ptr) {
 			snprintf(buf, sizeof(buf), "%s %s", r_name + r_info[m_ptr->r_idx].name,
 					re_name + re_info[m_ptr->ego].name);
 		}
-		return(buf);
+		return (buf);
 	}
 #endif
-	else return(r_name + r_info[m_ptr->r_idx].name);
+        else return (r_name + r_info[m_ptr->r_idx].name);
 }
 
 #ifdef RANDUNIS
 /* Will add, sub, .. */
-static s32b modify_aux(s32b a, s32b b, char mod) {
-	switch (mod) {
-	case MEGO_ADD:
-		return(a + b);
-		break;
-	case MEGO_SUB:
-		return(a - b);
-		break;
-	case MEGO_FIX:
-		return(b);
-		break;
-	case MEGO_PRC:
-		return(a * b / 100);
-		break;
-	default:
-		s_printf("WARNING, unmatching MEGO(%d).\n", mod);
-		return(0);
-	}
+static s32b modify_aux(s32b a, s32b b, char mod)
+{
+        switch (mod)
+        {
+                case MEGO_ADD:
+                        return (a + b);
+                        break;
+                case MEGO_SUB:
+                        return (a - b);
+                        break;
+                case MEGO_FIX:
+                        return (b);
+                        break;
+                case MEGO_PRC:
+                        return (a * b / 100);
+                        break;
+                default:
+                        s_printf("WARNING, unmatching MEGO(%d).\n", mod);
+                        return (0);
+        }
 }
 
 #define MODIFY_AUX(o, n) ((o) = modify_aux((o), (n) >> 2, (n) & 3))
@@ -5408,26 +5372,26 @@ bool mego_ok(int r_idx, int ego) {
 	int i;
 
 	/* missing number */
-	if (!re_ptr->name) return(FALSE);
+	if (!re_ptr->name) return FALSE;
 
 	/* needed flags */
-	if (re_ptr->flags1 && ((re_ptr->flags1 & r_ptr->flags1) != re_ptr->flags1)) return(FALSE);
-	if (re_ptr->flags2 && ((re_ptr->flags2 & r_ptr->flags2) != re_ptr->flags2)) return(FALSE);
-	if (re_ptr->flags3 && ((re_ptr->flags3 & r_ptr->flags3) != re_ptr->flags3)) return(FALSE);
+	if (re_ptr->flags1 && ((re_ptr->flags1 & r_ptr->flags1) != re_ptr->flags1)) return FALSE;
+	if (re_ptr->flags2 && ((re_ptr->flags2 & r_ptr->flags2) != re_ptr->flags2)) return FALSE;
+	if (re_ptr->flags3 && ((re_ptr->flags3 & r_ptr->flags3) != re_ptr->flags3)) return FALSE;
 #if 1
-	if (re_ptr->flags7 && ((re_ptr->flags7 & r_ptr->flags7) != re_ptr->flags7)) return(FALSE);
-	if (re_ptr->flags8 && ((re_ptr->flags8 & r_ptr->flags8) != re_ptr->flags8)) return(FALSE);
-	if (re_ptr->flags9 && ((re_ptr->flags9 & r_ptr->flags9) != re_ptr->flags9)) return(FALSE);
+	if (re_ptr->flags7 && ((re_ptr->flags7 & r_ptr->flags7) != re_ptr->flags7)) return FALSE;
+	if (re_ptr->flags8 && ((re_ptr->flags8 & r_ptr->flags8) != re_ptr->flags8)) return FALSE;
+	if (re_ptr->flags9 && ((re_ptr->flags9 & r_ptr->flags9) != re_ptr->flags9)) return FALSE;
 #endif
 
 	/* unwanted flags */
-	if (re_ptr->hflags1 && (re_ptr->hflags1 & r_ptr->flags1)) return(FALSE);
-	if (re_ptr->hflags2 && (re_ptr->hflags2 & r_ptr->flags2)) return(FALSE);
-	if (re_ptr->hflags3 && (re_ptr->hflags3 & r_ptr->flags3)) return(FALSE);
+	if (re_ptr->hflags1 && (re_ptr->hflags1 & r_ptr->flags1)) return FALSE;
+	if (re_ptr->hflags2 && (re_ptr->hflags2 & r_ptr->flags2)) return FALSE;
+	if (re_ptr->hflags3 && (re_ptr->hflags3 & r_ptr->flags3)) return FALSE;
 #if 1
-	if (re_ptr->hflags7 && (re_ptr->hflags7 & r_ptr->flags7)) return(FALSE);
-	if (re_ptr->hflags8 && (re_ptr->hflags8 & r_ptr->flags8)) return(FALSE);
-	if (re_ptr->hflags9 && (re_ptr->hflags9 & r_ptr->flags9)) return(FALSE);
+	if (re_ptr->hflags7 && (re_ptr->hflags7 & r_ptr->flags7)) return FALSE;
+	if (re_ptr->hflags8 && (re_ptr->hflags8 & r_ptr->flags8)) return FALSE;
+	if (re_ptr->hflags9 && (re_ptr->hflags9 & r_ptr->flags9)) return FALSE;
 #endif
 
 	/* Need good race -- IF races are specified */
@@ -5435,16 +5399,16 @@ bool mego_ok(int r_idx, int ego) {
 		for (i = 0; i < 10; i++) {
 			if (r_ptr->d_char == re_ptr->r_char[i]) ok = TRUE;
 		}
-		if (!ok) return(FALSE);
+		if (!ok) return FALSE;
 	}
 	if (re_ptr->nr_char[0]) {
 		for (i = 0; i < 10; i++) {
-			if (r_ptr->d_char == re_ptr->nr_char[i]) return(FALSE);
+			if (r_ptr->d_char == re_ptr->nr_char[i]) return (FALSE);
 		}
 	}
 
 	/* Passed all tests ? */
-	return(TRUE);
+	return TRUE;
 }
 
 /* Choose an ego type */
@@ -5457,16 +5421,16 @@ int pick_ego_monster(int r_idx, int Level) {
 	monster_ego *re_ptr;
 
 	/* No townspeople ego */
-	if (!r_info[r_idx].level) return(0);
+	if (!r_info[r_idx].level) return 0;
 
 	/* No Great Pumpkin ego (HALLOWEEN) */
-	if (r_idx == RI_PUMPKIN) return(0);
+	if (r_idx == RI_PUMPKIN1 || r_idx == RI_PUMPKIN2 || r_idx == RI_PUMPKIN3) return 0;
 
 	/* First are we allowed to find an ego */
-	if (!magik(MEGO_CHANCE)) return(0);
+	if (!magik(MEGO_CHANCE)) return 0;
 
 	/* Ego Uniques are NOT to be created */
-	if ((r_info[r_idx].flags1 & RF1_UNIQUE)) return(0);
+	if ((r_info[r_idx].flags1 & RF1_UNIQUE)) return 0;
 
 	/* Lets look for one */
 	while (tries--) {
@@ -5500,11 +5464,11 @@ int pick_ego_monster(int r_idx, int Level) {
 #endif
 
 		/* We finanly got one ? GREAT */
-		return(ego);
+		return ego;
 	}
 
 	/* Found none ? so sad, well no ego for the time being */
-	return(0);
+	return 0;
 }
 
 #if 0
@@ -5516,14 +5480,14 @@ int pick_randuni(int r_idx, int Level) {
 	monster_ego *re_ptr;
 
 	/* No townspeople ego */
-	if (!r_info[r_idx].level) return(0);
+	if (!r_info[r_idx].level) return 0;
 
 	/* First are we allowed to find an ego */
-	if (!magik(MEGO_CHANCE)) return(0);
+	if (!magik(MEGO_CHANCE)) return 0;
 
 
 	/* Lets look for one */
-	while (tries--) {
+	while(tries--) {
 		/* Pick one */
 		ego = rand_range(1, max_re_idx - 1);
 		re_ptr = &re_info[ego];
@@ -5542,11 +5506,11 @@ int pick_randuni(int r_idx, int Level) {
 		if (rand_int(re_ptr->rarity)) continue;
 
 		/* We finanly got one ? GREAT */
-		return(ego);
+		return ego;
 	}
 
 	/* Found none ? so sad, well no ego for the time being */
-	return(0);
+	return 0;
 }
 #endif
 
@@ -5562,7 +5526,7 @@ monster_race* race_info_idx(int r_idx, int ego, int randuni) {
 	int i;
 
 	/* No work needed */
-	if (!ego) return(r_ptr);
+	if (!ego) return r_ptr;
 
 	/* Copy the base monster */
 	COPY(nr_ptr, r_ptr, monster_race);
@@ -5645,7 +5609,7 @@ monster_race* race_info_idx(int r_idx, int ego, int randuni) {
 #endif
 
 	/* And finanly return a pointer to a fully working monster race */
-	return(nr_ptr);
+	return nr_ptr;
 }
 
 #endif	// RANDUNIS
@@ -5654,14 +5618,12 @@ monster_race* race_info_idx(int r_idx, int ego, int randuni) {
 /*
  * Drop all items carried by a monster
  */
-void monster_drop_carried_objects(int m_idx, monster_type *m_ptr) {
-	int this_o_idx, next_o_idx = 0;
+void monster_drop_carried_objects(monster_type *m_ptr) {
+	s16b this_o_idx, next_o_idx = 0;
 	object_type forge;
 	object_type *o_ptr;
 	object_type *q_ptr;
 
-	char o_name[ONAME_LEN], m_name[MNAME_LEN];
-	int res;
 
 	/* Drop objects being carried */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
@@ -5684,13 +5646,15 @@ void monster_drop_carried_objects(int m_idx, monster_type *m_ptr) {
 		/* Delete the object */
 		delete_object_idx(this_o_idx, FALSE);
 
-		object_desc(0, o_name, q_ptr, 0, 0);
-		monster_desc(0, m_name, m_idx, 0);
-		/* Drop it */
-		res = drop_near(TRUE, 0, q_ptr, -1, &m_ptr->wpos, m_ptr->fy, m_ptr->fx);
-		/* the_sandman - Perhaps we can filter out the nothings here? */
-		//if (!strcmp(o_name, "(nothing)")) {
-		s_printf("MDCO: %s (%d) %s\n", m_name, res, o_name);
+		/* the_sandman - Perhaps we can filter out the nothings here?
+		 */
+//		char* tempbuf = (char*) malloc(sizeof(char)*80);
+//		object_desc(Ind, tempbuf, o_ptr, 0, 0);
+//		if (!strcmp(tempbuf, "(nothing)")) {
+			/* Drop it */
+			drop_near(0, q_ptr, -1, &m_ptr->wpos, m_ptr->fy, m_ptr->fx);
+//		}
+//		free(tempbuf);
 	}
 
 	/* Forget objects */
@@ -5722,18 +5686,6 @@ void monster_carry(monster_type *m_ptr, int m_idx, object_type *q_ptr) {
 		/* Hack -- Preserve artifacts */
 		if (true_artifact_p(q_ptr)) handle_art_d(q_ptr->name1);
 		questitem_d(q_ptr, q_ptr->number);
-
-		/* Extra logging for those cases of "where did my randart disappear to??1" */
-		if (q_ptr->name1 == ART_RANDART) {
-			char o_name[ONAME_LEN];
-
-			object_desc(0, o_name, q_ptr, TRUE, 3);
-
-			s_printf("%s monster_carry ate random artifact at (%d,%d,%d):\n  %s\n",
-			    showtime(),
-			    m_ptr->wpos.wx, m_ptr->wpos.wy, m_ptr->wpos.wz,
-			    o_name);
-		}
 	}
 }
 
@@ -5748,18 +5700,18 @@ static bool monster_deep_water(int r_idx) {
 	monster_race *r_ptr = &r_info[r_idx];
 
 	if (r_ptr->flags7 & RF7_AQUATIC)
-		return(TRUE);
+		return TRUE;
 	else
-		return(FALSE);
+		return FALSE;
 }
 
 static bool monster_shallow_water(int r_idx) {
 	monster_race *r_ptr = &r_info[r_idx];
 
 	if (r_ptr->flags2 & RF2_AURA_FIRE)
-		return(FALSE);
+		return FALSE;
 	else
-		return(TRUE);
+		return TRUE;
 }
 
 static bool monster_lava(int r_idx) {
@@ -5769,9 +5721,9 @@ static bool monster_lava(int r_idx) {
 	     (r_ptr->flags9 & RF9_RES_FIRE) ||
 	     (r_ptr->flags7 & RF7_CAN_FLY)) &&
 	    !(r_ptr->flags3 & RF3_AURA_COLD))
-		return(TRUE);
+		return TRUE;
 	else
-		return(FALSE);
+		return FALSE;
 }
 
 static bool monster_ground(int r_idx) {
@@ -5779,9 +5731,9 @@ static bool monster_ground(int r_idx) {
 
 	if ((r_ptr->flags7 & RF7_AQUATIC) &&
 		    !(r_ptr->flags7 & RF7_CAN_FLY))
-		return(FALSE);
+		return FALSE;
 	else
-		return(TRUE);
+		return TRUE;
 }
 
 
@@ -5801,11 +5753,11 @@ bool monster_can_cross_terrain(byte feat, monster_race *r_ptr, bool spawn, u32b 
 	if (feat == FEAT_DEEP_WATER) {
 		if ((r_ptr->flags7 & RF7_AQUATIC) ||
 		    (r_ptr->flags7 & RF7_CAN_FLY) ||
-		    (r_ptr->flags3 & RF3_IM_WATER) ||
+		    (r_ptr->flags9 & RF9_IM_WATER) ||
 		    (r_ptr->flags7 & RF7_CAN_SWIM))
-			return(TRUE);
+			return TRUE;
 		else
-			return(FALSE);
+			return FALSE;
 	}
 	/* Shallow water */
 	else if (feat == FEAT_SHAL_WATER) {
@@ -5813,32 +5765,30 @@ bool monster_can_cross_terrain(byte feat, monster_race *r_ptr, bool spawn, u32b 
 		    && r_ptr->level < 25 /* no more Solar Blades stuck in shallow water o_o */
 		    /*(this level is actually only undercut by a) Jumping Fireball, b) Fire Spirit and c) Fire Vortex)*/
 		    )
-			return(FALSE);
+			return FALSE;
 		else
-			return(TRUE);
+			return TRUE;
 	}
 	/* Aquatic monster */
 	else if ((r_ptr->flags7 & RF7_AQUATIC) &&
 	    !(r_ptr->flags7 & RF7_CAN_FLY)) {
 		/* MAY pass all sorts of doors, so they don't get stuck
 		   in water-filled rooms all the time, waiting to get shot - C. Blue */
-		if (!spawn && is_always_passable(feat) && (info & CAVE_WATERY)) return(TRUE);
-		else return(FALSE);
+		if (!spawn && is_always_passable(feat) && (info & CAVE_WATERY)) return TRUE;
+		else return FALSE;
 	}
 	/* Lava */
-	else if (feat == FEAT_SHAL_LAVA ||
-	    feat == FEAT_DEEP_LAVA ||
-	    feat == FEAT_FIRE ||
-	    feat == FEAT_GREAT_FIRE) {
+	else if ((feat == FEAT_SHAL_LAVA) ||
+	    (feat == FEAT_DEEP_LAVA)) {
 		if ((r_ptr->flags3 & RF3_IM_FIRE) ||
 		    (r_ptr->flags9 & RF9_RES_FIRE) ||
 		    (r_ptr->flags7 & RF7_CAN_FLY))
-			return(TRUE);
+			return TRUE;
 		else
-			return(FALSE);
+			return FALSE;
 	}
 
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -5853,8 +5803,6 @@ void set_mon_num2_hook(int feat) {
 		break;
 	case FEAT_DEEP_LAVA:
 	case FEAT_SHAL_LAVA:
-	case FEAT_FIRE: //added the 'fires', dunno..
-	case FEAT_GREAT_FIRE:
 		get_mon_num2_hook = monster_lava;
 		break;
 	default:
@@ -5867,1276 +5815,4 @@ void set_mon_num2_hook(int feat) {
 void set_mon_num_hook(struct worldpos *wpos) {
 	if (!wpos->wz) set_mon_num_hook_wild(wpos);
 	else get_mon_num_hook = dungeon_aux;
-}
-
-void py2mon_init(void) {
-	monster_race *r_ptr = &r_info[RI_MIRROR];
-
-	/* Hack: Reset stats to maintenance parameters hard-coded in r_info, in case this is not the first time spawn */
-	r_ptr->flags1 = RF1_FORCE_MAXHP | RF1_DROP_CHOSEN; //no effect actually as we set HP manually
-	r_ptr->flags2 = RF2_POWERFUL; //POWERFUL+NO_CUT = no slow (from MA)
-	r_ptr->flags3 = r_ptr->flags4 = r_ptr->flags5 = r_ptr->flags6 = r_ptr->flags7 = 0x0;
-	r_ptr->flags3 = RF3_NONLIVING;
-	r_ptr->flags8 = RF8_BLUEBAND | RF8_GENO_NO_THIN | RF8_NO_CUT;
-	r_ptr->flags9 = RF9_NO_CREDIT | RF9_NO_REDUCE | RF9_IM_TELE;
-	r_ptr->flags0 = 0x0;
-	/* Extra stats that are always granted to init tactical challenge: */
-	r_ptr->flags3 |= RF3_NO_FEAR | RF3_NO_CONF | RF3_NO_SLEEP; //just prevent 'mental' conditions, so stun is still allowed
-	r_ptr->flags7 |= RF7_CAN_SWIM | RF7_CAN_FLY | RF7_NO_ESP; //just whatever, paranoia - however, we're not a real being, so no ESP! :o
-	r_ptr->flags7 |= RF7_CAN_CLIMB | RF7_ASTAR; // A* is important to see through player-invisibility, which it actually implies!
-}
-void py2mon_init_base(monster_type *m_ptr, player_type *p_ptr) {
-	monster_race *r_ptr = &r_info[RI_MIRROR];
-
-	/* Fixed stats */
-#ifdef RI_MIRROR_MAXPLV
-	m_ptr->level = r_ptr->level = p_ptr->max_plv;
-#else
-	m_ptr->level = r_ptr->level = p_ptr->max_lev;
-#endif
-	/* On-the-fly adjustable stats, in case they 'improve' (aka player tries to game the system),
-	   so just set the most important ones here to give an initial definition frame: */
-	m_ptr->speed = m_ptr->mspeed = p_ptr->pspeed;
-	m_ptr->org_maxhp = m_ptr->maxhp = m_ptr->hp = p_ptr->mhp;
-	/* Hack some reasonable values for hit dice (instead of the default 3d6!);
-	   this isn't really required, as casting uses org_maxhp specifically for the mirror image
-	   (unlike for normal monsters who use hit dice instead), but it still helps consistency just for the heck of it maybe,
-	   and would allow us to remove the org_maxhp hack if we wanted to.. */
-	r_ptr->hdice = m_ptr->level;
-	r_ptr->hside = (m_ptr->org_maxhp + m_ptr->level / 2) / m_ptr->level; //trying to get somewhat reasonable rounding, whatever..
-	/* AC could just be set/adjusted later like the rest: */
-	m_ptr->org_ac = m_ptr->ac = p_ptr->ac + p_ptr->to_a;
-
-s_printf("Mirror: level %d, hp %d, speed %d, ac %d\n", m_ptr->level, m_ptr->org_maxhp, m_ptr->mspeed, m_ptr->org_ac);
-
-	/* Immutable stats: */
-	if (p_ptr->male) r_ptr->flags1 |= RF1_MALE; else r_ptr->flags1 |= RF1_FEMALE;
-	r_ptr->flags2 |= RF2_SMART | RF2_POWERFUL | RF2_OPEN_DOOR | RF2_BASH_DOOR; //note that RF2_POWERFUL covers resist_blind(!)
-#ifndef SIMPLE_RI_MIRROR /* evil-slaying effects etc aren't mirrorable in simple terms, so just view a 'mirror image' as neutral instead. */
-	switch (p_ptr->prace) {
-	case RACE_ENT: r_ptr->flags3 |= RF3_SUSCEP_FIRE; break; //yep
-	case RACE_VAMPIRE: r_ptr->flags3 |= RF3_UNDEAD; break;
-	case RACE_DRACONIAN: r_ptr->flags3 |= RF3_DRAGON; break;
-	case RACE_YEEK: r_ptr->flags3 |= RF3_ANIMAL; break;
-	case RACE_HALF_ORC: r_ptr->flags3 |= RF3_ORC; break;
-	case RACE_HALF_TROLL: r_ptr->flags3 |= RF3_TROLL; break;
-	}
-	if (p_ptr->ptrait == TRAIT_CORRUPTED) r_ptr->flags3 |= RF3_DEMON;
-	if (p_ptr->ptrait == TRAIT_ENLIGHTENED) r_ptr->flags3 |= RF3_GOOD;
-#else
-	r_ptr->flags3 |= RF3_NONLIVING;
-#endif
-	/* Add static parts of all racial/class fixed boni/mali (eg vampire light-susc) so we save some workload later when
-	   adjusting/updating stats continuously, when it comes to changable flags induced by items/monsterforms.
-	   (Unfortunately not even flags granted by skills are safe here, as the player might skill up during the fight =P.) */
-
-	/* Dynamic parts of all racial/class fixed boni/mali that cannot be imprinted here in meaningful ways must instead
-	   be handled whereever appropriate in any part of the game code. These are notably: Skill-points, misc abilities. */
-
-	/* Note: We don't take body_monster into account, so mimics might perhaps use this to cheeze an advantage..
-	   However, the way the auto-adjust code works is that it never regresses, only stacks improvements in stats,
-	   so that fact alone might work as a balancing factor for mimics' extra powers. >:) */
-}
-void p2mon_update_base_aux(monster_race *r_ptr, int *magicness, int tval, int sval, bool *manaheal) {
-	switch (tval) {
-	case TV_WAND:
-		switch (sval) {
-		//case SV_WAND_STONE_TO_MUD:
-		//case SV_WAND_WONDER:
-		//case SV_WAND_LITE:
-		//case SV_WAND_SLEEP_MONSTER:
-		//case SV_WAND_CONFUSE_MONSTER:
-		//case SV_WAND_FEAR_MONSTER:
-		//case SV_WAND_POLYMORPH:  //note: hard-coded immune to poly (and to cloning too)
-		//case SV_WAND_WALL_CREATION:
-		case SV_WAND_ACID_BOLT: r_ptr->flags5 |= RF5_BO_ACID; (*magicness)++; break;
-		case SV_WAND_FIRE_BOLT: r_ptr->flags5 |= RF5_BO_FIRE; (*magicness)++; break;
-		case SV_WAND_ELEC_BOLT: r_ptr->flags5 |= RF5_BO_ELEC; (*magicness)++; break;
-		case SV_WAND_COLD_BOLT: r_ptr->flags5 |= RF5_BO_COLD; (*magicness)++; break;
-		case SV_WAND_ACID_BALL: r_ptr->flags5 |= RF5_BA_ACID; (*magicness)++; break;
-		case SV_WAND_ELEC_BALL: r_ptr->flags5 |= RF5_BA_ELEC; (*magicness)++; break;
-		case SV_WAND_FIRE_BALL: r_ptr->flags5 |= RF5_BA_FIRE; (*magicness)++; break;
-		case SV_WAND_COLD_BALL: r_ptr->flags5 |= RF5_BA_COLD; (*magicness)++; break;
-		case SV_WAND_DRAGON_FIRE: r_ptr->flags5 |= RF5_BA_FIRE; (*magicness)++; break;
-		case SV_WAND_DRAGON_COLD: r_ptr->flags5 |= RF5_BA_COLD; (*magicness)++; break;
-		case SV_WAND_DRAGON_BREATH: r_ptr->flags5 |= RF5_BA_ELEC | RF5_BA_ACID | RF5_BA_COLD | RF5_BA_FIRE | RF5_BA_POIS; (*magicness)++; break;
-		case SV_WAND_ROCKETS: r_ptr->flags4 |= RF4_ROCKET; (*magicness)++; break;
-		case SV_WAND_STINKING_CLOUD: r_ptr->flags5 |= RF5_BA_POIS; (*magicness)++; break;
-		case SV_WAND_MAGIC_MISSILE: r_ptr->flags5 |= RF5_BO_MANA; (*magicness)++; break;
-		case SV_WAND_TELEPORT_AWAY: r_ptr->flags6 |= RF6_TELE_AWAY; (*magicness)++; break;
-		case SV_WAND_TELEPORT_TO: r_ptr->flags6 |= RF6_TELE_TO; (*magicness)++; break;
- #if 0
-		case SV_WAND_SLOW_MONSTER: r_ptr->flags5 |= RF5_SLOW; (*magicness)++; break;
- #else
-		case SV_WAND_SLOW_MONSTER: r_ptr->flags4 |= RF4_BR_INER; (*magicness)++; break; //too harsh?
- #endif
- #if 0 /* hrrm - I guess we have no choice but just to make the mirror image actually hard-coded immune to these then (BR_NUKE etc is no alternative) */
-		case SV_WAND_DRAIN_LIFE: r_ptr->flags |= RF_; (*magicness)++; break;
-		case SV_WAND_ANNIHILATION: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
-		}
-		break;
-	case TV_STAFF:
-		switch (sval) {
-		//case SV_STAFF_DARKNESS:
-		//case SV_STAFF_SLOWNESS:
-		//case SV_STAFF_HASTE_MONSTERS:
-		//case SV_STAFF_SUMMONING:
-		//case SV_STAFF_REMOVE_CURSE:
-		//case SV_STAFF_STARLITE:
-		//case SV_STAFF_LITE:
-		//case SV_STAFF_PROBING:
-		//case SV_STAFF_THE_MAGI: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_STAFF_CURING: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_STAFF_SLEEP_MONSTERS: r_ptr->flags |= RF_; (*magicness)++; break;
-
-		//case SV_STAFF_DISPEL_EVIL: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_STAFF_HOLINESS: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_STAFF_GENOCIDE: r_ptr->flags |= RF_; (*magicness)++; break;
- #if 0 /* forbid these two on the floor simply */
-		case SV_STAFF_EARTHQUAKES: r_ptr->flags |= RF_; (*magicness)++; break;
-		case SV_STAFF_DESTRUCTION: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
-		case SV_STAFF_TELEPORTATION: r_ptr->flags6 |= RF6_TPORT; (*magicness)++; break;
-		case SV_STAFF_CURE_SERIOUS: r_ptr->flags6 |= RF6_HEAL; (*magicness)++; break;
-		case SV_STAFF_HEALING: r_ptr->flags6 |= RF6_HEAL; (*magicness)++; break;
-		//case SV_STAFF_SPEED: r_ptr->flags6 |= RF6_HASTE; (*magicness)++; break; -- we already copy the max speed flatly
- #if 0
-		case SV_STAFF_SLOW_MONSTERS: r_ptr->flags5 |= RF5_SLOW; (*magicness)++; break;
- #else
-		case SV_STAFF_SLOW_MONSTERS: r_ptr->flags4 |= RF4_BR_INER; (*magicness)++; break; //too harsh?
- #endif
-		case SV_STAFF_POWER: r_ptr->flags4 |= RF4_BR_DISI; (*magicness)++; break; //just use something unresistable..
-		}
-		break;
-	case TV_ROD:
-		switch (sval) {
-		//case SV_ROD_DISARMING:
-		//case SV_ROD_LITE:
-		//case SV_ROD_SLEEP_MONSTER:
-		//case SV_ROD_POLYMORPH:
-		//case SV_ROD_CURING: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_ROD_RESTORATION: r_ptr->flags |= RF_; (*magicness)++; break; //just hard-code immunity against stat drain
-		case SV_ROD_HEALING: r_ptr->flags6 |= RF6_HEAL; (*magicness)++; break;
-		//case SV_ROD_SPEED: r_ptr->flags6 |= RF6_HASTE; (*magicness)++; break; -- we already copy the max speed flatly
-		case SV_ROD_TELEPORT_AWAY: r_ptr->flags6 |= RF6_TELE_AWAY; (*magicness)++; break;
- #if 0
-		case SV_ROD_SLOW_MONSTER: r_ptr->flags5 |= RF5_SLOW; (*magicness)++; break;
- #else
-		case SV_ROD_SLOW_MONSTER: r_ptr->flags4 |= RF4_BR_INER; (*magicness)++; break; //too harsh?
- #endif
- #if 0 /* hrrm - I guess we have no choice but just to make the mirror image actually hard-coded immune to these then (BR_NUKE etc is no alternative) */
-		case SV_ROD_DRAIN_LIFE: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
-		case SV_ROD_ACID_BOLT: r_ptr->flags5 |= RF5_BO_ACID; (*magicness)++; break;
-		case SV_ROD_FIRE_BOLT: r_ptr->flags5 |= RF5_BO_FIRE; (*magicness)++; break;
-		case SV_ROD_ELEC_BOLT: r_ptr->flags5 |= RF5_BO_ELEC; (*magicness)++; break;
-		case SV_ROD_COLD_BOLT: r_ptr->flags5 |= RF5_BO_COLD; (*magicness)++; break;
-		case SV_ROD_ACID_BALL: r_ptr->flags5 |= RF5_BA_ACID; (*magicness)++; break;
-		case SV_ROD_ELEC_BALL: r_ptr->flags5 |= RF5_BA_ELEC; (*magicness)++; break;
-		case SV_ROD_FIRE_BALL: r_ptr->flags5 |= RF5_BA_FIRE; (*magicness)++; break;
-		case SV_ROD_COLD_BALL: r_ptr->flags5 |= RF5_BA_COLD; (*magicness)++; break;
-		case SV_ROD_HAVOC: r_ptr->flags5 |= RF5_BA_MANA; (*magicness)++; break; // >_> .... could also consider RF5_BA_CHAO
-		}
-		break;
-	case TV_POTION:
-		switch (sval) {
-		//case SV_POTION_INFRAVISION:
-		//case SV_POTION_DETECT_INVIS:
-		//case SV_POTION_SLOW_POISON:
-		//case SV_POTION_CURE_POISON:
-		//case SV_POTION_BOLDNESS:
-		//case SV_POTION_RESTORE_EXP:
-		//case SV_POTION_INVULNERABILITY:
-		//case SV_POTION_ENLIGHTENMENT:
-		//case SV_POTION_SELF_KNOWLEDGE:
-		//case SV_POTION_EXPERIENCE:
-		//case SV_POTION_CONFUSION:
-		//case SV_POTION_SLEEP:
-		//case SV_POTION_LOSE_MEMORIES:
-
-		//case SV_POTION_BLINDNESS: r_ptr->flags |= RF_; (*magicness)++; break;
-		//Note: Hard-coded immunity to stat-draining effects to keep it simple..
-		//case SV_POTION_RUINATION: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_DEC_STR: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_DEC_INT: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_DEC_WIS: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_DEC_DEX: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_DEC_CON: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_DEC_CHR: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_RES_STR: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_RES_INT: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_RES_WIS: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_RES_DEX: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_RES_CON: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_RES_CHR: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_INC_STR: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_INC_INT: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_INC_WIS: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_INC_DEX: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_INC_CON: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_INC_CHR: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_AUGMENTATION: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_STAR_ENLIGHTENMENT: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_CURING: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_CURE_LIGHT_SANITY: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_CURE_SERIOUS_SANITY: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_CURE_CRITICAL_SANITY: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_CURE_SANITY: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_POTION_INVIS: r_ptr->flags |= RF_; (*magicness)++; break; //covered already (tim_invis)
- #if 0 /* could increase AC (for heroism as anti-hitchance). As for berserk, the damage already gets adjusted anyway */
-		case SV_POTION_HEROISM: r_ptr->flags |= RF_; (*magicness)++; break;
-		case SV_POTION_BERSERK_STRENGTH: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
-		case SV_POTION_CURE_LIGHT: r_ptr->flags0 |= RF0_HEAL_PHYS; (*magicness)++; break;
-		case SV_POTION_CURE_SERIOUS: r_ptr->flags0 |= RF0_HEAL_PHYS; (*magicness)++; break;
-		case SV_POTION_CURE_CRITICAL: r_ptr->flags0 |= RF0_HEAL_PHYS; (*magicness)++; break;
-		case SV_POTION_STAR_HEALING: r_ptr->flags0 |= RF0_HEAL_PHYS; (*magicness)++; break;
-		case SV_POTION_HEALING: r_ptr->flags0 |= RF0_HEAL_PHYS; (*magicness)++; break;
-		case SV_POTION_LIFE: r_ptr->flags0 |= RF0_HEAL_PHYS; (*magicness)++; break;
-		/* Hack: Disruption shield */
- #if 0 /* 0 -> Leave a l**ph*le: We assume noone is crazy enough to collect many *mana*, and if she is, she deserves the win! :D */
-		case SV_POTION_STAR_RESTORE_MANA:
- #endif
-		case SV_POTION_RESTORE_MANA: *manaheal = TRUE; break;
-		case SV_POTION_DETONATIONS: r_ptr->flags4 |= RF4_ROCKET; (*magicness)++; break; //ugh.. but deto avg dmg is 563 actually!
-		case SV_POTION_DEATH: r_ptr->flags5 |= RF5_BA_NETH; (*magicness)++; break;
-		//case SV_POTION_SPEED: r_ptr->flags6 |= RF6_HASTE; (*magicness)++; break; -- we already copy the max speed flatly
- #if 0
-		case SV_POTION_SLOWNESS: r_ptr->flags5 |= RF5_SLOW; (*magicness)++; break;
- #else
-		case SV_POTION_SLOWNESS: r_ptr->flags4 |= RF4_BR_INER; (*magicness)++; break; //too harsh?
- #endif
- #if 0 //harsh? -- actually moved to just check p_ptr->oppose flags instead
-		case SV_POTION_RESIST_HEAT: r_ptr->flags3 |= RF3_IM_FIRE; break;
-		case SV_POTION_RESIST_COLD: r_ptr->flags3 |= RF3_IM_COLD; break;
-		case SV_POTION_RESISTANCE:
-		r_ptr->flags3 |= RF3_IM_FIRE | RF3_IM_COLD | RF3_IM_ELEC | RF3_IM_ACID | RF3_IM_POIS;
-		break;
- #endif
-		}
-		break;
-	case TV_SCROLL:
-		switch (sval) {
-		//case SV_SCROLL_TELEPORT_LEVEL:
-		//case SV_SCROLL_WORD_OF_RECALL:
-		//case SV_SCROLL_IDENTIFY:
-		//case SV_SCROLL_STAR_IDENTIFY:
-		//case SV_SCROLL_REMOVE_CURSE:
-		//case SV_SCROLL_STAR_REMOVE_CURSE:
-		//case SV_SCROLL_ENCHANT_ARMOR:
-		//case SV_SCROLL_ENCHANT_WEAPON_TO_HIT
-		//case SV_SCROLL_ENCHANT_WEAPON_TO_DAM
-		//case SV_SCROLL_ENCHANT_WEAPON_PVAL:
-		//case SV_SCROLL_STAR_ENCHANT_ARMOR:
-		//case SV_SCROLL_STAR_ENCHANT_WEAPON:
-		//case SV_SCROLL_RECHARGING:
-		//case SV_SCROLL_RESET_RECALL:
-		//case SV_SCROLL_LIGHT:
-		//case SV_SCROLL_MAPPING:
-		//case SV_SCROLL_DETECT_GOLD:
-		//case SV_SCROLL_DETECT_ITEM:
-		//case SV_SCROLL_DETECT_DOOR:
-		//case SV_SCROLL_DIVINATION:
-		//case SV_SCROLL_SATISFY_HUNGER:
-		//case SV_SCROLL_MONSTER_CONFUSION:
-		//case SV_SCROLL_DEINCARNATION:
-		//case SV_SCROLL_MASS_RESURECTION:
-		//case SV_SCROLL_ACQUIREMENT:
-		//case SV_SCROLL_STAR_ACQUIREMENT:
-		//case SV_SCROLL_TRAP_DOOR_DESTRUCTION: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_SCROLL_DETECT_TRAP: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_SCROLL_DETECT_INVIS: r_ptr->flags |= RF_; (*magicness)++; break;
-		//case SV_SCROLL_STAR_DESTRUCTION: r_ptr->flags |= RF_; (*magicness)++; break; //level is indestructible
- #if 0 /* no effect under simple rules as mirror image is neutral */
-		case SV_SCROLL_PROTECTION_FROM_EVIL: r_ptr->flags |= RF_; (*magicness)++; break;
-		case SV_SCROLL_DISPEL_UNDEAD: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
- #if 0 /* the AC gets adjusted automatically already */
-		case SV_SCROLL_BLESSING: r_ptr->flags |= RF_; (*magicness)++; break;
-		case SV_SCROLL_HOLY_CHANT: r_ptr->flags |= RF_; (*magicness)++; break;
-		case SV_SCROLL_HOLY_PRAYER: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
- #if 0 /* Sigh, will have to disable runes on this floor -_- */
-		case SV_SCROLL_RUNE_OF_PROTECTION: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
-		case SV_SCROLL_PHASE_DOOR: r_ptr->flags0 |= RF0_BLINK_PHYS; (*magicness)++; break;
-		case SV_SCROLL_TELEPORT: r_ptr->flags0 |= RF0_TPORT_PHYS; (*magicness)++; break;
- #if 0 /* these either have no effect or aren't feasible to use (as we won't gain anything from deleting the mirror image) */
-		case SV_SCROLL_GENOCIDE: r_ptr->flags |= RF_; (*magicness)++; break;
-		case SV_SCROLL_OBLITERATION: r_ptr->flags |= RF_; (*magicness)++; break;
- #endif
-		/* These are kind of harsh, maybe tone down to bolts? */
-		case SV_SCROLL_FIRE: r_ptr->flags4 |= RF4_BR_FIRE; (*magicness)++; break;
-		case SV_SCROLL_ICE: r_ptr->flags0 |= RF0_BR_ICE; (*magicness)++; break;
-		case SV_SCROLL_CHAOS: r_ptr->flags4 |= RF4_BR_CHAO; (*magicness)++; break;
-		}
-		break;
-	}
-}
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-static bool check_for_spell(player_type *p_ptr, cptr spell_name) {
-	bool nil;
-	int s, i;
-	object_type *o_ptr;
-	/* Remember up to 20 nonexistant spells */
-	static char bad_name[20][30] = { 0 };
-
-	nil = exec_lua(p_ptr->Ind, format("return rawget(globals(),\"%s\") == nil", spell_name));
-	if (nil == 1) {
-		bool found = FALSE;
-
-		/* Give message only the first time for each nonexistant spell, to avoid spam */
-		for (i = 0; i < 20; i++) {
-			if (!bad_name[i][0]) {
-				strcpy(bad_name[i], spell_name);
-				break;
-			}
-
-			if (strcmp(bad_name[i], spell_name)) continue;
-
-			found = TRUE;
-			break;
-		}
-		if (!found) s_printf("Mirror: ERROR: Non-existant spell '%s'\n", spell_name);
-
-		return(FALSE);
-	}
-
-	s = exec_lua(p_ptr->Ind, format("return %s", spell_name));
-	/* Error - spell doesn't exist in the game (anymore?)! */
-	if (s < 0) {
-		s_printf("check_for_spell(): ERROR! Spell '%s' not in game.\n", spell_name);
-		return(FALSE);
-	}
-
-	/* We are not eligible for this spell anyway, even if we had it with us? */
-	if (!exec_lua(p_ptr->Ind, format("return is_ok_spell(%d, %d)", p_ptr->Ind, s))) return(FALSE);
-
-	for (i = 0; i < INVEN_PACK; i++) {
-		o_ptr = &p_ptr->inventory[i];
-		if (!o_ptr->tval) return(FALSE);
-
-		if (o_ptr->tval != TV_BOOK) continue;
-
-		if (o_ptr->sval == SV_SPELLBOOK) {
-			if (o_ptr->pval != s) continue;
-			return(TRUE);
-		} else {
-			if (!exec_lua(p_ptr->Ind, format("return spell_in_book2(%d, %d, %d)", i, o_ptr->sval, s))) continue;
-			return(TRUE);
-		}
-	}
-
-	return(FALSE);
-}
-#endif
-void py2mon_update_base(monster_type *m_ptr, player_type *p_ptr) {
-	monster_race *r_ptr = &r_info[RI_MIRROR];
-	int i, k, m, n, magicness = 0;
-	int thresh_skill = (p_ptr->max_plv + 4) / 5; /* usual skill minimum threshold to become active */
-	int thresh_spell = (p_ptr->max_plv + 9) / 10; /* usual spell school skill minimum threshold to become active */
-	object_type *o_ptr, *o2_ptr;
-#ifdef ENABLE_SUBINVEN
-	int s;
-#endif
-	int tval, sval;
-	bool manaheal = FALSE;
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	bool magflag;
-#endif
-
-	/* Who knows the silylness.. */
-#ifdef RI_MIRROR_MAXPLV
-	m_ptr->level = r_ptr->level = p_ptr->max_plv;
-#else
-	m_ptr->level = r_ptr->level = p_ptr->max_lev;
-#endif
-
-	/* On-the-fly adjustable stats, in case they 'improve' (aka player tries to game the system): */
-	/* Determine speed */
-	if (m_ptr->speed < p_ptr->pspeed) {
-		m_ptr->speed = m_ptr->mspeed = p_ptr->pspeed;
-s_printf("Mirror-update: speed %d\n", m_ptr->mspeed);
-	}
-	/* Determine HP */
-	if (m_ptr->org_maxhp < p_ptr->mhp) {
-		n = p_ptr->mhp - m_ptr->org_maxhp;
-		m_ptr->org_maxhp += n;
-		m_ptr->maxhp += n;
-		m_ptr->hp += n;
-s_printf("Mirror-update: hp %d\n", m_ptr->org_maxhp);
-	}
-	/* Determine AC */
-#ifndef SIMPLE_RI_MIRROR
-	i = p_ptr->ac + p_ptr->to_a;
-#else
-	i = p_ptr->ac + p_ptr->to_a;
-#if 0
-	/* Basic flat boost to adjust for lower level fights? */
-	i += 50;
-#endif
-	/* Simply translate our hit chance into monster ac bonus to counter it */
-	i += p_ptr->overall_tohit_m;
-	if (p_ptr->overall_tohit_m > 5000) i -= 10000; //unhack '10000' code (meaning 'temp-buffed')
-
-	/* Kinetic Shield / Guardian Spirit give extra AC */
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "MSHIELD") || check_for_spell(p_ptr, "GUARDIANSPIRIT_II"))
-#else
-	if (get_skill(p_ptr, SKILL_PPOWER) >= thresh_spell || get_skill(p_ptr, SKILL_OSPIRIT) >= thresh_spell)
-#endif
-		i += 75;
-	/* Simply add to AC, although this won't help against magic bolt spells, exploiterino */
-	if ((m = get_skill(p_ptr, SKILL_DODGE))) i += (100 * m) / (p_ptr->max_plv >= 50 ? 50 : p_ptr->max_plv);
-#endif
-	if (m_ptr->org_ac < i) {
-		n = i - m_ptr->org_ac;
-		m_ptr->org_ac += n;
-		m_ptr->ac += n;
-s_printf("Mirror-update: ac %d (%d)\n", m_ptr->ac, m_ptr->org_ac);
-	}
-
-#ifdef SIMPLE_RI_MIRROR
-	/* Determine melee hit chance - HACK:
-	   Since monsters don't really have a specific "hit chance", instead of increasing the
-	   monster's hit chance we decrease the player's hit chance, by increasing the monster's AC.
-	   (done further down) */
-
-	/* Determine melee damage */
-	o_ptr = &p_ptr->inventory[INVEN_WIELD];
-	o2_ptr = &p_ptr->inventory[INVEN_ARM];
-	m = n = 0;
-	if (o_ptr->k_idx) {
-		m = ((o_ptr->dd + 1) * o_ptr->ds + 1) / 2;
-		if (o2_ptr->k_idx && o2_ptr->tval != TV_SHIELD) n = ((o2_ptr->dd + 1) * o2_ptr->ds + 1) / 2;
-	} else if (o2_ptr->k_idx && o2_ptr->tval != TV_SHIELD) m = ((o2_ptr->dd + 1) * o2_ptr->ds + 1) / 2;
-	/* Anti-exploit: Player might switch between main-hand and dual-hand,
-	   so we just keep the highest possible damage variation */
-	m = (m >= n ? m : n);
-	m += p_ptr->overall_todam_m;
-	if (p_ptr->overall_todam_m > 5000) m -= 10000; //unhack '10000' code (meaning 'temp-buffed')
-	/* Note: We don't apply p_ptr->melee_brand or item-brands etc,
-	   because it's too tricky to sort out combinations of them for monsters against player resistances,
-	   as monsters can only apply one type of brand per attack unlike the player who can stack brands (and slays). */
-	/* Define monster blows */
-	if (p_ptr->num_blow > 4) { /* Monsters cannot have more than 4 bpr so need to adjust damage for proper splitting.. */
-		k = 4;
-		m = (m * p_ptr->num_blow + 3) / 4;
-	} else k = p_ptr->num_blow;
-	/* Set monster blows */
-	for (n = 0; n < 4; n++) {
-		r_ptr->blow[n].method = m_ptr->blow[n].method = RBM_NONE; //init to no attacks
-	}
-	/* ..transform pure damage-per-hit number into some averaged dice.. */
-	if (m < 10) i = 1;
-	else if (m < 20) i = 2;
-	else if (m < 30) i = 3;
-	else if (m < 50) i = 4;
-	else i = 6;
-	m -= i;
- #ifdef TEST_SERVER /* spammy.. */
-s_printf("Mirror-melee:");
- #endif
-	for (n = 0; n < k; n++) {
-		r_ptr->blow[n].d_dice = m_ptr->blow[n].d_dice = i * 2;
-		r_ptr->blow[n].d_side = m_ptr->blow[n].d_side = (m + i - 1) / i;
-		r_ptr->blow[n].method = m_ptr->blow[n].method = RBM_HIT;
-		r_ptr->blow[n].effect = m_ptr->blow[n].effect = RBE_HURT; //no brands as explained above
- #ifdef TEST_SERVER /* spammy.. */
-s_printf(" %dd%d", r_ptr->blow[n].d_dice, r_ptr->blow[n].d_side);
- #endif
-	}
-	/* Just some flavour variety for MA */
-	if (get_skill(p_ptr, SKILL_MARTIAL_ARTS) >= p_ptr->max_plv / 2) {
-		r_ptr->blow[1].method = m_ptr->blow[1].method = RBM_PUNCH;
-		r_ptr->blow[2].method = m_ptr->blow[2].method = RBM_KICK;
- #ifdef TEST_SERVER /* spammy.. */
-s_printf(" (MA)\n");
- #endif
-	}
- #ifdef TEST_SERVER /* spammy.. */
-else s_printf("\n");
- #endif
-#endif
-
-	/* For visuals: Is a 'block' message eligible? */
-	if (p_ptr->inventory[INVEN_WIELD].tval != TV_SHIELD && p_ptr->inventory[INVEN_ARM].tval != TV_SHIELD) r_ptr->flags8 |= RF8_NO_BLOCK;
-	else r_ptr->flags8 &= ~RF8_NO_BLOCK;
-
-	/* Adjustable flags - cumulative again, ie don't get removed, just stacked up further, hah! */
-	if (p_ptr->no_cut) r_ptr->flags8 |= RF8_NO_CUT;
-	if (p_ptr->regenerate) r_ptr->flags2 |= RF2_REGENERATE;
-	if (p_ptr->reflect) r_ptr->flags2 |= RF2_REFLECTING;
-#if 0 /* Note: Currently mirror sees through invisibility. We if0 this out completely, so the player isn't suddenly at a huge disadvantage if he cannot see through it, oopsie! */
-	if (p_ptr->invis || p_ptr->tim_invisibility) r_ptr->flags2 |= RF2_INVISIBLE;
-#endif
-	/* Adjustable abilities */
-	//if (p_ptr->aura[AURA_FEAR]) ; //todo: cause fear-melee
-	if (p_ptr->aura[AURA_SHIVER]) r_ptr->flags3 |= RF3_AURA_COLD;
-	if (p_ptr->aura[AURA_DEATH]) { /* Well, it's plasma/ice .. perfect fit actually: (although this is cancelled out by immunity completely, pft) */
-		r_ptr->flags2 |= RF2_AURA_ELEC | RF2_AURA_FIRE;
-		r_ptr->flags3 |= RF3_AURA_COLD;
-	}
-	//..
-
-	//variable or not?: no_stun/no_conf/no_sleep/no_cut/no-blind/resistances et al
-	/* These things don't have corresponding monster flags, so might have to move them all as hacks to their respective functions: */
-	//int am_shell, am_field, reflecting;
-	//int mweapon, hit, dam, parry, block, dodge, bpr, intercept; //melee; dam can just include crit/backstab/dualwield
-	//int rweapon, shots, hitr, damr, calmness; //ranged
-
-#ifdef SIMPLE_RI_MIRROR
-	/* Flags 2 */
-	//RF2_STUPID,RF2_COLD_BLOOD,RF2_EMPTY_MIND(already RF7_NO_ESP),
-	//RF2_PASS_WALL,
-	r_ptr->flags2 |= RF2_KILL_WALL; //disallow stoneprison/wallcreation refuges
-	//if (p_ptr->prace == RACE_VAMPIRE) r_ptr->flags2 |= RF2_COLD_BLOOD;
-	r_ptr->flags2 |= RF2_COLD_BLOOD; //it's a mirror image anyway!
-
-	/* Flags 3 */
-	//RF3_AI_HYBRID,RF3_HURT_LITE,RF3_HURT_ROCK
-	if (p_ptr->immune_acid) r_ptr->flags3 |= RF3_IM_ACID;
-	if (p_ptr->immune_fire) r_ptr->flags3 |= RF3_IM_FIRE;
-	if (p_ptr->immune_cold) r_ptr->flags3 |= RF3_IM_COLD;
-	if (p_ptr->immune_elec) r_ptr->flags3 |= RF3_IM_ELEC;
-	if (p_ptr->immune_poison) r_ptr->flags3 |= RF3_IM_POIS;
-	if (p_ptr->immune_water) r_ptr->flags3 |= RF3_IM_WATER;
-	if (p_ptr->immune_neth) r_ptr->flags3 |= RF3_RES_NETH; //^^'
-	if (p_ptr->res_tele) r_ptr->flags3 |= RF3_RES_TELE; //RF9_IM_TELE
-	if (p_ptr->resist_neth) r_ptr->flags3 |= RF3_RES_NETH;
-	if (p_ptr->resist_nexus) r_ptr->flags3 |= RF3_RES_NEXU;
-	if (p_ptr->resist_water) r_ptr->flags3 |= RF3_RES_WATE;
-	if (p_ptr->resist_disen) r_ptr->flags3 |= RF3_RES_DISE;
-#if 0
-	if (p_ptr->resist_sound) r_ptr->flags3 |= RF3_NO_STUN; //hmm
-#else
-	/* Just give it, because the monster won't heal in time to recover from k.o.
-	   Unfair advantage though: MA users can get stunned from kicks and punches.
-	   This also makes mirroring school spells that gives stun status effects obsolete (Udun, Mindcraft) */
-	r_ptr->flags3 |= RF3_NO_STUN;
-#endif
-
-	/* Too harsh? Double resist = immunity */
-	if (p_ptr->resist_acid && p_ptr->oppose_acid) r_ptr->flags3 |= RF3_IM_ACID;
-	if (p_ptr->resist_fire && p_ptr->oppose_fire) r_ptr->flags3 |= RF3_IM_FIRE;
-	if (p_ptr->resist_cold && p_ptr->oppose_cold) r_ptr->flags3 |= RF3_IM_COLD;
-	if (p_ptr->resist_elec && p_ptr->oppose_elec) r_ptr->flags3 |= RF3_IM_ELEC;
-	if (p_ptr->resist_pois && p_ptr->oppose_pois) r_ptr->flags3 |= RF3_IM_POIS;
-
-	/* Flags 4/5/6/0 (spells) */
-
-	//RF4_UNMAGIC,RF4_BOULDER,
-	//RF5_SCARE,RF5_BLIND,RF5_CONF,RF5_HOLD,
-	//RF6_FORGET,RF6_DARKNESS,
-
-	/* Note: We actually ignore mimic powers at this time.. */
-
-	/* Scan for magic devices, potions, scrolls */
-	for (n = 0; n < INVEN_PACK; n++) {
-		if (!p_ptr->inventory[n].k_idx) break;
-#ifndef ENABLE_SUBINVEN
-		tval = p_ptr->inventory[n].tval;
-		sval = p_ptr->inventory[n].sval;
-		p2mon_update_base_aux(r_ptr, &magicness, tval, sval, &manaheal);
-#else
-		if (p_ptr->inventory[n].tval == TV_SUBINVEN) {
-			for (s = 0; s <= p_ptr->inventory[n].bpval; s++) {
-				tval = p_ptr->subinventory[n][s].tval;
-				if (!tval) break;
-				sval = p_ptr->subinventory[n][s].sval;
-				p2mon_update_base_aux(r_ptr, &magicness, tval, sval, &manaheal);
-			}
-		} else {
-			tval = p_ptr->inventory[n].tval;
-			sval = p_ptr->inventory[n].sval;
-			p2mon_update_base_aux(r_ptr, &magicness, tval, sval, &manaheal);
-		}
-#endif
-	}
-
-	/* Scan for skill-"spells" and school-spells */
-	//if (get_skill(p_ptr, SKILL_DISARM)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_STEALTH)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_STEALING)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_DUAL)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_HEALTH)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_STANCE)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_SWIM)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_CLIMB)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_DIG)) { r_ptr->flags |= RF__; magicness++; }
-
-	//if (get_skill(p_ptr, SKILL_LEVITATE)) { r_ptr->flags |= RF__; magicness++; } -- just minor resistances, ignore
-	//if (get_skill(p_ptr, SKILL_FREEACT)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_RESCONF)) { r_ptr->flags |= RF__; magicness++; }
-
-	//if (get_skill(p_ptr, SKILL_BACKSTAB)) { r_ptr->flags |= RF__; magicness++; } -- whatever.. we don't flee anyway
-
-	//if (get_skill(p_ptr, SKILL_COMBAT)) { r_ptr->flags |= RF__; magicness++; } -- these are basically incorporated in damage calculation
-	//if (get_skill(p_ptr, SKILL_MASTERY)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_SWORD)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_BLUNT)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_AXE)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_POLEARM)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_MARTIAL_ARTS)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_TECHNIQUE)) { r_ptr->flags |= RF__; magicness++; }
-
-	//if (get_skill(p_ptr, SKILL_MAGIC)) { r_ptr->flags |= RF__; magicness++; } -- could affect spell frequency, but probably no good
-	//if (get_skill(p_ptr, SKILL_TRAUMATURGY)) { r_ptr->flags |= RF__; magicness++; }
-
-	//if (get_skill(p_ptr, SKILL_NECROMANCY)) { r_ptr->flags |= RF__; magicness++; } -- no point. level is no_summon so cannot summon things to leech from.
-
-	//if (get_skill(p_ptr, SKILL_MIMIC)) { r_ptr->flags |= RF__; magicness++; } -- we already clone the player in all relevant aspects
-	//if (get_skill(p_ptr, SKILL_SNEAKINESS)) { r_ptr->flags |= RF__; magicness++; }
-
-	//if (get_skill(p_ptr, SKILL_DEVICE)) { r_ptr->flags |= RF__; magicness++; } -- we already assume high damage for all spells
-	//if (get_skill(p_ptr, SKILL_ARCHERY)) { r_ptr->flags |= RF__; magicness++; }
-
-	//if (get_skill(p_ptr, SKILL_AURA_FEAR)) { r_ptr->flags |= RF__; magicness++; } -- already incorporated
-	//if (get_skill(p_ptr, SKILL_AURA_SHIVER)) { r_ptr->flags |= RF__; magicness++; }
-	//if (get_skill(p_ptr, SKILL_AURA_DEATH)) { r_ptr->flags |= RF__; magicness++; }
-
-	/* Add crit skill and xtra crit from items to damage */
-	m = 0;
-	if (!(m = get_skill(p_ptr, SKILL_CRITS)) && rogue_armed_melee_any(p_ptr)) m = 0;
-	n = 0;
-	if (is_melee_weapon(p_ptr->inventory[INVEN_WIELD].tval)) {
-		n = calc_crit_obj(&p_ptr->inventory[INVEN_WIELD]);
-		if (p_ptr->dual_mode && is_melee_weapon(p_ptr->inventory[INVEN_ARM].tval) && !p_ptr->rogue_heavyarmor) {
-			n += calc_crit_obj(&p_ptr->inventory[INVEN_ARM]);
-			n /= 2;
-		}
-	} else if (is_melee_weapon(p_ptr->inventory[INVEN_ARM].tval)) n = calc_crit_obj(&p_ptr->inventory[INVEN_ARM]);
-	m += n + p_ptr->xtra_crit;
-	if (m > 0) {
-		/* boost damage */
-		for (n = 0; n < 4; n++) {
-			if (r_ptr->blow[n].method == RBM_NONE) continue;
-			r_ptr->blow[n].d_side = m_ptr->blow[n].d_side = (r_ptr->blow[n].d_side * (100 + m)) / 100;
-		}
-	}
-
-	if (p_ptr->inventory[INVEN_BOW].tval == TV_BOOMERANG && get_skill(p_ptr, SKILL_BOOMERANG) >= thresh_skill) { r_ptr->flags4 |= RF4_ARROW_4; magicness++; } //it's "missile", but we don't have a monster-boomerang-skill
-	if (p_ptr->inventory[INVEN_BOW].tval == TV_BOW) {
-		if (get_skill(p_ptr, SKILL_SLING) >= thresh_skill && p_ptr->inventory[INVEN_BOW].tval == SV_SLING && p_ptr->inventory[INVEN_AMMO].tval == TV_SHOT) { r_ptr->flags4 |= RF4_ARROW_2; magicness++; }
-		if (get_skill(p_ptr, SKILL_BOW) >= thresh_skill && (p_ptr->inventory[INVEN_BOW].tval == SV_SHORT_BOW || p_ptr->inventory[INVEN_BOW].tval == SV_LONG_BOW) && p_ptr->inventory[INVEN_AMMO].tval == TV_ARROW) { r_ptr->flags4 |= RF4_ARROW_1; magicness++; }
-		if (get_skill(p_ptr, SKILL_XBOW) >= thresh_skill && (p_ptr->inventory[INVEN_BOW].tval == SV_LIGHT_XBOW || p_ptr->inventory[INVEN_BOW].tval == SV_HEAVY_XBOW) && p_ptr->inventory[INVEN_AMMO].tval == TV_BOLT) { r_ptr->flags4 |= RF4_ARROW_3; magicness++; }
-	}
-
-
-//TODO: Archery - it doesnt take anything into account, such as actual skill, Archery skill, SpR, or even ranged +hit,+dam
-
-
- #if 0 /* this floor is actually not trappable! So this is a wasted skill copy */
-	if (get_skill(p_ptr, SKILL_TRAPPING) >= thresh_skill) { r_ptr->flags4 |= RF4_TRAPS; magicness++; }
- #endif
-	//if (get_skill(p_ptr, SKILL_ANTIMAGIC)) r_ptr->flags7 |= RF7_DISBELIEVE -- not for now maybe
- #if 0 /* maybe simply make mirror non-intercepting and non-interceptable? fair trade - done. Same as player spells aren't interceptible either. */
-	if (get_skill(p_ptr, SKILL_CALMNESS)) { r_ptr->flags |= RF__; magicness++; }
-	if (get_skill(p_ptr, SKILL_INTERCEPT)) { r_ptr->flags |= RF__; magicness++; }
- #endif
-
-	/* Notes:
-	   Resistances spells are already handled by checking for resist+oppose above.
-	   magicness might be redundantly incremented too much, but whatever. */
-
-	//if (get_skill(p_ptr, SKILL_TEMPORAL) >= thresh_spell) { r_ptr->flags6 |= RF6_HASTE; magicness++; } -- we already copy the max speed flatly
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "MANATHRUST_I") || check_for_spell(p_ptr, "MANATHRUST_II") || check_for_spell(p_ptr, "MANATHRUST_III")) { r_ptr->flags5 |= RF5_BO_MANA; magicness++; }
-	/* manaheal: mana potions are present in the player's inventory? */
-	if (check_for_spell(p_ptr, "MANASHIELD") && manaheal) { r_ptr->flags0 |= RF0_HEAL_PHYS; magicness++; }
-#else
-	if (get_skill(p_ptr, SKILL_MANA) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_BO_MANA; magicness++;
-		/* Heal via pseudo disruption shield by 'quaffing' pseudo mana potions? */
-		if (manaheal) { r_ptr->flags0 |= RF0_HEAL_PHYS; magicness++; }
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "FIREFLASH_I") || check_for_spell(p_ptr, "FIREFLASH_II") ||
-	    check_for_spell(p_ptr, "FIREBALL_I") || check_for_spell(p_ptr, "FIREBALL_II"))
-		{ r_ptr->flags5 |= RF5_BA_FIRE; magicness++; }
-	/* Separate minor spells, they result in just fire bolt instead of fire ball */
-	else if (check_for_spell(p_ptr, "FIREBOLT_I") || check_for_spell(p_ptr, "FIREBOLT_II") || check_for_spell(p_ptr, "FIREBOLT_III") ||
-	    check_for_spell(p_ptr, "FIREWALL_I") || check_for_spell(p_ptr, "FIREWALL_II") ||
-	    check_for_spell(p_ptr, "GLOBELIGHT_II"))
-		{ r_ptr->flags0 |= RF0_BA_LITE; magicness++; }
-#else
-	if (get_skill(p_ptr, SKILL_FIRE) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_FIRE; magicness++; } //weakness: not holy fire unlike Fireflash!
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "THUNDERSTORM")) { r_ptr->flags5 |= RF5_BA_ELEC; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "LIGHTNINGBOLT_I") || check_for_spell(p_ptr, "LIGHTNINGBOLT_II") || check_for_spell(p_ptr, "LIGHTNINGBOLT_III")) { r_ptr->flags5 |= RF5_BO_ELEC; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "NOXIOUSCLOUD_I") || check_for_spell(p_ptr, "NOXIOUSCLOUD_II") || check_for_spell(p_ptr, "NOXIOUSCLOUD_III")) { r_ptr->flags5 |= RF5_BA_POIS; magflag = TRUE; }
-	if (magflag) magicness++;
-	//invis: mirror sees through invis, so obsolete.
-#else
-	if (get_skill(p_ptr, SKILL_AIR) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_POIS | RF5_BO_ELEC; magicness++; }
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "ICESTORM_I") || check_for_spell(p_ptr, "ICESTORM_II")) { r_ptr->flags5 |= RF5_BA_COLD; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "FROSTBALL_I") || check_for_spell(p_ptr, "FROSTBALL_II")) { r_ptr->flags5 |= RF5_BA_COLD; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "FROSTBOLT_I") || check_for_spell(p_ptr, "FROSTBOLT_II") || check_for_spell(p_ptr, "FROSTBOLT_III")) { r_ptr->flags5 |= RF5_BO_COLD; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "VAPOR_I") || check_for_spell(p_ptr, "VAPOR_II") || check_for_spell(p_ptr, "VAPOR_III")) { r_ptr->flags5 |= RF5_BA_WATE; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "TIDALWAVE_I") || check_for_spell(p_ptr, "TIDALWAVE_II")) { r_ptr->flags5 |= RF5_BA_WATE; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "WATERBOLT_I") || check_for_spell(p_ptr, "WATERBOLT_II") || check_for_spell(p_ptr, "WATERBOLT_III")) { r_ptr->flags5 |= RF5_BO_WATE; magflag = TRUE; }
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_WATER) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_COLD | RF5_BO_WATE; magicness++; }
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "ACIDBOLT_I") || check_for_spell(p_ptr, "ACIDBOLT_II") || check_for_spell(p_ptr, "ACIDBOLT_III")) { r_ptr->flags5 |= RF5_BO_ACID; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "STRIKE_I") || check_for_spell(p_ptr, "STRIKE_II")) { r_ptr->flags0 |= RF0_BO_WALL; magflag = TRUE; }
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_EARTH) >= thresh_spell) { r_ptr->flags5 |= RF5_BO_ACID; magicness++; }
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "DISEBOLT")) { r_ptr->flags0 |= RF0_BO_DISE; magflag = TRUE; }// | RF0_BA_DISE?
-	if (check_for_spell(p_ptr, "HELLFIRE_I") || check_for_spell(p_ptr, "HELLFIRE_II")) { r_ptr->flags0 |= RF0_BA_HELLFIRE; magflag = TRUE; }
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_UDUN) >= thresh_spell) { r_ptr->flags0 |= RF0_BO_DISE | RF0_BA_HELLFIRE; magicness++; } //beam+hellfire
-#endif
-
-	//if (get_skill(p_ptr, SKILL_MIND)) { r_ptr->flags |= RF__; magicness++; } -- nothing except confuse
-	//if (get_skill(p_ptr, SKILL_DIVINATION)) { r_ptr->flags |= RF__; magicness++; } -- nothing here
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "BLINK")) { r_ptr->flags6 |= RF6_BLINK; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "TELEPORT")) { r_ptr->flags6 |= RF6_TPORT; magflag = TRUE; }
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_CONVEYANCE) >= thresh_spell) { r_ptr->flags6 |= RF6_BLINK | RF6_TPORT; magicness++; }
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "RECOVERY_I") || check_for_spell(p_ptr, "RECOVERY_II")) { r_ptr->flags3 |= RF3_NO_CONF | RF3_NO_STUN; } //r_ptr->flags9 |= RF9_RES_POIS; } -- nah
-	if (check_for_spell(p_ptr, "REGENERATION")) r_ptr->flags2 |= RF2_REGENERATE;
- #ifdef RI_MIRROR_PREEMPT_RES /* optional, to get us the 'initiative' - could almost just as well wait for the player to cast resists as they get auto-copied to us anyway */
-	if (check_for_spell(p_ptr, "RESISTS_II")) { r_ptr->flags9 |= RF9_RES_FIRE | RF9_RES_COLD | RF9_RES_ACID | RF9_RES_ELEC; }
-	else if (check_for_spell(p_ptr, "RESISTS_I")) { r_ptr->flags9 |= RF9_RES_FIRE | RF9_RES_COLD; }
- #endif
-	if (check_for_spell(p_ptr, "HEALING_I") || check_for_spell(p_ptr, "HEALING_II") || check_for_spell(p_ptr, "HEALING_III")) { r_ptr->flags6 |= RF6_HEAL; magicness++; }
-	if (check_for_spell(p_ptr, "THUNDERSTORM")) { r_ptr->flags5 |= RF5_BA_ELEC; magicness++; }
-#else
-	if (get_skill(p_ptr, SKILL_NATURE) >= thresh_spell) {
-		r_ptr->flags6 |= RF6_HEAL; magicness++;
-		r_ptr->flags5 |= RF5_BO_ELEC; magicness++;
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	/* uuhhhh not gonna check for every frigging spell here, probably :p Just re-use the simple thresh_spell check... */
-	//if (check_for_spell(p_ptr, "every-frigging-spell-for-sorcery")) {}....
-#endif
-	if (get_skill(p_ptr, SKILL_SORCERY) >= thresh_spell) { /* o_o */
-		//r_ptr->flags6 |= RF6_HASTE; magicness++; -- we already copy the max speed flatly
-		r_ptr->flags5 |= RF5_BO_MANA; magicness++;
-		r_ptr->flags5 |= RF5_BA_FIRE; magicness++;
-		r_ptr->flags5 |= RF5_BA_POIS | RF5_BO_ELEC; magicness++;
-		r_ptr->flags5 |= RF5_BA_COLD | RF5_BO_WATE; magicness++;
-		r_ptr->flags5 |= RF5_BO_ACID; magicness++;
-		r_ptr->flags0 |= RF0_BO_DISE | RF0_BA_DISE; magicness++;
-		r_ptr->flags6 |= RF6_BLINK | RF6_TPORT; magicness++;
-		r_ptr->flags6 |= RF6_HEAL; magicness++;
-	}
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "POWERCLOUD")) {
-		switch (p_ptr->ptrait) {
-		case TRAIT_ENLIGHTENED:
-			r_ptr->flags5 |= RF5_BA_MANA; magflag = TRUE;
-			break;
-		case TRAIT_CORRUPTED:
-			r_ptr->flags0 |= RF5_BA_CHAO; magflag = TRUE; //RF4_ROCKET is tooo much, RF0_BA_DISE overused (but good!), PLASMA/NUKE not cutting it
-			break;
-		}
-	}
-	else if (check_for_spell(p_ptr, "POWERBALL_I") || check_for_spell(p_ptr, "POWERBALL_II") || check_for_spell(p_ptr, "POWERBALL_III")) {
-		switch (p_ptr->ptrait) {
-		case TRAIT_ENLIGHTENED:
-			r_ptr->flags5 |= RF5_BA_MANA; magflag = TRUE;
-			break;
-		case TRAIT_CORRUPTED:
-			r_ptr->flags0 |= RF0_BA_DISE; magflag = TRUE; //dispel
-			break;
-		default: /* Uninitiated yet */
-			r_ptr->flags5 |= RF5_BA_ELEC; magflag = TRUE;
-		}
-	}
-	else if (check_for_spell(p_ptr, "POWERBEAM_I") || check_for_spell(p_ptr, "POWERBEAM_II") || check_for_spell(p_ptr, "POWERBEAM_III")) {
-		switch (p_ptr->ptrait) {
-		case TRAIT_ENLIGHTENED:
-			r_ptr->flags0 |= RF0_BO_LITE; magflag = TRUE;
-			break;
-		case TRAIT_CORRUPTED:
-			r_ptr->flags0 |= RF0_BO_DARK; magflag = TRUE;
-			break;
-		default: /* Uninitiated yet */
-			r_ptr->flags5 |= RF5_BO_ELEC; magflag = TRUE;
-		}
-	}
-	else if (check_for_spell(p_ptr, "POWERBOLT_I") || check_for_spell(p_ptr, "POWERBOLT_II") || check_for_spell(p_ptr, "POWERBOLT_III")) {
-		switch (p_ptr->ptrait) {
-		case TRAIT_ENLIGHTENED:
-			r_ptr->flags5 |= RF5_BO_MANA; magflag = TRUE;
-			break;
-		case TRAIT_CORRUPTED:
-			r_ptr->flags0 |= RF0_BO_DISE; magflag = TRUE;
-			break;
-		default: /* Uninitiated yet */
-			r_ptr->flags5 |= RF5_BO_ELEC; magflag = TRUE;
-		}
-	}
-	if (p_ptr->ptrait == TRAIT_CORRUPTED && check_for_spell(p_ptr, "VENGEANCE")) { r_ptr->flags0 |= RF0_DISPEL; magflag = TRUE; }
-	//EMPOWERMENT is auto-applied via stat changes
-	//INTENSIFY is prevented by NO_REDUCE, handled by auto-application of mana resist, crit is handled with other crit stuff (via xtra_crit).
-	if (magflag) magicness++;
- #ifdef RI_MIRROR_PREEMPT_RES /* optional, to get us the 'initiative' - could almost just as well wait for the player to cast resists as they get auto-copied to us anyway */
-	if (p_ptr->ptrait == TRAIT_ENLIGHTENED && check_for_spell(p_ptr, "INTENSIFY")) r_ptr->flags9 |= RF9_RES_MANA;
- #endif
-#else
-	if (get_skill(p_ptr, SKILL_ASTRAL) >= thresh_spell) {
-		switch (p_ptr->ptrait) {
-		case TRAIT_ENLIGHTENED:
-			r_ptr->flags5 |= RF5_BA_MANA; magicness++;
-			break;
-		case TRAIT_CORRUPTED:
-			r_ptr->flags0 |= RF0_BA_DISE; magicness++; //no dispel.. not disi again
-			//raging inferno -- maybe just stick with BA_DISE to not overkill..
-			//r_ptr->flags4 |= RF4_ROCKET; magicness++; }
-			break;
-		default: /* Uninitiated yet */
-			r_ptr->flags5 |= RF5_BA_ELEC; magicness++;
-		}
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "WATERPOISON_III")) { r_ptr->flags0 |= RF0_ICEPOISON; magicness += 2; }
-	else if (check_for_spell(p_ptr, "WATERPOISON_II")) { r_ptr->flags0 |= RF0_WATERPOISON; magicness += 2; }
-	else if (check_for_spell(p_ptr, "WATERPOISON_I")) { r_ptr->flags5 |= RF5_BA_POIS; magicness += 2; }
-#else
-	if (get_skill(p_ptr, SKILL_DRUID_ARCANE) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_BA_POIS; magicness++;
-		r_ptr->flags0 |= RF0_BR_ICE; magicness++; //ball
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "HEALINGCLOUD_I") || check_for_spell(p_ptr, "HEALINGCLOUD_II") || check_for_spell(p_ptr, "HEALINGCLOUD_III")) { r_ptr->flags6 |= RF6_HEAL; magicness++; }
-	//r_ptr->flags9 |= RF9_RES_POIS; } --nah
-	/* Note: Focus is currently ignored, so player gains great +hit chance advantage. */
-	//Extra Growth: TODO maybe: give +damage, possibly +AC, but not +HP as that is always flatly compared (same for Demonic Strength)
-#else
-	if (get_skill(p_ptr, SKILL_DRUID_PHYSICAL) >= thresh_spell) {
-		//r_ptr->flags6 |= RF6_HASTE; magicness++; -- we already copy the max speed flatly
-		r_ptr->flags6 |= RF6_HEAL; magicness++;
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
- #ifdef RI_MIRROR_PREEMPT_RES /* optional, to get us the 'initiative' - could almost just as well wait for the player to cast resists as they get auto-copied to us anyway */
-	if (check_for_spell(p_ptr, "POISONRES")) r_ptr->flags9 |= RF9_RES_POIS;
- #endif
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "DARKBALL")) { r_ptr->flags5 |= RF5_BA_DARK; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "DARKBOLT_I") || check_for_spell(p_ptr, "DARKBOLT_II") || check_for_spell(p_ptr, "DARKBOLT_III")) { r_ptr->flags5 |= RF5_BA_DARK; magflag = TRUE; }
-	//invis: mirror sees through invis, so obsolete.
-	if (magflag) magicness++;
-	magflag = FALSE; //extra magicness, pft
-	if (check_for_spell(p_ptr, "ODRAINLIFE")) { r_ptr->flags0 |= RF0_DRAIN_LIFE; magflag = TRUE; }
-	//else //or maybe more consistent to keep both spells?
-	if (check_for_spell(p_ptr, "CHAOSBOLT")) { r_ptr->flags0 |= RF0_BO_CHAOS; magflag = TRUE; }
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_OSHADOW) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_DARK; magicness++; }
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "LITEBEAM_I") || check_for_spell(p_ptr, "LITEBEAM_II") || check_for_spell(p_ptr, "LITEBEAM_III")) { r_ptr->flags0 |= RF0_BO_LITE; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "STARLIGHT_I") || check_for_spell(p_ptr, "STARLIGHT_II")) { r_ptr->flags0 |= RF0_BA_LITE; magflag = TRUE; }
-	if (magflag) magicness++;
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "OLIGHTNINGBOLT_I") || check_for_spell(p_ptr, "OLIGHTNINGBOLT_II") || check_for_spell(p_ptr, "OLIGHTNINGBOLT_III")) { r_ptr->flags5 |= RF5_BO_ELEC; magflag = TRUE; }
-	if (magflag) magicness++;
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "OCURSEDD_I") || check_for_spell(p_ptr, "OCURSEDD_II") || check_for_spell(p_ptr, "OCURSEDD_III")) { r_ptr->flags5 |= RF5_CURSE; magflag = TRUE; }
-	//guardian spirit II increases AC like kinetic shield (GS I is ignored).
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_OSPIRIT) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_CURSE; magicness++;
-		r_ptr->flags5 |= RF5_BO_ELEC; magicness++;
-		r_ptr->flags4 |= RF4_BR_LITE; magicness++; //bolt
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
- #ifdef RI_MIRROR_PREEMPT_RES /* optional, to get us the 'initiative' - could almost just as well wait for the player to cast resists as they get auto-copied to us anyway */
-	if (check_for_spell(p_ptr, "FIRERES")) r_ptr->flags9 |= RF9_RES_FIRE; //Wrathflame: just ignored aside from fire res.
- #endif
-	//Demonic Strength: TODO maybe: give +damage but not +HP as that is always flatly compared (same for Extra Growth)
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "FLAMEWAVE_I") || check_for_spell(p_ptr, "FLAMEWAVE_II")) { r_ptr->flags5 |= RF5_BA_FIRE; magflag = TRUE; }
-	else if (check_for_spell(p_ptr, "OFIREBOLT_I") || check_for_spell(p_ptr, "OFIREBOLT_II") || check_for_spell(p_ptr, "OFIREBOLT_III")) { r_ptr->flags5 |= RF5_BO_FIRE; magflag = TRUE; }
-	if (magflag) magicness++;
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "CHAOSBOLT2")) { r_ptr->flags0 |= RF0_BO_CHAOS; magflag = TRUE; }
-	if (magflag) magicness++;
-	if (check_for_spell(p_ptr, "FIRESTORM")) r_ptr->flags2 |= RF2_AURA_FIRE; //supa weak in comparison lol, not even hellfire - might be op though if it really had the real thing? dunno
-	//BLOODSACRIFICE: Covered by auto stat adjustments - uhoh! Might be not a good idea for once to use it?
-#else
-	if (get_skill(p_ptr, SKILL_OHERETICISM) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_BO_FIRE; magicness++;
-		r_ptr->flags5 |= RF5_BA_CHAO; magicness++; //bolt
-		r_ptr->flags2 |= RF2_AURA_FIRE;
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	//Nether Sap
-	if (check_for_spell(p_ptr, "OREGEN")) {
-		r_ptr->flags2 |= RF2_REGENERATE;
- #ifdef TROLL_REGENERATION
-		r_ptr->flags2 |= RF2_REGENERATE_T2;
- #endif
-	}
-	if (check_for_spell(p_ptr, "OIMBUE")) r_ptr->flags9 |= RF9_VAMPIRIC;
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "NETHERBOLT")) { r_ptr->flags5 |= RF5_BO_NETH; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "ODRAINLIFE2")) { r_ptr->flags0 |= RF0_DRAIN_LIFE; magflag = TRUE; }
-	if (magflag) magicness++;
-	//nether sap + touch of hunger: could turn into T2 regen or better even
-#else
-	if (get_skill(p_ptr, SKILL_OUNLIFE) >= thresh_spell) {
- #if 0
-		r_ptr->flags5 |= RF5_SLOW; magicness++;
- #else
-		r_ptr->flags4 |= RF4_BR_INER; magicness++; //too harsh?
- #endif
-		r_ptr->flags2 |= RF2_REGENERATE; //Nether Sap weak version
-		r_ptr->flags5 |= RF5_BO_NETH;
-	}
-#endif
-
-	//disallow placing floor runes!
-	if (get_skill(p_ptr, SKILL_R_LITE) >= thresh_spell) {
-		r_ptr->flags4 |= RF4_BR_LITE; magicness++; //ball
-		//SKILL_R_DARK -> conf
-		if (get_skill(p_ptr, SKILL_R_NEXU) >= thresh_spell) { r_ptr->flags4 |= RF4_BR_INER; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_NETH) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_ELEC; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_CHAO) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_FIRE; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_MANA) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_WATE; magicness++; }
-	}
-	if (get_skill(p_ptr, SKILL_R_DARK) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_BA_DARK; magicness++;
-		if (get_skill(p_ptr, SKILL_R_NEXU) >= thresh_spell) { r_ptr->flags4 |= RF4_BR_GRAV; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_NETH) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_COLD; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_CHAO) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_ACID; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_MANA) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_POIS; magicness++; }
-	}
-	if (get_skill(p_ptr, SKILL_R_NEXU) >= thresh_spell) {
-		r_ptr->flags4 |= RF4_BR_NEXU; magicness++; //ball
-		if (get_skill(p_ptr, SKILL_R_NETH) >= thresh_spell) { r_ptr->flags4 |= RF4_BR_TIME; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_CHAO) >= thresh_spell) { r_ptr->flags4 |= RF4_BR_SOUN; magicness++; }
-		if (get_skill(p_ptr, SKILL_R_MANA) >= thresh_spell) { r_ptr->flags4 |= RF4_BR_SHAR; magicness++; }
-	}
-	if (get_skill(p_ptr, SKILL_R_NETH) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_BA_NETH; magicness++;
-		if (get_skill(p_ptr, SKILL_R_CHAO) >= thresh_spell) { r_ptr->flags0 |= RF0_BA_DISE; magicness++; }//hellfire...
-		if (get_skill(p_ptr, SKILL_R_MANA) >= thresh_spell) { r_ptr->flags4 |= RF4_BR_WALL; magicness++; }//too low damage?
-	}
-	if (get_skill(p_ptr, SKILL_R_CHAO) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_BA_CHAO; magicness++;
-		if (get_skill(p_ptr, SKILL_R_MANA) >= thresh_spell) { r_ptr->flags0 |= RF0_BA_DISE; magicness++; }
-	}
-	if (get_skill(p_ptr, SKILL_R_MANA) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_BA_MANA; magicness++;
-	}
-	/* Note: Some more (status effect) combos omitted, these should be sufficient for now. */
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	//Psychic Hammer: Skip, because its damage output would probably be too high (GF_FORCE bolt)
-	if (check_for_spell(p_ptr, "MPYROKINESIS_I") || check_for_spell(p_ptr, "MPYROKINESIS_II")) { r_ptr->flags5 |= RF5_BO_FIRE; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "MCRYOKINESIS_I") || check_for_spell(p_ptr, "MCRYOKINESIS_II")) { r_ptr->flags5 |= RF5_BO_COLD; magflag = TRUE; }
-	if (magflag) magicness++;
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "MBLINK")) { r_ptr->flags6 |= RF6_BLINK; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "MTELEPORT")) { r_ptr->flags6 |= RF6_TPORT; magflag = TRUE; }
-	//MTELETOWARDS is ignored; MFEEDBACK is ignored (despite potential Grav resistance :p)
-	if (check_for_spell(p_ptr, "MTELEAWAY")) { r_ptr->flags6 |= RF6_TELE_AWAY; magflag = TRUE; }
-	//Kinetic shield instead factors into AC.
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_PPOWER) >= thresh_spell) {
-		r_ptr->flags6 |= RF6_BLINK | RF6_TPORT | RF6_TELE_AWAY; magicness++;
-		r_ptr->flags5 |= RF5_BA_FIRE; magicness++;
-		r_ptr->flags5 |= RF5_BA_COLD; magicness++;
-		//kinetic shield: extra ac given further up
-	}
-#endif
-
-	//if (get_skill(p_ptr, SKILL_ATTUNEMENT) >= thresh_spell) { r_ptr->flags6 |= RF6_HASTE; magicness++; } -- we already copy the max speed flatly
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "MMINDBLAST_I") || check_for_spell(p_ptr, "MMINDBLAST_II") || check_for_spell(p_ptr, "MMINDBLAST_III") ||
-	    check_for_spell(p_ptr, "MPSISTORM_I") || check_for_spell(p_ptr, "MPSISTORM_II"))
-		{ r_ptr->flags0 |= RF0_BO_PSI; magicness += 2; }
-	//MSILENCE: Too big and random a factor to allow, and saves us work to exclude it.
-#else
-	if (get_skill(p_ptr, SKILL_MINTRUSION) >= thresh_spell) {
-		//we got psi-immunity vs 40+ MCs! So no need to replicate the Psionic Blast/Storm spells maybe
- #if 0
-		r_ptr->flags5 |= RF5_SLOW; magicness++;
- #else
-		r_ptr->flags4 |= RF4_BR_INER; magicness++; //too harsh?
- #endif
-		r_ptr->flags5 |= RF5_BRAIN_SMASH; magicness++; //RF5_MIND_BLAST
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "HCURSE_I") || check_for_spell(p_ptr, "HCURSE_II") || check_for_spell(p_ptr, "HCURSE_III")) { r_ptr->flags5 |= RF5_CURSE; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "HGLOBELIGHT_I") || check_for_spell(p_ptr, "HGLOBELIGHT_II")) { r_ptr->flags0 |= RF0_BA_LITE; magflag = TRUE; }
-	if (check_for_spell(p_ptr, "HLITERAY")) { r_ptr->flags0 |= RF0_BO_LITE; magflag = TRUE; }
-	if (magflag) magicness++;
-	magflag = FALSE;
-	if (check_for_spell(p_ptr, "HORBDRAIN_I") || check_for_spell(p_ptr, "HORBDRAIN_II")) { r_ptr->flags0 |= RF0_DISPEL; magflag = TRUE; } /* Seems usable as replacement? */
-	/* For now, no mirror to Annihilation - we just count it for magicness anyway */
-	if (check_for_spell(p_ptr, "HDRAINCLOUD")) magflag = TRUE;
-	/* We ignore exorcism and release souls as they cannot affect the mirror anyway */
-	// We ignore exorcism/redemption and other pure anti-evil/undead/xxx spells as we are supposedly NONLIVING and also won't retaliate with these spells for ez-ness..
-	if (magflag) magicness++;
-#else
-	if (get_skill(p_ptr, SKILL_HOFFENSE) >= thresh_spell) {
-		r_ptr->flags5 |= RF5_CURSE; magicness++;
-		r_ptr->flags0 |= RF0_BA_DISE; magicness++; //"OoD" -_-
-		if (get_skill(p_ptr, SKILL_OSHADOW) >= thresh_spell) { r_ptr->flags5 |= RF5_BA_CHAO; magicness++; } //bolt
-	}
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
- #ifdef RI_MIRROR_PREEMPT_RES /* optional, to get us the 'initiative' - could almost just as well wait for the player to cast resists as they get auto-copied to us anyway */
-	if (check_for_spell(p_ptr, "HRESISTS_III")) { r_ptr->flags9 |= RF9_RES_FIRE | RF9_RES_COLD | RF9_RES_ACID | RF9_RES_ELEC | RF9_RES_POIS; }
-	else if (check_for_spell(p_ptr, "HRESISTS_II")) { r_ptr->flags9 |= RF9_RES_FIRE | RF9_RES_COLD | RF9_RES_ACID | RF9_RES_ELEC; }
-	else if (check_for_spell(p_ptr, "HRESISTS_I")) { r_ptr->flags9 |= RF9_RES_FIRE | RF9_RES_COLD; }
- #endif
-	//Notes: Placing runes is not possible. And gods won't accept martyrium here.
-#else
-	//if (get_skill(p_ptr, SKILL_HDEFENSE) >= thresh_spell) { r_ptr->flags |= RF__; magicness++; } -- nothing here! all accounted for
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	if (check_for_spell(p_ptr, "HCUREWOUNDS_I") || check_for_spell(p_ptr, "HCUREWOUNDS_II") ||
-	    check_for_spell(p_ptr, "HHEALING_I") || check_for_spell(p_ptr, "HHEALING_II") || check_for_spell(p_ptr, "HHEALING_III") ||
-	    check_for_spell(p_ptr, "HHEALING2_I") || check_for_spell(p_ptr, "HHEALING2_II") || check_for_spell(p_ptr, "HHEALING2_III"))
-		{ r_ptr->flags6 |= RF6_HEAL; magicness++; }
-#else
-	if (get_skill(p_ptr, SKILL_HCURING) >= thresh_spell) { r_ptr->flags6 |= RF6_HEAL; magicness++; }
-#endif
-
-#ifdef SIMPLE_RI_MIRROR_CHECKFORSPELLS
-	//Globe of Light was already checked in HOFFENSE above. Nothing left here.
-#else
-	//if (get_skill(p_ptr, SKILL_HSUPPORT) >= thresh_spell) { r_ptr->flags |= RF__; magicness++; } -- nothing here!
-#endif
-
-	/* Mimic powers */
-	if (p_ptr->body_monster) {
-		/* Simply copy them over to our attack spells arrays? */
-		r_ptr->flags4 |= p_ptr->innate_spells[0];
-		r_ptr->flags5 |= p_ptr->innate_spells[1];
-		r_ptr->flags6 |= p_ptr->innate_spells[2];
-		r_ptr->flags0 |= p_ptr->innate_spells[3];
-
-		/* And enable use of magic, actually */
-		if (p_ptr->innate_spells[0]) magicness++;
-		if (p_ptr->innate_spells[1]) magicness++;
-		if (p_ptr->innate_spells[2]) magicness++;
-		if (p_ptr->innate_spells[3]) magicness++;
-	}
-
-	/* Trapping - the floor is untrappable and unglyphable! */
-
-	/* Sort spells: Remove weaker versions, eg remove fire bolt if we have fire ball */
-	//      ...TODO...
-
-	/* Note: Same as players' spellcasting, the mirror's spellcasting cannot be intercepted! */
-
-
-	/* Flags 7 */
-	//if (p_ptr->pclass == CLASS_MAGE) r_ptr->flags7 |= RF7_AI_ANNOY; -- no, because the monster should chase the player in any case
-	//if (p_ptr->antimagic >= p_ptr->max_plv / 2) r_ptr->flags7 |= RF7_DISBELIEVE -- no, because the player could wield a dark sword, then take it off and utilize magic
-
-	/* Flags 8 -- nothing further, just terrain stuff (and RF8_NO_BLOCK) */
-	//RF8_NO_CUT has already been handled above.
-
-	/* Flags 9 */
-	//RF9_RES_BLIND (not implemented, covered by RF2_POWERFUL),
-	r_ptr->flags9 |= RF9_HAS_LITE; //assume always
-	if (p_ptr->resist_acid) r_ptr->flags9 |= RF9_RES_ACID;
-	if (p_ptr->resist_elec) r_ptr->flags9 |= RF9_RES_ELEC;
-	if (p_ptr->resist_fire) r_ptr->flags9 |= RF9_RES_FIRE;
-	if (p_ptr->resist_cold) r_ptr->flags9 |= RF9_RES_COLD;
-	if (p_ptr->resist_pois) r_ptr->flags9 |= RF9_RES_POIS;
-	if (p_ptr->resist_lite) r_ptr->flags9 |= RF9_RES_LITE;
-	if (p_ptr->resist_dark) r_ptr->flags9 |= RF9_RES_DARK;
-	if (p_ptr->resist_sound) r_ptr->flags9 |= RF9_RES_SOUND;
-	if (p_ptr->resist_shard) r_ptr->flags9 |= RF9_RES_SHARDS;
-	if (p_ptr->resist_chaos) r_ptr->flags9 |= RF9_RES_CHAOS;
-	if (p_ptr->resist_time) r_ptr->flags9 |= RF9_RES_TIME;
-	if (p_ptr->resist_mana || p_ptr->divine_xtra_res > 0) r_ptr->flags9 |= RF9_RES_MANA;
-	if (p_ptr->reduce_insanity) r_ptr->flags9 |= RF9_RES_PSI;
-	if (p_ptr->reduce_insanity == 3) r_ptr->flags9 |= RF9_IM_PSI; //bonus >:o
-
-
-	/* Remove weak spell versions */
-	if (r_ptr->flags0 & RF0_HEAL_PHYS) r_ptr->flags6 &= ~RF6_HEAL;
-	if (r_ptr->flags0 & RF0_BLINK_PHYS) r_ptr->flags6 &= ~RF6_BLINK;
-	if (r_ptr->flags0 & RF0_TPORT_PHYS) r_ptr->flags6 &= ~RF6_TPORT;
-
-	// TODO: remove bolt spells if we have a stronger ball version, remove ball version if we have a stronger breath version (no AM!)..
-
-
-	/* Remove spells that we know we're immune to */
-	if (p_ptr->immune_acid) {
-		r_ptr->flags4 &= ~(RF4_BR_ACID);
-		r_ptr->flags5 &= ~(RF5_BA_ACID | RF5_BO_ACID);
-	}
-	if (p_ptr->immune_fire) {
-		r_ptr->flags4 &= ~(RF4_BR_FIRE);
-		r_ptr->flags5 &= ~(RF5_BA_FIRE | RF5_BO_FIRE);
-	}
-	if (p_ptr->immune_cold) {
-		r_ptr->flags4 &= ~(RF4_BR_COLD);
-		r_ptr->flags5 &= ~(RF5_BA_COLD | RF5_BO_COLD | RF5_BO_ICEE);
-		r_ptr->flags0 &= ~(RF0_BR_ICE);
-	}
-	if (p_ptr->immune_elec) {
-		r_ptr->flags4 &= ~(RF4_BR_ELEC);
-		r_ptr->flags5 &= ~(RF5_BA_ELEC | RF5_BO_ELEC);
-	}
-	if (p_ptr->immune_poison) {
-		r_ptr->flags4 &= ~(RF4_BR_POIS);
-		r_ptr->flags5 &= ~(RF5_BA_POIS | RF5_BO_POIS);
-	}
-	if (p_ptr->body_monster && (r_info[p_ptr->body_monster].flags7 & RF7_AQUATIC)) { //dam/4, exploitable?
-		r_ptr->flags0 &= ~(RF0_BR_WATER);
-		r_ptr->flags5 &= ~(RF5_BA_WATE | RF5_BO_WATE);
-	}
-	if (p_ptr->immune_water) {
-		r_ptr->flags0 &= ~(RF0_BR_WATER);
-		r_ptr->flags5 &= ~(RF5_BA_WATE | RF5_BO_WATE);
-	}
-	if (p_ptr->immune_neth) {
-		r_ptr->flags4 &= ~(RF4_BR_NETH);
-		r_ptr->flags5 &= ~(RF5_BA_NETH | RF5_BO_NETH);
-	}
-	if (p_ptr->reduce_insanity >= 2) {
-		/* not restricting for now */
-	}
-
-#ifdef TROLL_REGENERATION
-	/* Experimental - Trolls are super-regenerators (hard-coded) */
-	if (p_ptr->body_monster && r_info[p_ptr->body_monster].d_char == 'T' && p_ptr->body_monster != RI_HALF_TROLL) r_ptr->flags2 |= RF2_REGENERATE_T2;
-	else if (p_ptr->prace == RACE_HALF_TROLL || p_ptr->body_monster == RI_HALF_TROLL) r_ptr->flags2 |= RF2_REGENERATE_TH;
-	else
-#endif
-#ifdef HYDRA_REGENERATION
-	/* Experimental - Hydras are super-regenerators aka regrowing heads */
-	if (p_ptr->body_monster && r_info[p_ptr->body_monster].d_char == 'M') r_ptr->flags2 |= RF2_REGENERATE_TH;
-	else
-#endif
-	;
-
-	/* Determine chance to use available spells/items */
-	switch (p_ptr->pclass) {
-	case CLASS_WARRIOR:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (25 + magicness > 80 ? 80 : 25 + magicness) : 0;
-		break;
-	case CLASS_MIMIC:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (25 + magicness > 80 ? 80 : 25 + magicness) : 0;
-		break;
- #ifdef ENABLE_DEATHKNIGHT
-	case CLASS_DEATHKNIGHT:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (50 + magicness > 85 ? 85 : 50 + magicness) : 0;
-		break;
- #endif
- #ifdef ENABLE_HELLKNIGHT
-	case CLASS_HELLKNIGHT:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (50 + magicness > 85 ? 85 : 50 + magicness) : 0;
-		break;
- #endif
-	case CLASS_PALADIN:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (50 + magicness > 85 ? 85 : 50 + magicness) : 0;
-		break;
-	case CLASS_RANGER:
-		r_ptr->freq_innate = 90;
-		break;
-	case CLASS_ROGUE:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (25 + magicness > 80 ? 80 : 25 + magicness) : 0;
-		break;
-	case CLASS_MINDCRAFTER:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (50 + magicness > 85 ? 85 : 50 + magicness) : 0;
-		break;
-	case CLASS_SHAMAN:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (75 + magicness > 90 ? 90 : 75 + magicness) : 0;
-		break;
-	case CLASS_ADVENTURER:
-		//pfft, we just have no clue.. :/ just pick shaman-like values for now
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (75 + magicness > 90 ? 90 : 75 + magicness) : 0;
-		break;
-	case CLASS_RUNEMASTER:
-		r_ptr->freq_innate = r_ptr->freq_spell = 90;
-		break;
- #ifdef ENABLE_CPRIEST
-	case CLASS_CPRIEST:
- #endif
-	case CLASS_PRIEST:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (75 + magicness > 90 ? 90 : 75 + magicness) : 0;
-		break;
-	case CLASS_DRUID:
-		r_ptr->freq_innate = r_ptr->freq_spell = magicness ? (35 + magicness > 80 ? 80 : 35 + magicness) : 0;
-		break;
-	case CLASS_MAGE:
-	case CLASS_ARCHER:
-		r_ptr->freq_innate = r_ptr->freq_spell = 90;
-		break;
-	}
- #ifdef TEST_SERVER /* spammy.. */
-s_printf("freq=%d, magicness=%d\n", r_ptr->freq_spell, magicness);
- #endif
-#endif
-}
-void py2mon_update_equip(monster_type *m_ptr, player_type *p_ptr) {
-	//monster_race *r_ptr = &r_info[RI_MIRROR];
-#ifdef SIMPLE_RI_MIRROR
-#endif
-}
-void py2mon_update_skills(monster_type *m_ptr, player_type *p_ptr) {
-	//monster_race *r_ptr = &r_info[RI_MIRROR];
-#ifdef SIMPLE_RI_MIRROR
-#endif
-}
-void py2mon_update_abilities(monster_type *m_ptr, player_type *p_ptr) {
-	//monster_race *r_ptr = &r_info[RI_MIRROR];
-#ifdef SIMPLE_RI_MIRROR
-#endif
 }

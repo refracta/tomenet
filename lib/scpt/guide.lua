@@ -55,7 +55,7 @@ guide_skill = {
     ".Blunt-mastery",
     ".Polearm-mastery",
     ".Combat Stances",
-    ".Dual-wield",
+    ".Dual-Wield",
     ".Martial Arts",
     ".Interception",
     "+Archery",
@@ -118,7 +118,7 @@ guide_skill = {
     ".Shivering Aura",
     ".Aura of Death",
     ".Mimicry",
-    ".Magic Device",
+    ".Magic device",
     ".Anti-magic",
     "+Sneakiness",
     ".Stealth",
@@ -147,6 +147,7 @@ guide_school = {
     "Divination",
     "Temporal",
     "Udun",
+    "Mind",
     "Prayers -",
     "Holy Offense",
     "Holy Defense",
@@ -164,10 +165,9 @@ guide_school = {
     "Attunement",
     "Mental Intrusion",
     "Astral Knowledge -",
-    "Unlife",
 }
 
-guide_spells = 187
+guide_spells = 174
 guide_spell = {
     "Manathrust",
     "Recharge",
@@ -193,7 +193,7 @@ guide_spell = {
 
     "Noxious Cloud",
     "Lightning Bolt",
-    "Wings of Winds",
+    "Wings of Wind",
     "Thunderstorm",
     "Invisibility", --24
 
@@ -218,33 +218,33 @@ guide_spell = {
     "Recall",
     "Probability Travel",
     "Mass Warp",
-    "Telekinesis I",
 
     "Detect Monsters",
     "Identify",
     "Greater Identify",
     "Vision",
     "Sense Hidden",
-    "Reveal Ways",
-    "Sense Minds", --51
+    "Reveal Ways", --49
 
     "Magelock",
     "Slow Monster",
     "Essence of Speed",
     "Mass Warp",
 
-    "Confusion",
-    "Stun",
     "Genocide",
     "Obliteration",
     "Wraithform",
     "Stop Wraithform",
-    "Disenchantment Beam",
-    "Hellfire", --63
+    "Disenchantment Bolt",
+    "Hellfire", --59
+
+    "Confuse",
+    "Stun",
+    "Sense Minds",
+    "Telekinesis I",
 
     "Curse",
-    "Call Light",
-    "Ray of Light",
+    "Holy Light",
     "Exorcism",
     "Redemption",
     "Orb of Draining",
@@ -259,7 +259,7 @@ guide_spell = {
     "Martyrdom",
 
     "Cure Wounds",
-    "Heal",
+    "Healing",
     "Break Curses",
     "Cleansing Light",
     "Curing",
@@ -269,7 +269,7 @@ guide_spell = {
     "Soul Curing", --85
 
     "Remove Fear",
-    "Call Light",
+    "Holy Light",
     "Detect Evil",
     "Sense Monsters",
     "Sanctuary",
@@ -280,6 +280,7 @@ guide_spell = {
     "Cause Fear",
     "Blindness",
     "Detect Invisible",
+    "Poisonous Fog",
     "Veil of Night",
     "Shadow Bolt",
     "Aspect of Peril",
@@ -287,35 +288,31 @@ guide_spell = {
     "Shadow Gate",
     "Shadow Shroud",
     "Chaos Bolt",
+    "Nether Bolt",
     "Drain Life",
-    "Darkness Storm", --105
+    "Darkness Storm", --107
 
     "Cause Wounds",
     "Tame Fear",
     "Starlight",
-    "Meditation",
     "Trance",
     "Lightning",
     "Spear of Light",
     "Lift Curses",
     "Ethereal Eye",
     "Possess",
-    "Stop Possess",
     "Guardian Spirit", --117
-    "Purification Rites",
 
     "Terror",
     "Ignore Fear",
     "Fire Bolt",
     "Wrathflame",
-    "Flame Wave",
     "Demonic Strength",
     --"Chaos Bolt", --duplicate (Shadow)
-    "Boundless Rage",
-    "Wicked Oath",
+    "Dark Meditation",
     "Levitation",
     "Robes of Havoc",
-    "Blood Sacrifice", --129
+    "Blood Sacrifice", --126
 
     "Nature's Call",
     "Toxic Moisture",
@@ -327,7 +324,7 @@ guide_spell = {
     "Quickfeet",
     "Herbal Tea",
     "Extra Growth",
-    "Focus", --139
+    "Focus", --136
 
     "Psychic Hammer",
     "Psychokinesis",
@@ -347,14 +344,14 @@ guide_spell = {
     "Accelerate Nerves",
     "Telepathy",
     "Recognition",
-    "Stabilize Thoughts", --157
+    "Stabilize Thoughts", --154
 
     "Psionic Blast",
     "Psi Storm",
     "Scare",
     "Confuse",
     "Hypnosis",
-    "Apathy",
+    "Drain Strength",
     "Psychic Suppression",
     "Remote Vision",
     "Recognition",
@@ -369,16 +366,5 @@ guide_spell = {
     "Empowerment",
     "The Silent Force",
     "Sphere of Destruction",
-    "Gateway", --177
-
-    "Fatigue",
-    "Detect Lifeforce",
-    "Tainted Grounds",
-    "Nether Sap",
-    "Subjugation",
-    "Nether Bolt",
-    "Permeation",
-    "Siphon Life",
-    "Touch of Hunger",
-    "Wraithstep", --187
+    "Gateway", --174
 }

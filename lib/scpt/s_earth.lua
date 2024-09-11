@@ -3,7 +3,6 @@
 --[[
 STONESKIN = add_spell {
 	["name"] = 	"Stone Skin",
-	["name2"] = 	"SSkin",
 	["school"] = 	SCHOOL_EARTH,
 	["level"] = 	1,
 	["mana"] = 	1,
@@ -33,7 +32,6 @@ STONESKIN = add_spell {
 ]]
 DIG = add_spell {
 	["name"] = 	"Dig",
-	["name2"] = 	"Dig",
 	["school"] = 	SCHOOL_EARTH,
 	["level"] = 	12,
 	["mana"] = 	14,
@@ -50,16 +48,16 @@ DIG = add_spell {
 }
 
 function get_acidbolt_dam(Ind, limit_lev)
+	--return 6 + get_level(Ind, ACIDBOLT, 25), 8 + get_level(Ind, ACIDBOLT, 25) + 1
 	local lev
 
 	lev = get_level(Ind, ACIDBOLT_I, 50)
 	if limit_lev ~= 0 and lev > limit_lev then lev = limit_lev + (lev - limit_lev) / 3 end
 
-	return 6 + ((lev * 3) / 5), 8 + ((lev * 5) / 7) + 1
+	return 6 + ((lev * 3) / 5), 8 + (lev / 2) + 1
 end
 ACIDBOLT_I = add_spell {
 	["name"] = 	"Acid Bolt I",
-	["name2"] = 	"ABolt I",
 	["school"] = 	SCHOOL_EARTH,
 	["level"] = 	12,
 	["mana"] = 	3,
@@ -80,11 +78,10 @@ ACIDBOLT_I = add_spell {
 }
 ACIDBOLT_II = add_spell {
 	["name"] = 	"Acid Bolt II",
-	["name2"] = 	"ABolt II",
 	["school"] = 	SCHOOL_EARTH,
 	["level"] = 	24,
-	["mana"] = 	6,
-	["mana_max"] = 	6,
+	["mana"] = 	7,
+	["mana_max"] = 	7,
 	["fail"] = 	-30,
 	["direction"] = TRUE,
 	["ftk"] = 	1,
@@ -101,11 +98,10 @@ ACIDBOLT_II = add_spell {
 }
 ACIDBOLT_III = add_spell {
 	["name"] = 	"Acid Bolt III",
-	["name2"] = 	"ABolt III",
 	["school"] = 	SCHOOL_EARTH,
 	["level"] = 	40,
-	["mana"] = 	12,
-	["mana_max"] = 	12,
+	["mana"] = 	13,
+	["mana_max"] = 	13,
 	["fail"] = 	-75,
 	["direction"] = TRUE,
 	["ftk"] = 	1,
@@ -123,12 +119,11 @@ ACIDBOLT_III = add_spell {
 
 STONEPRISON = add_spell {
 	["name"] = 	"Stone Prison",
-	["name2"] = 	"Prison",
 	["school"] = 	SCHOOL_EARTH,
-	["level"] = 	33,
+	["level"] = 	25,
 	["mana"] = 	50,
 	["mana_max"] = 	50,
-	["fail"] = 	-10,
+	["fail"] = 	10,
 	["spell"] = 	function()
 			local ret, x, y
 			fire_ball(Ind, GF_STONE_WALL, 0, 1, 1, "")
@@ -141,7 +136,6 @@ STONEPRISON = add_spell {
 
 STRIKE_I = add_spell {
 	["name"] = 	"Strike I",
-	["name2"] = 	"Strike I",
 	["school"] = 	{SCHOOL_EARTH},
 	["level"] = 	25,
 	["mana"] = 	30,
@@ -158,7 +152,6 @@ STRIKE_I = add_spell {
 }
 STRIKE_II = add_spell {
 	["name"] = 	"Strike II",
-	["name2"] = 	"Strike II",
 	["school"] = 	{SCHOOL_EARTH},
 	["level"] = 	37,
 	["mana"] = 	50,
@@ -176,9 +169,8 @@ STRIKE_II = add_spell {
 
 SHAKE = add_spell {
 	["name"] = 	"Shake",
-	["name2"] = 	"Shake",
 	["school"] = 	{SCHOOL_EARTH},
-	["level"] = 	37,
+	["level"] = 	35,
 	["mana"] = 	60,
 	["mana_max"] = 	60,
 	["fail"] = 	15,

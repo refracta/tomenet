@@ -1,4 +1,6 @@
-# Plowshare mediafire.com module
+#!/bin/bash
+#
+# mediafire.com module
 # Copyright (c) 2011-2013 Plowshare team
 #
 # This file is part of Plowshare.
@@ -16,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Plowshare.  If not, see <http://www.gnu.org/licenses/>.
 
-MODULE_MEDIAFIRE_REGEXP_URL='https\?://\(www\.\)\?mediafire\.com/'
+MODULE_MEDIAFIRE_REGEXP_URL='http://\(www\.\)\?mediafire\.com/'
 
 MODULE_MEDIAFIRE_DOWNLOAD_OPTIONS="
 LINK_PASSWORD,p,link-password,S=PASSWORD,Used in password-protected files"
@@ -90,10 +92,6 @@ mediafire_extract_id() {
     case "$URL" in
         */download/*)
             ID=$(parse . '/download/\([[:alnum:]]\+\)' <<< "$URL") || return
-            ;;
-
-        */file/*)
-            ID=$(parse . '/file/\([[:alnum:]]\+\)' <<< "$URL") || return
             ;;
 
         */folder/*)
@@ -213,7 +211,7 @@ mediafire_get_ofuscated_link() {
 # stdout: real file download link
 mediafire_download() {
     local -r COOKIE_FILE=$1
-    local -r BASE_URL='https://www.mediafire.com'
+    local -r BASE_URL='http://www.mediafire.com'
     local FILE_ID URL PAGE JSON JS_VAR
 
     if [ -n "$AUTH_FREE" ]; then
@@ -229,15 +227,13 @@ mediafire_download() {
 
     # Only get site headers first to capture direct download links
     URL=$(curl --head "$BASE_URL/?$FILE_ID" | grep_http_header_location_quiet) || return
+
     case "$URL" in
         # no redirect, normal download
         '')
             URL="$BASE_URL/?$FILE_ID"
             ;;
         /download/*)
-            URL="$BASE_URL$URL"
-            ;;
-        /file/$FILE_ID/*)
             URL="$BASE_URL$URL"
             ;;
         http://*)
@@ -248,10 +244,6 @@ mediafire_download() {
         *errno=999)
             return $ERR_LINK_NEED_PERMISSIONS
             ;;
-       *errno=320\&origin=download)
-            return $ERR_LINK_DEAD
-            ;;
-
         *errno=320|*errno=378)
             return $ERR_LINK_DEAD
             ;;
@@ -271,35 +263,37 @@ mediafire_download() {
 
         FORM_CAPTCHA=$(grep_form_by_name "$PAGE" 'form_captcha') || return
 
-        # We cannot resolve a graphic version of reCaptcha, so instead of
-        # resolving it, just force to resolve solvemedia. It simply works.
-        if match 'class="g-recaptcha"' "$FORM_CAPTCHA"; then
-            log_debug 'Graphic reCaptcha found'
-            log_debug 'Instead of resolving it, just force to resolve Solve Media CAPTCHA'
+        if match 'recaptcha/api' "$FORM_CAPTCHA"; then
+            log_debug 'reCaptcha found'
+
+            local WORD
+            PUBKEY='6LextQUAAAAAALlQv0DSHOYxqF3DftRZxA5yebEe'
+            RESP=$(recaptcha_process $PUBKEY) || return
+            { read WORD; read CHALLENGE; read ID; } <<< "$RESP"
+
+            CAPTCHA_DATA="-d recaptcha_challenge_field=$CHALLENGE -d recaptcha_response_field=$WORD"
 
         elif match 'api\.solvemedia' "$FORM_CAPTCHA"; then
             log_debug 'Solve Media CAPTCHA found'
+
+            PUBKEY='Z94dMnWequbvKmy-HchLrZJ3-.qB6AJ1'
+            RESP=$(solvemedia_captcha_process $PUBKEY) || return
+            { read CHALLENGE; read ID; } <<< "$RESP"
+
+            CAPTCHA_DATA="--data-urlencode adcopy_challenge=$CHALLENGE -d adcopy_response=manual_challenge"
 
         else
             log_error 'Unexpected content/captcha type. Site updated?'
             return $ERR_FATAL
         fi
 
-        PUBKEY='Z94dMnWequbvKmy-HchLrZJ3-.qB6AJ1'
-        RESP=$(solvemedia_captcha_process $PUBKEY) || return
-        { read CHALLENGE; read ID; } <<< "$RESP"
-
-        CAPTCHA_DATA="--data-urlencode adcopy_challenge=$CHALLENGE -d adcopy_response=manual_challenge"
         log_debug "Captcha data: $CAPTCHA_DATA"
 
         PAGE=$(curl --location -b "$COOKIE_FILE" --referer "$URL" \
             $CAPTCHA_DATA "$BASE_URL/?$FILE_ID") || return
 
-        # After resolving captcha we are redirected to an error page, so once again load a proper page.
-        PAGE=$(curl -b "$COOKIE_FILE" "$URL" | break_html_lines) || return
-
         # Your entry was incorrect, please try again!
-        if match '<form[^>]*form_captcha' "$PAGE"; then
+        if match 'Your entry was incorrect' "$PAGE"; then
             captcha_nack $ID
             log_error 'Wrong captcha'
             return $ERR_CAPTCHA
@@ -315,22 +309,13 @@ mediafire_download() {
         if [ -z "$LINK_PASSWORD" ]; then
             LINK_PASSWORD=$(prompt_for_password) || return
         fi
-        FORM_HTML=$(grep_form_by_name "$PAGE" 'form_password')
-        SEC=$(echo "$FORM_HTML" | parse_form_input_by_name 'security')
         PAGE=$(curl -L --post301 -b "$COOKIE_FILE" \
-                    -d "downloadp=$LINK_PASSWORD" \
-                    -d "security=$SEC" \
-                    "$BASE_URL/?$FILE_ID" | break_html_lines) || return
+            -d "downloadp=$LINK_PASSWORD" "$URL" | break_html_lines) || return
 
         match 'name="downloadp"' "$PAGE" && return $ERR_LINK_PASSWORD_REQUIRED
     fi
 
-    if match "The page you attempted to load is not intended to be accessed directly." "${PAGE}"; then
-        log_debug "Direct Access Denied"
-        PAGE=$(curl -b "$COOKIE_FILE" "$URL" | break_html_lines) || return
-    fi
-
-    JS_VAR=$(echo "$PAGE" | parse 'function[[:space:]]*_' '"\(.\+\)";' 1)
+    JS_VAR=$(echo "$PAGE" | parse 'function[[:space:]]*_' '"\([^"]\+\)";' 1) || return
 
     # extract + output download link + file name
     mediafire_get_ofuscated_link "$JS_VAR" | parse_attr href || return

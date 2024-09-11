@@ -23,7 +23,7 @@ $#include "lua.h"
 
 typedef char* cptr;
 typedef int errr;
-typedef unsigned char bool; /* TODO: Comment this out, to enable C99 _Bool */
+typedef unsigned char bool;
 typedef unsigned char byte;
 typedef signed short s16b;
 typedef unsigned short u16b;
@@ -57,18 +57,18 @@ extern void arcade_wipe(worldpos *wpos);
 /* spells1.c */
 extern byte spell_color(int type);
 //extern void apply_morph(int Ind, int power, char * killer);
-extern void take_hit(int Ind, int damage, cptr kb_str, int Ind_attacker);
-extern void take_xp_hit(int Ind, int damage, cptr hit_from, bool mode, bool fatal, bool disturb, int Ind_attacker);
-extern void take_sanity_hit(int Ind, int damage, cptr hit_from, int Ind_attacker);
+extern void take_xp_hit(int Ind, int damage, cptr hit_from, bool mode, bool fatal, bool disturb);
+extern void take_sanity_hit(int Ind, int damage, cptr hit_from);
 extern s16b poly_r_idx(int r_idx);
 //extern bool check_st_anchor(struct worldpos *wpos);
 extern bool check_st_anchor(struct worldpos *wpos, int y, int x);
 extern bool swap_position(int Ind, int lty, int ltx);
 extern bool teleport_away(int m_idx, int dis);
 extern void teleport_player(int Ind, int dis, bool ignore_pvp);
-extern void teleport_player_to(int Ind, int ny, int nx, bool forced);
+extern void teleport_player_to(int Ind, int ny, int nx);
 extern void teleport_player_level(int Ind, bool force);
 extern bool bypass_invuln;
+extern void take_hit(int Ind, int damage, cptr kb_str, int Ind_attacker);
 extern void acid_dam(int Ind, int dam, cptr kb_str, int Ind_attacker);
 extern void elec_dam(int Ind, int dam, cptr kb_str, int Ind_attacker);
 extern void fire_dam(int Ind, int dam, cptr kb_str, int Ind_attacker);
@@ -111,18 +111,14 @@ extern bool set_mimic(int Ind, int v, int p);
 extern bool set_tim_traps(int Ind, int v);
 extern bool set_tim_manashield(int Ind, int v);
 extern bool set_invis(int Ind, int v, int p);
-extern void set_shroud(int Ind, int v, int p);
 extern bool set_fury(int Ind, int v);
 extern bool set_tim_meditation(int Ind, int v);
 extern bool set_tim_wraith(int Ind, int v);
-extern bool set_tim_wraithstep(int Ind, int v);
 extern bool set_blind(int Ind, int v);
 extern bool set_confused(int Ind, int v);
 extern bool set_poisoned(int Ind, int v, int attacker);
-extern bool set_diseased(int Ind, int v, int attacker);
 extern bool set_afraid(int Ind, int v);
 extern bool set_paralyzed(int Ind, int v);
-extern bool set_stopped(int Ind, int v);
 extern bool set_image(int Ind, int v);
 extern bool set_fast(int Ind, int v, int p);
 extern bool set_slow(int Ind, int v);
@@ -131,7 +127,6 @@ extern void wizard_lock(int Ind, int dir);
 extern bool set_shield(int Ind, int v, int p, s16b o, s16b d1, s16b d2);
 extern bool set_tim_thunder(int Ind, int v, int p1, int p2);
 extern bool set_tim_regen(int Ind, int v, int p);
-extern bool set_tim_mp2hp(int Ind, int v, int p);
 extern bool set_tim_ffall(int Ind, int v);
 extern bool set_tim_lev(int Ind, int v);
 extern bool set_blessed(int Ind, int v);
@@ -166,7 +161,8 @@ extern bool place_foe(int owner_id, struct worldpos *wpos, int y, int x, int r_i
 extern bool heal_insanity(int Ind, int val);
 extern void summon_cyber(int Ind, int s_clone, int clone_summoning);
 extern void golem_creation(int Ind, int max);
-extern bool hp_player(int Ind, int num, bool quiet, bool autoeffect);
+extern bool hp_player(int Ind, int num);
+extern bool hp_player_quiet(int Ind, int num, bool autoeffect);
 extern void warding_glyph(int Ind);
 extern bool do_dec_stat(int Ind, int stat, int mode);
 extern bool do_res_stat(int Ind, int stat);
@@ -182,7 +178,6 @@ extern bool detect_treasure(int Ind, int rad);
 extern bool detect_magic(int Ind, int rad);
 extern bool detect_invisible(int Ind);
 extern bool detect_evil(int Ind);
-extern bool detect_living(int Ind);
 extern bool detect_noise(int Ind);
 extern bool detection(int Ind, int rad);
 extern bool detect_object(int Ind, int rad);
@@ -209,7 +204,6 @@ extern bool genocide_aux(int Ind, worldpos *wpos, char typ);
 extern bool genocide(int Ind);
 extern bool obliteration(int who);
 extern bool probing(int Ind);
-extern bool project_los_wall(int Ind, int typ, int dam, int time, int interval, char *attacker);
 extern bool project_los(int Ind, int typ, int dam, char *attacker);
 extern bool away_evil(int Ind, int dist);
 extern bool dispel_evil(int Ind, int dam);
@@ -220,18 +214,12 @@ extern bool turn_undead(int Ind);
 extern void destroy_area(struct worldpos *wpos, int y1, int x1, int r, bool full, byte feat, int stun);
 extern void earthquake(struct worldpos *wpos, int cy, int cx, int r);
 extern void wipe_spell(struct worldpos *wpos, int cy, int cx, int r);
-extern bool target_okay(int Ind);
 extern void lite_room(int Ind, struct worldpos *wpos, int y1, int x1);
 extern void unlite_room(int Ind, struct worldpos *wpos, int y1, int x1);
 extern bool lite_area(int Ind, int dam, int rad);
-extern bool unlite_area(int Ind, bool player, int dam, int rad);
+extern bool unlite_area(int Ind, int dam, int rad);
 extern bool fire_ball(int Ind, int typ, int dir, int dam, int rad, char *attacker);
-extern bool fire_burst(int Ind, int typ, int dir, int dam, int rad, char *attacker);
-extern bool fire_swarm(int Ind, int typ, int dir, int dam, int num, char *attacker);
-extern bool fire_cone(int Ind, int typ, int dir, int dam, int rad, char *attacker);
-extern bool fire_shot(int Ind, int typ, int dir, int dx, int dy, int rad, int num, char *attacker);
 extern bool fire_wall(int Ind, int typ, int dir, int dam, int time, int interval, char *attacker);
-extern bool fire_nova(int Ind, int typ, int dir, int dam, int time, int interval, char *attacker);
 extern bool fire_cloud(int Ind, int typ, int dir, int dam, int rad, int time, int interval, char *attacker);
 extern bool fire_wave(int Ind, int typ, int dir, int dam, int rad, int time, int interval, s32b eff, char *attacker);
 extern bool fire_bolt(int Ind, int typ, int dir, int dam, char *attacker);
@@ -259,7 +247,7 @@ extern bool cure_critical_wounds_proj(int Ind, int dir);
 extern void grow_trees(int Ind, int rad);
 extern bool heal_other_proj(int Ind, int dir);
 extern bool door_creation(int Ind);
-extern bool trap_creation(int Ind, int mod, int rad, int clone);
+extern bool trap_creation(int Ind, int mod, int rad);
 extern bool destroy_doors_touch(int Ind, int rad);
 extern bool destroy_traps_touch(int Ind, int rad);
 extern bool destroy_traps_doors_touch(int Ind, int rad);
@@ -277,10 +265,8 @@ extern bool do_mstopcharm(int Ind);
 extern void place_trap_specific(struct worldpos *wpos, int y, int x, int mod, int found);
 
 /* runecraft.c */
-extern bool rune_enchant(int Ind, int item);
-extern bool warding_rune(int Ind, byte typ, int dam, byte rad);
+extern bool warding_rune(int Ind, byte typ, byte mod, byte lvl);
 extern bool warding_rune_break(int m_idx);
-extern bool py_warding_rune_break(int Ind);
 
 /* Druidry */
 extern bool create_garden(int Ind, int level);
@@ -291,7 +277,7 @@ extern bool do_focus(int Ind, int p, int v);
 #ifdef ENABLE_MAIA
 extern void divine_vengeance(int Ind, int power);
 extern void divine_gateway(int Ind);
-extern bool do_divine_xtra_res(int Ind, int p);
+extern bool do_divine_xtra_res_time(int Ind, int p);
 extern bool do_divine_hp(int Ind, int p, int v);
 extern bool do_divine_crit(int Ind, int p, int v);
 #endif
@@ -305,33 +291,32 @@ extern bool do_shadow_gate(int Ind, int range);
 #endif
 
 /* xtra2.c */
-extern bool set_melee_brand(int Ind, int v, int t, int p, bool cast, bool weapons_only);
-extern bool set_ammo_brand(int Ind, int v, int t, int p);
-extern bool set_nimbus(int Ind, int v, byte t, byte d);
+extern bool set_brand(int Ind, int v, int t, int p);
+extern bool set_bow_brand(int Ind, int v, int t, int p);
 
 /*
  * The spell function must provide the desc
  */
 struct spell_type
 {
-	cptr name;		      /* Name */
-	byte skill_level;	       /* Required level (to learn) */
+        cptr name;                      /* Name */
+        byte skill_level;               /* Required level (to learn) */
 	byte mana;			/* Required mana at lvl 1 */
 	byte mana_max;			/* Required mana at max lvl */
 	byte fail;			/* Minimum chance of failure */
-	s16b level;		     /* Spell level(0 = not learnt) */
-	byte spell_power;		/* affected by spell-power skill? */
+        s16b level;                     /* Spell level(0 = not learnt) */
+        byte spell_power;		/* affected by spell-power skill? */
 };
 
 struct school_type
 {
-	cptr name;		      /* Name */
-	s16b skill;		     /* Skill used for that school */
+        cptr name;                      /* Name */
+        s16b skill;                     /* Skill used for that school */
 };
 
 //duplicate declarations (see above):
 //extern void teleport_player(int Ind, int dis, bool ignore_pvp);
-//extern void teleport_player_to(int Ind, int ny, int nx, bool forced);
+//extern void teleport_player_to(int Ind, int ny, int nx);
 //extern void teleport_player_level(int Ind, bool force);
 
 /* This could have some good uses */
@@ -349,7 +334,6 @@ extern s32b lua_get_level(int Ind, s32b s, s32b lvl, s32b max, s32b min, s32b bo
 extern s32b lua_spell_chance(int Ind, s32b chance, int level, int skill_level, int mana, int cur_mana, int stat);
 /* extern u32b get_school_spell(cptr do_what); */
 extern void lua_s_print(cptr logstr);
-extern void lua_x_print(cptr logstr);
 extern void lua_add_anote(char *anote);
 extern void lua_del_anotes();
 extern void lua_broadcast_motd();
@@ -371,7 +355,6 @@ extern void lua_fix_spellbooks2(int sold, int snew, int swap);
 extern void lua_arts_fix(int Ind);
 extern char* lua_get_last_chat_line();
 extern char* lua_get_last_chat_owner();
-extern char* lua_get_last_chat_account();
 extern void lua_get_pgestat(int Ind, int n);
 extern void lua_start_global_event(int Ind, int evtype, char *parm);
 extern void lua_apply_item_changes(int Ind, int changes);
@@ -389,26 +372,16 @@ extern void lua_forget_map(int Ind);
 extern void lua_forget_parties(void);
 extern void lua_forget_guilds(void);
 
-/* skills.c */
-extern void hack_skill(int Ind, int s, int v, int m);
-
 /* wild.c */
 extern void wild_flags(int Ind, u32b flags);
 
 /* lua-dependant 'constants' */
 extern int __lua_HHEALING;
 extern int __lua_HBLESSING;
-extern int __lua_HDELFEAR;
 extern int __lua_MSCARE;
 extern int __lua_M_FIRST;
 extern int __lua_M_LAST;
-extern int __lua_P_FIRST;
-extern int __lua_P_LAST;
 extern int __lua_OFEAR;
-extern int __lua_FOCUS;
 
 extern bool sauron_weakened;
 extern bool sauron_weakened_iddc;
-
-/* cmd5.c - mimic powers */
-extern void shriek(int Ind);

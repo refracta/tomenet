@@ -18,7 +18,7 @@ V:1.0.0
 # (optional - player requirements) I:privileged:individual (MUST BE 1 or 2):minlv:maxlv:races:classes:modenorm:modeel:modepvp:fruitbat(1=real,2=real or fake):monsterform:questdonecreditstage
 # (optional - prerequisites) E:list of colon-separated prequest codenames (up to 5) which must have been completed to pick up this quest
 # (optional - quest spawn times) T:night:day:morning:forenoon:noon:afternoon:evening:midnight:deepnight:starttime:stoptime
-# (optional - quest ending/respawn) U:endingstage (0 = none):duration:cooldown (in minutes. Duration = max_duration after accepting it after which the quest is automatically failed - atm not implemented.)
+# (optional - quest ending/respawn) U:endingstage (0 = none):duration:cooldown
 
 # There can be up to 30 Q-lines, for up to 30 questors
 # Q (for type=monster)  :type:lite:ridx:reidx:char:attr:minlv:maxlv:name
@@ -58,15 +58,14 @@ V:1.0.0
 #   this is a hack: This stage's dialogue will actually mimic the stage dialogue from the stage of the absolute value of 'examine' argument. NOTE: You must not refer to another cloned dialogue!
 # (optional - for questor dialogue) Wr:questor:stage:default reply line (replaces the 'has nothing to say about that' line)
 #   use $$Q or $$q up to one time, to insert the questor's name! Q = show in light umber (for active talk), q = show in dark umber (for passive narration)
-# (optional - up to 100x - dialogue keywords) Y:questor (-1 for any):stage (-1 for any*):flags:keyword(*see comment below):changeflags:nextstage (or 255 for dont change stage)
-#   (*) ..or "y" for 1st keyword and "n" for second, for a yes/no choice, or $$p1 to $$p5 for up to 5 different randomly generated passwords, "~" for empty keyword or "~"-prefixed keyword for admins-only.
+# (optional - up to 100x - dialogue keywords) Y:questor (-1 for any):stage (-1 for any*):flags:keyword (or "y" for 1st keyword and "n" for second, for a yes/no choice; or $$p1 to $$p5 for up to 5 different randomly generated passwords):changeflags:nextstage (or 255 for dont change stage)
 # (optional - after a Y-line) YQ:list of further questors (their index numbers, 0..29) for which this keyword is valid, separated by colons
 # (optional - after a Y-line) YS:list of further stages during which this keyword is valid, separated by colons
 # (optional - up to 50x - replies to keywords) y:questor (-1 for any):stage (-1 for any):flags:keyword
 # (optional - after a y-line) yY:list of further keywords for which this reply is valid, separated by colons
 # (optional - after a y-line) yQ:list of further questors for which this reply is valid, separated by colons
 # (optional - after a y-line) yS:list of further stages during which this reply is valid, separated by colons
-# (optional - after a y-line, 15x repeatable) yR:flags:reply convo line
+# (optional - after a y-line, 15x repeatable) YR:flags:reply convo line
 
 # goals to kill specific monsters:
 # (optional) k:stage:goal:minlev:maxlev:number
@@ -93,25 +92,6 @@ V:1.0.0
 # (optional) O:stage:get reward n (-1 to disable):main/optional goals required for reward (0 for none -> it's for free) separated by colons
 # (optional, up to 10x - rewards) R:stage:define reward tval:sval:pval:bpval:name1:name2:name2b:good?:great?:verygreat?:createreward 0..5:gold:exp:specialstatuseffect
 
-# New (2018): Most text lines (W:, yR:, X:, x:, Wr:) can call a lua function. It must begin with two slashes and nothing else must be in the line.
-# Parameters are possible. As usual, ':' symbols are not allowed anywhere. Lua functions cannot change any quest parameters except for flags.
-# If a lua function is supposed to be able to read and/or write flags, it must have a parameter named <?flags?>. If it needs to actually modify the flags,
-# it must have a parameter named <!flags!> and the function must return a string containing two comma-separated 16-bit values, set-flag-mask and clear-flag-mask again.
-# The !flags! or ?flags? parameter must always be the FIRST parameter specified. Eg:
-# yR:-://qtestlua1("Hello.", 3)
-# Wr:0:0://qtestlua2(!flags!, "$$Q That's not the right password, $$r!")  and this function would:
-#   return set_mask .. "," .. clear_mask    --- or as a specific min/max example:    return 0 .. "," .. 65535
-# Note that the actual lua function will always need to have an 'Ind' parameter before all other custom parameters from the call definition in q_info.txt.
-# If the function queries or even modifies flags, the '?flags?' or '!flags!' will translate to  just <flags> as the FIRST parameter in the function call.
-# All further parameters, if any, come after that. Eg (in regards to above examples):
-#   function qtestlua1(Ind, message, number)
-#     ....
-#   end
-#   function qtestlua2(flags, Ind, message)
-#     ....
-#     return set_mask..","..clear_mask
-#   end
-
 # Further notes:
 # -The index number must just be counting up for each quest added to this file, starting with 0.
 # -The internal codename must be unique among all quests and exactly 10 characters long.
@@ -125,12 +105,10 @@ V:1.0.0
 # -Although the 'examine' flag can be specified for each conversation line again, the last line existing for a questor/stage combination will take priority.
 # -About dialogues/narrations:
 #   Use [[...]] to highlight the text between the brackets.
-#   You can automatically insert the player's name, title, race, race-attribute ('elven'), class, or trait-/class-affected race, by using these placeholders: $$N, $$T, $$R, $AA, $$C, $$E.
+#   You can automatically insert the player's name, title, race, race-attribute ('elven') or class, by using these placeholders: $$N, $$T, $$R, $AA, $$C.
 #   If you don't want the first letter to be capitalised, use $$n, $$t, $$r, $$a, $$c instead.
-#   $$P will substitute the amount of party members (0 for no party), $$G for guild members.
 # -About keywords:
 #   "~" means the empty keyword "", user can just press ENTER key without writing anything to trigger it.
-#   a keyword prefixed with "~" means that only admins can use it. This prefix can only be used in Y-lines, NOT in any sublines (eg yY-lines).
 #   if the FIRST MATCHING (questor+stage) keyword is "y" it brings up a yes/no prompt. The second questor/stage-matching keyword should be "n".
 #   (*) Keywords set to 'any stage' (-1) are not sufficient to stop an otherwise empty stage from terminate nor to prompt a quest_dialogue() on their own.
 # -About global 'flags':
@@ -261,7 +239,7 @@ N:3:testCastle:C. Blue:Treasure Depository Breach:-1:0:0
 I:1:1:1:100:FFFFF:FFFF:1:1:1:0:0:1
 
 Q:1:1:1059:0:p:u:-1:-1:Guard
-L:0:0:0:63:63:0:0:150:30:0:tq_testcastle.txt:143:22
+L:0:0:0:63:63:0:0:150:30:0:tq_tc.txt:143:22
 W:0:0:0:-:Hold it right there! What is the password?
 Wr:0:0:$$Q That's not the right password, $$r!
 Y:0:-1:-:suxen:-:1
@@ -318,7 +296,6 @@ W:0:0:0:-:Stay awhile and listen, $$T!
 W:0:0:0:-:In the game you can press '?' key for a list of command keys.
 W:0:0:0:-:Would you like to visit the training [[tower]] first or venture into this
 W:0:0:0:-:town's [[dungeon]], named Barrow-Downs, right away?
-W:0:0:0:-:Or do you seek [[advice]], perhaps to [[prepare]] or [[equip]] properly?
 W:0:0:0:-:The training tower is a safe place where you won't die for real,
 W:0:0:0:-:Experience gain is pretty limited however, and it only has two floors.
 W:0:0:0:-:If you go to the dungeon, don't forget to bring a light source!
@@ -358,67 +335,12 @@ yY:*dank*
 #yY:thanks:thank you:thankyou:thanks you:thx:merci:danke:gracias:grazie:arigato:arigatou:xiexie:xie xie:spacibo:spasibo
 yR:-:You are welcome!
 
-Y:0:0:-:*cafe*:-:255
-y:-1:-1:-:*cafe*
-yR:-:Thanks, but I prefer tea.
-
-Y:0:0:-:*help*:-:255
-y:-1:-1:-:*help*
-yR:-:Have you come to seek [[advice]]? I might be able to tell you something.
-
-Y:0:0:-:*advice*:-:255
-Y:0:0:-:*advise*:-:255
-y:-1:-1:-:*advice*
-yY:*advise*
-yR:-://quest_towneltalk("$$c", -1)
-#yR:-:Hm hm, what do you need advice on?  --moved to quest_towneltalk() actually, as it depends on above function call to sound proper.
-#yR:-:How to properly [[prepare]] yourself for venturing into the unknown?, picking
-#yR:-:an unknown dungeon to [[explore]]? Honing your [[skills]]?
-#yR:-:Or are you wondering about the public [[events]] that are taking place from
-#yR:-:time to time? You might also be interested in forming a [[party]] with fellow
-#yR:-:adventurers, as it tends to increase chances of survival!
-#yR:-:I could also have a look at your [[equipment]] and [[status]] of your
-#yR:-:well-being in general.
-yR:-:How to properly [[prepare]] yourself for venturing into the unknown?
-yR:-:Choosing a fitting dungeon to [[explore]]? Or are you wondering about
-yR:-:the public [[events]] that are taking place from time to time? I could
-yR:-:also have a look at your [[equipment]] if you like.
-
-Y:0:0:-:*prep*:-:255
-Y:0:0:-:*inv*:-:255
-Y:0:0:-:*pack*:-:255
-y:-1:-1:-:*prep*
-yY:*inv*:*pack*
-yR:-://quest_towneltalk("$$c", 0)
-
-Y:0:0:-:*eq*:-:255
-y:-1:-1:-:*eq*
-yR:-://quest_towneltalk("$$c", 1)
-
-Y:0:0:-:*skil*:-:255
-y:-1:-1:-:*skil*
-yR:-://quest_towneltalk("$$c", 2)
-
-Y:0:0:-:*stat*:-:255
-y:-1:-1:-:*stat*
-yR:-://quest_towneltalk("$$c", 3)
-
-Y:0:0:-:*part*:-:255
-y:-1:-1:-:*part*
-yR:-://quest_towneltalk("$$c", 4)
-
-Y:0:0:-:*exp*:-:255
-y:-1:-1:-:*exp*
-yR:-://quest_towneltalk("$$c", 5)
-
-Y:0:0:-:*ev*:-:255
-y:-1:-1:-:*ev*
-yR:-://quest_towneltalk("$$c", 6)
-
-#for admin testing
-Y:0:0:-:~adminall:-:255
-y:-1:-1:-:adminall
-yR:-://quest_towneltalk("$$c", -2)
+#Y:0:0:-:*bye*:-:1
+#Y:0:0:-:*see*you*:-:1
+#Y:0:0:-:*fare*well*:-:1
+#y:-1:-1:-:*bye*
+#yY:*see*you*:*fare*well*
+#yR:-:Take care.
 
 
 #Talk to a roaming guard who patrols Menegroth

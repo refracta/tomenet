@@ -214,34 +214,16 @@ CC = gcc
 # Also, if your system doesnt have a dedicated cpp command, you might
 # need to use the gcc invocation below instead.
 #
-
 # cpp variant:
 CPP = cpp
-#CPPFLAGS = -C -P
-#cpp by default generates a big comment blob at the beginning of the file
-#implicitely from it's features.h. However, some versions of it generate
-#the URL gnu.org/license in a broken way, some in the correct way. Now the fun
-#thing is, that the correctly transcribed URL will actually make tolua choke.
-#So, -nostdinc will prevent the whole own comment blob of cpp to get generated
-#in the first place, as we never asked for it:
-CPPFLAGS = -C -P -nostdinc
-
+CPPFLAGS = -C -P
 # gcc variant:
 #CPP = gcc
 #CPPFLAGS = -x c -E -Wp,-C,-P
 
 
-
 # For variations with X11
 X11BASE = /usr/X11R6
-
-
-# Account editor
-ACCEDIT_LIBS = -lncurses -lcrypt
-
-# Client doesn't need -lcrypt
-# Removing -lcrypt from client builds makes it easier to build because libcrypt has been removed from glibc
-SERVER_EXTRA_LIBS = -lcrypt
 
 
 ##
@@ -253,11 +235,11 @@ SERVER_EXTRA_LIBS = -lcrypt
 #
 ## With SDL
 #CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL `sdl-config --cflags`
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lm `sdl-config --libs` -lSDL_mixer
+#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lcrypt -lm `sdl-config --libs` -lSDL_mixer
 ##
 ## Without SDL
 #CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lm
+#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lcrypt -lm
 
 ##
 ## Variation: main-x11.c and main-gcu.c
@@ -274,52 +256,12 @@ SERVER_EXTRA_LIBS = -lcrypt
 # attempt to "guess" at many of these flags based on your system.
 #
 ## With SDL
-#CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL `sdl-config --cflags` -D_DEFAULT_SOURCE -DACC32 -fPIE
-#CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL `sdl-config --cflags` -D_DEFAULT_SOURCE -DACC32 -fPIE -Wno-format-truncation
-#CFLAGS = -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL `sdl-config --cflags` -D_DEFAULT_SOURCE -DACC32 -fPIE -Wno-format-truncation
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lm `sdl-config --libs` -lSDL_mixer
+CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL `sdl-config --cflags` -D_DEFAULT_SOURCE -DACC32
+LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lcrypt -lm `sdl-config --libs` -lSDL_mixer
 ##
 ## Without SDL
 #CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lm
-##
-## Without USE_SOUND_2010 (aka compile without sound support) - make sure to remove #define USE_SOUND_2010 (and possibly #define USE_SOUND) in src/config.h too.
-#CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -D_DEFAULT_SOURCE -DACC32 -fPIE -Wno-format-truncation
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lm
-
-# With SDL2
-#  With sdl2-config
-CFLAGS = -pipe -Wall -DUSE_GCU -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -D_DEFAULT_SOURCE -DACC32 -fPIE -fsigned-char -Wno-format-truncation
-# Note: -fsigned-char is important for ARM64, as there 'char' is by default unsigned, while on x86/AM64 it is by default signed!
-#  With manually set prefix
-#CFLAGS = -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL -I/usr/local/include/SDL2 -I/usr/include/SDL2 -D_REENTRANT -D_DEFAULT_SOURCE -DACC32 -fPIE -Wno-format-truncation
-#  With sdl2-config
-LIBS = -L/usr/pkg/lib -lncurses -lm
-#  With manually set prefix
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lm -L/usr/local/lib -L/usr/lib -pthread -lSDL2 -lSDL2_mixer
-
-# Some Linux distributions have a separate libtinfo, attempt to detect it
-HAVE_TINFO = $(shell ldconfig -p | grep -c libtinfo)
-ifneq (${HAVE_TINFO}, 0)
-	LIBS += -ltinfo
-	ACCEDIT_LIBS += -ltinfo
-endif
-
-# Security hardening
-CFLAGS += -fstack-protector -D_FORTIFY_SOURCE=2 -pie -fPIE
-LDFLAGS += -Wl,-z,relro -Wl,-z,now
-
-# Optional: Compile with Link Time Optimization (LTO)
-#CFLAGS += -flto=8
-
-# Optional: Catch memory errors with AddressSanitizer
-#CFLAGS += -fsanitize=address -fno-omit-frame-pointer
-
-# Optional: Catch bugs with UndefinedBehaviorSanitizer
-#CFLAGS += -fsanitize=undefined -fno-omit-frame-pointer
-
-# Reduce warnings
-#CFLAGS += -Wno-format-overflow
+#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lcrypt -lm
 
 
 ##
@@ -328,11 +270,11 @@ LDFLAGS += -Wl,-z,relro -Wl,-z,now
 ##
 ## With SDL
 #CFLAGS = -O2 -g -pipe -Wall -DUSE_GCU -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL `sdl-config --cflags`
-#LIBS = -L/usr/pkg/lib -lncurses -lm `sdl-config --libs` -lSDL_mixer
+#LIBS = -L/usr/pkg/lib -lncurses -lcrypt -lm `sdl-config --libs` -lSDL_mixer
 ##
 ## Without SDL
 #CFLAGS = -O2 -g -pipe -Wall -DUSE_GCU -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99
-#LIBS = -L/usr/pkg/lib -lncurses -lm
+#LIBS = -L/usr/pkg/lib -lncurses -lcrypt -lm
 
 
 ##
@@ -355,17 +297,15 @@ LDFLAGS += -Wl,-z,relro -Wl,-z,now
 ##
 ## With SDL
 #CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99 -DSOUND_SDL `sdl-config --cflags`
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lm `sdl-config --libs` -lSDL_mixer
+#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lcrypt -lm `sdl-config --libs` -lSDL_mixer
 #-lXtst (for numlock - obsolete)
 ## Uncomment this if you want to bundle libraries with the client
 #LDFLAGS = -Wl,-rpath,\$$ORIGIN
 ##
 ## Without SDL
 #CFLAGS = -O2 -g -pipe -Wall -DUSE_X11 -DUSE_GCU -I${X11BASE}/include -D_XOPEN_SOURCE -D_BSD_SOURCE -DMEXP=19937 -std=c99
-#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lm
+#LIBS = -L${X11BASE}/lib -L/usr/pkg/lib -lX11 -lncurses -lcrypt -lm
 
-#GCC on Archlinux enabled “--enable-default-pie" by default at some point, so we add this or preproc will fail to build:
-#LDFLAGS += -no-pie
 
 ## Added by thaler, 6/28/97
 ## Variation -- Only support "main-gcu.c" (not "main-x11.c") on localhost
@@ -412,18 +352,11 @@ LDFLAGS += -Wl,-z,relro -Wl,-z,now
 #CFLAGS = -Wall -pipe -g -DUSE_X11 -DUSE_GCU -DSOLARIS -I/usr/openwin/include
 #LIBS = -L/usr/openwin/lib -R/usr/openwin/lib -lX11 -lsocket -lnsl -lcurses
 
-# Normal (non-test) client uses optimizations
-tomenet: CFLAGS += -g -O2 -DSOUND_SDL `sdl2-config --cflags` -DUSE_X11 -I${X11BASE}/include
-tomenet: LIBS += -L${X11BASE}/lib -lX11 `sdl2-config --libs` -lSDL2_mixer
+
 # Compile a client with 'test client' version/tag
-#tomenet.test: CFLAGS += -DTEST_CLIENT -g3 -O0
-#disable 3 warning spams: 'accessing n bytes in a region of size m', '_FORTIFY_SOURCE requires compiling with optimization', 'directive writing up to 159 bytes into a region of size'
-tomenet.test: CFLAGS += -DTEST_CLIENT -g3 -O0 -Wno-stringop-overflow -Wno-cpp -Wno-format-overflow -DSOUND_SDL `sdl2-config --cflags` -DUSE_X11 -I${X11BASE}/include
-tomenet.test: PPFLAGS = -DTEST_CLIENT -DSOUND_SDL `sdl2-config --cflags` 
-tomenet.test: LIBS += -L${X11BASE}/lib -lX11 `sdl2-config --libs` -lSDL2_mixer
-# Server is compiled with optimizations
-tomenet.server: CFLAGS += -g -O2
-accedit: CFLAGS += -g -O2
+tomenet.test: CFLAGS += -DTEST_CLIENT -Og -O0
+tomenet.test: PPFLAGS = -DTEST_CLIENT
+
 
 # Lua
 SRCS += $(LUASRCS)
@@ -461,7 +394,7 @@ date:
 #
 
 accedit: account/accedit.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o accedit account/accedit.o $(ACCEDIT_LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o accedit account/accedit.o -lcurses -lcrypt
 
 
 #
@@ -469,7 +402,7 @@ accedit: account/accedit.o
 #
 
 preproc/preproc: preproc/preproc.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o preproc/preproc preproc/preproc.o
+	$(CC) $(CFLAGS) -o preproc/preproc preproc/preproc.o
 
 
 #
@@ -477,8 +410,8 @@ preproc/preproc: preproc/preproc.o
 #
 
 tomenet.server: $(SERV_OBJS) $(TOLUA)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o tomenet.server $(SERV_OBJS) $(SERVER_EXTRA_LIBS) $(LIBS)
-#note: $(LIBS) is required for tolua compilation, for linking mathlib (-lm)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o tomenet.server $(SERV_OBJS) $(LIBS)
+
 
 #
 # Build the evileye meta client

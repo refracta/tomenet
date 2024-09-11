@@ -115,25 +115,28 @@ s16b signal_count = 0;          /* Hack -- Count interupts */
 
 s16b coin_type;                 /* Hack -- force coin type */
 
-s32b opening_chest;             /* Hack -- prevent chest generation, preown cash, and imprint timestamp for IDDC (iron_turn) */
+bool opening_chest;             /* Hack -- prevent chest generation */
+s32b opening_chest_owner;
+byte opening_chest_mode;
 
 bool scan_monsters;             /* Hack -- optimize multi-hued code, etc */
 bool scan_objects;              /* Hack -- optimize multi-hued code, etc */
 bool scan_do_dist;		/* Hack -- optimize teleport away code */
 
-s32b m_nxt = 1;                 /* Monster free scanner */
-s32b m_max = 1;                 /* Monster heap size */
-s32b m_top = 0;                 /* Monster top size */
-
 s32b o_nxt = 1;                 /* Object free scanner */
+s32b m_nxt = 1;                 /* Monster free scanner */
+
 s32b o_max = 1;                 /* Object heap size */
+s32b m_max = 1;                 /* Monster heap size */
+
 s32b o_top = 0;                 /* Object top size */
+s32b m_top = 0;                 /* Monster top size */
 
 s32b dungeon_store_timer = 0;	/* Timemout. Keeps track of its generation */
 s32b dungeon_store2_timer = 0;	/* Timemout. Keeps track of its generation */
 s32b great_pumpkin_timer = 0;	/* Timeout. Keeps track of its generation, for HALLOWEEN */
-char great_pumpkin_killer1[NAME_LEN] = { 0 };	/* Player who killed him last/2nd to last time */
-char great_pumpkin_killer2[NAME_LEN] = { 0 };	/* Player who killed him last/2nd to last time */
+//s32b great_pumpkin_killer = 0;	/* Player who killed him last time */
+char great_pumpkin_killer[NAME_LEN] = { 0 };	/* Player who killed him last time */
 s32b great_pumpkin_duration = 0;	/* How long its instance lasts till it despawns */
 s32b santa_claus_timer = 0;
 bool night_surface = FALSE;
@@ -154,14 +157,14 @@ server_opts cfg = {
 	6, 0, 0,	// runlevel, runtime, closetime (NOT config options)
 
 	/* char * */
-	"meta.tomenet.eu",// meta_address
-	8800,	   // meta port
+        "meta.tomenet.eu",// meta_address
+        8800,           // meta port
 
 	"",		// bind_name
 	"changeme",	// console_password
 	"DungeonWizard",// admin_wizard
 	"DungeonMaster",// dungeon_master
-	"",		// wserver,
+	"", 		// wserver,
 
 	"",		// pass
 	/* s32b */
@@ -174,13 +177,14 @@ server_opts cfg = {
 
 	10,200,		// spell_interfere, spell_stack_limit
 	/* s16b */
-	60,FALSE,TRUE,3,5,	// fps, players_never_expire, admins_never_expire, newbies_cannot_drop, running_speed,
+	60,FALSE,3,5,	// fps, players_never_expire, newbies_cannot_drop, running_speed,
 
 	25, 150,	// anti_scum, dun_unusual,
 	32,32,		// town_x, town_y
-	0,		// town_base,
+	0, 		// town_base, 
 
-	200, 50,	// store_turns, dun_store_turns
+	1,		//dun_base
+	127, 200, 50,	// dun_max, store_turns, dun_store_turns
 	/* char */
 	3, 2,		// resting_rate, party_xp_boost
 
@@ -193,7 +197,7 @@ server_opts cfg = {
 	// anti_arts_hoard, anti_arts_house, anti_arts_wild, anti_arts_shop, anti_arts_pickup, anti_arts_send
 	FALSE,TRUE,TRUE,FALSE,TRUE,TRUE,
 	FALSE,		// persistent_artifacts
-	FALSE,TRUE,	// anti_cheeze_pickup, anti_cheeze_telekinesis
+	FALSE,TRUE, 	// anti_cheeze_pickup, anti_cheeze_telekinesis
 	20,		// surface_item_removal (minutes for scan_objs)
 	45,		// dungeon_item_removal (minutes for scan_objs)
 	1440,		// death_wild_item_removal
@@ -206,7 +210,7 @@ server_opts cfg = {
 	TRUE,TRUE,TRUE,TRUE,	// maximize, kings_etiquette, fallenkings_etiquette, strict_etiquette
 
 	FALSE,FALSE,	// public_rfe, auto_purge
-	FALSE,114,1,	// log_u, replace_hiscore, unikill_format
+	FALSE,114,0,	// log_u, replace_hiscore, unikill_format
 	"",		// server notes for meta list
 	FALSE,		// artifact creation disabled for maintenance reasons? (arts_disabled)
 	TRUE,		// total winners may not find true arts anymore? (winners_find_randarts)
@@ -220,7 +224,6 @@ server_opts cfg = {
 	0,		/* item_awareness - how easily the player becomes aware of sofar un-identified items
 					    0 = normal, 1 = seeing in standard town shop (1 to 6), 2 = seeing in any shop while carrying it, 3 = seeing in any shop */
 	TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,	/* types of messages which will be transmitted through the world server (if available). */
-	0,		/* leak_info */
 };
 
 struct combo_ban *banlist = NULL;
@@ -237,14 +240,14 @@ u32b sflags_TEMP = 0x0;
 
 /* Option Set 1 -- User Interface */
 
-bool use_color;			 /* Use color if possible (slow) */
+bool use_color;                         /* Use color if possible (slow) */
 
 /* Option Set 2 -- Disturbance */
 
-/* Option Set 3 -- Gameplay */
+/* Option Set 3 -- Game-Play */
 
-bool auto_scum;			 /* Auto-scum for good levels */
-bool dungeon_align;		     /* Generate dungeons with aligned rooms */
+bool auto_scum;                         /* Auto-scum for good levels */
+bool dungeon_align;                     /* Generate dungeons with aligned rooms */
 
 /* Option Set 4 -- Efficiency */
 
@@ -252,7 +255,7 @@ bool avoid_other = FALSE;	/* Avoid processing special colors */
 
 /* Special options */
 
-s16b hitpoint_warn;	     /* Hitpoint warning (0 to 9) */
+s16b hitpoint_warn;             /* Hitpoint warning (0 to 9) */
 
 struct npc_type *Npcs[MAX_NPCS];
 /* The array of players */
@@ -302,7 +305,7 @@ byte temp_x[TEMP_MAX];
 /*
  * The number of quarks
  */
-s32b quark__num;
+s16b quark__num;
 
 /*
  * The pointers to the quarks [QUARK_MAX]
@@ -312,7 +315,7 @@ cptr *quark__str;
 /*
  * The array of indexes of "live" objects
  */
-s32b o_fast[MAX_O_IDX];
+s16b o_fast[MAX_O_IDX];
 
 /*
  * The array of indexes of "live" monsters
@@ -328,14 +331,14 @@ s16b m_fast[MAX_M_IDX];
 /* For wilderness, I am hacking this to extend in the negative direction.
    I currently have a huge number (4096?) of wilderness levels allocated.
    -APD-
-*/
+*/ 
 
 /* I have moved the cave_type stuff to the wilderness and dungeon
    level structures now. So, to reference the cave_type array for
    the level (x,y,z) you would first check z for being zero. If it
    is, return the wilderness cave_type array pointer. Otherwise
    select the correct dungeon pointer and lookup the dungeon level
-   you want. Then return its cave_type array pointer. Of course,
+   you want. Then return its cave_type array pointer. Of course, 
    use (cave_type**)zcave = getcave(struct worldpos *).
     Evileye
  */
@@ -481,7 +484,6 @@ char *t_text;
  */
 header *r_head;
 monster_race *r_info;
-int rur_info_map[MAX_R_IDX];
 char *r_name;
 char *r_text;
 #ifdef MONS_PRE_SORT
@@ -642,7 +644,6 @@ void (*ang_sort_extra_swap)(int Ind, vptr u, vptr v, vptr w, int a, int b);
  */
 bool (*get_mon_num_hook)(int r_idx);
 bool (*get_mon_num2_hook)(int r_idx);
-bool xorder_aux_extra;
 
 
 
@@ -652,7 +653,7 @@ bool xorder_aux_extra;
 int (*get_obj_num_hook)(int k_idx, u32b resf);
 
 /* the dungeon master movement hook, is called whenever he moves
- * (to make building large buildings / summoning hoards of mosnters
+ * (to make building large buildings / summoning hoards of mosnters 
  * easier)
  */
 //bool (*master_move_hook)(int Ind, char * args) = master_acquire;
@@ -712,7 +713,6 @@ u16b max_s_idx;
  * Maximum number of monsters in r_info.txt
  */
 u16b max_r_idx;
-u16b max_rur_idx; /* Unique monsters eligible for winner-respawning */
 
 /*
  * Maximum number of ego monsters in re_info.txt
@@ -818,16 +818,16 @@ int gametype;
 /* Private notes for fellow players
  * see '/note' command in util.c. -C. Blue
  */
-char priv_note[MAX_NOTES][MSG_LEN], priv_note_sender[MAX_NOTES][NAME_LEN], priv_note_target[MAX_NOTES][NAME_LEN], priv_note_u[MAX_NOTES][MSG_LEN];
-char party_note[MAX_PARTYNOTES][MSG_LEN], party_note_target[MAX_PARTYNOTES][NAME_LEN], party_note_u[MAX_PARTYNOTES][MSG_LEN];
-char guild_note[MAX_GUILDNOTES][MSG_LEN], guild_note_target[MAX_GUILDNOTES][NAME_LEN], guild_note_u[MAX_GUILDNOTES][MSG_LEN];
+char priv_note[MAX_NOTES][MAX_CHARS_WIDE], priv_note_sender[MAX_NOTES][NAME_LEN], priv_note_target[MAX_NOTES][NAME_LEN];
+char party_note[MAX_PARTYNOTES][MAX_CHARS_WIDE], party_note_target[MAX_PARTYNOTES][NAME_LEN];
+char guild_note[MAX_GUILDNOTES][MAX_CHARS_WIDE], guild_note_target[MAX_GUILDNOTES][NAME_LEN];
 char admin_note[MAX_ADMINNOTES][MAX_CHARS], server_warning[MSG_LEN];
 
 /* in-game bbs :) - C. Blue */
-char bbs_line[BBS_LINES][MSG_LEN], bbs_line_u[BBS_LINES][MSG_LEN];
+char bbs_line[BBS_LINES][MAX_CHARS_WIDE];
 /* party/guild-internal bbs'es: */
-char pbbs_line[MAX_PARTIES][BBS_LINES][MSG_LEN], pbbs_line_u[MAX_PARTIES][BBS_LINES][MSG_LEN];
-char gbbs_line[MAX_GUILDS][BBS_LINES][MSG_LEN], gbbs_line_u[MAX_GUILDS][BBS_LINES][MSG_LEN];
+char pbbs_line[MAX_PARTIES][BBS_LINES][MAX_CHARS_WIDE];
+char gbbs_line[MAX_GUILDS][BBS_LINES][MAX_CHARS_WIDE];
 
 int global_luck = 0;
 int regen_boost_stamina = 4;
@@ -843,31 +843,28 @@ int updated_savegame_birth = 0;
 int updated_server = 0;
 /* for automatic artifact resets via lua */
 int artifact_reset = 0;
-/* server 'live' run-counter, denoting this particular server run.
-   Used to decide whether a client logs in the first time since server has been updated (restarted) or not,
-   added for deciding whether to display the MotD to a client again or not, to avoid MotD spam on subsequent relogins,
-   to go with persistent chat history window since 4.7.3. */
-unsigned char runtime_server = 0;
 
 /* Watch if someone enters Nether Realm or challenges Morgoth - C. Blue
    Dungeon masters will be paged if they're not AFK or if they have
    'watch' as AFK reason! */
 bool watch_morgoth = 0;
-bool watch_cp = 0, watch_nr = 0, watch_df = 0;
+bool watch_cp = 0;
+bool watch_nr = 0;
 
 /* for lua_bind.c */
 bool first_player_joined = TRUE;
 
 /* lua-dependant 'constants' */
-int __lua_HHEALING, __lua_HBLESSING, __lua_HDELFEAR;
-int __lua_MSCARE, __lua_M_FIRST, __lua_M_LAST;
-int __lua_P_FIRST, __lua_P_LAST;
+int __lua_HHEALING;
+int __lua_HBLESSING;
+int __lua_MSCARE;
+int __lua_M_FIRST;
+int __lua_M_LAST;
 #ifndef ENABLE_OCCULT
 int __lua_OFEAR = 0;
 #else
 int __lua_OFEAR;
 #endif
-int __lua_FOCUS;
 
 /* for cron_1h (using turns % 3600 isn't precise enough, might happen that
    one hour gets skipped, eg if transition is 1:59 -> 3:00; so now we're
@@ -879,8 +876,8 @@ global_event_type global_event[MAX_GLOBAL_EVENTS];
 int sector00separation = 0; /* some events separate sector 0,0 from the worldmap
 			 to use it in a special way - WoR won't work either */
 int sector00downstairs = 0; /* remember that sector 0,0 contains staircases downwards at the moment */
-int sector00music = 0, sector00musicalt = 0, sector00musicalt2 = 0; /* special event music */
-int sector00music_dun = 0, sector00musicalt_dun = 0, sector00musicalt2_dun = 0; /* special event music (dungeon) */
+int sector00music = 0, sector00musicalt = 0; /* special event music */
+int sector00music_dun = 0, sector00musicalt_dun = 0; /* special event music (dungeon) */
 int sector00wall = 0; /* outer wall tile around the sector to be displayed instead of FEAT_PERM_CLEAR */
 u32b sector00flags1 = 0x0, sector00flags2 = 0x0; /* floor flags */
 int ge_special_sector = 0; /* to make it known that a certain sector (or multiple sectors, given in
@@ -952,8 +949,7 @@ int firework_dungeon = 0, firework_dungeon_chance = 0;
 #endif
 
 char last_chat_line[MSG_LEN];  /* What was said */
-char last_chat_owner[CNAME_LEN]; /* Who said it */
-char last_chat_account[ACCNAME_LEN]; /* Who said it */
+char last_chat_owner[NAME_LEN]; /* Who said it */
 // char last_chat_prev[MSG_LEN];  /* What was said before the above*/
 
 auction_type *auctions;
@@ -968,8 +964,6 @@ int lite_later_num;
 
 /* Timers for specific events - C. Blue */
 int timer_pvparena1 = 1, timer_pvparena2 = 1, timer_pvparena3 = 0; /* defaults */
-bool init_pvparena = FALSE;
-int timer_falling_star = 0;
 
 /* Recall-shutdown timer for /shutrec */
 int shutdown_recall_timer = 0, shutdown_recall_state = 0;
@@ -1007,7 +1001,7 @@ int SCHOOL_HOFFENSE, SCHOOL_HSUPPORT;
 int SCHOOL_DRUID_ARCANE, SCHOOL_DRUID_PHYSICAL;
 int SCHOOL_ASTRAL;
 int SCHOOL_PPOWER, SCHOOL_MINTRUSION;
-int SCHOOL_OSHADOW, SCHOOL_OSPIRIT, SCHOOL_OHERETICISM, SCHOOL_OUNLIFE;
+int SCHOOL_OSHADOW, SCHOOL_OSPIRIT, SCHOOL_OHERETICISM;
 
 /* For !X handling on spellbooks */
 int spell = -1, ID_spell1, ID_spell1a, ID_spell1b, ID_spell2, ID_spell3, ID_spell4;
@@ -1022,24 +1016,20 @@ int dungeon_x[MAX_D_IDX * 2], dungeon_y[MAX_D_IDX * 2];
 u16b dungeon_visit_frequency[MAX_D_IDX * 2];   /* how often players enter this dungeon */
 bool dungeon_tower[MAX_D_IDX * 2], dungeon_visit_check[MAX_D_IDX * 2];
 int dungeon_bonus[MAX_D_IDX * 2];
-int dungeon_ditype[MAX_D_IDX * 2];
 #endif
 
+bool censor_swearing = TRUE, censor_swearing_identity = TRUE;
 bool jails_enabled = TRUE;
 bool allow_requesting_estate = FALSE;
 int netherrealm_wpos_x = 0, netherrealm_wpos_y = 0, netherrealm_wpos_z = 0, netherrealm_start = 0, netherrealm_end = 0;
 int valinor_wpos_x = 0, valinor_wpos_y = 0, valinor_wpos_z = 0;
 int hallsofmandos_wpos_x = 0, hallsofmandos_wpos_y = 0, hallsofmandos_wpos_z = 0;
-int mtdoom_wpos_x = 0, mtdoom_wpos_y = 0, mtdoom_wpos_z = 0;
-unsigned char nether_realm_collapsing = 0;
+bool nether_realm_collapsing = FALSE;
 int nrc_x, nrc_y, netherrealm_end_wz;
 
 bool sauron_weakened = FALSE, sauron_weakened_iddc = FALSE;
-#ifdef USE_SOUND_2010
 int __audio_sfx_max, __audio_mus_max;
-int __sfx_am = -1, __sfx_bell = -1, __sfx_page = -1, __sfx_warning = -1, __sfx_shriek = -1;
-#endif
-int WPOS_DF_X, WPOS_DF_Y, WPOS_DF_Z;
+int __sfx_am = -1;
 
 /* character names temporarily reserved for specific accounts */
 char reserved_name_character[MAX_RESERVED_NAMES][NAME_LEN];
@@ -1052,9 +1042,9 @@ int num_randart_names;
 
 #ifdef ENABLE_MERCHANT_MAIL
 object_type mail_forge[MAX_MERCHANT_MAILS];
-char mail_sender[MAX_MERCHANT_MAILS][CNAME_LEN];
-char mail_target[MAX_MERCHANT_MAILS][CNAME_LEN];
-char mail_target_acc[MAX_MERCHANT_MAILS][ACCNAME_LEN];
+char mail_sender[MAX_MERCHANT_MAILS][NAME_LEN];
+char mail_target[MAX_MERCHANT_MAILS][NAME_LEN];
+char mail_target_acc[MAX_MERCHANT_MAILS][NAME_LEN];
 s16b mail_duration[MAX_MERCHANT_MAILS];
 s32b mail_timeout[MAX_MERCHANT_MAILS];
 bool mail_COD[MAX_MERCHANT_MAILS];
@@ -1069,20 +1059,3 @@ bool rl_connection_destructible = FALSE, rl_connection_destroyed = FALSE;
 byte rl_connection_state = 0;
 
 bool allow_similar_names = FALSE;
-
-/* Generic global debugging/testing */
-int dbgvar1 = 0, dbgvar2 = 0, dbgvar3 = 0, dbgvar4 = 0, dbgvar5 = 0, dbgvar6 = 0;
-int dbgvar1a = 0, dbgvar2a = 0, dbgvar3a = 0, dbgvar4a = 0, dbgvar5a = 0, dbgvar6a = 0;
-int dbgvar1b = 0, dbgvar2b = 0, dbgvar3b = 0, dbgvar4b = 0, dbgvar5b = 0, dbgvar6b = 0;
-char dbgvars[MAX_CHARS] = { 0 };
-
-bool pvp_disabled = FALSE;
-byte Morgoth_x = -1, Morgoth_y = 0, Morgoth_z = 0;
-
-s32b fake_waitpid_geo = 0, fake_waitpid_ping = 0, fake_waitpid_route = 0, fake_waitpid_clver = 0, fake_waitpid_clver_timer;
-char fake_waitxxx_ipaddr[MAX_CHARS] = { 0 };
-
-/* Player-independant lighting array (compare temp_n, temp_y[], temp_x[]) */
-s16b global_temp_n;
-byte global_temp_y[TEMP_MAX];
-byte global_temp_x[TEMP_MAX];

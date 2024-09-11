@@ -87,7 +87,7 @@
  * For server: can use crypt() for doing passwords
  */
 #ifndef WIN32
- #define HAVE_CRYPT
+#define HAVE_CRYPT
 #endif
 
 /*
@@ -238,12 +238,12 @@
  */
 /* Would you make it a tomenet.cfg option? */
 #ifndef WIN32
- #define TOMENET_WORLDS
+#define TOMENET_WORLDS
 #endif
 
 #if 0 /* moved to tomenet.cfg.. */
- #define BIND_NAME "tomenet.eu"
- #define	BIND_IP "64.53.71.115"
+#define BIND_NAME "tomenet.eu"
+#define	BIND_IP "64.53.71.115"
 #endif
 
 
@@ -285,7 +285,7 @@
  * don't want to enable this unless you have been running a development version of
  * the code that has a 'store 9' in it.
  */
- /* #define	DEVEL_TOWN_COMPATIBILITY */
+ /* #define	DEVEL_TOWN_COMPATIBILITY */ 
 #endif	/* 0 */
 
 /*
@@ -410,7 +410,7 @@
 /*
  * OPTION: Maximum flow depth when using "MONSTER_FLOW"
  */
- #define MONSTER_FLOW_DEPTH 32
+#define MONSTER_FLOW_DEPTH 32
 #endif
 
 
@@ -461,16 +461,14 @@
  * OPTION: Allow the use of "sound" in various places.
  */
 
-/* New sound system 'USE_SOUND_2010' in place, utilizing SDL and allowing for topkek dynamic audio ;) - C. Blue */
+/* --new sound system 'USE_SOUND_2010' in place utilizing SDL, state is experimental- C. Blue */
 #define USE_SOUND
 #define USE_SOUND_2010
 
 /*
  * OPTION: Allow the use of "graphics" in various places
  */
-#if defined(USE_X11) || defined(WINDOWS)
- #define USE_GRAPHICS
-#endif
+/* #define USE_GRAPHICS */
 
 
 /*
@@ -601,8 +599,6 @@
 #define DEFAULT_X11_FONT_TERM_5		DEFAULT_X11_FONT
 #define DEFAULT_X11_FONT_TERM_6		DEFAULT_X11_FONT
 #define DEFAULT_X11_FONT_TERM_7		DEFAULT_X11_FONT
-#define DEFAULT_X11_FONT_TERM_8		DEFAULT_X11_FONT
-#define DEFAULT_X11_FONT_TERM_9		DEFAULT_X11_FONT
 
 
 
@@ -667,18 +663,18 @@
  * OPTION: Random Uniques and Ego Monsters.
  * not fully implemented yet.	-Jir-
  * (3.2.2)
- *
+ * 
  * Don't remove this; sure it won't compile! :-/
  * To disable this, pls set MEGO_CHANCE to 0 instead.
  * TODO: make this option valid
  */
 #define RANDUNIS
 /* % chances of getting ego monsters(server/monster2.c) [18]*/
-#define MEGO_CHANCE	18
+#define MEGO_CHANCE             18
 
 
 /* Randart rarity (server/object2.c) [80] */
-#define RANDART_RARITY	80
+#define RANDART_RARITY  80
 
 
 /*
@@ -750,7 +746,7 @@
 #define PROJECTION_FLUSH_LIMIT 9
 #define PROJECTION_FLUSH_LIMIT_TURNS 3
 
-/*
+/* 
  * OPTION: the interval of monster turns.	[6]
  * If the value is 6 and FPS is 60, monsters are processed 10 times/second.
  * This should be of *great* help for slow servers :)
@@ -779,7 +775,7 @@
 /* OPTION: allow monsters to carry objects. */
 #define MONSTER_INVENTORY
 
-/*
+/* 
  * OPTION: default radii used for some kinds of magic (like detection).
  * artifacts uses (DEFAULT_RADIUS * 2) instead.
  *
@@ -820,29 +816,17 @@
  * Probably we'd better separate them to another file?	- Jir -
  */
 
-/*
+/* 
  * OPTION: max # of history for chat, slash-cmd etc.
  */
-#define MSG_HISTORY_MAX		2000
+#define MSG_HISTORY_MAX	1000
 
 #define EVIL_METACLIENT
 
 #define CLIENT_SHIMMER
-#endif /* TOMENET_CONFIG_H */
+#endif
 
 /*
  * Use the new meta scheme to do neater things
  */
 #define EXPERIMENTAL_META
-#ifdef EXPERIMENTAL_META
-/* Retrieve ping times for all servers listed on the meta server. - C. Blue
-   The number indicates the max number of server names we read (raw, ie duplicates included).
-   Currently only supported when EXPERIMENTAL_META is defined. */
- #define META_PINGS 20
- #if defined(META_PINGS) && defined(WINDOWS)
-  /* On Windows, use CreateProcess() with its own CreateFile() handle instead of piping the output? */
-  //#define META_PINGS_CREATEFILE /* Doesn't work on Windows 7 despite working on Wine-Windows-7 */
- #endif
- /* Fix weird glitch in GCU with hacky workaround insanity */
- #define META_DISPLAYPINGS_LATER
-#endif

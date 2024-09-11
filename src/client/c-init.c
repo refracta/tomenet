@@ -81,18 +81,17 @@ void init_spells(s16b new_size) {
 	max_spells = new_size;
 }
 
-bool check_dir2(cptr s) {
+static bool check_dir2(cptr s) {
 	DIR *dp = opendir(s);
 
 	if (dp) {
 		closedir(dp);
-		return(TRUE);
+		return TRUE;
 	} else {
-		return(FALSE);
+		return FALSE;
 	}
 }
 
-#ifndef WINDOWS
 static void validate_dir(cptr s) {
 	/* Verify or fail */
 	if (!check_dir2(s))
@@ -100,7 +99,7 @@ static void validate_dir(cptr s) {
 }
 
 /*
- * Initialize and verify the file paths.
+ * Initialize and verify the file paths, and the score file.
  *
  * Use the ANGBAND_PATH environment var if possible, else use
  * DEFAULT_PATH, and in either case, branch off appropriately.
@@ -117,24 +116,30 @@ static void validate_dir(cptr s) {
  * Note that the "path" must be "Angband:" for the Amiga, and it
  * is ignored for "VM/ESA", so I just combined the two.
  */
-void init_stuff(void) {
- #if defined(AMIGA) || defined(VM)
+static void init_stuff(void) {
+#if defined(AMIGA) || defined(VM)
+
 	/* Hack -- prepare "path" */
 	strcpy(path, "TomeNET:");
- #else /* All systems except Amiga / VM: */
-	/* Change current directory to the location of the binary - mikaelh */
+
+#else /* AMIGA / VM */
+
 	if (argv0) {
 		char *app_path = strdup(argv0);
 		char *app_dir;
 
 		app_dir = dirname(app_path);
 
-		if (chdir(app_dir) == -1) plog_fmt("chdir(\"%s\") failed", app_dir);
+		/* Change current directory to the location of the binary - mikaelh */
+		if (chdir(app_dir) == -1) {
+			plog_fmt("chdir(\"%s\") failed", app_dir);
+		}
 
 		free(app_path);
 	}
-	/* Obtain our path */
-	if (!strlen(path)) {
+
+	if (!strlen(path))
+	{
 		cptr tail;
 
 		/* Get the environment variable */
@@ -149,7 +154,8 @@ void init_stuff(void) {
 
 	/* Validate the path */
 	validate_dir(path);
- #endif
+
+#endif /* AMIGA / VM */
 
 	/* Initialize */
 	init_file_paths(path);
@@ -160,7 +166,8 @@ void init_stuff(void) {
 	validate_dir(ANGBAND_DIR_USER);
 	validate_dir(ANGBAND_DIR_GAME);
 }
-#endif //not WINDOWS
+
+
 
 /*
  * Open all relevant pref files.
@@ -208,26 +215,14 @@ void initialize_main_pref_files(void) {
 	process_pref_file(buf);
 
 
+	/* Hack: command-line client cannot handle big_map */
 	if (!strcmp(ANGBAND_SYS, "gcu")) {
-#ifndef GLOBAL_BIG_MAP
-		/* Hack: command-line client cannot handle big_map */
 		c_cfg.big_map = FALSE;
 		(*option_info[CO_BIGMAP].o_var) = FALSE;
 		Client_setup.options[CO_BIGMAP] = FALSE;
-#else
-		/* And new way (no longer a toggleable option): */
-		global_c_cfg_big_map = FALSE;
-#endif
-
-		/* Hack for now: Palette animation seems to cause segfault on login in command-line client */
-		//no effect here, as it gets reset by check_immediate_options()
-		c_cfg.palette_animation = FALSE;
-		(*option_info[CO_PALETTE_ANIMATION].o_var) = FALSE;
-		Client_setup.options[CO_PALETTE_ANIMATION] = FALSE;
 	}
 
 
-#if 0 /* New flags were added meanwhile, this seems invalid now -- when backward compatibility goes too far, maybe.. */
 	/* Hack: Convert old window.prf or user.prf files that
 	   were made < 4.4.7.1. - C. Blue */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
@@ -241,7 +236,6 @@ void initialize_main_pref_files(void) {
 	if (i == -1) {
 		for (i = 0; i < ANGBAND_TERM_MAX; i++) {
 			u32b new_flags = 0x0;
-
 			/* translate old->new */
 			if (window_flag[i] & 0x00001) new_flags |= PW_INVEN;
 			if (window_flag[i] & 0x00002) new_flags |= PW_EQUIP;
@@ -255,10 +249,9 @@ void initialize_main_pref_files(void) {
 		/* and.. save them! */
 		(void)options_dump("global.opt");
 	}
-#endif
 }
 
-void initialize_player_pref_files(void) {
+void initialize_player_pref_files(void){
 	char buf[1024];
 
 
@@ -283,13 +276,6 @@ void initialize_player_pref_files(void) {
 	/* Access the "race" pref file */
 	if (race < Setup.max_race) {
 		sprintf(buf, "%s.prf", race_info[race].title);
-		/* Process that file */
-		process_pref_file(buf);
-	}
-
-	/* For Enlightened/Corrupted Maiar in particular: */
-	if (trait < Setup.max_trait) {
-		sprintf(buf, "%s.prf", trait_info[trait].title);
 		/* Process that file */
 		process_pref_file(buf);
 	}
@@ -320,14 +306,8 @@ void initialize_player_ins_files(void) {
 
 	/* start with empty auto-inscriptions list */
 	for (i = 0; i < MAX_AUTO_INSCRIPTIONS; i++) {
-		auto_inscription_match[i][0] = 0;
-		auto_inscription_tag[i][0] = 0;
-		auto_inscription_autopickup[i] = FALSE;
-		auto_inscription_autodestroy[i] = FALSE;
-		auto_inscription_force[i] = FALSE;
-#ifdef REGEX_SEARCH
-		auto_inscription_invalid[i] = FALSE;
-#endif
+		strcpy(auto_inscription_match[i], "");
+		strcpy(auto_inscription_tag[i], "");
 	}
 
 #if 0 /* disabled, since everyone only has 1 account anyway. It just disturbs macros if you have a character of same name. */
@@ -341,12 +321,6 @@ void initialize_player_ins_files(void) {
 	/* Access the "race" ins file */
 	if (race < Setup.max_race) {
 		sprintf(buf, "%s.ins", race_info[race].title);
-		load_auto_inscriptions(buf);
-	}
-
-	/* Access the "trait" ins file */
-	if (trait < Setup.max_trait) {
-		sprintf(buf, "%s.ins", trait_info[trait].title);
 		load_auto_inscriptions(buf);
 	}
 
@@ -433,14 +407,6 @@ static void init_monster_list() {
 		}
 
 		if (buf[0] == 'N') {
-			if (!basehued) {
-				if (multihued) monster_list_any[monster_list_idx - 1] = TRUE;
-				else if (breathhued) monster_list_breath[monster_list_idx - 1] = TRUE;
-			}
-			multihued = FALSE;
-			breathhued = FALSE;
-			basehued = FALSE;
-
 			if (discard) {
 				/* flashy-thingy tiem */
 				monster_list_idx--;
@@ -448,8 +414,13 @@ static void init_monster_list() {
 				discard = FALSE;
 			}
 
-			/* hard-skip specialties */
-			if (atoi(buf + 2) == RI_BLUE || atoi(buf + 2) == RI_MIRROR) discard = TRUE;
+			if (!basehued) {
+				if (multihued) monster_list_any[monster_list_idx - 1] = TRUE;
+				else if (breathhued) monster_list_breath[monster_list_idx - 1] = TRUE;
+			}
+			multihued = FALSE;
+			breathhued = FALSE;
+			basehued = FALSE;
 		}
 		if (buf[0] == 'F' && strstr(buf, "JOKEANGBAND")) discard = TRUE;
 		if (buf[0] == 'F' && strstr(buf, "PET")) discard = TRUE;
@@ -534,14 +505,14 @@ static void init_monster_list() {
 
 	my_fclose(fff);
 }
-void monster_lore_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool to_chat) {
+void monster_lore_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN]) {
 	char buf[1024], *p1, *p2;
 	FILE *fff;
 	int l = 0, pl = -1, cl = strlen(cname);
-	//int pl_len = 80 - 3 - cl - 2; /* 80 - 3 - namelen = chars available per chat line; 3 for brackets+space, 2 for colour code */
-	int pl_textlen = 80 - 3 - cl, lines_per_pline = MSG_LEN / 80, lpp, lppc;
-	int chars_per_pline = lines_per_pline * pl_textlen + 1; /* chars usable in a paste_lines[] */
-	char *p0, buf0[MAX_CHARS_WIDE]; /* MAX_CHARS is ok, but let's be paranoid if ?_info.txt files exceed a Diz line somewhere.. */
+	int pl_len = 80 - 3 - cl - 2; /* 80 - 3 - namelen = chars available per chat line; 3 for brackets+space, 2 for colour code */
+	int msg_len_eff = MSG_LEN - cl - 5 - 3 - 8;
+	int chars_per_pline = (msg_len_eff / pl_len) * pl_len; /* chars usable in a paste_lines[] */
+	char tmp[MSG_LEN];
 
 	/* actually use local r_info.txt - a novum */
 	path_build(buf, 1024, ANGBAND_DIR_GAME, "r_info.txt");
@@ -577,28 +548,15 @@ void monster_lore_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool t
 
 		/* name */
 		//Term_putstr(5, 5, -1, TERM_YELLOW, p2 + 1);
-		if (Client_setup.r_char[monster_list_code[rlidx]] && (to_chat == FALSE)) {
-			strcpy(paste_lines[++pl], format("\377y%s (\377%c%c\377y/\377%c%c\377y, L%d, %d) ", /* need 1 space at the end to overwrite 'search result' */
-				 monster_list_name[rlidx],
-				 monster_list_symbol[rlidx][0],
-				 monster_list_symbol[rlidx][1],
-				 monster_list_symbol[rlidx][0],
-				 Client_setup.r_char[monster_list_code[rlidx]],
-				 monster_list_level[rlidx],
-				 ridx));
-		} else {
-			strcpy(paste_lines[++pl], format("\377y%s (\377%c%c\377y, L%d, %d) ", /* need 1 space at the end to overwrite 'search result' */
-				 monster_list_name[rlidx],
-				 monster_list_symbol[rlidx][0],
-				 monster_list_symbol[rlidx][1],
-				 monster_list_level[rlidx],
-				 ridx));
-		}
+		strcpy(paste_lines[++pl], format("\377y%s (\377%c%c\377y, L%d, %d) ", /* need 1 space at the end to overwrite 'search result' */
+			monster_list_name[rlidx],
+			monster_list_symbol[rlidx][0],
+			monster_list_symbol[rlidx][1],
+			monster_list_level[rlidx],
+			ridx));
 		Term_putstr(5, 5, -1, TERM_YELLOW, paste_lines[pl] + 2); /* no need for \377y */
 
 		/* fetch diz */
-		lpp = 1;
-		lppc = 80 - pl_textlen;
 		strcpy(paste_lines[++pl], "\377u");
 		while (0 == my_fgets(fff, buf, 1024)) {
 			/* strip $/%..$/! conditions */
@@ -621,51 +579,55 @@ void monster_lore_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool t
 			p1 = buf + 2; /* monster diz line */
 			/* strip trailing spaces */
 			while (p1[strlen(p1) - 1] == ' ') p1[strlen(p1) - 1] = '\0';
-			strcat(p1, " "); /* add a final trailing space though, for when the subsequent line's text gets appended to this one's in chat-paste output */
 			Term_putstr(1, 7 + (l++), -1, TERM_UMBER, p1);
 
-			p0 = p1;
-			while (*p0) {
-				/* Avoid pasting a hardly used last line, making the overall formatting look bad. */
-				/* For this, split line into single words, to add them one by one instead of the whole line at once: */
-				strcpy(buf0, p0);
-				if ((p1 = strchr(buf0, ' '))) {
-					*(p1 + 1) = 0;
-					p0 += strlen(buf0);
-				} else p0 = &p0[strlen(p0)]; /* point to null-terminator */
-				p1 = buf0;
-
-				/* add to chat-paste buffer. */
-				while (*p1) {
-					/* for sake of formatting, avoid more than lines_per_pline [3] screen lines per paste line */
-					if (lppc + strlen(p1) > 80) {
-						if (lpp == lines_per_pline) {
-							/* next pasteline */
-							strcpy(paste_lines[++pl], "\377u");
-							lpp = 1;
-						} else lpp++;
-						lppc = 80 - pl_textlen + strlen(p1);
-					} else lppc += strlen(p1);
-
-					/* diz line fits in pasteline? */
-					if (strlen(paste_lines[pl]) + strlen(p1) <= chars_per_pline) {
-						strcat(paste_lines[pl], p1);
-						break;
-					} else {
+			/* add to chat-paste buffer. */
+			while (p1) {
+				/* diz line fits in pasteline? */
+				if (strlen(paste_lines[pl]) + strlen(p1) <= chars_per_pline) {
+					strcat(paste_lines[pl], p1);
+					strcat(paste_lines[pl], " ");
+					break;
+				} else {
+					/* diz line cannot be split? */
+					if (!(p2 = strchr(p1, ' '))) {
 						/* next pasteline */
 						strcpy(paste_lines[++pl], "\377u");
 						strcat(paste_lines[pl], p1);
+						strcat(paste_lines[pl], " ");
 						break;
+					}
+					/* diz line can be split? */
+					else {
+						strcpy(tmp, p1);
+						tmp[p2 - p1] = '\0';
+						/* split part is too big? */
+						if (strlen(paste_lines[pl]) + strlen(tmp) > chars_per_pline) {
+							/* next pasteline */
+							strcpy(paste_lines[++pl], "\377u");
+							strcat(paste_lines[pl], p1);
+							strcat(paste_lines[pl], " ");
+							break;
+						}
+						/* append split part */
+						else {
+							strcat(paste_lines[pl], tmp);
+							strcat(paste_lines[pl], " ");
+							p1 = p2 + 1;
+
+							/* go on */
+						}
 					}
 				}
 			}
 		}
+
 		break;
 	}
 
 	my_fclose(fff);
 }
-const char *mon_flags2highlight[] = {"IM_COLD", "IM_FIRE", "IM_ACID", "IM_ELEC", "IM_POIS", "IM_WATER", "IM_PSI", "IM_TELE", ""};
+const char *mon_flags2highlight[] = {"IM_COLD", "IM_FIRE", "IM_ACID", "IM_ELEC", "IM_POIS", "IM_WATER", ""};
 const char *mon_flags2highlight2[] = {"SUSCEP_COLD", "SUSCEP_FIRE", "SUSCEP_ACID", "SUSCEP_ELEC", "SUSCEP_POIS", "HURT_LITE", "HURT_ROCK", ""};
 //omitting SPIDER; note: DRAGON and DRAGONRIDER occur mutually exclusively, so we don't have to do extra string checks
 const char *mon_flags2highlight3[] = {"ANIMAL", "ORC", "TROLL", "GIANT", "DRAGONRIDER", "DRAGON", "DEMON", "UNDEAD", "EVIL", "GOOD", "NONLIVING", ""};
@@ -675,100 +637,54 @@ const char *mon_flags2highlight6[] = {"AQUATIC", ""};
 static int mon_highlit_flags(char *line) {
 	const char **f = mon_flags2highlight;
 	char *p2;
-	int i = 0, l;
+	int i = 0;
 
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = mon_flags2highlight2;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = mon_flags2highlight3;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377')) { //make sure the string is not just part of a different, longer flag string
+			if (!strcmp(*f, "DRAGONRIDER")) f++;//skip "DRAGON"
+			i += 4;
 		}
 		f++;
 	}
 
 	f = mon_flags2highlight4;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = mon_flags2highlight5;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = mon_flags2highlight6;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
@@ -777,116 +693,73 @@ static int mon_highlit_flags(char *line) {
 static void mon_highlight_flags(char *info) {
 	const char **f = mon_flags2highlight, a_flag = 's';
 	char info_tmp[MSG_LEN], *p2;
-	int l;
 
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377w%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377w%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = mon_flags2highlight2;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377y%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377y%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = mon_flags2highlight3;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377o%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377o%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = mon_flags2highlight4;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377U%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377U%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = mon_flags2highlight5;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377G%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377G%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = mon_flags2highlight6;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377B%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377B%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 }
-void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool to_chat) {
+void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN]) {
 	char buf[1024], *p1, *p2, info[MSG_LEN], info_tmp[MSG_LEN];
 	FILE *fff;
 	int l = 0, info_val, pl = -1, drops = 0;
@@ -938,23 +811,12 @@ void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool 
 
 		/* name */
 		//Term_putstr(5, 5, -1, TERM_YELLOW, p2 + 1);
-		if (Client_setup.r_char[monster_list_code[rlidx]] && (to_chat == FALSE)) {
-			strcpy(paste_lines[++pl], format("\377y%s (\377%c%c\377y/\377%c%c\377y, L%d, %d) ", /* need 1 space at the end to overwrite 'search result' */
-				 monster_list_name[rlidx],
-				 monster_list_symbol[rlidx][0],
-				 monster_list_symbol[rlidx][1],
-				 monster_list_symbol[rlidx][0],
-				 Client_setup.r_char[monster_list_code[rlidx]],
-				 monster_list_level[rlidx],
-				 ridx));
-		} else {
-			strcpy(paste_lines[++pl], format("\377y%s (\377%c%c\377y, L%d, %d) ", /* need 1 space at the end to overwrite 'search result' */
-				 monster_list_name[rlidx],
-				 monster_list_symbol[rlidx][0],
-				 monster_list_symbol[rlidx][1],
-				 monster_list_level[rlidx],
-				 ridx));
-		}
+		strcpy(paste_lines[++pl], format("\377y%s (\377%c%c\377y, L%d, %d) ", /* need 1 space at the end to overwrite 'search result' */
+			monster_list_name[rlidx],
+			monster_list_symbol[rlidx][0],
+			monster_list_symbol[rlidx][1],
+			monster_list_level[rlidx],
+			ridx));
 		Term_putstr(5, 5, -1, TERM_YELLOW, paste_lines[pl] + 2); /* no need for \377y */
 
 		/* specialty: tentacles count as finger-limbs (for rings) + hand-limbs (for weapon-wielding) + arm-limbs (shields)
@@ -1006,7 +868,7 @@ void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool 
 			info[0] = '\0'; /* prepare empty info line */
 			info_tmp[0] = '\0';
 
-			switch (buf[0]) {
+			switch(buf[0]) {
 			case 'I': /* speed, hp, vision range, ac, alertness/sleep */
 			    /* speed */
 				p2 = strchr(p1, ':') + 1;
@@ -1020,7 +882,6 @@ void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool 
 			    /* hp */
 				p2 = strchr(p1, ':') + 1;
 				snprintf(info_tmp, p2 - p1, "%s", p1);
-				info_tmp[p2 - p1 - 1] = 0; //terminate
 				strcat(info, format("HP: \377%c%s\377%c. ", a_val, info_tmp, a_key));
 				p1 = p2;
 			    /* vision range */
@@ -1195,8 +1056,8 @@ void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool 
 			    /* treasure */
 				p2 = strchr(p1, ':') + 1;
 				if (atoi(p1)) {
-					strcat(info_tmp, format("\377%c%d%% treasure\377%c", a_val, atoi(p1), a_key));
-					strcat(info, format("\377%c%d%% treasure\377%c", a_val, atoi(p1), a_key));
+					strcat(info_tmp, format("\377%c%d%% valuables\377%c", a_val, atoi(p1), a_key));
+					strcat(info, format("\377%c%d%% valuables\377%c", a_val, atoi(p1), a_key));
 					info_val = 1;
 					drops += atoi(p1);
 				}
@@ -1262,8 +1123,7 @@ void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool 
 				strcat(info, p1);
 				strcat(paste_lines[pl], info);
 				strcat(paste_lines[pl], " ");
-				//Term_putstr(2 + (got_B_lines - 1) * 19, 7 + l, -1, ta_atk, info); //fixed-column view
-				Term_putstr(strlen(paste_lines[pl]) - strlen(info) - 1, 7 + l, -1, ta_atk, info); //just strcat the attacks, separated with space, same view as when chat-pasting it
+				Term_putstr(2 + (got_B_lines - 1) * 19, 7 + l, -1, ta_atk, info);
 				break;
 			case 'F': /* flags */
 				if (!got_F_lines) {
@@ -1286,7 +1146,7 @@ void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool 
 				while (*(++p1)) {
 					switch (*p1) {
 					case ' ': continue;
-					case '|': *p1 = ' '; __attribute__ ((fallthrough));
+					case '|': *p1 = ' ';
 					default: strcat(info, format("%c", *p1));
 					}
 				}
@@ -1497,7 +1357,7 @@ void monster_stats_aux(int ridx, int rlidx, char paste_lines[18][MSG_LEN], bool 
 				while (*(++p1)) {
 					switch (*p1) {
 					case ' ': continue;
-					case '|': *p1 = ' '; __attribute__ ((fallthrough));
+					case '|': *p1 = ' ';
 					default: strcat(info, format("%c", *p1));
 					}
 				}
@@ -1694,7 +1554,6 @@ static void init_kind_list() {
 			if (strlen(buf) < 3) continue;
 			else if (buf[0] == 'A') { /* depth, rarity +  (--note: Does not account for extra rarity increase due to OOD discrepancy between k-depth and a-depth) */
 				int best_rar = 255;
-
 				while (TRUE) {
 					if (!strchr(p1, ':')) break;
 					/* <ignore depth> */
@@ -1889,11 +1748,8 @@ static void init_artifact_list() {
 		strcat(artifact_list_name[artifact_list_idx], art_name);
 		/* new: add [coloured?] symbol to indicate item type (sometimes impossible to recognize otherwise) */
 		if (i < MAX_K_IDX) { //paranoia?
-#if 1 /* we cannot predict the attr for flavoured items! (rings, amulets) */
-			/* For insta-arts: Those that don't have a specific colour are 'd' in k_info to indicate that they
-			   are ok with receiving a random flavour. Have to substitute that for something readable here. */
-			/* Note: The \377- will cause charactermode-specific colour when chat-pasting, so it'll be replaced live from paste_lines on actual pasting. */
-			strcpy(buf, format("\377%c%c\377-  ", kind_list_attr[i] == 'd' ? 's' : kind_list_attr[i], kind_list_char[i]));
+#if 0 /* we cannot predict the attr for flavoured items! (rings, amulets) */
+			strcpy(buf, format(" <\377%c%c\377->", kind_list_attr[i], kind_list_char[i]));
 #else
 			strcpy(buf, format("%c  ", kind_list_char[i]));
 #endif
@@ -1924,7 +1780,6 @@ static void init_artifact_list() {
 		/* normal artifacts: */
 		else {
 			int krar = kind_list_rarity[i], krar_boost, rar_boost;
-
 			krar_boost = krar + (krar * krar) / 500;
 			rar_boost = rar + (rar * rar) / 500;
 			if (rar < krar) {
@@ -1946,21 +1801,15 @@ static void init_artifact_list() {
 	}
 
 	my_fclose(fff);
-
-	/* Retrieve activation info from lua - note that this requires early loading of activations.lua in c-script.c */
-	for (i = 1; i < MAX_A_IDX; i++) {
-		sprintf(buf, "return get_activation_info(%d)", i);
-		strcpy(artifact_list_activation[i], string_exec_lua(0, buf));
-	}
 }
 void artifact_lore_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
-	char buf[1024], *p1, *p2, *tmpc;
+	char buf[1024], *p1, *p2;
 	FILE *fff;
 	int l = 0, pl = -1, cl = strlen(cname);
-	//int pl_len = 80 - 3 - cl - 2; /* 80 - 3 - namelen = chars available per chat line; 3 for brackets+space, 2 for colour code */
-	int pl_textlen = 80 - 3 - cl, lines_per_pline = MSG_LEN / 80, lpp, lppc;
-	int chars_per_pline = lines_per_pline * pl_textlen + 1; /* chars usable in a paste_lines[] */
-	char *p0, buf0[MAX_CHARS_WIDE]; /* MAX_CHARS is ok, but let's be paranoid if ?_info.txt files exceed a Diz line somewhere.. */
+	int pl_len = 80 - 3 - cl - 2; /* 80 - 3 - namelen = chars available per chat line; 3 for brackets+space, 2 for colour code */
+	int msg_len_eff = MSG_LEN - cl - 5 - 3 - 8;
+	int chars_per_pline = (msg_len_eff / pl_len) * pl_len; /* chars usable in a paste_lines[] */
+	char tmp[MSG_LEN];
 
 	/* actually use local a_info.txt - a novum */
 	path_build(buf, 1024, ANGBAND_DIR_GAME, "a_info.txt");
@@ -1996,14 +1845,11 @@ void artifact_lore_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 
 		/* name */
 		//Term_putstr(5, 5, -1, TERM_YELLOW, p2 + 1);
-		strcpy(paste_lines[++pl], format("\377U%s", artifact_list_name[alidx]));
-		/* Glitch fix: Replace \377- by \377U so we don't fall back on charactermode-specific colour */
-		if ((tmpc = strstr(paste_lines[pl], "\377-"))) *(tmpc + 1) = 'U';
+		strcpy(paste_lines[++pl], format("\377U%s",
+			artifact_list_name[alidx]));
 		Term_putstr(5, 5, -1, TERM_L_UMBER, paste_lines[pl] + 2); /* no need for \377U */
 
 		/* fetch diz */
-		lpp = 1;
-		lppc = 80 - pl_textlen;
 		strcpy(paste_lines[++pl], "\377u");
 		while (0 == my_fgets(fff, buf, 1024)) {
 			/* strip $/%..$/! conditions */
@@ -2026,49 +1872,52 @@ void artifact_lore_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 			p1 = buf + 2; /* artifact diz line */
 			/* strip trailing spaces */
 			while (p1[strlen(p1) - 1] == ' ') p1[strlen(p1) - 1] = '\0';
-			strcat(p1, " "); /* add a final trailing space though, for when the subsequent line's text gets appended to this one's in chat-paste output */
 			Term_putstr(1, 7 + (l++), -1, TERM_UMBER, p1);
 
 			/* add to chat-paste buffer. */
-			p0 = p1;
-			while (*p0) {
-				/* Avoid pasting a hardly used last line, making the overall formatting look bad. */
-				/* For this, split line into single words, to add them one by one instead of the whole line at once: */
-				strcpy(buf0, p0);
-				if ((p1 = strchr(buf0, ' '))) {
-					*(p1 + 1) = 0;
-					p0 += strlen(buf0);
-				} else p0 = &p0[strlen(p0)]; /* point to null-terminator */
-				p1 = buf0;
+			while (*p1) {
+				while (*p1 == ' ') p1++;
+				if (*p1 == 0) break;
 
-				/* add to chat-paste buffer. */
-				while (*p1) {
-					while (*p1 == ' ') p1++;
-					if (*p1 == 0) break;
-
-					/* for sake of formatting, avoid more than lines_per_pline [3] screen lines per paste line */
-					if (lppc + strlen(p1) > 80) {
-						if (lpp == lines_per_pline) {
-							/* next pasteline */
-							strcpy(paste_lines[++pl], "\377u");
-							lpp = 1;
-						} else lpp++;
-						lppc = 80 - pl_textlen + strlen(p1);
-					} else lppc += strlen(p1);
-
-					/* diz line fits in pasteline? */
-					if (strlen(paste_lines[pl]) + strlen(p1) <= chars_per_pline) {
-						strcat(paste_lines[pl], p1);
-						break;
-					} else {
+				/* diz line fits in pasteline? */
+				if (strlen(paste_lines[pl]) + strlen(p1) <= chars_per_pline) {
+					strcat(paste_lines[pl], p1);
+					strcat(paste_lines[pl], " ");
+					break;
+				} else {
+					/* diz line cannot be split? */
+					if (!(p2 = strchr(p1, ' '))) {
 						/* next pasteline */
 						strcpy(paste_lines[++pl], "\377u");
 						strcat(paste_lines[pl], p1);
+						strcat(paste_lines[pl], " ");
 						break;
+					}
+					/* diz line can be split? */
+					else {
+						strcpy(tmp, p1);
+						tmp[p2 - p1] = '\0';
+						/* split part is too big? */
+						if (strlen(paste_lines[pl]) + strlen(tmp) > chars_per_pline) {
+							/* next pasteline */
+							strcpy(paste_lines[++pl], "\377u");
+							strcat(paste_lines[pl], p1);
+							strcat(paste_lines[pl], " ");
+							break;
+						}
+						/* append split part */
+						else {
+							strcat(paste_lines[pl], tmp);
+							strcat(paste_lines[pl], " ");
+							p1 = p2 + 1;
+
+							/* go on */
+						}
 					}
 				}
 			}
 		}
+
 		break;
 	}
 
@@ -2084,100 +1933,59 @@ const char *obj_flags2highlight6[] = {"IM_COLD", "IM_FIRE", "IM_ACID", "IM_ELEC"
 static int obj_highlit_flags(char *line) {
 	const char **f = obj_flags2highlight;
 	char *p2;
-	int i = 0, l;
+	int i = 0;
+
+	char prefixed[9] = { ' ', 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = obj_flags2highlight2;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = obj_flags2highlight3;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
+		else {
+			strcpy(prefixed + 1, *f);
+			if ((p2 = strstr(line, prefixed)))//make sure the string is not just part of a different, longer flag string
 				i += 4;
-				break;
-			}
-			p2++;
 		}
 		f++;
 	}
 
 	f = obj_flags2highlight4;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = obj_flags2highlight5;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
 	f = obj_flags2highlight6;
 	while (*f[0]) {
-		p2 = line;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			//make sure the string is not just part of a different, longer flag string
-			if ((p2 == line || *(p2 - 1) == ' ' || *(p2 - 1) == '|' || *(p2 - 2) == '\377') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|' || *(p2 + l) == '\377')) {
-				i += 4;
-				break;
-			}
-			p2++;
-		}
+		if ((p2 = strstr(line, *f)) &&
+		    (p2 == line || *(p2 - 1) == ' ' || *(p2 - 2) == '\377'))//make sure the string is not just part of a different, longer flag string
+			i += 4;
 		f++;
 	}
 
@@ -2186,39 +1994,26 @@ static int obj_highlit_flags(char *line) {
 static void obj_highlight_flags(char *info, bool minus) {
 	const char **f = obj_flags2highlight, a_flag = 's';
 	char info_tmp[MSG_LEN], *p2;
-	int l;
+
+	char prefixed[9] = { ' ', 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377y%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377y%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = obj_flags2highlight2;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377v%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377v%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
@@ -2226,87 +2021,69 @@ static void obj_highlight_flags(char *info, bool minus) {
 	f = obj_flags2highlight3;
 	/* flags affected by (b)pval: can increase or decrease our abilities -> different colour! */
 	if (minus) while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377R%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
+		} else {
+			strcpy(prefixed + 1, *f);
+			if ((p2 = strstr(info, prefixed))) {
 				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377R%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
+				sprintf(info_tmp + (p2 - info), "\377R%s\377%c", prefixed, a_flag);
+				strcat(info_tmp, p2 + strlen(prefixed));
 				strcpy(info, info_tmp);
-				break;
 			}
-			p2++;
 		}
 		f++;
-	} else while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
+	}
+	else while (*f[0]) {
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377G%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
+		} else {
+			strcpy(prefixed + 1, *f);
+			if ((p2 = strstr(info, prefixed))) {
 				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377G%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
+				sprintf(info_tmp + (p2 - info), "\377G%s\377%c", prefixed, a_flag);
+				strcat(info_tmp, p2 + strlen(prefixed));
 				strcpy(info, info_tmp);
-				break;
 			}
-			p2++;
 		}
 		f++;
 	}
 
 	f = obj_flags2highlight4;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377D%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377D%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = obj_flags2highlight5;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377B%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377B%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
 
 	f = obj_flags2highlight6;
 	while (*f[0]) {
-		p2 = info;
-		l = strlen(*f);
-		while ((p2 = strstr(p2, *f))) {
-			if ((p2 == info || *(p2 - 1) == ' ' || *(p2 - 1) == '|') &&
-			    (*(p2 + l) == 0 || *(p2 + l) == ' ' || *(p2 + l) == '|')) {
-				strcpy(info_tmp, info);
-				sprintf(info_tmp + (p2 - info), "\377w%s\377%c", *f, a_flag);
-				strcat(info_tmp, p2 + strlen(*f));
-				strcpy(info, info_tmp);
-				break;
-			}
-			p2++;
+		if ((p2 = strstr(info, *f)) && (p2 == info || *(p2 - 1) == ' ')) {
+			strcpy(info_tmp, info);
+			sprintf(info_tmp + (p2 - info), "\377w%s\377%c", *f, a_flag);
+			strcat(info_tmp, p2 + strlen(*f));
+			strcpy(info, info_tmp);
 		}
 		f++;
 	}
@@ -2314,7 +2091,7 @@ static void obj_highlight_flags(char *info, bool minus) {
 /* assume/handle certain features: */
 #define USE_NEW_SHIELDS
 void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
-	char buf[1024], *p1, *p2, info[MSG_LEN], info_tmp[MSG_LEN], *tmpc;
+	char buf[1024], *p1, *p2, info[MSG_LEN], info_tmp[MSG_LEN];
 	cptr s_rarity = NULL;
 	FILE *fff;
 	int l = 0, info_val, pl = -1;
@@ -2328,7 +2105,7 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 
 	int tval, sval = 0, v_ac, v_acx, v_hit, v_dam, rarity, pval = 0;
 	char v_ddice[10];
-	bool empty, activation = FALSE;
+	bool empty;
 
 	/* for TV_BOW multiplier */
 	bool xtra_might = FALSE; /* paranoia: if someone really specifies an F-line before the I-line, if that's even possible */
@@ -2369,9 +2146,8 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 
 		/* name */
 		//Term_putstr(5, 5, -1, TERM_L_UMBER, p2 + 1);
-		strcpy(paste_lines[++pl], format("\377U%s", artifact_list_name[alidx]));
-		/* Glitch fix: Replace \377- by \377U so we don't fall back on charactermode-specific colour */
-		if ((tmpc = strstr(paste_lines[pl], "\377-"))) *(tmpc + 1) = 'U';
+		strcpy(paste_lines[++pl], format("\377U%s",
+			artifact_list_name[alidx]));
 		Term_putstr(5, 5, -1, TERM_L_UMBER, paste_lines[pl] + 2); /* no need for \377U */
 
 		/* fetch stats: I/W/E/O/B/F/S lines */
@@ -2420,7 +2196,7 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 			info[0] = '\0'; /* prepare empty info line */
 			info_tmp[0] = '\0';
 
-			switch (buf[0]) {
+			switch(buf[0]) {
 			case 'I': /* tval, sval, pval */
 			    /* tval */
 				p2 = strchr(p1, ':') + 1;
@@ -2560,12 +2336,8 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 					    a_val, v_hit < 0 ? "" : "+", v_hit, v_dam < 0 ? "" : "+", v_dam, a_key);
 					strcpy(info, info_tmp);
 					if (v_acx) {
-						if (is_melee_weapon(tval) && (sflags1 & SFLG1_WEAPONS_NO_AC))
-							strcpy(info_tmp, format(". Parry bonus: \377%c[%s%d%%]\377%c",
-							    a_val, v_acx < 0 ? "" : "+", v_acx, a_key));
-						else
-							strcpy(info_tmp, format(". AC bonus: \377%c[%s%d]\377%c",
-							    a_val, v_acx < 0 ? "" : "+", v_acx, a_key));
+						strcpy(info_tmp, format(". AC bonus: \377%c[%s%d]\377%c",
+						    a_val, v_acx < 0 ? "" : "+", v_acx, a_key));
 						strcat(info, info_tmp);
 					}
 				} else if (tval == TV_BOW) {
@@ -2628,7 +2400,7 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 				while (*(++p1)) {
 					switch (*p1) {
 					case ' ': continue;
-					case '|': *p1 = ' '; __attribute__ ((fallthrough));
+					case '|': *p1 = ' ';
 					default: strcat(info, format("%c", *p1));
 					}
 				}
@@ -2642,7 +2414,6 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 					/* reprint corrected multiplier info */
 					if (mult_line_pl != -1) {
 						char *c_mult = strstr(paste_lines[mult_line_pl], "(x");
-
 						if (c_mult) {
 							(*(c_mult + 2))++;
 							Term_putstr(1, 7 + mult_line_l, -1, ta_key, paste_lines[mult_line_pl] + 2);
@@ -2681,9 +2452,6 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 					strcat(info_tmp, p2 + 7);
 					strcpy(info, info_tmp);
 				}
-
-				/* Remember to add activation info */
-				if (strstr(info, "ACTIVATE")) activation = TRUE;
 
 				/* Highlight certain important flags for quick readability */
 				obj_highlight_flags(info, pval < 0);
@@ -2806,28 +2574,6 @@ void artifact_stats_aux(int aidx, int alidx, char paste_lines[18][MSG_LEN]) {
 		}
 
 		break;
-	}
-
-	/* Add activation info line at the bottom */
-	if (activation) {
-		object_type forge, *o_ptr = &forge;
-
-		o_ptr->tval = tval;
-
-#if 0 /* allow one-liners */
-		strcpy(paste_lines[++pl], format("\377%cActivates for %s", a_key, artifact_list_activation[aidx]));
-		Term_putstr(1, 7 + (++l), -1, ta_key, format("Activates for %s", artifact_list_activation[aidx]));
-#else /* split into two lines, same as on item inspection */
-		if (wearable_p(o_ptr)) {
-			strcpy(paste_lines[++pl], format("\377%cWhen equipped, it can be activated for..", a_key));
-			Term_putstr(1, 7 + (++l), -1, ta_key, "When equipped, it can be activated for..");
-		} else {
-			strcpy(paste_lines[++pl], format("\377%cIt can be activated for..", a_key));
-			Term_putstr(1, 7 + (++l), -1, ta_key, "It can be activated for..");
-		}
-		strcpy(paste_lines[++pl], format("\377%c %s", a_key, artifact_list_activation[aidx]));
-		Term_putstr(1, 7 + (++l), -1, ta_key, format(" %s", artifact_list_activation[aidx]));
-#endif
 	}
 
 	my_fclose(fff);
@@ -3039,40 +2785,21 @@ static void init_floor_mapping(void) {
 }
 
 /* Initialize info for the in-client guide search */
-#ifdef BUFFER_GUIDE
-char guide_line[GUIDE_LINES_MAX][MAX_CHARS + 1]; //one extra char per line for newline char '\n'
-#endif
-void init_guide(void) {
+static void init_guide(void) {
 	int i;
 
 	FILE *fff;
 	char path[1024], buf[MAX_CHARS * 2 + 1], *c, *c2;
 	byte contents = 0;
 
-	guide_lastline = -1;
-	guide_chapters = 0;
-	guide_endofcontents = -1;
 
 	path_build(path, 1024, "", "TomeNET-Guide.txt");
-	guide_errno = errno = 0;
 	fff = my_fopen(path, "r");
-	if (!fff) {
-		guide_errno = errno;
-		if (errno == ENOENT) {
-			c_msg_format("\377yThe file TomeNET-Guide.txt wasn't found in your TomeNET folder.");
-			c_message_add("\377y Try updating it with the TomeNET-Updater or download it manually.");
-		} else c_msg_format("\377yThe file TomeNET-Guide.txt couldn't be opened from your TomeNET folder (%d).", errno);
-		return;
-	}
+	if (!fff) return;
 
 	/* count lines */
 	while (fgets(buf, 81 , fff)) {
 		guide_lastline++;
-
-#ifdef BUFFER_GUIDE
-		if (guide_lastline >= GUIDE_LINES_MAX) continue; //catch memory overflow aka "Bad socket filedescriptor" client termination error
-		strcpy(guide_line[guide_lastline], buf); //note: guide_lastline was initialized to -1, so it'll start at 0 here as it should
-#endif
 
 		/* and also remember chapter titles */
 		buf[strlen(buf) - 1] = 0; /* remove trailing newline */
@@ -3123,24 +2850,11 @@ void init_guide(void) {
 			continue;
 		}
 	}
-	my_fclose(fff);
+
 
 	/* empty file? */
-	if (guide_lastline == -1) {
-		c_message_add("\377yThe file TomeNET-Guide.txt seems to be empty.");
-		c_message_add("\377y Try updating it with the TomeNET-Updater or download it manually.");
-		return;
-	}
-
-#ifdef BUFFER_GUIDE
-	/* too big file? */
-	if (guide_lastline >= GUIDE_LINES_MAX) {
-		c_message_add(format("\377yThe file TomeNET-Guide.txt was too big (%d/%d lines) to load completely!", guide_lastline, GUIDE_LINES_MAX));
-		c_message_add("\377y Update your client via TomeNET-Updater or install the latest client manually.");
-		/* cap */
-		guide_lastline = GUIDE_LINES_MAX - 1;
-	}
-#endif
+	if (guide_lastline == -1) return;
+	my_fclose(fff);
 
 
 	guide_races = exec_lua(0, "return guide_races");
@@ -3179,30 +2893,13 @@ static void Input_loop(void) {
 		return;
 	}
 
-#ifndef GLOBAL_BIG_MAP
 	/* In case we loaded .prf files that modified our screen dimensions,
 	   we have to resend them. - C. Blue */
 	Send_screen_dimensions();
-#endif
 
 	/* For term-resizing hacks */
 	in_game = TRUE;
 	prev_cname[0] = 0; //(re)init
-
-#if 0 /* 0: moved to a hack 'fix_custom_font_after_startup'. */
-	/* requires in_game == TRUE in handle_process_font_file() */
-	/* ---- TODO: A little order glitch, that we workaround here - should fix this in a cleaner manner probably: ----     - C. Blue
-	        The visual modules (init_x11() / init_gcu() / init_windows()) are loaded BEFORE client_init() is called.
-	        That means the init_stuff()->init_file_paths() has't been done yet, and and custom fonts won't initialize their
-	        custom mapping .prf files either. Also, custom fonts are apparently reset even if this is put as far down as
-	        into Input_loop() (after client_init() has finished already), so for now until someone sorts this out cleanly,
-	        this workaround must really be here.
-	        Workaround: We just parse the fonts' custom prf files again, to re-init the fonts properly: */
-	/* Reload custom font prefs on main screen font change */
-	//WINDOWS: if (td == &data[0])
-	//POSIX: if (td == &screen)
-	//handle_process_font_file();
-#endif
 
 	for (;;) {
 		/* Send out a keepalive packet if need be */
@@ -3371,7 +3068,6 @@ static void display_message(cptr msg, cptr title) {
  */
 static void quit_hook(cptr s) {
 	int j, res = save_chat;
-	char buf[1024];
 
 #if 0
 #ifdef USE_SOUND_2010
@@ -3390,31 +3086,29 @@ static void quit_hook(cptr s) {
 	/* Display the quit reason */
 	if (s && *s) display_message(s, "Quitting");
 
-	if (save_chat != 3) {
-		if (message_num() && (res || (res = get_3way("Save chat log/all messages?", TRUE)))) {
-			FILE *fp;
-			char buf[80], buf2[1024];
-			int i;
-			time_t ct = time(NULL);
-			struct tm* ctl = localtime(&ct);
+	if (message_num() && (res || (res = get_3way("Save chat log/all messages?", TRUE)))) {
+		FILE *fp;
+		char buf[80], buf2[1024];
+		int i;
+		time_t ct = time(NULL);
+		struct tm* ctl = localtime(&ct);
 
-			if (res == 1) strcpy(buf, "tomenet-chat_");
-			else strcpy(buf, "tomenet-messages_");
-			strcat(buf, format("%04d-%02d-%02d_%02d-%02d-%02d",
-			    1900 + ctl->tm_year, ctl->tm_mon + 1, ctl->tm_mday,
-			    ctl->tm_hour, ctl->tm_min, ctl->tm_sec));
-			strcat(buf, ".txt");
+		if (res == 1) strcpy(buf, "tomenet-chat_");
+		else strcpy(buf, "tomenet-messages_");
+		strcat(buf, format("%04d-%02d-%02d_%02d.%02d.%02d",
+		    1900 + ctl->tm_year, ctl->tm_mon + 1, ctl->tm_mday,
+		    ctl->tm_hour, ctl->tm_min, ctl->tm_sec));
+		strcat(buf, ".txt");
 
-			i = message_num();
-			if (!save_chat) get_string("Filename:", buf, 79);
-			/* maybe one day we'll get a Mac client */
-			FILE_TYPE(FILE_TYPE_TEXT);
-			path_build(buf2, 1024, ANGBAND_DIR_USER, buf);
-			fp = my_fopen(buf2, "w");
-			if (fp != (FILE*)NULL) {
-				dump_messages_aux(fp, i, 2 - res, FALSE);//FALSE
-				fclose(fp);
-			}
+		i = message_num();
+		if (!save_chat) get_string("Filename:", buf, 79);
+		/* maybe one day we'll get a Mac client */
+		FILE_TYPE(FILE_TYPE_TEXT);
+		path_build(buf2, 1024, ANGBAND_DIR_USER, buf);
+		fp = my_fopen(buf2, "w");
+		if (fp != (FILE*)NULL) {
+			dump_messages_aux(fp, i, 2 - res, FALSE);//FALSE
+			fclose(fp);
 		}
 	}
 
@@ -3428,43 +3122,13 @@ static void quit_hook(cptr s) {
 #endif
 #endif
 
-	/* Remember chat input history across logins */
-	/* Only write history if we have at least one line though */
-	if (hist_chat_end || hist_chat_looped) {
-		FILE *fp;
-		path_build(buf, 1024, ANGBAND_DIR_USER, format("chathist-%s.tmp", nick));
-		fp = fopen(buf, "w");
-		if (!hist_chat_looped) {
-			for (j = 0; j < hist_chat_end; j++) {
-				if (!message_history_chat[j][0]) continue;
-				fprintf(fp, "%s\n", message_history_chat[j]);
-			}
-		} else {
-			for (j = hist_chat_end; j < hist_chat_end + MSG_HISTORY_MAX; j++) {
-				if (!message_history_chat[j % MSG_HISTORY_MAX][0]) continue;
-				fprintf(fp, "%s\n", message_history_chat[j % MSG_HISTORY_MAX]);
-			}
-		}
-		fclose(fp);
-	}
-
-#ifdef GUIDE_BOOKMARKS
-	/* Save guide bookmarks */
-	{
-		FILE *fp;
-		path_build(buf, 1024, ANGBAND_DIR_USER, "bookmarks.tmp");
-		fp = fopen(buf, "w");
-		for (j = 0; j < GUIDE_BOOKMARKS; j++) {
-			if (!bookmark_line[j]) continue;
-			fprintf(fp, "%d,%s\n", bookmark_line[j], bookmark_name[j]);
-		}
-		fclose(fp);
-	}
-#endif
-
 #ifdef RETRY_LOGIN
 	/* don't kill the windows and all */
 	if (rl_connection_state >= 2) return;
+#endif
+
+#ifndef WINDOWS
+	write_mangrc(FALSE);
 #endif
 
 #ifdef UNIX_SOCKETS
@@ -3487,10 +3151,6 @@ static void quit_hook(cptr s) {
 
 	/* plog_hook must not be called anymore because the terminal is gone */
 	plog_aux = NULL;
-
-#ifndef WINDOWS
-	write_mangrc(FALSE, FALSE, FALSE);
-#endif
 }
 
 
@@ -3500,9 +3160,6 @@ static void init_sound() {
 
 	/* One-time popup dialogue, to inform and instruct user of audio capabilities */
 	if (sound_hint) plog("*******************************************\nTomeNET supports music and sound effects!\nTo enable those, you need to have audio packs installed,\nsee http://www.tomenet.eu/ forum and downloads.\n*******************************************\n");
-
-	/* Initialise this even if we don't use sound, just for its visual effect */
-	thunder_sound_idx = exec_lua(0, "return get_sound_index(\"thunder\")");
 
 	if (!use_sound) {
 		/* Don't initialize sound modules */
@@ -3535,70 +3192,8 @@ static void init_sound() {
 	snow2_sound_idx = exec_lua(0, "return get_sound_index(\"snow_storm\")");
 	browse_sound_idx = exec_lua(0, "return get_sound_index(\"browse\")");
 	browsebook_sound_idx = exec_lua(0, "return get_sound_index(\"browse_book\")");
-	browseinven_sound_idx = exec_lua(0, "return get_sound_index(\"inventory\")");
 #endif
 }
-/* Try to re-init specifically SDL-audio.
-   Purpose: Avoid need for client restart on switching audio packs live. */
-#ifdef USE_SOUND_2010
-int re_init_sound() {
-	int i, err;
-
-	/* Initialise this even if we don't use sound, just for its visual effect */
-	thunder_sound_idx = exec_lua(0, "return get_sound_index(\"thunder\")");
-
-	if (!use_sound) {
-		/* Don't initialize sound modules */
-		return 0;
-	}
-
-	/* Scan specifically for SDL-module */
-	for (i = 0; i < N_ELEMENTS(sound_modules); i++) {
-		if (strcmp(sound_modules[i].name, "sdl")) continue;
-		/* Try to re-init it */
-		if (!sound_modules[i].init) {
-			puts("ERROR: SDL audio has no init function.");
-			return(-1);
-		}
-		if ((err = re_init_sound_sdl()) == 0) {
- #ifdef DEBUG_SOUND
-			puts(format("USE_SOUND_2010: successfully loaded module %d.", i));
- #endif
-			break;
-		} else {
-			puts("ERROR: SDL audio failed to re-initialize.");
-			return err;
-		}
-	}
- #ifdef DEBUG_SOUND
-	puts("USE_SOUND_2010: done scanning modules");
- #endif
-	if (i == N_ELEMENTS(sound_modules)) {
-		puts("ERROR: No SDL audio module found.");
-		return -2;
-	}
-
-	/* initialize mixer, putting configuration read from rc file live */
-	set_mixing();
-
-	/* remember indices of sounds that are hardcoded on client-side anyway, for efficiency */
-	bell_sound_idx = exec_lua(0, "return get_sound_index(\"bell\")");
-	page_sound_idx = exec_lua(0, "return get_sound_index(\"page\")");
-	warning_sound_idx = exec_lua(0, "return get_sound_index(\"warning\")");
-	rain1_sound_idx = exec_lua(0, "return get_sound_index(\"rain_soft\")");
-	rain2_sound_idx = exec_lua(0, "return get_sound_index(\"rain_storm\")");
-	snow1_sound_idx = exec_lua(0, "return get_sound_index(\"snow_soft\")");
-	snow2_sound_idx = exec_lua(0, "return get_sound_index(\"snow_storm\")");
-	browse_sound_idx = exec_lua(0, "return get_sound_index(\"browse\")");
-	browsebook_sound_idx = exec_lua(0, "return get_sound_index(\"browse_book\")");
-	browseinven_sound_idx = exec_lua(0, "return get_sound_index(\"inventory\")");
-
-	/* Inform server about potentially changed capabilities */
-	Send_audio();
-
-	return 0;
-}
-#endif
 
 
 /*
@@ -3625,7 +3220,6 @@ static void turn_off_numlock(void) {
 
 /*
  * Initialize everything, contact the server, and start the loop.
- * skip:  Don't prompt for character name and pass, as we already read them from config (rc/ini) file or via commandline args.
  */
 void client_init(char *argv1, bool skip) {
 	sockbuf_t ibuf;
@@ -3645,15 +3239,13 @@ void client_init(char *argv1, bool skip) {
 #ifdef RETRY_LOGIN
 	bool rl_auto_relogin = FALSE;
 #endif
-	FILE *fp;
-	char buf[1024];
 
 #if defined(USE_X11) || defined(USE_GCU)
 	/* Force creation of fresh .tomenetrc file in case none existed yet.
 	   The reason we do it *right now* is that it generates visual glitches later
 	   and prevents plog() output from being displayed.
 	   We only call a 'light' version (TRUE) in case .tomenetrc already exists. */
-	write_mangrc(TRUE, FALSE, FALSE);
+	write_mangrc(TRUE);
 #endif
 
 	/* Set the "plog hook" */
@@ -3706,8 +3298,8 @@ void client_init(char *argv1, bool skip) {
 		if (strchr(server_name, ':') &&
 		    /* Make sure it's not an IPv6 address. */
 		    !strchr(strchr(server_name, ':') + 1, ':')) {
-			char *port = strchr(server_name, ':');
 
+			char *port = strchr(server_name, ':');
 			cfg_game_port = atoi(port + 1);
 			*port = '\0';
 		}
@@ -3746,9 +3338,6 @@ void client_init(char *argv1, bool skip) {
 	rl_connection_destroyed = FALSE;
 	rl_connection_destructible = FALSE;
 	if (rl_auto_relogin) skip = TRUE;
-
-	/* Hack-fix custom font loading once more after this next login */
-	fix_custom_font_after_startup = TRUE;
 #endif
 
 	/* Get character name and pass */
@@ -3758,8 +3347,10 @@ void client_init(char *argv1, bool skip) {
 	/* don't memfrob an already memfrobbed password */
 	if (!rl_auto_relogin)
 #endif
-	/* Use memfrob on the password */
-	my_memfrob(pass, strlen(pass));
+	if (server_protocol >= 2) {
+		/* Use memfrob on the password */
+		my_memfrob(pass, strlen(pass));
+	}
 
 	/* Capitalize the name */
 	nick[0] = toupper(nick[0]);
@@ -3852,16 +3443,6 @@ void client_init(char *argv1, bool skip) {
 		break;
 	}
 
-#ifdef USE_GRAPHICS
-	/* If server is older than 4.8.1, then it doesn't support 32bit characters, so turn off graphics if turned on. */
-	if (use_graphics && is_older_than(&server_version, 4, 8, 1, 0, 0, 0)) {
-		plog_fmt("Server doesn't support graphics. Graphics turned off.");
-		use_graphics = FALSE;
-		/* TODO Turn off higher_pict for every terminal and free graphics data? */
-		/* Currently not needed, cause if graphics is off, no picture redefinitions are allowed. */
-	}
-#endif
-
 	if (BIG_MAP_fallback) {
 		screen_wid = SCREEN_WID;
 		screen_hgt = SCREEN_HGT;
@@ -3880,40 +3461,23 @@ void client_init(char *argv1, bool skip) {
 		switch (status) {
 			case E_VERSION_OLD:
 				quit("Your client is outdated. Please get the latest one from http://www.tomenet.eu/");
-				break;
 			case E_VERSION_UNKNOWN:
 				quit("Server responds 'Unknown client version'. Server might be outdated or client is invalid. Latest client is at http://www.tomenet.eu/");
-				break;
 			case E_GAME_FULL:
 				quit("Sorry, the game is full.  Try again later.");
-				break;
 			case E_IN_USE:
-				quit("That nickname is already in use. If it is your nickname, wait 30 seconds and try again.");
-				break;
-			case E_IN_USE_PC:
-				quit("You are still logged in from another PC. Please wait 30 seconds and try again.");
-				break;
-			case E_IN_USE_DUP:
-				quit("You are already logging in from another instance of the game.");
-				break;
+				quit("That nickname is already in use.  If it is your nickname, wait 30 seconds and try again.");
 			case E_INVAL:
 				quit("The server didn't like your nickname, realname, or hostname.");
 				//note: not a good case for RETRY_LOGIN, since a name or even the hostname might be asian/cyrillic or so.. not easily solvable maybe
-				break;
 			case E_TWO_PLAYERS:
 				quit("There is already another character from this user/machine on the server.");
-				break;
 			case E_INVITE:
 				quit("Sorry, the server is for members only.  Please retry with name 'guest'.");
-				break;
 			case E_BANNED:
 				quit("You are temporarily banned from connecting to this server!");
-				break;
 			default:
 				quit(format("Connection failed with status %d.", status));
-				break;
-			// Just in case
-			exit(-1);
 		}
 	}
 
@@ -3927,9 +3491,6 @@ void client_init(char *argv1, bool skip) {
 
 	/* Close our current connection */
 	/* Dont close the TCP connection DgramClose(Socket); */
-
-	/* Clean up initial sockbuf so that it doesn't leak with RETRY_LOGIN */
-	Sockbuf_cleanup(&ibuf);
 
 	/* Connect to the server on the port it sent */
 	if (Net_init(Socket) == -1)
@@ -3957,8 +3518,6 @@ void client_init(char *argv1, bool skip) {
 		if (status == E_RETRY_CONTACT) {
 			Net_cleanup();
 			c_quit = FALSE; //un-quit, paranoia at this point though (only needed for Input_loop())
-			if (!rl_auto_relogin) my_memfrob(pass, strlen(pass)); //need to un-frob the password as it will get refrobbed right over there again
-			skip = FALSE; //prevent infinite loop if -lNAME PASS args were supplied and they are wrong
 			goto retry_contact;
 		}
 		/* bad character name? */
@@ -3979,7 +3538,6 @@ void client_init(char *argv1, bool skip) {
 	prt(format("Name        : %s", cname), 2, 1);
 #endif
 
-#ifndef GLOBAL_BIG_MAP
 	/* Put actual screen size changes from loading option files on hold
 	   until we've finished loading ALL option files,
 	   instead of switching and glitching back and forth.
@@ -3988,64 +3546,23 @@ void client_init(char *argv1, bool skip) {
 	   and exactly when global.opt said 'Y' to big_map option,
 	   while it would actually _not_ glitch out when it was set to 'X' in global.opt(!) */
 	global_big_map_hold = TRUE;
-#endif
 
 	/* Initialize the pref files */
 	initialize_main_pref_files();
 
-	/* Pre-initialize character-specific options, just for sending early censor_swearing to the server,
-	   so we can receive private/party/guild notes in the desired format. */
-	sprintf(buf, "%s.opt", cname);
-	process_pref_file(buf);
-	Send_options();
-
 	/* Handle asking for big_map mode on first time startup */
-#ifndef GLOBAL_BIG_MAP
-	if (c_cfg.big_map) bigmap_hint = firstrun = FALSE;
- #if defined(USE_X11) || defined(WINDOWS)
+#if defined(USE_X11) || defined(WINDOWS)
 	if (bigmap_hint && !c_cfg.big_map && strcmp(ANGBAND_SYS, "gcu") && ask_for_bigmap()) {
-		c_cfg.big_map = TRUE;
+	        c_cfg.big_map = TRUE;
 		Client_setup.options[CO_BIGMAP] = TRUE;
 		check_immediate_options(CO_BIGMAP, TRUE, FALSE);
 		//(void)options_dump("global.opt");
 		(void)options_dump(format("%s.opt", cname));
 	}
- #endif
+#endif
 	/* If command-line client reads from same config file as X11 one it might
 	   read a big-map-enabled screen_hgt, so reset it: */
 	if (!strcmp(ANGBAND_SYS, "gcu")) screen_hgt = SCREEN_HGT;
-#else
-	if (global_c_cfg_big_map) bigmap_hint = firstrun = FALSE;
- #if defined(USE_X11) || defined(WINDOWS)
-	if (bigmap_hint && !global_c_cfg_big_map && strcmp(ANGBAND_SYS, "gcu") && ask_for_bigmap()) {
-		global_c_cfg_big_map = TRUE;
-
-		if (is_newer_than(&server_version, 4, 4, 9, 1, 0, 1) /* redundant */
-		    && (sflags1 & SFLG1_BIG_MAP)) {
-			if (screen_hgt <= SCREEN_HGT) {
-				screen_hgt = MAX_SCREEN_HGT;
-				resize_main_window(CL_WINDOW_WID, CL_WINDOW_HGT);
-  #if 0
-				if (screen_icky) Term_switch(0);
-				Term_clear(); /* paranoia ;) */
-				if (screen_icky) Term_switch(0);
-				Send_screen_dimensions();
-  #endif
-			}
-		} else global_c_cfg_big_map = FALSE;
-	}
-	if (!global_c_cfg_big_map) {
-		screen_hgt = SCREEN_HGT;
-		resize_main_window(CL_WINDOW_WID, CL_WINDOW_HGT);
-	}
- #endif
-	/* If command-line client reads from same config file as X11 one it might
-	   read a big-map-enabled screen_hgt, so reset it: */
-	if (!strcmp(ANGBAND_SYS, "gcu")) {
-		screen_hgt = SCREEN_HGT;
-		global_c_cfg_big_map = FALSE;
-	}
-#endif
 
 	/* Initiate character creation? */
 	if (status == E_NEED_INFO) {
@@ -4096,27 +3613,6 @@ void client_init(char *argv1, bool skip) {
 	/* Hack -- flush the key buffer */
 	Term_flush();
 
-	/* Remember chat input history across logins --
-	   ironically we 'reset message log' between logins in another place, not totally efficient.. */
-	path_build(buf, 1024, ANGBAND_DIR_USER, format("chathist-%s.tmp", nick));
-	fp = fopen(buf, "r");
-	hist_chat_end = 0;
-	while (fp && hist_chat_end < MSG_HISTORY_MAX && my_fgets(fp, message_history_chat[hist_chat_end], MSG_LEN) == 0) hist_chat_end++;
-	if (fp) fclose(fp);
-	if (hist_chat_end == MSG_HISTORY_MAX) {
-		hist_chat_end = 0;
-		hist_chat_looped = TRUE;
-	}
-
-#ifdef GUIDE_BOOKMARKS
-	/* Load guide bookmarks */
-	path_build(buf, 1024, ANGBAND_DIR_USER, "bookmarks.tmp");
-	fp = fopen(buf, "r");
-	temp = 0;
-	while (fp && temp < GUIDE_BOOKMARKS && fscanf(fp, "%d,%s\n", &bookmark_line[temp], bookmark_name[temp]) != EOF) temp++;
-	if (fp) fclose(fp);
-#endif
-
 	/* Turn the lag-o-meter on after we've logged in */
 	lagometer_enabled = TRUE;
 
@@ -4128,12 +3624,6 @@ void client_init(char *argv1, bool skip) {
 	//if (use_sound) music(-4);
  #endif
 #endif
-
-	/* Reset static vars for hp/sp/mp for drawing huge bars to enforce redrawing, for the next char we log in with */
-	prev_huge_cmp = prev_huge_csn = prev_huge_chp = -1;
-
-	/* For different tomb stone music if this character dies to insanity */
-	insanity_death = FALSE;
 
 	/* Main loop */
 #ifdef RETRY_LOGIN
@@ -4174,12 +3664,9 @@ void client_init(char *argv1, bool skip) {
 		shopping = perusing = FALSE; //paraonia?
 		recording_macro = FALSE; //paranoia?
 
- #if 1		/* optional: reset message input history? */
+ #if 1		/* optional: reset message log? */
 		hist_end = hist_chat_end = 0;
 		hist_looped = hist_chat_looped = FALSE;
- #endif
- #if 0
-		/* optional: reset message log? */
 		message__next = message__last = message__head = message__tail = 0;
 		message__next_chat =  message__last_chat = message__head_chat = message__tail_chat = 0;
 		message__next_msgnochat = message__last_msgnochat = message__head_msgnochat = message__tail_msgnochat = 0;
@@ -4192,15 +3679,7 @@ void client_init(char *argv1, bool skip) {
 			inventory_name[bytes][0] = 0;
 			inventory_inscription[bytes] = 0;
 			inventory_inscription_len[bytes] = 0;
- #ifdef ENABLE_SUBINVEN
-			if (bytes > INVEN_PACK) continue;
-			for (retries = 0; retries <= SUBINVEN_PACK; retries++) {
-				subinventory[bytes][retries].tval = 0;
-				subinventory_name[bytes][retries][0] = 0;
-			}
- #endif
 		}
-		for (bytes = 0; bytes < INVEN_TOTAL - INVEN_WIELD; bytes++) equip_set[bytes] = 0;
 		item_newest = -1;
 
 		/* retuuurrrnnnn... */
@@ -4214,42 +3693,22 @@ void client_init(char *argv1, bool skip) {
 
 bool ask_for_bigmap_generic(void) {
 	int ch;
-	bool ok;
-
-	bigmap_hint = FALSE;
 
 	Term_clear();
-	Term_putstr(8, 3, -1, TERM_ORANGE, "Do you want \377Gdouble window size\377o aka 'big_map' option?");
-	Term_putstr(8, 5, -1, TERM_YELLOW, "  It is recommended to do this on desktops and normal laptops");
-	Term_putstr(8, 6, -1, TERM_YELLOW, "  but it may not fit on small netbook screens. You can change");
-	Term_putstr(8, 7, -1, TERM_YELLOW, "  this later in-game, in the options menu by pressing \377o= b\377y .");
-	Term_putstr(8, 9, -1, TERM_ORANGE, "Press '\377Gy\377o' to double the screen size now, '\377Rn\377o' to not enable.");
+	Term_putstr(10, 3, -1, TERM_ORANGE, "Do you want to double the height of this window?");
+	Term_putstr(10, 5, -1, TERM_YELLOW, "It is recommended to do this on desktops,");
+	Term_putstr(10, 6, -1, TERM_YELLOW, "but it may not fit on small netbook screens.");
+	Term_putstr(10, 7, -1, TERM_YELLOW, "You can change this later anytime in the game's options menu.");
+	Term_putstr(10, 9, -1, TERM_ORANGE, "Press 'y' to enable BIG_MAP now, 'n' to not enable.");
 
 	while (TRUE) {
 		ch = inkey();
-		if (ch == 'y' || ch == 'Y') {
+		if (ch == 'y') {
 			Term_clear();
-			ok = TRUE;
-			break;
-		} else if (ch == 'n' || ch == 'N') {
+			return TRUE;
+		} else if (ch == 'n') {
 			Term_clear();
-			ok = FALSE;
-#ifdef GLOBAL_BIG_MAP
-			global_c_cfg_big_map = FALSE;
-#endif
-			break;
+			return FALSE;
 		}
 	}
-
-	/* While at it, point towards graphical fonts */
-	Term_clear();
-	Term_putstr(8, 4, -1, TERM_YELLOW, "And one last thing:");
-	Term_putstr(8, 6, -1, TERM_YELLOW, "This game uses letters, numbers and symbols for 'graphics'.");
-	Term_putstr(8, 8, -1, TERM_YELLOW, "But if you prefer a more graphical representation,");
-	Term_putstr(8, 9, -1, TERM_YELLOW, "in the game press  \377o=  f\377y  and then look through the fonts");
-	Term_putstr(8,10, -1, TERM_YELLOW, "by pressing  \377o+\377y  repeatedly. Graphical fonts will come up!");
-	ch = inkey();
-
-	Term_clear();
-	return ok;
 }

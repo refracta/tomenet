@@ -13,6 +13,13 @@ end
 function get_healing_cap(limit_lev)
 	local pow
 
+	--pow = get_level(Ind, HEALING, 417)
+	--if limit_lev ~= 0 then
+	--	if pow > limit_lev * 8 then
+	--		pow = limit_lev * 8 + (pow - limit_lev * 8) / 3
+	--	end
+	--end
+
 	pow = ((10 + get_level(Ind, HEALING_I, 417)) * (get_level(Ind, HEALING_I, 417) + 209)) / 1562 + 1
 	if limit_lev ~= 0 then
 		if pow > limit_lev * 3 then
@@ -38,7 +45,7 @@ end
 
 GROWTREE = add_spell {
 	["name"] = 	"Grow Trees",
-	["name2"] = 	"GTrees",
+--	["school"] = 	{SCHOOL_NATURE, SCHOOL_TEMPORAL},
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	30,
 	["mana"] = 	25,
@@ -55,68 +62,94 @@ GROWTREE = add_spell {
 
 HEALING_I = add_spell {
 	["name"] = 	"Healing I",
-	["name2"] = 	"Heal I",
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	1,
-	["mana"] = 	13,
-	["mana_max"] = 	13,
+	["mana"] = 	15,
+	["mana_max"] = 	15,
 	["fail"] = 	10,
 	["spell"] = 	function()
-			fire_ball(Ind, GF_HEAL_PLAYER, 0, get_healing_power(1), 1, "")
+			local status_ailments = 1024
+			--hacks to cure effects same as potions would
+			--if get_level(Ind, HEALING, 50) >= 24 then
+			--	status_ailments = status_ailments + 8192 + 4096 + 2048
+			--elseif get_level(Ind, HEALING, 50) >= 10 then
+			--	status_ailments = status_ailments + 4096 + 2048
+			--elseif get_level(Ind, HEALING, 50) >= 4 then
+			--	status_ailments = status_ailments + 2048
+			--end
+
+			fire_ball(Ind, GF_HEAL_PLAYER, 0, status_ailments + get_healing_power(1), 1, "")
+--			hp_player(Ind, get_healing_power(0)) <- doesn't give a neat msg with numbers
 	end,
 	["info"] = 	function()
 			return "heal "..get_healing_percents(1).."% (max "..get_healing_cap(1)..") = "..get_healing_power(1)
 	end,
 	["desc"] = 	{
-			"Heals a percentage of your max hitpoints up to a spell level-dependent cap.",
-			"Projecting heals nearby players for 1/2 of the amount.",
-			"***Automatically projecting***",
+			"Heals a percent of hitpoints up to a maximum of 400 points healed.",
+			"Projecting it will heal up to half that amount on nearby players.",
 	}
 }
 HEALING_II = add_spell {
 	["name"] = 	"Healing II",
-	["name2"] = 	"Heal II",
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	20,
-	["mana"] = 	28,
-	["mana_max"] = 	28,
+	["mana"] = 	40,
+	["mana_max"] = 	40,
 	["fail"] = 	-30,
 	["spell"] = 	function()
-			fire_ball(Ind, GF_HEAL_PLAYER, 0, get_healing_power(15), 1, "")
+			local status_ailments = 1024
+			--hacks to cure effects same as potions would
+			--if get_level(Ind, HEALING, 50) >= 24 then
+			--	status_ailments = status_ailments + 8192 + 4096 + 2048
+			--elseif get_level(Ind, HEALING, 50) >= 10 then
+			--	status_ailments = status_ailments + 4096 + 2048
+			--elseif get_level(Ind, HEALING, 50) >= 4 then
+			--	status_ailments = status_ailments + 2048
+			--end
+
+			fire_ball(Ind, GF_HEAL_PLAYER, 0, status_ailments + get_healing_power(15), 1, "")
+--			hp_player(Ind, get_healing_power(0)) <- doesn't give a neat msg with numbers
 	end,
 	["info"] = 	function()
 			return "heal "..get_healing_percents(15).."% (max "..get_healing_cap(15)..") = "..get_healing_power(15)
 	end,
 	["desc"] = 	{
-			"Heals a percentage of your max hitpoints up to a spell level-dependent cap.",
-			"Projecting heals nearby players for 1/2 of the amount.",
-			"***Automatically projecting***",
+			"Heals a percent of hitpoints up to a maximum of 400 points healed.",
+			"Projecting it will heal up to half that amount on nearby players.",
 	}
 }
 HEALING_III = add_spell {
 	["name"] = 	"Healing III",
-	["name2"] = 	"Heal III",
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	40,
-	["mana"] = 	80,
-	["mana_max"] = 	80,
+	["mana"] = 	120,
+	["mana_max"] = 	120,
 	["fail"] = 	-70,
 	["spell"] = 	function()
-			fire_ball(Ind, GF_HEAL_PLAYER, 0, get_healing_power(0), 1, "")
+			local status_ailments = 1024
+			--hacks to cure effects same as potions would
+			--if get_level(Ind, HEALING, 50) >= 24 then
+			--	status_ailments = status_ailments + 8192 + 4096 + 2048
+			--elseif get_level(Ind, HEALING, 50) >= 10 then
+			--	status_ailments = status_ailments + 4096 + 2048
+			--elseif get_level(Ind, HEALING, 50) >= 4 then
+			--	status_ailments = status_ailments + 2048
+			--end
+
+			fire_ball(Ind, GF_HEAL_PLAYER, 0, status_ailments + get_healing_power(0), 1, "")
+--			hp_player(Ind, get_healing_power(0)) <- doesn't give a neat msg with numbers
 	end,
 	["info"] = 	function()
 			return "heal "..get_healing_percents(0).."% (max "..get_healing_cap(0)..") = "..get_healing_power(0)
 	end,
 	["desc"] = 	{
-			"Heals a percentage of your max hitpoints up to a spell level-dependent cap.",
-			"Final cap is 400. Projecting heals nearby players for 1/2 of the amount.",
-			"***Automatically projecting***",
+			"Heals a percent of hitpoints up to a maximum of 400 points healed.",
+			"Projecting it will heal up to half that amount on nearby players.",
 	}
 }
 
 RECOVERY_I = add_spell	{
 	["name"] = 	"Recovery I",
-	["name2"] = 	"Recov I",
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	15,
 	["mana"] = 	10,
@@ -140,7 +173,6 @@ RECOVERY_I = add_spell	{
 }
 RECOVERY_II = add_spell	{
 	["name"] = 	"Recovery II",
-	["name2"] = 	"Recov II",
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	35,
 	["mana"] = 	40,
@@ -148,7 +180,6 @@ RECOVERY_II = add_spell	{
 	["fail"] = 	-30,
 	["spell"] = 	function()
 			set_poisoned(Ind, 0, 0)
-			set_diseased(Ind, 0, 0)
 			set_cut(Ind, 0, 0)
 			set_confused(Ind, 0)
 			set_blind(Ind, 0)
@@ -166,35 +197,30 @@ RECOVERY_II = add_spell	{
 			return ""
 	end,
 	["desc"] = 	{
-			"Neutralizes poison, cures diseases, heals cuts, cures confusion,",
-			"blindness and stun. Restores drained stats and lost experience.",
+			"Neutralizes poison, heals cuts, cures confusion, blindness and stun.",
+			"Restores drained stats and lost experience.",
 			"***Automatically projecting***",
 	}
 }
 
 REGENERATION = add_spell {
 	["name"] = 	"Regeneration",
-	["name2"] = 	"Regen",
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	20,
 	["mana"] = 	40,
 	["mana_max"] = 	40,
-	["fail"] = 	0,
+	["fail"] = 	20,
 	["spell"] = 	function()
-			set_tim_regen(Ind, randint(10) + 5 + get_level(Ind, REGENERATION, 50), 10 + get_level(Ind, REGENERATION, 200))
+			set_tim_regen(Ind, randint(10) + 5 + get_level(Ind, REGENERATION, 50), 300 + get_level(Ind, REGENERATION, 700))
 	end,
 	["info"] = 	function()
-			local p = 10 + get_level(Ind, REGENERATION, 200)
-			local p10 = p / 10
-			p = p - p10 * 10
-			return "dur "..(5 + get_level(Ind, REGENERATION, 50)).."+d10 heal "..p10.."."..p
+			return "dur "..(5 + get_level(Ind, REGENERATION, 50)).."+d10 power "..(300 + get_level(Ind, REGENERATION, 700))
 	end,
 	["desc"] = 	{ "Increases your body's regeneration rate.", }
 }
 
 VERMINCONTROL = add_spell {
 	["name"] = 	"Vermin Control",
-	["name2"] = 	"VermC",
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	10,
 	["mana"] = 	30,
@@ -213,7 +239,7 @@ VERMINCONTROL = add_spell {
 
 RESISTS_I = add_spell {
 	["name"] = 	"Elemental Shield I",
-	["name2"] = 	"EleSh I",
+--	["school"] = 	SCHOOL_NATURE,
 	["school"] = 	{SCHOOL_FIRE,SCHOOL_WATER},
 	["level"] = 	15,
 	["mana"] = 	10,
@@ -235,7 +261,7 @@ RESISTS_I = add_spell {
 }
 RESISTS_II = add_spell {
 	["name"] = 	"Elemental Shield II",
-	["name2"] = 	"EleSh II",
+--	["school"] = 	SCHOOL_NATURE,
 	["school"] = 	{SCHOOL_FIRE,SCHOOL_WATER,SCHOOL_AIR,SCHOOL_EARTH},
 	["level"] = 	20,
 	["mana"] = 	20,
@@ -256,44 +282,28 @@ RESISTS_II = add_spell {
 	end,
 	["desc"] = 	{
 			"Provide resistances to the four basic elements,",
-			"heat, cold, electricity and acid.",
+			"heat, cold, lightning and acid.",
 			"***Automatically projecting***",
 		}
 }
 
-DELCURSES_I = add_spell {
-	["name"] = 	"Remove Curses I",
-	["name2"] = 	"RCurs I",
-	["school"] = 	SCHOOL_NATURE,
-	["level"] = 	20,
-	["mana"] = 	20,
-	["mana_max"] =	20,
+--[[
+SUMMONANIMAL = add_spell {
+	["name"] = 	"Summon Animal",
+	["school"] = 	{SCHOOL_NATURE},
+	["level"] = 	25,
+	["mana"] = 	25,
+	["mana_max"] = 	50,
 	["fail"] = 	20,
 	["spell"] = 	function()
-			local done
-			done = remove_curse(Ind)
-			if done == TRUE then msg_print(Ind, "The curse is broken!") end
+			summon_specific_level = 25 + get_level(SUMMONANIMAL, 50)
+			summon_monster(py, px, dun_level, TRUE, SUMMON_ANIMAL)
 	end,
 	["info"] = 	function()
-			return ""
+			return "level "..(25 + get_level(SUMMONANIMAL, 50))
 	end,
-	["desc"] = 	{ "Attempts to remove curses from your items.", }
+	["desc"] = 	{
+			"Summons a leveled animal to your aid",
+	}
 }
-DELCURSES_II = add_spell {
-	["name"] = 	"Remove Curses II",
-	["name2"] = 	"RCurs II",
-	["school"] = 	SCHOOL_NATURE,
-	["level"] = 	40,
-	["mana"] = 	50,
-	["mana_max"] =	50,
-	["fail"] = 	-20,
-	["spell"] = 	function()
-			local done
-			done = remove_all_curse(Ind)
-			if done == TRUE then msg_print(Ind, "The curse is broken!") end
-	end,
-	["info"] = 	function()
-			return ""
-	end,
-	["desc"] = 	{ "Removes all normal and heavy curses from your items.", }
-}
+]]

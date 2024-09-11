@@ -12,7 +12,6 @@
 
 /* --------------------------------------------------------------------------*/
 /* Features that are allowed in all build types, ie server-type independant: */
-/* --------------------------------------------------------------------------*/
 
 /* Distinguished light colour for flaming lites, magic lights, vampire light */
 #define CAVE_LITE_COLOURS
@@ -34,8 +33,6 @@
 /* Add extra fixed towns to "Ironman Deep Dive Challenge"? (at depths 1k and 3k),
    these are 'wild' like random towns and not as privileged (no withdrawal, no item staticness) */
 #define IRONDEEPDIVE_EXTRA_FIXED_TOWNS
-/* Further add extra 'refuge' mini-vaultlike areas (wide open though) for a short respite that allow selling loot and very basic purchases */
-#define IDDC_REFUGES
 /* Do artifacts time out especially quickly in the IDDC? */
 #define IDDC_ARTIFACT_FAST_TIMEOUT
 /* Can the first [two] speed rings be found especially easily in the IDDC? Or too much pampering? (0/[1]/2) */
@@ -84,9 +81,7 @@
 #define HOME_APPRAISAL		/* Displays player store price when inspecting an item at home */
 #define EXPORT_PLAYER_STORE_OFFERS	60	/* Export all player store items to an external list every n minutes [60] */
 
-#define WARNING_REST_TIMES	6	/* Warn this often about 'R'esting */
-
-#ifndef WIN32 /* no fork() */
+#ifndef WIN32
  #define ENABLE_GO_GAME		/* Allows players to play vs CPU games of Go/Weiqi/Baduk. - C. Blue */
 #endif
 #define ENABLE_MAIA		/* enable RACE_MAIA (formerly 'DIVINE' race) */
@@ -113,7 +108,7 @@
 //#define MONSTER_FLOW_BY_ESP
 
 
-/* Allow use of '!Q' inscription on any item to prevent earthquakes from TR5_IMPACT items?
+/* Allow use of '!E' inscription on any item to prevent earthquakes from TR5_IMPACT items?
    If disabled, it's still allowed to be used on Grond (exclusively)! */
 //#define ALLOW_NO_QUAKE_INSCRIPTION
 
@@ -136,9 +131,6 @@
 /* Allow a larger main window with a map bigger than 66x22 (usually 66x44) - C. Blue */
 #define BIG_MAP
 
-/* Experimental and also silly ;) - reward players for wearing arts of similar name - C. Blue */
-#define EQUIPMENT_SET_BONUS
-
 /* Use an info screen for normal ID too, not just for *ID*, and display all
    guaranteed abilities (k_info and 100%-e_info flags/esp) in it. - C. Blue */
 #define NEW_ID_SCREEN
@@ -146,12 +138,8 @@
 /* Load 'D:' tags from k_info.txt file and display them on examining - C. Blue */
 #define KIND_DIZ
 
-/* Load 'D:' tags from r_info.txt file and display them on kill if enabled - C. Blue */
-#define RACE_DIZ
-
 /* Allow kings/queens/emperors/empresses to team up for Nether Realm.
-   Must be at the worldmap sector of NR entrance, or inside NR.
-   Note: Careful, that PVP-mode isn't allowed. Maybe all checks should just be moved into compat_*() functions. */
+   Must be at the worldmap sector of NR entrance, or inside NR. */
 #define ALLOW_NR_CROSS_PARTIES
 /* Best to enable when ALLOW_NR_CROSS_PARTIES is enabled:
    Allow kings/queens/emperors/empresses to trade items that were found in the
@@ -186,21 +174,12 @@
    Same for servers. */
 #define EXTENDED_TERM_COLOURS
 
-/* Add another set of 16 colours to the normal 16 colours the game uses,
-   which are clones of those, but are only used for drawing the main (map_info aka game) screen.
-   Purpose: Allow for palette animation, intended for smooth day/night lighting changes. - C. Blue
-   Note: This changes TERM_BNW and TERM_PVP to be normal animated colours instead of masks,
-         because otherwise there would not be enough colours available to accomodate for this addition.
-   NOTE: Due to the hilite_player comeback this must always be on for server >= 4.7.3.0.0.0 or it breaks old clients. */
-#define EXTENDED_COLOURS_PALANIM
-
 /* Special extended colours that make use of background colouring - C. Blue
    Note: This is highly EXPERIMENTAL and not even implemented atm.,
          the only thing that works is proof of concept code that displays
-         rain in alternating colours, TERM_ORANGE and (newly added for this) TERMX_BLUE.
-         2022-03-10 - reenabling this, not for rain but for floor background 'test'.
-   -- !!! CURRENTLY CAUSING A BUG: palette_animation no longer works (daylight-shading) -- */
-#define EXTENDED_BG_COLOURS
+         rain in alternating colours, TERM_ORANGE and (newly added for this) TERM2_BLUE. */
+//#define EXTENDED_BG_COLOURS
+
 
 /* better chance for non-low +hit,+dam on randart melee weapons and boomerangs */
 #define RANDART_WEAPON_BUFF
@@ -221,7 +200,7 @@
 
 #if defined(ENABLE_XID_SPELL) || defined(ENABLE_XID_MDEV)
  /* Repeat spell cast/device activation attempt until it succeeds. (Scrolls always succeed, so not needed for those.) */
- //#define XID_REPEAT
+ #define XID_REPEAT
 #endif
 
 
@@ -250,27 +229,13 @@
    so twice this has to be 'paid' in total. */
 #define SOLO_REKING 5000000
 
-/* Allow a one-time reset of one skill at character level <RESET_SKILL>? ([35], No-define to disable) */
-#define RESET_SKILL 35
-#ifdef RESET_SKILL
- #define RESET_SKILL_LEVELS	5
- #define RESET_SKILL_FEE	3000000
-#endif
-
 /* Do vampires not suffer Black Breath at all? */
 #define VAMPIRES_BB_IMMUNE
 /* Will negative boni on cursed items become (scaled) positive ones when wielded by vampires?
    (0 = rather inconsistent method, 1 = recommended method) */
 #define VAMPIRES_INV_CURSED 1
-/* New specialty (super-experimental): Change cursed randarts into something useful? */
-#ifdef VAMPIRES_INV_CURSED
- #define INVERSE_CURSED_RANDARTS
-#endif
 /* Allow vampires to polymorph into vampiric mist at 40, obtaining some special feats? */
 #define VAMPIRIC_MIST
-
-/* Specialty: Do vampire istari gain access to occult Shadow school? */
-#define VAMP_ISTAR_SHADOW
 
 /* Allow ordering a specific item in a store */
 #define ENABLE_ITEM_ORDER
@@ -279,8 +244,6 @@
    The number is the cost factor for smelting coins into massive pieces; note: 7..17x is possible for default gold colour on player-dropped piles.
    Also allow melting items. */
 #define SMELTING 8
-/* Divide 'real' temperature * 10 by this to allow more easygoing usage if we just can't push the required numbers for technical reasons. */
-#define SMELTING_DIV 20
 
 /* Load 'D:' tags from e_info.txt file and display them on examining */
 #define EGO_DIZ
@@ -309,10 +272,6 @@
 
 /* Anti-teleportation will cancel Word-of-recall instead of delaying it. */
 #define ANTI_TELE_CHEEZE
-/* ..Additionally cancel Word-of-recall inside space-time-anchor fields, instead of delaying it? */
-#ifdef ANTI_TELE_CHEEZE
- //#define ANTI_TELE_CHEEZE_ANCHOR
-#endif
 
 /* Update item timeouts in realtime? (Torches/lanterns/Poly-rings/Blood-potions) */
 #define LIVE_TIMEOUTS
@@ -331,8 +290,6 @@
    using cmd_locate(). */
 #define LOCATE_KEEPS_OVL
 
-#define DEATH_FATE_SPECIAL	/* Death Fate special */
-
 /* Enable o_*.lua 'Occult' magic schools (shamans, rogues, adventurers) */
 #define ENABLE_OCCULT
 
@@ -340,162 +297,18 @@
 #ifdef ENABLE_OCCULT
  #define ENABLE_DEATHKNIGHT
 
+ //#if defined(TEST_SERVER) || defined(TEST_CLIENT)
   #define ENABLE_HELLKNIGHT	/* Allow 'Corrupted Paladins' aka Hell Knights. Requires ENABLE_OCCULT. */
   #ifdef ENABLE_HELLKNIGHT
    #define ENABLE_OHERETICISM	/* Enable 'Hereticism' occult school for Hell Knights */
    #define ENABLE_CPRIEST	/* Allow 'Corrupted Priest', keeping its normal class name. Should assume ENABLE_HELLKNIGHT. */
   #endif
-
- #define ENABLE_OUNLIFE	/* Enable 'Nether' occult school for Death Knights */
- #ifdef ENABLE_OUNLIFE /* forced implication code-wise! */
-  #define ENABLE_OHERETICISM
- #endif
+ //#endif
 #endif
 
-/* 'Necromancy' skill gives an additional chance to keep hold of your life force */
-#define NECROMANCY_HOLDS_LIFE
 
-/* Allow creation of demolition charges for 'Digging' skill.
-   Consider renaming 'Digging' to 'Excavation'.
-   Also designates minimum required 'Digging' skill to be active [5]. */
-#define ENABLE_DEMOLITIONIST 5
-/* Restrict finding ENABLE_DEMOLITIONIST items to within the IDDC. Usage of found items is not restricted however. */
-//#define DEMOLITIONIST_IDDC_ONLY
-/* Restrict placing blast charges to within the IDDC, for debugging/testing purpose */
-//#define DEMOLITIONIST_BLAST_IDDC_ONLY
-
-/* Allow wielding spell books? (count as 2-handed item, count as bare-handed aka 'no item equipped and no martial arts applied' for attacking)
-   Spells cast from that book get boni:
-    -20% MP cost,
-    -5% fail rate,
-    +1 spell level (does not affect fail rate but does affect MP cost, but nowadays MP cost is fixed anyway, so no effect;
-                   does not affect spells that were not yet castable, similar to how the Spell-power skill works). */
-#define WIELD_BOOKS
-/* Allow wielding magic devices: Wands, Staves, Rods, in the manner of WIELD_BOOKS?
-   Boni:
-    30% reduced fail chance, flat on top,
-    20% chance to retain the charge/energy at the cost of MP (depending on the device level). */
-#define WIELD_DEVICES
-
-
-
-/* ------------------------------------------------------------------------------------------------- */
-/* --------------------- TESTING/EXPERIMENTAL - This stuff is hot alpha/beta.. --------------------- */
-/* ------------------------------------------------------------------------------------------------- */
-
-/* Allow to press alt-wield (shift+W) to equip a digging tool into the weapon slot! (4.7.4b+ test).
-   Note that digging tools must all receive MUST2H flag for this. - C. Blue */
-#define EQUIPPABLE_DIGGERS
-
-/* Alchemy Satchels (and chests, for now) as inventory extension - C. Blue */
-#define ENABLE_SUBINVEN
-
-/* Finally create some usage for the so far functionless altars - C. Blue
-   Ideas: Pray (1) or Sacrifice item (2).
-   1) Gain extra quirks/buffs, but apply a behavioral restriction too? (Eg +luck, but mustn't kill GOOD monsters)
-   2) Gain extra item type drop chance/quality/both. Gain +luck for itemvalue^.5 / 100 (fraction-fine scale), maybe add rarity bonus to luck too.
-      Or determine duration by item rarity.
-   Keep the effect for specific time, and even prolong it indefinitely while player doesn't change staircase/float direction and doesn't log out.
-   Problem: lotr.fandom.com/wiki/Religion -> Ilúvatarism and Melkorism. But even if vamp/hk pray to Melkor, they still will kill him -_-. */
-//#define ALTARS_2021
-
-/* One of the bigger things - add actual crafting to the game? - C. Blue
-    Goals:
-	Allow to gain basically any possible item in the game, therefore exchanging targetted grind vs some RNG result.
-	Depend on each other, with certain crafting results being ingredients in turn for some other item/craft.
-
-    Problems:
-	Loot drops are already fitting very well, crafting could dilute things too much.
-	    -> ppl can dismantle 'useless' loot they find, to obtain raw materials for crafting,
-	       giving every item a (small) purpose perhaps
-
-	Ingredient spam, mixed into loot, requiring extra space in inventory/houses etc.
-	    -> add a profession bag^^,
-	    -> keep # of ingredients strongly in check, but offer a decent variery ot intermediary-tier items that are used up in subsequent crafts maybe
-
-	Require stationary tools eg forge? Which symbol for those? & and % are interesting, but already overused, so just ':' left maybe.
-	    -> could be cool to require very special/hidden forges etc perhaps.
-	    -> not sure how this is solved in towns - every profession has its station? a bit cluttery. Maybe not all of them need one?
-
-	Everyone becomes a crafter? Need to spend skill points? Need to create an extra crafting char? (Same as for Stealing atm.)
-	Otoh it'd also not be good if everyone could be a crafter 'for free' anyway, diluting crafting a lot, instead of it being a perk of choice, to stand out.
-	    -> some items could be too hard for anyone to use except the crafter, or w/e, just get level 0'ed if really necessary.
-	    -> one char must be limited to one crafting profession
-	    -> profession skill goes from 0.000 to 50.000 so it aligns with charlevel, but needs a bigger ratio to require maybe just ~5 levels worth of skill points (25)
-	    -> specialty: while skill does increase your potential crafting level, there is a cLev that needs to be brought up to the skill-unlocked mLev of crafting,
-	       by actually performing crafting actions! Eg 20.000 blacksmithing, but your cur-skill is at 3.418 because you have only created 3 helmets so far ^^-
-	       The amount of work to put into it should increase polynomially, basically comparable to XP gain from monster-slaying, for the parallel 'game of crafting' vs 'game of monster-slaying'.
-
-    Crafts:
-	Blacksmith		requires Fletcher for hafted weapons,
-				Textile Worker for heavy armour and shields,
-				crafts swords etc w/o any supply chain items (just pure metal).
-
-	Textile Worker		cloth and leather armour,
-				inlays for heavy armour
-
-	Fletcher		ranged weapons,
-				staves (anything w/o metal warheads),
-				traps,
-				handles for heavy weapons
-
-	* maybe combine Textule and Fletcher? Seems not much to do @ cloth and leather armour really.. except if it includes DSMs maybe..
-	  could become weaver or plaiter..
-
-	Alchemist		crafts potions,
-				can create volatile runes,
-				uses volatile runes to craft scrolls and spells,
-				uses engraved runes to craft devices.
-
-	Rune scribe		crafts runes, both volatile and engraved,
-				can create scrolls and spells from volatile runes,
-				can create runemaster-usable rune stones (aka 'runes' in the game right now),
-				uses engraved runes to enchant items permanently
-
-	2 types of runes:
-		1) volatile runes (paper runes^^)
-			these are for scrolls, spells
-		2) engraved runes (on solid materials, rock, metal, wood)
-			these are for enchantments (items) and magic devices, and for runecraft
-
-    In-game symbols:
-	Much like for demolition: * for ingredients probably.
-	':' for stationary tools such as a forge perhaps. '%' and especially '&' would be nice but are overused,
-	or we move/switch those around a bit..
-
-    Tool items (pocketed, stationary), Ingredients/material items:
-	Blacksmithing
-	    hammer, forge
-	    metal bars, mithril bars, adamantite bars
-	Textileworking
-	    needle/cutter, loom
-	    cloth, leather
-	Fletchery
-	    slicer, workbench
-	    wood, leather
-	Alchemy
-	    mixing flask (potions), pen (scrolls/spells), laboratory
-	    paper/ink, various tinctures/essences
-	Runescript
-	    pen/chisel
-	    ink, paper/rocks, - (?)
-*/
-//#define CRAFTING_2023
-
-/* Work in progress // debug code - do not enable this!
-   cmd_map(): Support initiating '2'/'8' map scrolling  while in 's'elector mode,
-   by moving the X vertically out of the map
-   (ie onto screen line 0 or 45 in 46-lines mode, aka big_map)?
-   Note that retrieval from 'minimap_yoff' from server-side is just needed for this. - C. Blue */
-//#define WILDMAP_ALLOW_SELECTOR_SCROLLING
-
-
-
-/* ------------------------------------------------------------------------- */
 /* --------------------- Server-type dependant features -------------------- */
-/* ------------------------------------------------------------------------- */
 
-/* Specific settings for rpg-server ("ironman server") only */
 #ifdef RPG_SERVER
  /* Do we want to use Kurzel's PvE/P when mode 1 PK is configured? */
 //#define KURZEL_PK --disabled because it breaks chat highlighting
@@ -510,15 +323,7 @@
  #define OPTIMIZED_ANIMATIONS	/* testing */
 #endif
 
-/* Specific settings for test-server only */
 #ifdef TEST_SERVER
- /* Allow subclassing ie. planned access to skills from a secondary class!
-   Enables role customization while preserving unique features of base classes.
-   Currently applies a big +200% XP penalty for 2/3 ratios from both classes. */
- #define ENABLE_SUBCLASS
- #define ENABLE_SUBCLASS_TITLE // show secondary title when long format is called for (eg. @ screen)
- #define ENABLE_SUBCLASS_COLOR // alternate color in cave.c but not in @ screen (where title is seen)
-
  #define NEW_REMOVE_CURSE	/* rc has fail chance; allow projecting rc spell on others */
 
  #define ENABLE_ASSASSINATE	/* experimental fighting technique for rogues - devalues Backstabbing too much probably */
@@ -534,30 +339,17 @@
 
  #define OPTIMIZED_ANIMATIONS	/* testing */
 
- #define TELEPORT_SURPRISES 5	/* monsters are surprised for a short moment (0.1s * n) if a player long-range teleported next to them */
+ #define TELEPORT_SURPRISES	/* monsters are surprised for a short moment if a player long-range teleported next to them */
 
  #define LIMIT_SPELLS		/* Allow player to limit the level of spells he casts */
-
- /* Just for debugging - unbind savegames from accounts */
- #define IGNORE_SAVEGAME_MISMATCH
-
- /* Biggest can of worms evah: Inter-server portals */
- #define SERVER_PORTALS
 #endif
 
-/* Specific settings for Arcade server only */
 #ifdef ARCADE_SERVER
 #endif
 
-/* Specific settings for main-server only */
-#if !defined(RPG_SERVER) && !defined(TEST_SERVER) && !defined(ARCADE_SERVER)
-#endif
 
 
-
-/* -------------------------------------------------------------------------- */
-/* ------------------------ Client-side only features ----------------------- */
-/* -------------------------------------------------------------------------- */
+/* ------------------------ Client-side only features -----------------------*/
 
 #ifdef CLIENT_SIDE
 //Originally for hybrid clients to do both old and new runemastery, now unused.
@@ -571,8 +363,7 @@
  #define DISTINCT_DARK
 
  /* Remove some hard-coding in the client options */
- #define CO_BIGMAP		7
- #define CO_PALETTE_ANIMATION	124
+ #define CO_BIGMAP	7
 
  /* Blacken lower part of screen if we're mindlinked to a non-bigmap-target but
     are actually using bigmap-screen. */
@@ -582,39 +373,9 @@
 
  /* Atmospheric login screens, with animation, sound and music? */
  #define ATMOSPHERIC_INTRO
-
-/* 4.6.2: Allow to retry login, for re-entering invalid account/character names or after death. */
- #define RETRY_LOGIN
-
- /* Buffer guide in RAM, to reduce searching times (especially on Windows OS, not really bad on Linux) */
- #define BUFFER_GUIDE
- #ifdef BUFFER_GUIDE
-  #define GUIDE_LINES_MAX 35000 //note: the guide is currently 25074 lines long
- #endif
-
- /* Use regex.h to offer regexp in-game guide searching; and now also auto-inscription regexp matching */
- #define REGEX_SEARCH
-
- /* Enable bookmarking feature? */
- #define GUIDE_BOOKMARKS 20
-
- /* Disable c_cfg.big_map option and make it a client-global setting instead that spans over any login choice. */
- #define GLOBAL_BIG_MAP
-
- /* experimental: Allow things like SHIFT+ENTER in menus - C. Blue */
- #ifdef TEST_CLIENT
-  #define ENABLE_SHIFT_SPECIALKEYS
- #endif
-
- /* Allow redefining black colour (#0) too, and allow redefining any colour to #000000 (aka allow redefining all colours completely and freely)? */
- #define CUSTOMIZE_COLOURS_FREELY
 #endif
 
-
-
-/* -------------------------------------------------------------------------- */
-/* ----------------- Misc flags induced by above definitions ---------------- */
-/* -------------------------------------------------------------------------- */
+/* ----------------- Misc flags induced by above definitions ----------------*/
 
 /* Use new shields with block/deflect values instead of traditional ac/+ac ? */
 #ifdef ENABLE_NEW_MELEE
@@ -629,11 +390,6 @@
  #endif
  #ifndef USE_PARRYING
   #define USE_PARRYING
- #endif
- #ifdef USE_PARRYING
-  /* Chance +AC enchantment on weapons to a bonus in parry chance? Requires USE_PARRYING to be enabled. Also specifies the divisor*10 to translate +AC to +parry. [10]
-     A drawback currently: The player can always know his true parry chance via checking in 'm' menu, even if the weapon hasn't been identified yet. */
-  #define WEAPONS_NO_AC 10
  #endif
 #endif
 
@@ -658,9 +414,6 @@
    so 800 would result in 8000 minutes aka ~6 days. */
 #define VISIT_TIME_CAP 800
 
-
-
-/* --------------------------------------------------------------------------*/
 
 /* Enable/undefine specific features locally */
 #include "defines-features-local.h"

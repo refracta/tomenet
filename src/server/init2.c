@@ -138,7 +138,7 @@ void init_file_paths(char *path) {
 	/* Build a path name */
 	strcpy(tail, "save");
 	ANGBAND_DIR_SAVE = string_make(path);
-
+	
 	/* Build a path name */
 	strcpy(tail, "text");
 	ANGBAND_DIR_TEXT = string_make(path);
@@ -218,10 +218,10 @@ void show_news(void) {
 
 	/* Failure */
 	if (fd < 0) {
-		char why[1024 + 26];
+		char why[1024];
 
 		/* Message */
-		snprintf(why, 1024 + 26, "Cannot access the '%s' file!", buf);
+		snprintf(why, 1024, "Cannot access the '%s' file!", buf);
 
 		/* Crash and burn */
 		show_news_aux(why);
@@ -270,10 +270,10 @@ void show_news(void) {
 
 		/* Failure */
 		if (fd < 0) {
-			char why[1024 + 26];
+			char why[1024];
 
 			/* Message */
-			snprintf(why, 1024 + 26, "Cannot create the '%s' file!", buf);
+			snprintf(why, 1024, "Cannot create the '%s' file!", buf);
 
 			/* Crash and burn */
 			show_news_aux(why);
@@ -403,7 +403,7 @@ static errr init_f_info(void) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -490,7 +490,7 @@ static errr init_k_info(void) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -612,7 +612,7 @@ static errr init_a_info(void) {
 #endif
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -691,7 +691,7 @@ static errr init_s_info(void) {
 		(void)fd_close(fd);
 
 		/* Success */
-		if (!err) return(0);
+		if (!err) return (0);
 
 		/* Information */
 		msg_print("Ignoring obsolete/defective 's_info.raw' file.");
@@ -843,7 +843,7 @@ static errr init_s_info(void) {
 #endif	// USE_RAW_FILES
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -943,7 +943,9 @@ static errr init_e_info(void) {
 		for (j = 0; j < MAX_EGO_BASETYPES; j++) {
 			byte tval = e_ptr->tval[j];
 
-			if (tval < TV_MAX) e_tval_size[tval]++;
+			if (tval < TV_MAX) {
+				e_tval_size[tval]++;
+			}
 		}
 	}
 
@@ -961,14 +963,16 @@ static errr init_e_info(void) {
 		for (j = 0; j < MAX_EGO_BASETYPES; j++) {
 			byte tval = e_ptr->tval[j];
 
-			if (tval < TV_MAX) e_tval[tval][e_tval_aux[tval]++] = i;
+			if (tval < TV_MAX) {
+				e_tval[tval][e_tval_aux[tval]++] = i;
+			}
 		}
 	}
 
 	C_KILL(e_tval_aux, TV_MAX, s16b);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 /*
@@ -1013,7 +1017,7 @@ static errr init_r_info(void) {
 
 	/* Assume the size of "r_name" and "r_text" */
 	fake_name_size = 20 * 1024L;
-	fake_text_size = 60 * 1024L * 3; //increased *3 for RACE_DIZ addition, first time we actually try and load r-dizzes..
+	fake_text_size = 60 * 1024L;
 
 	/* Allocate the "r_info" array */
 	C_MAKE(r_info, r_head->info_num, monster_race);
@@ -1055,14 +1059,6 @@ static errr init_r_info(void) {
 		quit("Error in 'r_info.txt' file.");
 	}
 
-#if 0 /* debug */
-#ifdef RACE_DIZ
-for (i = 0; i < MAX_R_IDX; i++) {
-	if (!(r_info[i].flags1 & RF1_UNIQUE)) continue;
-	s_printf("%d:\n%s\n", i, r_text + r_info[i].text);
-}
-#endif
-#endif
 
 	/* Sort uniques for client-side list on chardump - C. Blue */
 	for (i = 0; i < MAX_R_IDX; i++) {
@@ -1118,7 +1114,7 @@ for (i = 0; i < MAX_R_IDX; i++) {
 #endif
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -1140,7 +1136,7 @@ static errr init_re_info(void) {
 	/*** Make the header ***/
 
 	/* Allocate the "header" */
-	MAKE(re_head, header);
+        MAKE(re_head, header);
 
 	/* Save the "version" */
 	re_head->v_major = VERSION_MAJOR;
@@ -1196,18 +1192,18 @@ static errr init_re_info(void) {
 		oops = (((err > 0) && (err < 8)) ? err_str[err] : "unknown");
 
 		/* Oops */
-		s_printf("Error %d at line %d of 're_info.txt'.\n", err, error_line);
+                s_printf("Error %d at line %d of 're_info.txt'.\n", err, error_line);
 		s_printf("Record %d contains a '%s' error.\n", error_idx, oops);
 		s_printf("Parsing '%s'.\n", buf);
 
 		/* Quit */
-		quit("Error in 're_info.txt' file.");
+                quit("Error in 're_info.txt' file.");
 	}
 
 #endif	/* ALLOW_TEMPLATES */
 
 	/* Success */
-	return(0);
+	return (0);
 }
 #endif	// RANDUNIS
 
@@ -1286,7 +1282,7 @@ static errr init_d_info(void) {
 		(void)fd_close(fd);
 
 		/* Success */
-		if (!err) return(0);
+		if (!err) return (0);
 
 		/* Information */
 		msg_print("Ignoring obsolete/defective 'd_info.raw' file.");
@@ -1440,7 +1436,7 @@ static errr init_d_info(void) {
 #endif	// USE_RAW_FILES
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -1535,7 +1531,7 @@ static errr init_t_info(void) {
 #endif	/* ALLOW_TEMPLATES */
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -1621,7 +1617,7 @@ static errr init_v_info(void) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -1687,7 +1683,7 @@ static errr init_st_info(void) {
 		err = check_modification_date(fd, "st_info.txt");
 #endif /* CHECK_MODIFICATION_TIME */
 #ifdef CHECK_MODIFICATION_ALWAYS
-		err = 0;
+	        err = 0;
 #endif
 
 		/* Attempt to parse the "raw" file */
@@ -1698,7 +1694,7 @@ static errr init_st_info(void) {
 		(void)fd_close(fd);
 
 		/* Success */
-		if (!err) return(0);
+		if (!err) return (0);
 
 		/* Information */
 		msg_print("Ignoring obsolete/defective 'st_info.raw' file.");
@@ -1842,7 +1838,7 @@ static errr init_st_info(void) {
 #endif	// USE_RAW_FILES
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -1908,7 +1904,7 @@ static errr init_ow_info(void) {
 		err = check_modification_date(fd, "ow_info.txt");
 #endif /* CHECK_MODIFICATION_TIME */
 #ifdef CHECK_MODIFICATION_ALWAYS
-		err = 0;
+	        err = 0;
 #endif
 
 		/* Attempt to parse the "raw" file */
@@ -1919,7 +1915,7 @@ static errr init_ow_info(void) {
 		(void)fd_close(fd);
 
 		/* Success */
-		if (!err) return(0);
+		if (!err) return (0);
 
 		/* Information */
 		msg_print("Ignoring obsolete/defective 'ow_info.raw' file.");
@@ -2067,7 +2063,7 @@ static errr init_ow_info(void) {
 #endif	// USE_RAW_FILES
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 #if 1
@@ -2133,7 +2129,7 @@ static errr init_ba_info(void) {
 		err = check_modification_date(fd, "ba_info.txt");
 #endif /* CHECK_MODIFICATION_TIME */
 #ifdef CHECK_MODIFICATION_ALWAYS
-		err = 0;
+	        err = 0;
 #endif
 
 		/* Attempt to parse the "raw" file */
@@ -2144,7 +2140,7 @@ static errr init_ba_info(void) {
 		(void)fd_close(fd);
 
 		/* Success */
-		if (!err) return(0);
+		if (!err) return (0);
 
 		/* Information */
 		msg_print("Ignoring obsolete/defective 'ba_info.raw' file.");
@@ -2288,7 +2284,7 @@ static errr init_ba_info(void) {
 #endif	// USE_RAW_FILES
 
 	/* Success */
-	return(0);
+	return (0);
 }
 #endif	// 0
 
@@ -2342,7 +2338,7 @@ static errr init_q_info(void) {
 		err = check_modification_date(fd, "q_info.txt");
   #endif /* CHECK_MODIFICATION_TIME */
   #ifdef CHECK_MODIFICATION_ALWAYS
-		err = 0;
+	        err = 0;
   #endif
 
 		/* Attempt to parse the "raw" file */
@@ -2350,7 +2346,7 @@ static errr init_q_info(void) {
 		/* Close it */
 		(void)fd_close(fd);
 		/* Success */
-		if (!err) return(0);
+		if (!err) return (0);
 
 		/* Information */
 		msg_print("Ignoring obsolete/defective 'q_info.raw' file.");
@@ -2478,7 +2474,7 @@ static errr init_q_info(void) {
 #endif	// USE_RAW_FILES
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -2509,7 +2505,7 @@ static void prepare_distance()
 	}
 	/* Hack -- terminate */
 	tdi[PREPARE_RADIUS] = count + 1;
-
+	
 #if DEBUG_LEVEL > 2
 	s_printf("prepare_distance(): last count = %d\n", count);
 #endif
@@ -2578,12 +2574,10 @@ static errr init_other(void) {
 #ifdef PLAYER_STORES
 	{
 		int i;
-
 		/* allocate fake houses for player stores */
 		C_MAKE(fake_store, MAX_VISITED_PLAYER_STORES, store_type);
 		for (i = 0; i < MAX_VISITED_PLAYER_STORES; i++) {
 			store_type *st_ptr = &fake_store[i];
-
 			st_ptr->st_idx = 7;//fake home
 			st_ptr->town = 0;//whatever
 			st_ptr->stock_size = STORE_INVEN_MAX;
@@ -2672,20 +2666,19 @@ static errr init_other(void) {
 #ifdef MONSTER_ASTAR
 	{
 		int i;
-
 		for (i = 0; i < ASTAR_MAX_INSTANCES; i++)
 			astar_info_open[i].m_idx = -1;
 	}
 #endif
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 #ifdef IRONDEEPDIVE_MIXED_TYPES
 static bool indepthrange(byte depth, byte type) {
-	if (depth < d_info[type].mindepth || depth > d_info[type].maxdepth) return(FALSE);
-	return(TRUE);
+	if (depth < d_info[type].mindepth || depth > d_info[type].maxdepth) return FALSE;
+	return TRUE;
 }
 
 static byte getiddctype(byte depth, byte last) {
@@ -2711,8 +2704,8 @@ static byte getiddctype(byte depth, byte last) {
 	}
 
 	//Return
-	if (n) return(pool[rand_int(n)]); //rand_int(n):[0,n-1]
-	else return(last); //Use the previous dungeon type on error!
+	if (n) return pool[rand_int(n)]; //rand_int(n):[0,n-1]
+	else return last; //Use the previous dungeon type on error!
 }
 
 //We could de-hardcode the depths of static towns, and iddc length, perhaps? - Kurzel
@@ -2775,7 +2768,7 @@ static errr init_iddc() {
 				}
 			}
 			if (step) break;
-
+			
 			if (i > 3 && ((!indepthrange(i, type)
 			    || (n >= (short_theme ? 3 : 6)
 			    && randint(short_theme ? 3 : 15) < n)))) {
@@ -2798,34 +2791,32 @@ static errr init_iddc() {
 		//s_printf("IDDC %d -- Type: %d Step: %d Next: %d Boss: %s\n", i, iddc[i].type, iddc[i].step, iddc[i].next, (i == d_info[type].maxdepth) ? "yes" : "no");
 	}
 
-	return(0);
+	return 0;
 }
 
 int scan_iddc() {
 	/*
-	byte i;
 	struct worldpos wpos;
-
 	wpos.wx = WPOS_IRONDEEPDIVE_X;
 	wpos.wy = WPOS_IRONDEEPDIVE_Y;
-
 	//Lazy, don't mess with iddc if anyone is inside! (Could be improved...)
+	byte i;
 	for (i = 1; i < 128; i++) {
-		cave_type **zcave;
-
 		wpos.wz = i;
+		cave_type **zcave;
 		if (!(zcave = getcave(&wpos))) continue;
-
-		s_printf("IDDC Scan Failed!\n");
-		return(-1);
+		else {
+			s_printf("IDDC Scan Failed!\n");
+			return -1;
+		}
 	}
 	*/
 	if (!init_iddc()) {
 		s_printf("IDDC Scan Success!\n");
-		return(0);
+		return 0;
 	}
 	s_printf("IDDC Scan Failure!\n");
-	return(-1);
+	return -1;
 }
 #endif
 
@@ -2954,7 +2945,7 @@ static errr init_alloc(void) {
 	/* Collect the level indexes */
 	for (i = 1; i < 256; i++) {
 		/* Group by level */
-		num[i] += num[i - 1];
+		num[i] += num[i-1];
 	}
 
 	/* Paranoia */
@@ -2986,7 +2977,7 @@ static errr init_alloc(void) {
 				p = (10000 / k_ptr->chance[j]);
 
 				/* Skip entries preceding our locale */
-				y = (x > 0) ? num[x - 1] : 0;
+				y = (x > 0) ? num[x-1] : 0;
 
 				/* Skip previous entries at this locale */
 				z = y + aux[x];
@@ -3051,7 +3042,7 @@ static errr init_alloc(void) {
 	/* Collect the level indexes */
 	for (i = 1; i < 256; i++) {
 		/* Group by level */
-		num[i] += num[i - 1];
+		num[i] += num[i-1];
 	}
 
 	/* Paranoia */
@@ -3088,7 +3079,7 @@ static errr init_alloc(void) {
 			p = p * mon_allowed_chance(r_ptr) / 100;
 
 			/* for more efficiency: no dungeon bosses, done now in level-generation routine - C. Blue */
-			if (r_ptr->flags8 & RF8_FINAL_GUARDIAN) {
+			if (r_ptr->flags0 & RF0_FINAL_GUARDIAN) {
 				/* exception: Sauron in the IDDC/Halls of Mandos (real check is done in place_monster_one() anyway..) */
 				if (i != RI_SAURON) p = 0;
 			}
@@ -3097,7 +3088,7 @@ static errr init_alloc(void) {
 			if (p == 0) continue;
 
 			/* Skip entries preceding our locale */
-			y = (x > 0) ? num[x - 1] : 0;
+			y = (x > 0) ? num[x-1] : 0;
 
 			/* Skip previous entries at this locale */
 			z = y + aux[x];
@@ -3147,11 +3138,11 @@ static errr init_alloc(void) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 #if 0
-/*
+/* 
  * Mark guardians and their artifacts with SPECIAL_GENE flag
  */
 static void init_guardians(void) {
@@ -3197,145 +3188,143 @@ static bool str_to_boolean(char * str) {
 
 /* Try to set a server option.  This is handled very sloppily right now,
  * since server options are manually mapped to global variables.  Maybe
- * the handeling of this will be unified in the future with some sort of
+ * the handeling of this will be unified in the future with some sort of 
  * options structure.
  */
 static void set_server_option(char * option, char * value) {
 	/* Due to the lame way that C handles strings, we can't use a switch statement */
-	if (!strcmp(option, "REPORT_TO_METASERVER"))
+	if (!strcmp(option,"REPORT_TO_METASERVER"))
 		cfg.report_to_meta = str_to_boolean(value);
-	else if (!strcmp(option, "META_ADDRESS"))
+	else if (!strcmp(option,"META_ADDRESS"))
 		cfg.meta_address = strdup(value);
-	else if (!strcmp(option, "META_PORT"))
-		cfg.meta_port = atoi(value);
-	else if (!strcmp(option, "WORLDSERVER"))
+	else if (!strcmp(option,"META_PORT"))
+                cfg.meta_port = atoi(value);
+	else if (!strcmp(option,"WORLDSERVER"))
 		cfg.wserver = strdup(value);
-	else if (!strcmp(option, "WORLDPASS"))
+	else if (!strcmp(option,"WORLDPASS"))
 		cfg.pass = strdup(value);
-	else if (!strcmp(option, "BIND_NAME"))
+	else if (!strcmp(option,"BIND_NAME"))
 		cfg.bind_name = strdup(value);
-	else if (!strcmp(option, "CONSOLE_PASSWORD"))
+	else if (!strcmp(option,"CONSOLE_PASSWORD"))
 		cfg.console_password = strdup(value);
-	else if (!strcmp(option, "ADMIN_WIZARD_NAME"))
+	else if (!strcmp(option,"ADMIN_WIZARD_NAME"))
 		cfg.admin_wizard = strdup(value);
-	else if (!strcmp(option, "DUNGEON_MASTER_NAME"))
+	else if (!strcmp(option,"DUNGEON_MASTER_NAME"))
 		cfg.dungeon_master = strdup(value);
-	else if (!strcmp(option, "SECRET_DUNGEON_MASTER"))
+	else if (!strcmp(option,"SECRET_DUNGEON_MASTER"))
 		cfg.secret_dungeon_master = str_to_boolean(value);
-	else if (!strcmp(option, "FPS")) {
+	else if (!strcmp(option,"FPS")) {
 		cfg.fps = atoi(value);
 		/* Hack -- reinstall the timer handler to match the new FPS */
 		if (server_generated) install_timer_tick(dungeon, cfg.fps);
 	}
-	else if (!strcmp(option, "PLAYERS_NEVER_EXPIRE"))
+	else if (!strcmp(option,"PLAYERS_NEVER_EXPIRE"))
 		cfg.players_never_expire = str_to_boolean(value);
-	else if (!strcmp(option, "ADMINS_NEVER_EXPIRE"))
-		cfg.admins_never_expire = str_to_boolean(value);
-	else if (!strcmp(option, "MAGE_HITPOINT_BONUS"))
+	else if (!strcmp(option,"MAGE_HITPOINT_BONUS"))
 		cfg.mage_hp_bonus = str_to_boolean(value);
-	else if (!strcmp(option, "NEWBIES_CANNOT_DROP"))
+	else if (!strcmp(option,"NEWBIES_CANNOT_DROP"))
 		cfg.newbies_cannot_drop = atoi(value);
-	else if (!strcmp(option, "PRESERVE_DEATH_LEVEL")) {
+	else if (!strcmp(option,"PRESERVE_DEATH_LEVEL")) {
 		cfg.preserve_death_level = atoi(value);
 		if (cfg.min_unstatic_level > cfg.preserve_death_level)
 			cfg.preserve_death_level = cfg.min_unstatic_level;
 	}
-	else if (!strcmp(option, "NO_GHOST"))
+	else if (!strcmp(option,"NO_GHOST"))
 		cfg.no_ghost = str_to_boolean(value);
-	else if (!strcmp(option, "MAX_LIFES"))
+	else if (!strcmp(option,"MAX_LIFES"))
 		cfg.lifes = atoi(value);
-	else if (!strcmp(option, "HOUSES_PER_PLAYER"))
+	else if (!strcmp(option,"HOUSES_PER_PLAYER"))
 		cfg.houses_per_player = atoi(value);
-	else if (!strcmp(option, "CASTLES_PER_PLAYER"))
+	else if (!strcmp(option,"CASTLES_PER_PLAYER"))
 		cfg.castles_per_player = atoi(value);
-	else if (!strcmp(option, "CASTLES_FOR_KINGS"))
+	else if (!strcmp(option,"CASTLES_FOR_KINGS"))
 		cfg.castles_for_kings = str_to_boolean(value);
-	else if (!strcmp(option, "ACC_HOUSE_LIMIT"))
+	else if (!strcmp(option,"ACC_HOUSE_LIMIT"))
 		cfg.acc_house_limit = atoi(value);
-	else if (!strcmp(option, "DOOR_BUMP_OPEN"))
+	else if (!strcmp(option,"DOOR_BUMP_OPEN"))
 		cfg.door_bump_open = atoi(value);
-	else if (!strcmp(option, "BASE_UNIQUE_RESPAWN_TIME"))
+	else if (!strcmp(option,"BASE_UNIQUE_RESPAWN_TIME"))
 		cfg.unique_respawn_time = atoi(value);
-	else if (!strcmp(option, "MAX_UNIQUE_RESPAWN_TIME"))
+	else if (!strcmp(option,"MAX_UNIQUE_RESPAWN_TIME"))
 		cfg.unique_max_respawn_time = atoi(value);
-	else if (!strcmp(option, "LEVEL_UNSTATIC_CHANCE"))
+	else if (!strcmp(option,"LEVEL_UNSTATIC_CHANCE"))
 		cfg.level_unstatic_chance = atoi(value);
-	else if (!strcmp(option, "RETIRE_TIMER"))
+	else if (!strcmp(option,"RETIRE_TIMER"))
 		cfg.retire_timer = atoi(value);
-	else if (!strcmp(option, "MAXIMIZE"))
+	else if (!strcmp(option,"MAXIMIZE"))
 		cfg.maximize = str_to_boolean(value);
-	else if (!strcmp(option, "GAME_PORT"))
+	else if (!strcmp(option,"GAME_PORT"))
 		cfg.game_port = atoi(value);
-	else if (!strcmp(option, "GW_PORT"))
+	else if (!strcmp(option,"GW_PORT"))
 		cfg.gw_port = atoi(value);
-	else if (!strcmp(option, "MIN_UNSTATIC_LEVEL")) {
+	else if (!strcmp(option,"MIN_UNSTATIC_LEVEL")) {
 		cfg.min_unstatic_level = atoi(value);
 		if (cfg.min_unstatic_level > cfg.preserve_death_level)
 			cfg.preserve_death_level = cfg.min_unstatic_level;
 	}
-	else if (!strcmp(option, "SPELL_INTERFERE"))
+	else if (!strcmp(option,"SPELL_INTERFERE"))
 		cfg.spell_interfere = atoi(value);
-	else if (!strcmp(option, "CONSOLE_PORT"))
+	else if (!strcmp(option,"CONSOLE_PORT"))
 		cfg.console_port = atoi(value);
-	else if (!strcmp(option, "ANTI_ARTS_HOARD"))
+	else if (!strcmp(option,"ANTI_ARTS_HOARD"))
 		cfg.anti_arts_hoard = str_to_boolean(value);
-	else if (!strcmp(option, "ANTI_ARTS_HOUSE"))
+	else if (!strcmp(option,"ANTI_ARTS_HOUSE"))
 		cfg.anti_arts_house = str_to_boolean(value);
-	else if (!strcmp(option, "ANTI_ARTS_WILD"))
+	else if (!strcmp(option,"ANTI_ARTS_WILD"))
 		cfg.anti_arts_wild = str_to_boolean(value);
-	else if (!strcmp(option, "ANTI_ARTS_SHOP"))
+	else if (!strcmp(option,"ANTI_ARTS_SHOP"))
 		cfg.anti_arts_shop = str_to_boolean(value);
-	else if (!strcmp(option, "ANTI_ARTS_PICKUP"))
+	else if (!strcmp(option,"ANTI_ARTS_PICKUP"))
 		cfg.anti_arts_pickup = str_to_boolean(value);
-	else if (!strcmp(option, "ANTI_ARTS_SEND"))
+	else if (!strcmp(option,"ANTI_ARTS_SEND"))
 		cfg.anti_arts_send = str_to_boolean(value);
-	else if (!strcmp(option, "PERSISTENT_ARTIFACTS"))
+	else if (!strcmp(option,"PERSISTENT_ARTIFACTS"))
 		cfg.persistent_artifacts = str_to_boolean(value);
-	else if (!strcmp(option, "ANTI_CHEEZE_PICKUP"))
+	else if (!strcmp(option,"ANTI_CHEEZE_PICKUP"))
 		cfg.anti_cheeze_pickup = str_to_boolean(value);
-	else if (!strcmp(option, "ANTI_CHEEZE_TELEKINESIS"))
+	else if (!strcmp(option,"ANTI_CHEEZE_TELEKINESIS"))
 		cfg.anti_cheeze_telekinesis = str_to_boolean(value);
-	else if (!strcmp(option, "SURFACE_ITEM_REMOVAL"))
+	else if (!strcmp(option,"SURFACE_ITEM_REMOVAL"))
 		cfg.surface_item_removal = atoi(value);
-	else if (!strcmp(option, "DUNGEON_ITEM_REMOVAL"))
+	else if (!strcmp(option,"DUNGEON_ITEM_REMOVAL"))
 		cfg.dungeon_item_removal = atoi(value);
-	else if (!strcmp(option, "DEATH_WILD_ITEM_REMOVAL"))
+	else if (!strcmp(option,"DEATH_WILD_ITEM_REMOVAL"))
 		cfg.death_wild_item_removal = atoi(value);
-	else if (!strcmp(option, "LONG_WILD_ITEM_REMOVAL"))
+	else if (!strcmp(option,"LONG_WILD_ITEM_REMOVAL"))
 		cfg.long_wild_item_removal = atoi(value);
-	else if (!strcmp(option, "DUNGEON_SHOP_CHANCE"))
+	else if (!strcmp(option,"DUNGEON_SHOP_CHANCE"))
 		cfg.dungeon_shop_chance = atoi(value);
-	else if (!strcmp(option, "DUNGEON_SHOP_TYPE"))
+	else if (!strcmp(option,"DUNGEON_SHOP_TYPE"))
 		cfg.dungeon_shop_type = atoi(value);
-	else if (!strcmp(option, "DUNGEON_SHOP_TIMEOUT"))
+	else if (!strcmp(option,"DUNGEON_SHOP_TIMEOUT"))
 		cfg.dungeon_shop_timeout = atoi(value);
-	else if (!strcmp(option, "SPELL_STACK_LIMIT"))
+	else if (!strcmp(option,"SPELL_STACK_LIMIT"))
 		cfg.spell_stack_limit = atoi(value);
-	else if (!strcmp(option, "KINGS_ETIQUETTE"))
+	else if (!strcmp(option,"KINGS_ETIQUETTE"))
 		cfg.kings_etiquette = str_to_boolean(value);
-	else if (!strcmp(option, "FALLENKINGS_ETIQUETTE"))
+	else if (!strcmp(option,"FALLENKINGS_ETIQUETTE"))
 		cfg.fallenkings_etiquette = str_to_boolean(value);
-	else if (!strcmp(option, "STRICT_ETIQUETTE"))
+	else if (!strcmp(option,"STRICT_ETIQUETTE"))
 		cfg.strict_etiquette = str_to_boolean(value);
-	else if (!strcmp(option, "ZANG_MONSTERS"))
+	else if (!strcmp(option,"ZANG_MONSTERS"))
 		cfg.zang_monsters = atoi(value);
-	else if (!strcmp(option, "PERN_MONSTERS"))
+	else if (!strcmp(option,"PERN_MONSTERS"))
 		cfg.pern_monsters = atoi(value);
-	else if (!strcmp(option, "CTH_MONSTERS"))
+	else if (!strcmp(option,"CTH_MONSTERS"))
 		cfg.cth_monsters = atoi(value);
-	else if (!strcmp(option, "JOKE_MONSTERS"))
+	else if (!strcmp(option,"JOKE_MONSTERS"))
 		cfg.joke_monsters = atoi(value);
-	else if (!strcmp(option, "CBLUE_MONSTERS"))
+	else if (!strcmp(option,"CBLUE_MONSTERS"))
 		cfg.cblue_monsters = atoi(value);
-	else if (!strcmp(option, "VANILLA_MONSTERS"))
+	else if (!strcmp(option,"VANILLA_MONSTERS"))
 		cfg.vanilla_monsters = atoi(value);
-	else if (!strcmp(option, "PET_MONSTERS"))
+	else if (!strcmp(option,"PET_MONSTERS"))
 		cfg.pet_monsters = atoi(value);
-	else if (!strcmp(option, "RUNNING_SPEED"))
+	else if (!strcmp(option,"RUNNING_SPEED"))
 		cfg.running_speed = atoi(value);
-	else if (!strcmp(option, "ANTI_SCUM"))
+	else if (!strcmp(option,"ANTI_SCUM"))
 		cfg.anti_scum = atoi(value);
-	else if (!strcmp(option, "DUN_UNUSUAL"))
+	else if (!strcmp(option,"DUN_UNUSUAL"))
 		cfg.dun_unusual = atoi(value);
 	else if (!strcmp(option, "TOWN_X"))
 		cfg.town_x = atoi(value);
@@ -3343,13 +3332,17 @@ static void set_server_option(char * option, char * value) {
 		cfg.town_y = atoi(value);
 	else if (!strcmp(option, "TOWN_BASE"))
 		cfg.town_base = atoi(value);
+	else if (!strcmp(option, "DUNGEON_MAX"))
+		cfg.dun_max = atoi(value);
+	else if (!strcmp(option, "DUNGEON_BASE"))
+		cfg.dun_base = atoi(value);
 	else if (!strcmp(option, "STORE_TURNS"))
 		cfg.store_turns = atoi(value);
 	else if (!strcmp(option, "DUN_STORE_TURNS"))
 		cfg.dun_store_turns = atoi(value);
-	else if (!strcmp(option, "PUBLIC_RFE"))
+	else if (!strcmp(option,"PUBLIC_RFE"))
 		cfg.public_rfe = str_to_boolean(value);
-	else if (!strcmp(option, "AUTO_PURGE"))
+	else if (!strcmp(option,"AUTO_PURGE"))
 		cfg.auto_purge = str_to_boolean(value);
 	else if (!strcmp(option, "RESTING_RATE"))
 		cfg.resting_rate = atoi(value);
@@ -3359,60 +3352,58 @@ static void set_server_option(char * option, char * value) {
 		cfg.use_pk_rules = atoi(value);
 	else if (!strcmp(option, "QUIT_BAN_MODE"))
 		cfg.quit_ban_mode = atoi(value);
-	else if (!strcmp(option, "LOG_U"))
+	else if (!strcmp(option,"LOG_U"))
 		cfg.log_u = str_to_boolean(value);
-	else if (!strcmp(option, "REPLACE_HISCORE"))
+	else if (!strcmp(option,"REPLACE_HISCORE"))
 		cfg.replace_hiscore = atoi(value);
-	else if (!strcmp(option, "UNIKILL_FORMAT"))
+	else if (!strcmp(option,"UNIKILL_FORMAT"))
 		cfg.unikill_format = atoi(value);
-	else if (!strcmp(option, "SERVER_NOTES"))
+	else if (!strcmp(option,"SERVER_NOTES"))
 		cfg.server_notes = strdup(value);
-	else if (!strcmp(option, "ARTS_DISABLED"))
+	else if (!strcmp(option,"ARTS_DISABLED"))
 		cfg.arts_disabled = str_to_boolean(value);
-	else if (!strcmp(option, "WINNERS_FIND_RANDARTS"))
+	else if (!strcmp(option,"WINNERS_FIND_RANDARTS"))
 		cfg.winners_find_randarts = str_to_boolean(value);
-	else if (!strcmp(option, "ARTS_LEVEL_REQ"))
+	else if (!strcmp(option,"ARTS_LEVEL_REQ"))
 		cfg.arts_level_req = atoi(value);
-	else if (!strcmp(option, "SURFACE_SUMMONING"))
+	else if (!strcmp(option,"SURFACE_SUMMONING"))
 		cfg.surface_summoning = str_to_boolean(value);
-	else if (!strcmp(option, "CLONE_SUMMONING"))
+	else if (!strcmp(option,"CLONE_SUMMONING"))
 		cfg.clone_summoning = atoi(value);
-	else if (!strcmp(option, "HENC_STRICTNESS"))
+	else if (!strcmp(option,"HENC_STRICTNESS"))
 		cfg.henc_strictness = atoi(value);
-	else if (!strcmp(option, "BONUS_CALC_TYPE"))
+	else if (!strcmp(option,"BONUS_CALC_TYPE"))
 		cfg.bonus_calc_type = atoi(value);
-	else if (!strcmp(option, "CHARMODE_TRADING_RESTRICTIONS"))
+	else if (!strcmp(option,"CHARMODE_TRADING_RESTRICTIONS"))
 		cfg.charmode_trading_restrictions = atoi(value);
-	else if (!strcmp(option, "ITEM_AWARENESS"))
+	else if (!strcmp(option,"ITEM_AWARENESS"))
 		cfg.item_awareness = atoi(value);
-	else if (!strcmp(option, "WORLDD_PUBCHAT"))
+	else if (!strcmp(option,"WORLDD_PUBCHAT"))
 		cfg.worldd_pubchat = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_PRIVCHAT"))
+	else if (!strcmp(option,"WORLDD_PRIVCHAT"))
 		cfg.worldd_privchat = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_BROADCAST"))
+	else if (!strcmp(option,"WORLDD_BROADCAST"))
 		cfg.worldd_broadcast = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_LVLUP"))
+	else if (!strcmp(option,"WORLDD_LVLUP"))
 		cfg.worldd_lvlup = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_UNIDEATH"))
+	else if (!strcmp(option,"WORLDD_UNIDEATH"))
 		cfg.worldd_unideath = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_PWIN"))
+	else if (!strcmp(option,"WORLDD_PWIN"))
 		cfg.worldd_pwin = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_PDEATH"))
+	else if (!strcmp(option,"WORLDD_PDEATH"))
 		cfg.worldd_pdeath = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_PJOIN"))
+	else if (!strcmp(option,"WORLDD_PJOIN"))
 		cfg.worldd_pjoin = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_PLEAVE"))
+	else if (!strcmp(option,"WORLDD_PLEAVE"))
 		cfg.worldd_pleave = str_to_boolean(value);
-	else if (!strcmp(option, "WORLDD_PLIST"))
+	else if (!strcmp(option,"WORLDD_PLIST"))
 		cfg.worldd_plist = str_to_boolean(value);
 #if 0 /* disabled since it's a receive-flag. that's done by 'servers' flags */
-	else if (!strcmp(option, "WORLDD_IRCCHAT"))
+	else if (!strcmp(option,"WORLDD_IRCCHAT"))
 		cfg.worldd_ircchat = str_to_boolean(value);
 #endif
-	else if (!strcmp(option, "WORLDD_EVENTS"))
+	else if (!strcmp(option,"WORLDD_EVENTS"))
 		cfg.worldd_events = str_to_boolean(value);
-	else if (!strcmp(option, "LEAK_INFO"))
-		cfg.leak_info = atoi(value);
 
 	else printf("Error : unrecognized tomenet.cfg option %s\n", option);
 }
@@ -3423,7 +3414,7 @@ static void set_server_option(char * option, char * value) {
  *
  * Note that this function uses strsep. I don't think this is an ANSI C function.
  * If you have any problems compiling this, please let me know and I will change this.
- * -Alex
+ * -Alex 
  *
  * Seemingly it caused trouble in win32;
  * Yakina reverted this to strtok.
@@ -3443,7 +3434,7 @@ static void load_server_cfg_aux(FILE * cfg) {
 	/* Read in lines until we hit EOF */
 	while (fgets(line, 256, cfg) != NULL) {
 		// Chomp off the end of line character
-		line[strlen(line) - 1] = '\0';
+		line[strlen(line)-1] = '\0';
 
 		/* Parse the line that has been read in */
 		// If the line begins with a # or is empty, ignore it
@@ -3452,7 +3443,7 @@ static void load_server_cfg_aux(FILE * cfg) {
 		// Reset option and value
 		option = NULL;
 		value = NULL;
-
+		
 		// Split the line up into words
 		// strsep is a really cool function... its neat, we don't have
 		// to dynamically allocate any memory because we apply our null
@@ -3469,7 +3460,7 @@ static void load_server_cfg_aux(FILE * cfg) {
 
 			/* Set the option or value */
 			if (!option) option = newword;
-			else if ((!value) && (newword[0] != '='))
+			else if ((!value) && (newword[0] != '=')) 
 			{
 				value = newword;
 				/* Hack -- ignore "" around values */
@@ -3502,7 +3493,7 @@ bool load_server_cfg(void) {
 	if (cfg_file == (FILE*)NULL) {
 		//printf("Error : cannot open file tomenet.cfg\n");
 		printf("Error : cannot open file '%s'\n", MANGBAND_CFG);
-		return(FALSE);
+		return (FALSE);
 	}
 
 	/* Default value */
@@ -3514,7 +3505,7 @@ bool load_server_cfg(void) {
 	/* Close it */
 	fclose(cfg_file);
 
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -3582,44 +3573,6 @@ void init_some_arrays(void) {
 	if (init_d_info()) quit("Cannot initialize dungeon types");
 	//init_guardians();
 
-	/* From the initialized r_info and d_info (we need d-info to know final-guardians!) arrays,
-	   collect all unique monsters eligible for winner-respawning */
-	s_printf("[Initializing arrays... (winner-respawnable unique monsters)]\n");
-	max_rur_idx = 0;
-	if (max_r_idx) {
-		monster_race *r_ptr;
-
-		/* Hack -- never Maggot and his dogs :) (also includes joke monsters Martti Ihrasaari and The Greater hell-beast) */
-		for (h = 57; h < max_r_idx; h++) { // (57 is Freesia)
-			r_ptr = &r_info[h];
-
-			if (
-			/* Make sure we are looking at a unique */
-			    (!(r_ptr->flags1 & RF1_UNIQUE)) ||
-			/* Hack -- Sauron and Morgoth are exceptions (and all > Morgy-uniques)
-			   ..and Michael neither, hardcoding them via maxlev: */
-			    r_ptr->level >= 98 ||
-			/* Redundant, since he's a dungeon boss, but anyway: (He's linked to Sauron) */
-			    h == RI_DOL_GULDUR ||
-			/* No nazguls */
-			    (r_ptr->flags7 & RF7_NAZGUL) ||
-			/* Dungeon bosses probably shouldn't respawn */
-			    (r_ptr->flags8 & RF8_FINAL_GUARDIAN) ||
-			/* Special-dropping uniques neither? */
-			    //(r_ptr->flags1 & RF1_DROP_CHOSEN) || */
-			/* --- QUESTOR is currently NOT used!! - C. Blue */
-			    //(r_ptr->flags1 & RF1_QUESTOR) ||
-			/* Skip monsters that aren't configured to exist */
-			    !mon_allowed_chance(r_ptr))
-				continue;
-
-			/* Accept */
-			rur_info_map[max_rur_idx] = h;
-			//s_printf("#%3d) [%4d] %s\n", max_rur_idx, h, r_name + r_ptr->name); //debug
-			max_rur_idx++;
-		}
-	}
-
 	/* Initialize feature info */
 	s_printf("[Initializing arrays... (vaults)]\n");
 	if (init_v_info()) quit("Cannot initialize vaults");
@@ -3661,9 +3614,9 @@ void init_some_arrays(void) {
 	s_printf("[Initializing arrays... (iddc)]\n");
 	if (init_iddc()) quit("Cannot initialize iddc stuff");
 #endif
-
+	
 	init_swearing();
-
+	
 	/* Initialize randart names */
 	s_printf("[Initializing arrays... (randart)]\n");
 	if (init_randart()) quit("Cannot initialize randart stuff");
@@ -3704,7 +3657,7 @@ static errr reinit_r_info(void) {
 
 	/* Assume the size of "r_name" and "r_text" */
 	fake_name_size = 20 * 1024L;
-	fake_text_size = 60 * 1024L * 3;
+	fake_text_size = 60 * 1024L;
 
 	/* Allocate the "r_info" array */
 	C_WIPE(r_info, r_head->info_num, monster_race);
@@ -3746,6 +3699,7 @@ static errr reinit_r_info(void) {
 		quit("Error in 'r_info.txt' file.");
 	}
 
+
 	/* Sort uniques for client-side list on chardump - C. Blue */
 	for (i = 0; i < MAX_R_IDX; i++) {
 		if (!(r_info[i].flags1 & RF1_UNIQUE)) continue;
@@ -3767,7 +3721,7 @@ static errr reinit_r_info(void) {
 
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 static errr reinit_k_info(void) {
@@ -3840,7 +3794,7 @@ static errr reinit_k_info(void) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 #if 0 /*not done*/
@@ -3921,7 +3875,9 @@ static errr reinit_e_info(void) {
 		for (j = 0; j < MAX_EGO_BASETYPES; j++) {
 			byte tval = e_ptr->tval[j];
 
-			if (tval < TV_MAX) e_tval_size[tval]++;
+			if (tval < TV_MAX) {
+				e_tval_size[tval]++;
+			}
 		}
 	}
 
@@ -3939,14 +3895,16 @@ static errr reinit_e_info(void) {
 		for (j = 0; j < MAX_EGO_BASETYPES; j++) {
 			byte tval = e_ptr->tval[j];
 
-			if (tval < TV_MAX) e_tval[tval][e_tval_aux[tval]++] = i;
+			if (tval < TV_MAX) {
+				e_tval[tval][e_tval_aux[tval]++] = i;
+			}
 		}
 	}
 
 	C_KILL(e_tval_aux, TV_MAX, s16b);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 static errr reinit_a_info(void) {
@@ -4008,7 +3966,7 @@ static errr reinit_a_info(void) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 #endif
 
@@ -4041,7 +3999,7 @@ void init_firework_dungeon(void) {
 
 	while (TRUE) {
 		for (j = 1; j <= dungeon_id_max; j++) {
-			i = getdungeon(&((struct worldpos) {dungeon_x[j], dungeon_y[j], dungeon_tower[j] ? 1 : -1} ))->type;
+			i = getdungeon(&((struct worldpos){dungeon_x[j], dungeon_y[j], dungeon_tower[j] ? 1 : -1}))->type;
 			/* dungeon must be among the most rarely frequented ones to be eligible */
 			if (dungeon_bonus[j] != dvb) continue;
  #else

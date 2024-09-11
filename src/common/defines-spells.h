@@ -5,38 +5,29 @@
 
 #define PR_MANA		0x00000080L	/* Display Mana */
 
-#define PR_STATE	0x00100000L	/* Display Extra (State) */
 
 /*
  * Number of effects
  */
-#define EFF_WAVE	0x00000001	/* A circle whose radius increase */
-#define EFF_STORM	0x00000004	/* The area follows the player */
-#define EFF_THINWAVE	0x00000080	/* Same as wave, but thickness 1 instead of 3 (hits each target only once instead of three times) */
-#define EFF_VORTEX	0x00000100	/* The area follows the target - Kurzel*/
+#define EFF_WAVE	0x00000001      /* A circle whose radius increase */
+#define EFF_STORM	0x00000004      /* The area follows the player */
+
 
 /* Generic temporary weapon branding, currently only used for melee weapons */
-#define TBRAND_ELEC		0x0001
-#define TBRAND_COLD		0x0002
-#define TBRAND_FIRE		0x0004
-#define TBRAND_ACID		0x0008
-#define TBRAND_POIS		0x0010
+#define TBRAND_ELEC		0
+#define TBRAND_COLD		1
+#define TBRAND_FIRE		2
+#define TBRAND_ACID		3
+#define TBRAND_POIS		4
 //unused/not fully implemented:
-#define TBRAND_BASE		(TBRAND_ELEC | TBRAND_COLD | TBRAND_FIRE | TBRAND_ACID)
-#define TBRAND_CHAO		0x0020
-#define TBRAND_VORP		0x0040
-#define TBRAND_BALL_FIRE	0x0080
-#define TBRAND_BALL_COLD	0x0100
-#define TBRAND_BALL_ELEC	0x0200
-#define TBRAND_BALL_ACID	0x0400
-#define TBRAND_BALL_SOUN	0x0800
-//hereticism:
-#define TBRAND_HELLFIRE		0x1000
-//unlife:
-#define TBRAND_VAMPIRIC		0x2000
-//aura of death:
-#define TBRAND_ICE		0x4000
-#define TBRAND_PLASMA		0x8000
+#define TBRAND_BASE		5
+#define TBRAND_CHAO		6
+#define TBRAND_VORP		7
+#define TBRAND_BALL_FIRE	8
+#define TBRAND_BALL_COLD	9
+#define TBRAND_BALL_ELEC	10
+#define TBRAND_BALL_ACID	11
+#define TBRAND_BALL_SOUN	12
 
 
 /*
@@ -55,12 +46,8 @@
 #define GF_ACID			3
 #define GF_COLD			4
 #define GF_FIRE			5
-#define GF_SHOT			6
-#define GF_ARROW		7
-#define GF_BOLT			8
-#define GF_BOULDER		9
 #define GF_MISSILE		10
-#define GF_ACID_BLIND		11
+#define GF_ARROW		11
 #define GF_PLASMA		12
 #define GF_HOLY_ORB		13
 #define GF_WATER		14
@@ -119,7 +106,7 @@
 #define GF_PSI			79
 #define GF_HOLY_FIRE		80
 #define GF_DISINTEGRATE		81
-#define GF_HELLFIRE		82 /* was HOLY_ORB */
+#define GF_HELL_FIRE		82 /* was HOLY_ORB */
 #define GF_NETHER_WEAK		83 /* special version of GF_NETHER, solely for Vampires smashing Potions of Death */
 #define GF_REMCURSE_PLAYER	84
 #define GF_KILL_GLYPH		85
@@ -146,9 +133,7 @@
 #define GF_AUGMENTATION		104
 #define GF_RUINATION		105
 #define GF_EXP			106
-#define GF_MIND_SLOW		107
-#define GF_TBRAND_POIS		108
-#define GF_CODE			109
+
 #define GF_NUKE			110
 #define GF_BLIND		111
 #define GF_HOLD			112	/* hold */
@@ -205,14 +190,13 @@
 #define GF_WATERPOISON		155
 #define GF_ICEPOISON		156
 #define GF_EXTRA_STATS		157
-#define GF_EXTRA_TOHIT		158
+#define GF_EXTRA_SPR		158
 
 #define GF_PUSH			159 /* Moltor */
 #define GF_SILENCE		160 /* for new mindcrafters */
 #define GF_CHARMIGNORE		161
 #define GF_STOP			162 /* special fx: scroll of rune of protection in a monster trap - C. Blue */
 #define GF_CAUSE		163 /* 'Curse' actually, the monster spell */
-#define GF_FLARE		164 /* Combination of LITE_WEAK and FIRE damage, for Flare Missile */
 
 #define GF_THUNDER		189 /* To replace the hacky 'triple-bolt' of the thunderstorm spell */
 #define GF_ANNIHILATION		192 /* To differentiate drain effect from hacky non-drain effect for wands */
@@ -224,7 +208,7 @@
 #define GF_FW_ELEC		202
 #define GF_FW_POIS		203
 #define GF_FW_LITE		204
-#define GF_FW_YCLD		205
+#define GF_FW_SHDI		205
 #define GF_FW_SHDM		206
 #define GF_FW_MULT		207
 /* well, let's try to bring weather and seasons? */
@@ -248,7 +232,7 @@
 #define GF_DEATH_RAY		77
 #define GF_STUN			78
 #define GF_HOLY_FIRE		79
-#define GF_HELLFIRE		80
+#define GF_HELL_FIRE		80
 #define GF_DISINTEGRATE		81
 #define GF_CHARM		82
 #define GF_CONTROL_UNDEAD	83

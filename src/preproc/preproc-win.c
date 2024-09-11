@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 	int cpp_opts;
 
 	char *cptr, *in_comment = NULL, *out_comment = NULL, *prev_in_comment;
-	int in_comment_block = 0;
+        int in_comment_block = 0;
 
 
 	/* check command-line arguments */
@@ -64,19 +64,19 @@ int main(int argc, char *argv[]) {
 	if (argc < 4) {
 		printf("Usage: preproc <input file> <output file> <name of C preprocessor> [<C preprocessor options>..]\n");
 		printf("       C preprocessor options should usually (cpp) be: -C -P\n");
-		return(-1);
+		return -1;
 	}
 	if (strlen(argv[1]) == 0) { /* paranoia */
 		printf("Error: No input filename specified.\n");
-		return(-2);
+		return -2;
 	}
 	if (strlen(argv[1]) > 160) {
 		printf("Error: Input filename must not be longer than 160 characters.\n");
-		return(-3);
+		return -3;
 	}
 	if (strlen(argv[2]) == 0) { /* paranoia */
 		printf("Error: No output filename specified.\n");
-		return(-4);
+		return -4;
 	}
 
 
@@ -84,14 +84,14 @@ int main(int argc, char *argv[]) {
 	f_in = fopen(argv[1], "r");
 	if (f_in == NULL) {
 		printf("Error: Couldn't open input file.\n");
-		return(-5);
+		return -5;
 	}
 
 	sprintf(tmp_file, "%s_", argv[1]);
 	f_out = fopen(tmp_file, "w");
 	if (f_out == NULL) {
 		printf("Error: Couldn't create temporary file.\n");
-		return(-6);
+		return -6;
 	}
 
 	/* create temporary working copy */
@@ -115,14 +115,14 @@ int main(int argc, char *argv[]) {
 		f_in = fopen(tmp_file, "r");
 		if (f_in == NULL) {
 			printf("Error: Couldn't open custom-including input file.\n");
-			return(-11);
+			return -11;
 		}
 
 		sprintf(tmp_file, "%s__", argv[1]);
 		f_out = fopen(tmp_file, "w");
 		if (f_out == NULL) {
 			printf("Error: Couldn't create custom-including temporary file.\n");
-			return(-12);
+			return -12;
 		}
 
 		/* read a line */
@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
 			f_included = fopen(included_file_ptr, "r");
 			if (f_included == NULL) {
 				printf("Error: Couldn't open included file: %s\n", included_file_ptr);
-				return(-10);
+				return -10;
 			}
 
 			fputs("\n", f_out);
@@ -204,14 +204,14 @@ int main(int argc, char *argv[]) {
 	f_in = fopen(tmp_file, "r");
 	if (f_in == NULL) {
 		printf("Error: Couldn't open input file.\n");
-		return(-5);
+		return -5;
 	}
 
 	sprintf(tmp_file, "%s__", argv[1]);
 	f_out = fopen(tmp_file, "w");
 	if (f_out == NULL) {
 		printf("Error: Couldn't create temporary file.\n");
-		return(-6);
+		return -6;
 	}
 
 	/* read a line */
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
 
 	if (system(line) == -1) {
 		printf("Error: Couldn't execute C preprocessor.\n");
-		return(-7);
+		return -7;
 	}
 
 #ifndef DEBUG
@@ -307,44 +307,44 @@ int main(int argc, char *argv[]) {
 	f_in = fopen(tmp_file, "r");
 	if (f_in == NULL) {
 		printf("Error: Couldn't open preprocessed temporary file.\n");
-		return(-8);
+		return -8;
 	}
 
 	f_out = fopen(argv[2], "w");
 	if (f_out == NULL) {
 		printf("Error: Couldn't create output file.\n");
-		return(-9);
+		return -9;
 	}
 
 	/* read a line */
 	while (fgets(line_mod, 320 + 2, f_in)) {
-		/* preprocessor directives that were hidden _inside_ comments
-		   because silly tolua will choke on them */
-		prev_in_comment = line_mod;
-		do {
-			if (out_comment) in_comment = out_comment = NULL;
+                /* preprocessor directives that were hidden _inside_ comments
+                   because silly tolua will choke on them */
+                prev_in_comment = line_mod;
+                do {
+                        if (out_comment) in_comment = out_comment = NULL;
 
-			if (!in_comment) {
-				if (in_comment_block) in_comment = line_mod;
-				else {
-					in_comment = strstr(prev_in_comment, "/*");
-					if (in_comment) prev_in_comment = in_comment + 2;
-				}
-			}
-			if (in_comment) {
-				if (in_comment_block) out_comment = strstr(line_mod, "*/");
-				else out_comment = strstr(in_comment, "*/");
+                        if (!in_comment) {
+                                if (in_comment_block) in_comment = line_mod;
+                                else {
+                                        in_comment = strstr(prev_in_comment, "/*");
+                                        if (in_comment) prev_in_comment = in_comment + 2;
+                                }
+                        }
+                        if (in_comment) {
+                                if (in_comment_block) out_comment = strstr(line_mod, "*/");
+                                else out_comment = strstr(in_comment, "*/");
 
-				while ((cptr = strstr(in_comment, "#"))) {
+                                while ((cptr = strstr(in_comment, "#"))) {
 					if (!out_comment || cptr < out_comment) {
 						*cptr = ' ';
-					} else break;
+			                } else break;
 				}
 
-				if (out_comment) in_comment_block = 0;
-			}
+			        if (out_comment) in_comment_block = 0;
+		        }
 		} while (in_comment && out_comment);
-		if (in_comment) in_comment_block = 1;
+                if (in_comment) in_comment_block = 1;
 
 		/* aaand also strip comments that are adjacent, silyl tolua */
 		if ((cptr = strstr(line_mod, "*//*"))) {
@@ -352,7 +352,7 @@ int main(int argc, char *argv[]) {
 			cptr[1] = ' ';
 			cptr[2] = ' ';
 			cptr[3] = ' ';
-		}
+                }
 
 		/* gcc 4.8.0 now puts an URL in the top comment, on which tolua
 		   chokes, sigh. */
@@ -383,13 +383,13 @@ int main(int argc, char *argv[]) {
 
 	/* all done */
 
-	return(0);
+	return 0;
 }
 
 #ifdef DUMB_WIN
 int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
-			LPSTR lpCmdLine, int nCmdShow) {
-	MSG	msg;
+                       LPSTR lpCmdLine, int nCmdShow) {
+	MSG      msg;
 
 	/* Process messages forever */
 	while (GetMessage(&msg, NULL, 0, 0)) {
@@ -398,6 +398,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	}
 
 	main(0, NULL);
-	return(0);
+	return (0);
 }
 #endif

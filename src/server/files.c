@@ -22,11 +22,6 @@
 #endif
 #endif
 
-#define REGEX_SEARCH
-#ifdef REGEX_SEARCH
- #include <regex.h>
-#endif
-
 /* The first x highscore entries that are displayed to players: */
 #define SCORES_SHOWN 28
 
@@ -70,12 +65,14 @@ s16b tokenize(char *buf, s16b num, char **tokens)
 		char *t;
 
 		/* Scan the string */
-		for (t = s; *t; t++) {
+		for (t = s; *t; t++)
+		{
 			/* Found a delimiter */
 			if ((*t == ':') || (*t == '/')) break;
 
 			/* Handle single quotes */
-			if (*t == '\'') {
+			if (*t == '\'')
+			{
 				/* Advance */
 				t++;
 
@@ -113,7 +110,7 @@ s16b tokenize(char *buf, s16b num, char **tokens)
 	tokens[i++] = s;
 
 	/* Number found */
-	return(i);
+	return (i);
 }
 #else	// 0
 s16b tokenize(char *buf, s16b num, char **tokens, char delim1, char delim2)
@@ -129,12 +126,14 @@ s16b tokenize(char *buf, s16b num, char **tokens, char delim1, char delim2)
 		char *t;
 
 		/* Scan the string */
-		for (t = s; *t; t++) {
+		for (t = s; *t; t++)
+		{
 			/* Found a delimiter */
 			if ((*t == delim1) || (*t == delim2)) break;
 
 			/* Handle single quotes */
-			if (*t == '\'') {
+			if (*t == '\'')
+			{
 				/* Advance */
 				t++;
 
@@ -172,7 +171,7 @@ s16b tokenize(char *buf, s16b num, char **tokens, char delim1, char delim2)
 	tokens[i++] = s;
 
 	/* Number found */
-	return(i);
+	return (i);
 }
 #endif	// 0
 
@@ -212,19 +211,19 @@ errr check_time(void)
 	struct tm               *tp;
 
 	/* No restrictions */
-	if (!check_time_flag) return(0);
+	if (!check_time_flag) return (0);
 
 	/* Check for time violation */
 	c = time((time_t *)0);
 	tp = localtime(&c);
 
 	/* Violation */
-	if (days[tp->tm_wday][tp->tm_hour + 4] != 'X') return(1);
+	if (days[tp->tm_wday][tp->tm_hour + 4] != 'X') return (1);
 
 #endif
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -249,7 +248,7 @@ errr check_time_init(void)
 	fp = my_fopen(buf, "r");
 
 	/* No file, no restrictions */
-	if (!fp) return(0);
+	if (!fp) return (0);
 
 	/* Assume restrictions */
 	check_time_flag = TRUE;
@@ -279,7 +278,7 @@ errr check_time_init(void)
 #endif
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -331,35 +330,39 @@ errr check_load(void)
 	struct statstime    st;
 
 	/* Success if not checking */
-	if (!check_load_value) return(0);
+	if (!check_load_value) return (0);
 
 	/* Check the load */
-	if (0 == rstat("localhost", &st)) {
+	if (0 == rstat("localhost", &st))
+	{
 		long val1 = (long)(st.avenrun[2]);
 		long val2 = (long)(check_load_value) * FSCALE;
 
 		/* Check for violation */
-		if (val1 >= val2) return(1);
+		if (val1 >= val2) return (1);
 	}
 
 #endif
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
 /*
  * Initialize CHECK_LOAD
  */
-errr check_load_init(void) {
+errr check_load_init(void)
+{
+
 #ifdef CHECK_LOAD
-	FILE *fp;
 
-	char buf[1024];
+	FILE        *fp;
 
-	char temphost[MAXHOSTNAMELEN + 1];
-	char thishost[MAXHOSTNAMELEN + 1];
+	char    buf[1024];
+
+	char    temphost[MAXHOSTNAMELEN+1];
+	char    thishost[MAXHOSTNAMELEN+1];
 
 
 	/* Build the filename */
@@ -369,7 +372,7 @@ errr check_load_init(void) {
 	fp = my_fopen(buf, "r");
 
 	/* No file, no restrictions */
-	if (!fp) return(0);
+	if (!fp) return (0);
 
 	/* Default load */
 	check_load_value = 100;
@@ -378,7 +381,8 @@ errr check_load_init(void) {
 	(void)gethostname(thishost, (sizeof thishost) - 1);
 
 	/* Parse it */
-	while (0 == my_fgets(fp, buf, 1024, FALSE)) {
+	while (0 == my_fgets(fp, buf, 1024, FALSE))
+	{
 		int value;
 
 		/* Skip comments and blank lines */
@@ -404,7 +408,7 @@ errr check_load_init(void) {
 #endif
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -418,7 +422,7 @@ errr check_load_init(void) {
  * same as in the prt_lnum code... -CFT
  *
  * This will send the info to the client now --KLJ--
- *
+ * 
  * Except that this (and display_player) are never called. --KLJ--
  */
 static void display_player_middle(int Ind) {
@@ -471,6 +475,7 @@ static void display_player_middle(int Ind) {
 	show_todam_m += bmd;
 
 	/* Dump the bonuses to hit/dam */
+//	Send_plusses(Ind, show_tohit_m, show_todam_m, show_tohit_r, show_todam_r, p_ptr->to_h_melee, p_ptr->to_d_melee);
 	Send_plusses(Ind, 0, 0, show_tohit_r, show_todam_r, show_tohit_m, show_todam_m);
 
 	/* Dump the armor class bonus */
@@ -478,22 +483,15 @@ static void display_player_middle(int Ind) {
 
 	if (p_ptr->lev >= (is_admin(p_ptr) ? PY_MAX_LEVEL : PY_MAX_PLAYER_LEVEL))
 		adv_exp = 0;
-		/* Just for exp_bar display of remaining xp till PY_MAX_EXP: */
- #ifndef ALT_EXPRATIO
-		adv_prev = ((s64b)player_exp[(is_admin(p_ptr) ? PY_MAX_LEVEL : PY_MAX_PLAYER_LEVEL) - 2] * (s64b)p_ptr->expfact / 100L);
- #else
-		adv_prev = (s64b)player_exp[(is_admin(p_ptr) ? PY_MAX_LEVEL : PY_MAX_PLAYER_LEVEL) - 2];
- #endif
-		adv_exp_prev = (s32b)(adv_prev);
 	else {
 		s64b adv_prev = 0;
- #ifndef ALT_EXPRATIO
+#ifndef ALT_EXPRATIO
 		s64b adv = ((s64b)player_exp[p_ptr->lev - 1] * (s64b)p_ptr->expfact / 100L);
 		if (p_ptr->lev > 1) adv_prev = ((s64b)player_exp[p_ptr->lev - 2] * (s64b)p_ptr->expfact / 100L);
- #else
+#else
 		s64b adv = (s64b)player_exp[p_ptr->lev - 1];
 		if (p_ptr->lev > 1) adv_prev = (s64b)player_exp[p_ptr->lev - 2];
- #endif
+#endif
 		adv_exp = (s32b)(adv);
 		adv_exp_prev = (s32b)(adv_prev);
 	}
@@ -501,7 +499,7 @@ static void display_player_middle(int Ind) {
 	Send_experience(Ind, p_ptr->lev, p_ptr->max_exp, p_ptr->exp, adv_exp, adv_exp_prev);
 	Send_gold(Ind, p_ptr->au);
 	Send_hp(Ind, p_ptr->mhp, p_ptr->chp);
-	Send_mp(Ind, p_ptr->mmp, p_ptr->cmp);
+	Send_sp(Ind, p_ptr->msp, p_ptr->csp);
 	Send_stamina(Ind, p_ptr->mst, p_ptr->cst);
 }
 
@@ -512,18 +510,24 @@ static void display_player_middle(int Ind) {
  *
  * The top two and bottom two lines are left blank.
  */
-void display_player(int Ind) {
+void display_player(int Ind)
+{
 	player_type *p_ptr = Players[Ind];
+
 	int i;
 
+
 	/* Send basic information */
-	Send_char_info(Ind, p_ptr->prace, p_ptr->pclass, p_ptr->ptrait, p_ptr->male, p_ptr->mode, p_ptr->lives - 1, p_ptr->name);
+	Send_char_info(Ind, p_ptr->prace, p_ptr->pclass, p_ptr->ptrait, p_ptr->male, p_ptr->mode, p_ptr->name);
 
 	/* Age, Height, Weight, Social */
 	Send_various(Ind, p_ptr->ht, p_ptr->wt, p_ptr->age, p_ptr->sc);
 
 	/* Send all the stats */
-	for (i = 0; i < 6; i++) Send_stat(Ind, i);
+	for (i = 0; i < 6; i++)
+	{
+		Send_stat(Ind, i, p_ptr->stat_top[i], p_ptr->stat_use[i]);
+	}
 
 	/* Extra info */
 	display_player_middle(Ind);
@@ -544,14 +548,10 @@ void display_player(int Ind) {
  *             *changed it to 'div3_line', for cleaner addition of more of this type.
  *             *changed it to 'divl' to be most flexible.
  */
-#define SERVER_SIDE_SEARCH
-static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color, int divl, char *srcstr) {
+static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color, int divl)
+{
 	int lines_per_page = 20 + HGT_PLUS;
-	bool searching = (srcstr && srcstr[0]), found = FALSE, reverse = FALSE;
-#ifdef REGEX_SEARCH
-	bool regexp = FALSE;
-#endif
-	int i, k = 0, srclinepre = -1, srclinepost = -1, srcline = -1, srclinerev = -1, srclinerevwrap = -1;
+	int i, k = 0;
 	/* Number of "real" lines passed by */
 	s32b next = 0;
 	/* Number of "real" lines in the file */
@@ -573,28 +573,13 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 	/* Path buffer */
 	char path[MAX_PATH_LENGTH];
 	/* General buffer */
-	char buf[1024], buf_tmp[1024], *c;
+	char buf[1024];
 	/* Sub-menu information */
 	char hook[10][32];
 	/* Stationary title bar, derived from 1st line of the file or from 'what' parm. */
 #ifdef HELP_AUX_GRABS_TITLE
 	bool use_title = FALSE;
 #endif
-
-	/* Hack: Reverse search? */
-	if (searching && srcstr[0] == '\373') {
-		strcpy(buf, srcstr + 1);
-		strcpy(srcstr, buf);
-		reverse = TRUE;
-	}
-
-	/* Hack: Extract regexp flag */
-	if (line >= 1000000000) {
-		line -= 1000000000;
-#ifdef REGEX_SEARCH
-		regexp = TRUE;
-#endif
-	}
 
 	if (is_newer_than(&Players[Ind]->version, 4, 4, 7, 0, 0, 0)) {
 		/* use first line in the file as stationary title */
@@ -618,9 +603,9 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 		}
 	}
 
-	/* Wipe finder */	//NOT IMPLEMENTED! Superseded by srcstr now. Delete.
+	/* Wipe finder */
 	strcpy(finder, "");
-	/* Wipe shower */	//NOT IMPLEMENTED! Superseded by srcstr now. Delete.
+	/* Wipe shower */
 	strcpy(shower, "");
 	/* Wipe caption */
 	strcpy(caption, "");
@@ -641,10 +626,9 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 
 	/* Look in "help" */
 	if (!fff) {
-#if 0 /* will overwrite legends-rev.log's title if the file doesn't exist yet */
+#if 0 /* will overwrite legens-rev.log's title if the file doesn't exist yet */
 		/* Caption */
 		snprintf(caption, sizeof(caption), "Help file '%s'", name);
-		while (strlen(caption) < 79) strcat(caption, " ");
 #endif
 		/* Build the filename */
 		path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_TEXT, name);
@@ -660,8 +644,6 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 		strcat(buf, "\377W- [\377w");
 		strcat(buf, caption);
 		strcat(buf, "\377W] -");
-		/* Actually add trailing spaces too, to overwrite any potential screenshot-taken message */
-		for (i = 0; i < k - 1; i++) strcat(buf, " ");
 		Send_special_line(Ind, size, -1, TERM_WHITE, buf);
 		k = 0;
 	}
@@ -676,23 +658,23 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 #endif
 
 		/* Oops */
-		return(TRUE);
+		return (TRUE);
 	}
 
 
 	/* Pre-Parse the file */
-	buf_tmp[0] = '\377';
 	while (TRUE) {
 		/* Read a line or stop */
 		if (my_fgets(fff, buf, 1024, FALSE)) break;
 
-		/* For help file: XXX Parse "menu" items */
+		/* XXX Parse "menu" items */
 		if (prefix(buf, "***** ")) {
 			char b1 = '[', b2 = ']';
 
 			/* Notice "menu" requests */
 			if ((buf[6] == b1) && isdigit(buf[7]) &&
-			    (buf[8] == b2) && (buf[9] == ' ')) {
+			    (buf[8] == b2) && (buf[9] == ' '))
+			{
 				/* This is a menu file */
 				//menu = TRUE;
 
@@ -709,59 +691,7 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 
 		/* Count the "real" lines */
 		next++;
-
-#ifdef SERVER_SIDE_SEARCH
-		/* Pre-Search: Find 1st match from start of file and 1st match after current line */
-		if (searching) {
- #ifdef REGEX_SEARCH
-			if (regexp) {
-				regex_t re_src;
-				int ires = regcomp(&re_src, srcstr, REG_EXTENDED | REG_ICASE);
-
-				if (ires != 0) msg_format(Ind, "\377yInvalid regular expression (%d).", ires);
-				else {
-					if (srclinepre == -1 && next < line + 1 && my_strregexp_skipcol(buf, re_src, NULL, NULL, NULL)) srclinepre = next - 1;
-					if (srclinepost == -1 && next > line + 1 && my_strregexp_skipcol(buf, re_src, NULL, NULL, NULL)) srclinepost = next - 1;
-					if (next < line + 1 && my_strregexp_skipcol(buf, re_src, NULL, NULL, NULL)) srclinerev = next - 1;
-					if (next > line + 1 && my_strregexp_skipcol(buf, re_src, NULL, NULL, NULL)) srclinerevwrap = next - 1;
-				}
-				regfree(&re_src);
-			} else
- #endif
-			{
-				if (srclinepre == -1 && next < line + 1 && my_strcasestr(buf, srcstr)) srclinepre = next - 1;
-				if (srclinepost == -1 && next > line + 1 && my_strcasestr(buf, srcstr)) srclinepost = next - 1;
-				if (next < line + 1 && my_strcasestr(buf, srcstr)) srclinerev = next - 1;
-				if (next > line + 1 && my_strcasestr(buf, srcstr)) srclinerevwrap = next - 1;
-			}
-		}
-#endif
 	}
-#ifdef SERVER_SIDE_SEARCH
-	/* Found a searching match? */
-	if (searching) {
-		if (reverse) {
-			if (srclinerev != -1 || srclinerevwrap != -1) {
-				/* Found a match before wrapping around? Discard the match that comes after wrapping around then. */
-				if (srclinerev != -1) {
-					srclinerevwrap = -1;
-					line = srclinerev;
-				} else line = srclinerevwrap;
-				srcline = line;
-			}
-		} else {
-			if (srclinepre != -1 || srclinepost != -1) {
-				/* Found a match before wrapping around? Discard the match that comes after wrapping around then. */
-				if (srclinepost != -1) {
-					srclinepre = -1;
-					line = srclinepost;
-				} else line = srclinepre;
-				srcline = line;
-			}
-		}
-	}
-#endif
-//msg_format(Ind, "searching=%d,srcstr=%s,size=%d,line=%d,srcline=%d,pre=%d,post=%d", searching, srcstr, size, line, srcline, srclinepre, srclinepost);
 
 	/* Save the number of "real" lines */
 	size = next;
@@ -769,26 +699,11 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 	if (use_title) size--;
 #endif
 
-#ifdef SERVER_SIDE_SEARCH
-	if (srcline != -1) {
- #if 0 /* Allow, for when we're searching. Or getting subsequent matches will become annoying. */
-		/* Don't allow empty lines at the end, except if the file simply is that small. */
-		if (line > size - lines_per_page) {
-			line = size - lines_per_page;
-			if (line < 0) line = 0;
-		}
- #endif
-		Send_special_line_pos(Ind, line);
-	}
-#endif
 
 	/* Display the file */
 	/* Restart when necessary */
 	if (line >= size) line = 0;
 
-#ifdef SERVER_SIDE_SEARCH
-	if (!searching)
-#endif
 	/* (Consistent behavior with peruse_file() in c-files.c
 	   and Receive_special_line() in nclient.c.) */
 	if (line > size - lines_per_page) {
@@ -806,7 +721,7 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 		fff = my_fopen(path, "rb");
 
 		/* Oops */
-		if (!fff) return(FALSE);
+		if (!fff) return (FALSE);
 
 		/* File has been restarted */
 		next = 0;
@@ -825,6 +740,7 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 		if (my_fgets(fff, buf, 1024, FALSE)) break;
 	}
 
+
 	/* Dump the next 20 lines of the file */
 	for (i = 0; i < lines_per_page; ) {
 		byte attr = TERM_WHITE;
@@ -841,15 +757,12 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 		/* Count the "real" lines */
 		next++;
 
-/* NOT IMPLEMENTED. Now superseded by srcstr. Delete. */
 		/* Hack -- keep searching */
 		if (find && !i && !strstr(buf, find)) continue;
 
 		/* Hack -- stop searching */
 		find = NULL;
-/* --- */
 
-		/* Hm, why skip empty lines actually? */
 		if (buf[0] == '\n') continue;
 
 #if 0	// This will now be done by \377? codes! - C. Blue
@@ -857,56 +770,8 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 		if (color) attr = color_char_to_attr(buf[0]);
 #endif
 
-/* NOT IMPLEMENTED. Now superseded by srcstr. Delete. */
 		/* Hack -- show matches */
 		if (shower[0] && strstr(buf, shower)) attr = TERM_YELLOW;
-/* --- */
-
-#ifndef SERVER_SIDE_SEARCH /* Client-side only search: Start searching at current line + 1 and fail at wrapping around */
-		/* Skip more lines if we're searching */
-		if (!i && srcstr && srcstr[0]) {
-			if (!my_strcasestr(buf, srcstr)) continue;
-			found = TRUE;
-		}
-#else /* Server-side search: Wrapping and cancelling possible. */
-		/* We did pre-searching during pre-parsing above already */
-		//if (!i && searching) found = TRUE;
-		if (searching && srcline == line + i) found = TRUE;
-#endif
-		/* Hacks for log file: Colourize certain lines for better visual distinguishability. */
-		if (buf[0] == '[') { /* Chat lines */
-			buf_tmp[1] = 's';
-			strncpy(buf_tmp + 2, buf, 1021);
-			buf_tmp[1023] = 0;
-			strcpy(buf, buf_tmp);
-		} else if (strstr(buf, "was defeated by") || strstr(buf, "was destroyed by") || strstr(buf, "was killed ")) { /* Deaths */
-			//< was defeated by >, < was destroyed by >, < was killed and destroyed by >, < was killed by >, < retired to a warm, sunny climate.>'
-			buf_tmp[1] = 'r';
-			strncpy(buf_tmp + 2, buf, 1021);
-			buf_tmp[1023] = 0;
-			strcpy(buf, buf_tmp);
-		} else if ((c = strstr(buf, " committed suicide.")) && *(c - 3) != '(' && !(*(c - 3) == '1' && *(c - 2) == '0')) { /* Suicides of level 11+ (PvP chars start at 20) */
-			buf_tmp[1] = 'D';
-			strncpy(buf_tmp + 2, buf, 1021);
-			buf_tmp[1023] = 0;
-			strcpy(buf, buf_tmp);
-		} else if (strstr(buf, " retired ")) { /* Retirements */
-			buf_tmp[1] = 'v';
-			strncpy(buf_tmp + 2, buf, 1021);
-			buf_tmp[1023] = 0;
-			strcpy(buf, buf_tmp);
-		} else if (strstr(buf, "[INVAL]")) { /* Invalid accounts */
-			buf_tmp[1] = 'R';
-			strncpy(buf_tmp + 2, buf, 1021);
-			buf_tmp[1023] = 0;
-			strcpy(buf, buf_tmp);
-		} else if (found) {
-			found = FALSE;
-			buf_tmp[1] = 'y'; /* Mark match; least priority. */
-			strncpy(buf_tmp + 2, buf, 1021);
-			buf_tmp[1023] = 0;
-			strcpy(buf, buf_tmp);
-		}
 
 		/* Dump the line */
 #if 0	// see above
@@ -924,17 +789,17 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
 		line = back;
 		find = NULL;
 		my_fclose(fff);	/* The evil file that waited open? */
-		return(TRUE);
+		return (TRUE);
 	}
 
 	/* Close the file */
 	my_fclose(fff);
 
 	/* Escape */
-	if (k == ESCAPE) return(FALSE);
+	if (k == ESCAPE) return (FALSE);
 
 	/* Normal return */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -945,7 +810,7 @@ static bool do_cmd_help_aux(int Ind, cptr name, cptr what, s32b line, int color,
  */
 void do_cmd_help(int Ind, int line) {
 	/* Peruse the main help file */
-	(void)do_cmd_help_aux(Ind, Players[Ind]->rogue_like_commands ? "tomenet-rl.hlp" : "tomenet.hlp", "Welcome to TomeNET", line, FALSE, 0, NULL);
+	(void)do_cmd_help_aux(Ind, Players[Ind]->rogue_like_commands ? "tomenet-rl.hlp" : "tomenet.hlp", "Welcome to TomeNET", line, FALSE, 0);
 }
 
 
@@ -958,12 +823,13 @@ void do_cmd_help(int Ind, int line) {
  * XXX XXX XXX Use this function for commands such as the
  * "examine object" command.
  */
-errr show_file(int Ind, cptr name, cptr what, s32b line, int color, int divl, char *srcstr) {
+errr show_file(int Ind, cptr name, cptr what, s32b line, int color, int divl)
+{
 	/* Peruse the requested file */
-	(void)do_cmd_help_aux(Ind, name, what, line, color, divl, srcstr);
+	(void)do_cmd_help_aux(Ind, name, what, line, color, divl);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -973,41 +839,45 @@ errr show_file(int Ind, cptr name, cptr what, s32b line, int color, int divl, ch
  * Process the player name.
  * Extract a clean "base name".
  * Build the savefile name if needed.
- * -- Since Check_names() is stricter and the first/main check for allowed names,
- *    this function here is only used to generate a save filename nowadays,
- *    by replacing all non-alphanumeric characters by underscores. - C. Blue
  */
-bool process_player_name(int Ind, bool sf) {
+bool process_player_name(int Ind, bool sf)
+{
 	player_type *p_ptr = Players[Ind];
+
 	int i, k = 0;
-	char c;
+
 
 	/* Cannot be too long */
-	if (strlen(p_ptr->name) >= CNAME_LEN) { /* (null terminator char at the end) */
+	if (strlen(p_ptr->name) > 15) //was 20 once?
+	{
 		/* Name too long */
 		Destroy_connection(p_ptr->conn, "Your name is too long!");
 
 		/* Abort */
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* Cannot contain "icky" characters */
-	for (i = 0; p_ptr->name[i]; i++) {
+	for (i = 0; p_ptr->name[i]; i++)
+	{
 		/* No control characters */
-		if (iscntrl(p_ptr->name[i])) {
+		if (iscntrl(p_ptr->name[i]))
+		{
 			/* Illegal characters */
 			Destroy_connection(p_ptr->conn, "Your name contains control chars!");
 
 			/* Abort */
-			return(FALSE);
+			return FALSE;
 		}
 	}
 
 
 #ifdef MACINTOSH
+
 	/* Extract "useful" letters */
-	for (i = 0; p_ptr->name[i]; i++) {
-		c = p_ptr->name[i];
+	for (i = 0; p_ptr->name[i]; i++)
+	{
+		char c = p_ptr->name[i];
 
 		/* Convert "dot" to "underscore" */
 		if (c == '.') c = '_';
@@ -1015,36 +885,48 @@ bool process_player_name(int Ind, bool sf) {
 		/* Accept all the letters */
 		p_ptr->basename[k++] = c;
 	}
+
 #else
+
 	/* Extract "useful" letters */
-	for (i = 0; p_ptr->name[i]; i++) {
-		c = p_ptr->name[i];
+	for (i = 0; p_ptr->name[i]; i++)
+	{
+		char c = p_ptr->name[i];
 
 		/* Accept some letters */
-		if (isalphanum(c)) p_ptr->basename[k++] = c;
+		if (isalpha(c) || isdigit(c)) p_ptr->basename[k++] = c;
+
 		/* Convert space, dot, and underscore to underscore */
 		else if (strchr(SF_BAD_CHARS, c)) p_ptr->basename[k++] = '_';
 	}
+
 #endif
 
 
-//#if defined(WINDOWS) || defined(MSDOS)
-#ifdef MSDOS
+#if defined(WINDOWS) || defined(MSDOS)
+
 	/* Hack -- max length */
 	if (k > 8) k = 8;
+
 #endif
+
 	/* Terminate */
 	p_ptr->basename[k] = '\0';
+
 	/* Require a "base" name */
 	if (!p_ptr->basename[0]) strcpy(p_ptr->basename, "PLAYER");
 
+
 #ifdef SAVEFILE_MUTABLE
+
 	/* Accept */
 	sf = TRUE;
+
 #endif
 
 	/* Change the savefile name */
-	if (sf) {
+	if (sf)
+	{
 		char temp[128];
 
 		/* Rename the savefile, using the player_base */
@@ -1060,7 +942,20 @@ bool process_player_name(int Ind, bool sf) {
 	}
 
 	/* Success */
-	return(TRUE);
+	return TRUE;
+}
+
+
+/*
+ * Gets a name for the character, reacting to name changes.
+ *
+ * Assumes that "display_player()" has just been called
+ * XXX Perhaps we should NOT ask for a name (at "birth()") on Unix?
+ *
+ * The name should be sent to us from the client, so this is unnecessary --KLJ--
+ */
+void get_name(int Ind)
+{
 }
 
 
@@ -1073,19 +968,17 @@ void do_cmd_suicide(int Ind) {
 
 	/* Don't allow PvP characters this way to deny their opponent the kill credit */
 	if (in_pvparena(&p_ptr->wpos)) {
-		msg_print(Ind, "\377yGladiators never suicide in the arena! (Use /pvp to leave.)");
+		msg_print(Ind, "\377yGladiators never suicide in the arena!");
 		return;
 	}
 
 	/* Mark as suicide */
-	p_ptr->suicided = TRUE;
+	p_ptr->alive = FALSE;
 
 	/* Hack -- set the cause of death */
 	if (!p_ptr->ghost) {
 		//strcpy(p_ptr->died_from, "");
 		strcpy(p_ptr->died_from_list, "self-inflicted wounds");
-		strcpy(p_ptr->really_died_from, "self-inflicted wounds");
-		p_ptr->died_from_ridx = 0;
 		p_ptr->died_from_depth = getlevel(&p_ptr->wpos);
 	}
 
@@ -1109,7 +1002,8 @@ void do_cmd_suicide(int Ind) {
 /*
  * Save a character
  */
-void do_cmd_save_game(int Ind) {
+void do_cmd_save_game(int Ind)
+{
 	player_type *p_ptr = Players[Ind];
 
 	/* Disturb the player */
@@ -1126,22 +1020,27 @@ void do_cmd_save_game(int Ind) {
 
 	/* The player is not dead */
 	(void)strcpy(p_ptr->died_from, "(saved)");
-	p_ptr->died_from_ridx = 0;
 
 	/* Forbid suspend */
 	signals_ignore_tstp();
 
 	/* Save the player */
-	if (save_player(Ind)) msg_print(Ind, "Saving game... done.");
+	if (save_player(Ind))
+	{
+		msg_print(Ind, "Saving game... done.");
+	}
+
 	/* Save failed (oops) */
-	else msg_print(Ind, "Saving game... failed!");
+	else
+	{
+		msg_print(Ind, "Saving game... failed!");
+	}
 
 	/* Allow suspend again */
 	signals_handle_tstp();
 
 	/* Note that the player is not dead */
 	(void)strcpy(p_ptr->died_from, "(alive and well)");
-	p_ptr->died_from_ridx = 0;
 }
 
 
@@ -1151,32 +1050,26 @@ void do_cmd_save_game(int Ind) {
  */
 /* FIXME: this function returns bad value when max_exp is stupidly large
  * (usually admin chars) */
-unsigned int total_points(int Ind) {
+int total_points(int Ind) {
 	u32b points, tmp_base, tmp1, tmp2, tmp3, tmp3a, bonusm, bonusd;
 	u32b lev_factoring;
 	player_type *p_ptr = Players[Ind];
 
 	/* kill maggot for 100% bonus on total score? -> no
 	   why a little bonus for HELL mode? the honour for the player
-	   who chooses hell mode on his own is far greater without it. -> (no) yes!
+	   who chooses hell mode on his own is far greater without it. -> no
 	   add cash to exp? what if the player collected cool gear instead?
 	   make cash allow the player to skip lots of levels on the ladder?  -> no
 	   max_dlv? just enter the staircase in lothlorien and back up. -> no
 	   For now let's calc it basing on pure progress in gameplay!: */
 	//exp counts mainly, level factors in
-	//return(p_ptr->max_exp * (p_ptr->max_plv + 30) / 30);
+//	return (p_ptr->max_exp * (p_ptr->max_plv + 30) / 30);
 
 	/* Bonus */
 	bonusm = 100;
 	bonusd = 100;
 	if (p_ptr->mode & MODE_NO_GHOST) bonusm += 25;
 	if (p_ptr->mode & MODE_HARD) bonusm += 25;
-	if (p_ptr->mode & MODE_DED_IDDC) bonusm += 25; /* Ok for Mandos too @ DED_IDDC_MANDOS */
-
-	/* Overflow notes: Currently the system has a maximum reachable score for
-	   Level 100 (admin-only, player stops at 99), 999 999 999 XP,
-	   Mode: Dedicated-IDDC, no-ghost (implied by DED_IDDC), Hard (aka hellish),
-	   Maia (400% XP) Shaman (+40% XP) -> 3 782 257 996 points score (max is 2^32-1, aka uint32). */
 
 #ifndef ALT_EXPRATIO
 	/* Bonus might cause overflow at lvl 94+ - so maybe compensate */
@@ -1197,44 +1090,23 @@ unsigned int total_points(int Ind) {
 
 	/* split the number against overflow bug; divide by 10 to avoid overflow again */
 	tmp1 = (p_ptr->expfact + lev_factoring) / 10;
- #ifdef DEBUG_POINTS
-s_printf("tmp1=%u\n", tmp1);
- #endif
 	tmp2 = 310 / 10; /* (230 + 80 (yeek warrior)) */
- #ifdef DEBUG_POINTS
-s_printf("tmp2=%u\n", tmp2);
- #endif
 	tmp3a = tmp_base % 10000000;
- #ifdef DEBUG_POINTS
-s_printf("tmp3a=%u\n", tmp3a);
- #endif
 	tmp3 = (tmp_base - tmp3a) / 10000000;
- #ifdef DEBUG_POINTS
-s_printf("tmp3=%u\n", tmp3);
- #endif
 	points = (((tmp3a * bonusm) / bonusd) * tmp1) / tmp2;
- #ifdef DEBUG_POINTS
-s_printf("points=%u\n", points);
-s_printf("(((10000000 * bonusm) / bonusd) * tmp1) = %u\n", (((10000000 * bonusm) / bonusd) * tmp1));
-s_printf("(((10000000 * bonusm) / bonusd) * tmp1) / tmp2 = %u\n", (((10000000 * bonusm) / bonusd) * tmp1) / tmp2);
-s_printf("((((10000000 * bonusm) / bonusd) * tmp1) / tmp2) * tmp3 = %u\n", ((((10000000 * bonusm) / bonusd) * tmp1) / tmp2) * tmp3);
- #endif
 	points += ((((10000000 * bonusm) / bonusd) * tmp1) / tmp2) * tmp3;
- #ifdef DEBUG_POINTS
-s_printf("points=%u\n", points);
- #endif
 #endif
-	return(points);
+	return points;
 
 	//level counts mainly, exp factors in at higher levels
-	//return(p_ptr->max_plv * (300 + (p_ptr->max_exp / 100000)) / 300);
+	//return (p_ptr->max_plv * (300 + (p_ptr->max_exp / 100000)) / 300);
 #if 0
 	/* Maggot bonus.. beware, r_idx is hard-coded! */
 	int i = p_ptr->r_killed[8]? 50 : 100;
 	if (p_ptr->mode & MODE_HARD) i = i * 5 / 4;
 
-	if (p_ptr->mode & MODE_NO_GHOST) return(((((p_ptr->max_exp + (100 * p_ptr->max_dlv)) * 4) / 3) * i) / 100);
-	else return(((p_ptr->max_exp + (100 * p_ptr->max_dlv) + p_ptr->au) * i) / 100);
+	if (p_ptr->mode & MODE_NO_GHOST) return (((p_ptr->max_exp + (100 * p_ptr->max_dlv)) * 4 / 3)*i/100);
+	else return ((p_ptr->max_exp + (100 * p_ptr->max_dlv) + p_ptr->au)*i/100);
 #endif //0
 }
 
@@ -1250,50 +1122,63 @@ s_printf("points=%u\n", points);
  */
 
 typedef struct high_score high_score;
-struct high_score {
-	char what[8];		/* Version info (string) */
-	char pts[11];		/* Total Score (number) */
-	char gold[11];		/* Total Gold (number) */
-	char turns[11];		/* Turns Taken (number) */
-	char day[11];		/* Time stamp (string) */
+struct high_score
+{
+	char what[8];           /* Version info (string) */
 
-	char who[CNAME_LEN];		/* Player Name (string) */
-	char whose[ACCNAME_LEN];	/* Account Name (string) */
+	char pts[11];           /* Total Score (number) */
 
-	char sex[2];		/* Player Sex (string) */
-	char p_r[3];		/* Player Race (number) */
-	char p_c[3];		/* Player Class (number) */
+	char gold[11];          /* Total Gold (number) */
 
-	char cur_lev[4];	/* Current Player Level (number) */
-	char cur_dun[4];	/* Current Dungeon Level (number) */
-	char max_lev[4];	/* Max Player Level (number) */
-	char max_dun[4];	/* Max Dungeon Level (number) */
+	char turns[11];         /* Turns Taken (number) */
 
-	char how[50];		/* Method of death (string) */
+	char day[11];           /* Time stamp (string) */
+
+	char who[16];           /* Player Name (string) */
+	char whose[16];		/* Account Name (string) */
+
+	char sex[2];            /* Player Sex (string) */
+	char p_r[3];            /* Player Race (number) */
+	char p_c[3];            /* Player Class (number) */
+
+	char cur_lev[4];                /* Current Player Level (number) */
+	char cur_dun[4];                /* Current Dungeon Level (number) */
+	char max_lev[4];                /* Max Player Level (number) */
+	char max_dun[4];                /* Max Dungeon Level (number) */
+
+	char how[50];           /* Method of death (string) */
+
 	char mode[1];		/* Difficulty/character mode */
 };
 
 #if 0 /* different format? */
 typedef struct high_score_old high_score_old;
-struct high_score_old {
-	char what[8];		/* Version info (string) */
-	char pts[11];		/* Total Score (number) */
-	char gold[11];		/* Total Gold (number) */
-	char turns[11];		/* Turns Taken (number) */
-	char day[10];		/* Time stamp (string) */
-	char who[CNAME_LEN];		/* Player Name (string) */
-	char whose[ACCNAME_LEN];	/* Account Name (string) */
+struct high_score_old
+{
+	char what[8];           /* Version info (string) */
 
-	char sex[2];		/* Player Sex (string) */
-	char p_r[3];		/* Player Race (number) */
-	char p_c[3];		/* Player Class (number) */
+	char pts[11];           /* Total Score (number) */
 
-	char cur_lev[4];	/* Current Player Level (number) */
-	char cur_dun[4];	/* Current Dungeon Level (number) */
-	char max_lev[4];	/* Max Player Level (number) */
-	char max_dun[4];	/* Max Dungeon Level (number) */
+	char gold[11];          /* Total Gold (number) */
 
-	char how[50];		/* Method of death (string) */
+	char turns[11];         /* Turns Taken (number) */
+
+	char day[10];           /* Time stamp (string) */
+
+	char who[16];           /* Player Name (string) */
+	char whose[16];		/* Account Name (string) */
+
+	char sex[2];            /* Player Sex (string) */
+	char p_r[3];            /* Player Race (number) */
+	char p_c[3];            /* Player Class (number) */
+
+	char cur_lev[4];                /* Current Player Level (number) */
+	char cur_dun[4];                /* Current Dungeon Level (number) */
+	char max_lev[4];                /* Max Player Level (number) */
+	char max_dun[4];                /* Max Dungeon Level (number) */
+
+	char how[50];           /* Method of death (string) */
+
 	char mode[1];		/* Difficulty/character mode */
 };
 #else /* same format actually */
@@ -1319,13 +1204,10 @@ int highscore_send(char *buffer, int max) {
 				mode = "Normal";
 				break;
 			case MODE_HARD:
-				mode = "Hard";//deprecated
+				mode = "Hard";
 				break;
 			case MODE_NO_GHOST:
 				mode = "Unworldly";
-				break;
-			case (MODE_SOLO | MODE_NO_GHOST):
-				mode = "Soloist";
 				break;
 			case (MODE_HARD | MODE_NO_GHOST):
 				mode = "Hellish";
@@ -1356,7 +1238,7 @@ int highscore_send(char *buffer, int max) {
 
 	fclose(hsp);
 
-	return(len);
+	return len;
 }
 
 int houses_send(char *buffer, int max) {
@@ -1399,7 +1281,7 @@ int houses_send(char *buffer, int max) {
 		}
 	}
 
-	return(len);
+	return len;
 }
 
 /*
@@ -1414,7 +1296,7 @@ static int highscore_fd = -1;
 static int highscore_seek(int i)
 {
 	/* Seek for the requested record */
-	return(fd_seek(highscore_fd, (huge)(i) * sizeof(high_score)));
+	return (fd_seek(highscore_fd, (huge)(i) * sizeof(high_score)));
 }
 
 
@@ -1424,7 +1306,7 @@ static int highscore_seek(int i)
 static errr highscore_read(high_score *score)
 {
 	/* Read the record, note failure */
-	return(fd_read(highscore_fd, (char*)(score), sizeof(high_score)));
+	return (fd_read(highscore_fd, (char*)(score), sizeof(high_score)));
 }
 
 
@@ -1434,18 +1316,18 @@ static errr highscore_read(high_score *score)
 static int highscore_write(high_score *score)
 {
 	/* Write the record, note failure */
-	return(fd_write(highscore_fd, (char*)(score), sizeof(high_score)));
+	return (fd_write(highscore_fd, (char*)(score), sizeof(high_score)));
 }
 
 static int highscore_seek_old(int i)
 {
 	/* Seek for the requested record */
-	return(fd_seek(highscore_fd, (huge)(i) * sizeof(high_score_old)));
+	return (fd_seek(highscore_fd, (huge)(i) * sizeof(high_score_old)));
 }
 static errr highscore_read_old(high_score_old *score)
 {
 	/* Read the record, note failure */
-	return(fd_read(highscore_fd, (char*)(score), sizeof(high_score_old)));
+	return (fd_read(highscore_fd, (char*)(score), sizeof(high_score_old)));
 }
 
 
@@ -1471,10 +1353,10 @@ static int highscore_where(high_score *score, int *erased_slot)
 #endif
 
 	/* Paranoia -- it may not have opened */
-	if (highscore_fd < 0) return(-1);
+	if (highscore_fd < 0) return (-1);
 
 	/* Go to the start of the highscore file */
-	if (highscore_seek(0)) return(-1);
+	if (highscore_seek(0)) return (-1);
 
 
 #ifndef NEW_HISCORE /*restructuring with new hex flags, see #else branch - C. Blue */
@@ -1488,7 +1370,7 @@ static int highscore_where(high_score *score, int *erased_slot)
 			break;
 		}
 		if ((strcmp(the_score.pts, score->pts) < 0) && (slot_pts == -1))
-			slot_pts = i;
+    			slot_pts = i;
 		if ((!strcmp(the_score.who, score->who)) && (slot_name == -1))
 			slot_name = i;
 		if ((!strcmp(the_score.whose, score->whose)) && (slot_account == -1))
@@ -1527,10 +1409,10 @@ static int highscore_where(high_score *score, int *erased_slot)
 		}
 	}
 
-	if (slot_ret != -1) return(slot_ret);
+	if (slot_ret != -1) return (slot_ret);
 
 	/* The "last" entry is always usable */
-	return(MAX_HISCORES - 1);
+	return (MAX_HISCORES - 1);
 #else
 	/* Read entries until we find a slot with lower score or arrive at the end */
 	for (i = 0; i < MAX_HISCORES; i++) {
@@ -1556,7 +1438,7 @@ static int highscore_where(high_score *score, int *erased_slot)
 	for (i = slot_ret + 1; i < MAX_HISCORES; i++) {
  #else
 	/* Go to the start of the highscore file */
-	if (highscore_seek(0)) return(-1);
+	if (highscore_seek(0)) return (-1);
 	/* now check previous entries before adding this one, if required
 	   according to our custom extended rule set from tomenet.cfg,
 	   whether we find an entry we have to actually replace with the
@@ -1688,7 +1570,7 @@ static int highscore_where(high_score *score, int *erased_slot)
 					     hack: useful display for display_scores_aux */
  #endif
 
-	return(slot_ret);
+	return (slot_ret);
 #endif
 }
 
@@ -1708,7 +1590,7 @@ static int highscore_add(high_score *score) {
 #endif
 
 	/* Paranoia -- it may not have opened */
-	if (highscore_fd < 0) return(-1);
+	if (highscore_fd < 0) return (-1);
 
 	/* Determine where the score should go */
 #ifndef NEW_HISCORE
@@ -1718,7 +1600,7 @@ static int highscore_add(high_score *score) {
 #endif
 	/* Hack -- Not on the list
 	   (ie didn't match conditions to replace previous score) */
-	if (slot < 0) return(-1);
+	if (slot < 0) return (-1);
 
 	/* Hack -- prepare to dump the new score */
 	the_score = (*score);
@@ -1728,12 +1610,12 @@ static int highscore_add(high_score *score) {
 		/* Slide all the scores down one */
 		for (i = slot; !done && (i < MAX_HISCORES); i++) {
 			/* Read the old guy, note errors */
-			if (highscore_seek(i)) return(-1);
+			if (highscore_seek(i)) return (-1);
 			if (highscore_read(&tmpscore)) done = TRUE;
 
 			/* Back up and dump the score we were holding */
-			if (highscore_seek(i)) return(-1);
-			if (highscore_write(&the_score)) return(-1);
+			if (highscore_seek(i)) return (-1);
+			if (highscore_write(&the_score)) return (-1);
 
 			if (move_up && !strcmp(score->who, tmpscore.who)) {
 				/* If older score is to be removed, we can stop here */
@@ -1747,12 +1629,12 @@ static int highscore_add(high_score *score) {
 		/* Move upwards through the score board */
 		for (i = slot; !done && (i >= 0); i--) {
 			/* Read the old guy, note errors */
-			if (highscore_seek(i)) return(-1);
+			if (highscore_seek(i)) return (-1);
 			if (highscore_read(&tmpscore)) done = TRUE;
 
 			/* Back up and dump the score we were holding */
-			if (highscore_seek(i)) return(-1);
-			if (highscore_write(&the_score)) return(-1);
+			if (highscore_seek(i)) return (-1);
+			if (highscore_write(&the_score)) return (-1);
 
 			if (!strcmp(score->who, tmpscore.who)) {
 				/* If older score is to be removed, we can stop here */
@@ -1791,18 +1673,18 @@ static int highscore_add(high_score *score) {
 //	for (i = slot; !done && (i < (erased_slot > -1 ? MAX_HISCORES - 1 : MAX_HISCORES)); i++) {
 	for (i = slot; !done && (i < cur_slots); i++) {
 		/* Read the old guy, note errors */
-		if (highscore_seek(i)) return(-1);
+		if (highscore_seek(i)) return (-1);
 		if (highscore_read(&tmpscore)) done = TRUE;
 		/* Back up and dump the score we were holding */
-		if (highscore_seek(i)) return(-1);
-		if (highscore_write(&the_score)) return(-1);
+		if (highscore_seek(i)) return (-1);
+		if (highscore_write(&the_score)) return (-1);
 		/* Hack -- Save the old score, for the next pass */
 		the_score = tmpscore;
 	}
 #endif
 
 	/* Return location used */
-	return(slot);
+	return (slot);
 }
 
 
@@ -1820,12 +1702,12 @@ static void display_scores_aux(int Ind, int line, int note, high_score *score)
 static void display_scores_aux(int Ind, int line, int note, int erased_slot, high_score *score)
 #endif
 {
-	int i, j, from, to, place;//, attr
+	int             i, j, from, to, place;//, attr
 	char attrc[3];
 
-	high_score the_score;
+	high_score      the_score;
 
-	char out_val[256];
+	char    out_val[256];
 
 	FILE *fff;
 	char file_name[MAX_PATH_LENGTH];
@@ -1853,7 +1735,7 @@ static void display_scores_aux(int Ind, int line, int note, int erased_slot, hig
 
 
 	/* Seek to the beginning */
-	if (highscore_seek(0)) {
+	if (highscore_seek(0)){
 		my_fclose(fff);
 		return;
 	}
@@ -1874,14 +1756,16 @@ static void display_scores_aux(int Ind, int line, int note, int erased_slot, hig
 	if (i > to) i = to;
 
 	/* Show 5 per page, until "done" */
-	for (j = from, place = j + 1; j < i; j++, place++) {
+	for (j = from, place = j+1; j < i; j++, place++) {
 		int pr, pc, clev, mlev, cdun, mdun;
 		byte modebuf;
 		char modestr[20], modecol[5];
 		cptr gold, when, aged;
 
+
 		/* Hack -- indicate death in yellow */
 		//attr = (j == note) ? TERM_YELLOW : TERM_WHITE;
+
 
 		/* Mega-Hack -- insert a "fake" record */
 		if ((note == j) && score) {
@@ -1940,36 +1824,33 @@ static void display_scores_aux(int Ind, int line, int note, int erased_slot, hig
 		strcpy(modestr, "");
 		strcpy(modecol, "");
 		switch (modebuf) {
-		case MODE_HARD:
-			strcpy(modestr, "purgatorial ");//deprecated
-			//strcpy(modecol, "\377s");
-			break;
-		case MODE_NO_GHOST:
+                case MODE_HARD:
+			strcpy(modestr, "purgatorial ");
+//			strcpy(modecol, "\377s");
+	    	        break;
+                case MODE_NO_GHOST:
 			strcpy(modestr, "unworldly ");
 			strcpy(modecol, "\377D");
-			break;
-		case (MODE_NO_GHOST | MODE_SOLO):
-			strcpy(modestr, "soloist ");
-			strcpy(modecol, "\377s");
-			break;
-		case (MODE_HARD | MODE_NO_GHOST):
+	                break;
+		case (MODE_HARD + MODE_NO_GHOST):
 			strcpy(modestr, "hellish ");
 			strcpy(modecol, "\377D");
 			break;
-		case MODE_NORMAL:
-			//strcpy(modecol, "\377w");
-			break;
+                case MODE_NORMAL:
+//			strcpy(modecol, "\377w");
+                        break;
 		}
 
 		/* Hack ;) Remember if the player was a former winner */
-		if (the_score.how[strlen(the_score.how) - 1] == '\001') {
+		if (the_score.how[strlen(the_score.how) - 1] == '\001')
+		{
 			strcpy(extra_info, ". (Defeated Morgoth)");
 			the_score.how[strlen(the_score.how) - 1] = '\0';
 		}
 
 		/* Dump some info */
 		snprintf(out_val, sizeof(out_val), "%2s%3d.%10s %s%s the %s%s %s, Lv.%d",
-			attrc, place, the_score.pts, modecol, the_score.who, modestr,
+			attrc, place, the_score.pts, modecol, the_score.who, modestr, 
 			race_info[pr].title, class_info[pc].title,
 			clev);
 
@@ -1980,33 +1861,33 @@ static void display_scores_aux(int Ind, int line, int note, int erased_slot, hig
 		fprintf(fff, "%s\n", out_val);
 
 		/* Another line of info */
-		if (strcasecmp(the_score.how, "Winner") && strcasecmp(the_score.how, "*Winner*") && strcasecmp(the_score.how, "Iron Champion") && strcasecmp(the_score.how, "Iron Emperor"))
+		if (strcmp(the_score.how, "winner") && strcmp(the_score.how, "*winner*") && strcmp(the_score.how, "iron champion") && strcmp(the_score.how, "iron emperor"))
 			snprintf(out_val, sizeof(out_val),
 				"               Killed by %s\n"
 				"               on %s %d%s%s",
 				the_score.how, wilderness ? "wilderness level" : "dungeon level", cdun, mdun > cdun ? format(" (max %d)", mdun) : "", extra_info);
-		else if (!strcasecmp(the_score.how, "Winner"))
+		else if (!strcmp(the_score.how, "winner"))
 			snprintf(out_val, sizeof(out_val),
 				"               \377vRetired after a legendary career\n"
 				"               on %s %d%s%s", wilderness ? "wilderness level" : "dungeon level", cdun, mdun > cdun ? format(" (max %d)", mdun) : "", extra_info);
-		else if (!strcasecmp(the_score.how, "*Winner*"))
+		else if (!strcmp(the_score.how, "*winner*"))
 			snprintf(out_val, sizeof(out_val),
 				"               \377vRetired on the shores of Valinor\n"
 				"               on %s %d%s%s", wilderness ? "wilderness level" : "dungeon level", cdun, mdun > cdun ? format(" (max %d)", mdun) : "", extra_info);
-		else if (!strcasecmp(the_score.how, "Iron Champion"))
+		else if (!strcmp(the_score.how, "iron champion"))
 			snprintf(out_val, sizeof(out_val),
-				"               \377sRetired Iron Champion\n"
+				"               \377sRetired iron champion\n"
 				"               on %s %d%s%s", wilderness ? "wilderness level" : "dungeon level", cdun, mdun > cdun ? format(" (max %d)", mdun) : "", extra_info);
-		else if (!strcasecmp(the_score.how, "Iron Emperor"))
+		else if (!strcmp(the_score.how, "iron emperor"))
 			snprintf(out_val, sizeof(out_val),
-				"               \377vRetired from the Iron Throne\n"
+				"               \377vRetired from the iron throne\n"
 				"               on %s %d%s%s", wilderness ? "wilderness level" : "dungeon level", cdun, mdun > cdun ? format(" (max %d)", mdun) : "", extra_info);
 
 		/* Hack -- some people die in the town */
 		if (!cdun)
 		{
 			/* (can't be in Valinor while we're in town, can we) */
-			if (strcasecmp(the_score.how, "Winner"))
+			if (strcmp(the_score.how, "winner"))
 				snprintf(out_val, sizeof(out_val),
 					"               Killed by %s\n"
 					"               in town%s",
@@ -2018,7 +1899,7 @@ static void display_scores_aux(int Ind, int line, int note, int erased_slot, hig
 		}
 
 		/* Append a "maximum level" */
-		//if (mdun > cdun) strcat(out_val, format(" (max %d)", mdun));
+//		if (mdun > cdun) strcat(out_val, format(" (max %d)", mdun));
 
 		/* Dump the info */
 		fprintf(fff, "%s\n", out_val);
@@ -2040,7 +1921,7 @@ static void display_scores_aux(int Ind, int line, int note, int erased_slot, hig
 	my_fclose(fff);
 
 	/* Display the file contents */
-	show_file(Ind, file_name, "High Scores", line, 0, 5, NULL);
+	show_file(Ind, file_name, "High Scores", line, 0, 5);
 
 	/* Remove the file */
 	fd_kill(file_name);
@@ -2058,30 +1939,31 @@ static void display_scores_aux(int Ind, int line, int note, int erased_slot, hig
 static errr top_twenty(int Ind) {
 	player_type *p_ptr = Players[Ind];
 	//int          j;
+
 	high_score   the_score;
+
 	time_t ct = time((time_t*)0);
 
-	//if (is_admin(p_ptr)) return(0);
-	if (p_ptr->noscore) return(0);
+	if (is_admin(p_ptr)) return 0;
 
 	/* No score file */
 	if (highscore_fd < 0) {
 		s_printf("Score file unavailable.\n");
-		return(0);
+		return (0);
 	}
 
 	/* Interupted */
 	if (!p_ptr->total_winner && streq(p_ptr->died_from, "Interrupting")) {
 		msg_print(Ind, "Score not registered due to interruption.");
 		/* display_scores_aux(0, 10, -1, NULL); */
-		return(0);
+		return (0);
 	}
 
 	/* Quitter */
 	if (!p_ptr->total_winner && streq(p_ptr->died_from, "Quitting")) {
 		msg_print(Ind, "Score not registered due to quitting.");
 		/* display_scores_aux(0, 10, -1, NULL); */
-		return(0);
+		return (0);
 	}
 
 
@@ -2139,14 +2021,14 @@ static errr top_twenty(int Ind) {
 	the_score.mode[0] = p_ptr->mode;
 
 	/* Lock (for writing) the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_WRLCK)) return(1);
+	if (fd_lock(highscore_fd, F_WRLCK)) return (1);
 
 	/* Add a new entry to the score list, see where it went */
 	//j = highscore_add(&the_score);
 	highscore_add(&the_score);
 
 	/* Unlock the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_UNLCK)) return(1);
+	if (fd_lock(highscore_fd, F_UNLCK)) return (1);
 
 
 #if 0
@@ -2161,7 +2043,7 @@ static errr top_twenty(int Ind) {
 
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -2181,7 +2063,7 @@ static errr predict_score(int Ind, int line) {
 	/* No score file */
 	if (highscore_fd < 0) {
 		s_printf("Score file unavailable.\n");
-		return(0);
+		return (0);
 	}
 
 
@@ -2227,8 +2109,7 @@ static errr predict_score(int Ind, int line) {
 #ifndef NEW_HISCORE
 	j = highscore_where(&the_score, &move_up, &move_down);
 	/* Hack -- Display the top n scores */
-	//if (is_admin(p_ptr))
-	if (p_ptr->noscore)
+	if (is_admin(p_ptr))
 		display_scores_aux(Ind, line, -1, NULL);
 	else if (j < (SCORES_SHOWN - 1))
 		display_scores_aux(Ind, line, j, &the_score);
@@ -2237,8 +2118,7 @@ static errr predict_score(int Ind, int line) {
 		display_scores_aux(Ind, line, SCORES_SHOWN - 1, &the_score);  /* -1, NULL */
 #else
 	j = highscore_where(&the_score, &erased_slot);
-	//if (is_admin(p_ptr))
-	if (p_ptr->noscore)
+	if (is_admin(p_ptr))
 		display_scores_aux(Ind, line, -1, -1, NULL);
 	else
 		display_scores_aux(Ind, line, j, erased_slot, &the_score);
@@ -2246,7 +2126,7 @@ static errr predict_score(int Ind, int line) {
 
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -2268,12 +2148,11 @@ void kingly(int Ind, int type) {
 	/* Fake death */
 	//(void)strcpy(p_ptr->died_from_list, "Ripe Old Age");
 	switch (type) {
-	case 1: strcpy(p_ptr->died_from_list, "Winner"); break; //retirement
-	case 2: strcpy(p_ptr->died_from_list, "*Winner*"); break; //valinor retirement
-	case 3: strcpy(p_ptr->died_from_list, "Iron Champion"); break; //made it through IDDC
-	case 4: strcpy(p_ptr->died_from_list, "Iron Emperor"); break; //made it through IDDC and killed Morgoth
+	case 1: strcpy(p_ptr->died_from_list, "winner"); break; //retirement
+	case 2: strcpy(p_ptr->died_from_list, "*winner*"); break; //valinor retirement
+	case 3: strcpy(p_ptr->died_from_list, "iron champion"); break; //made it through IDDC
+	case 4: strcpy(p_ptr->died_from_list, "iron emperor"); break; //made it through IDDC and killed Morgoth
 	}
-	p_ptr->died_from_ridx = 0;
 
 	/* Restore the experience */
 	p_ptr->exp = p_ptr->max_exp;
@@ -2346,7 +2225,7 @@ void close_game(void) {
 		if (p_ptr->death) {
 			/* Handle retirement */
 		        /* Retirement in Valinor? - C. Blue :) */
-			if (in_valinor(&p_ptr->wpos)) kingly(i, 2);
+	    		if (in_valinor(&p_ptr->wpos)) kingly(i, 2);
 			else if (p_ptr->total_winner) kingly(i, 1);
 
 			/* Save memories */
@@ -2362,7 +2241,7 @@ void close_game(void) {
 			do_cmd_save_game(i);
 
 			/* Prompt for scores XXX XXX XXX */
-			/*prt("Press return(or Escape).", 0, 40);*/
+			/*prt("Press Return (or Escape).", 0, 40);*/
 		}
 
 
@@ -2433,7 +2312,7 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 	FILE    *fp;
 	char    buf[1024];
 	int     line = 0, counter, test, numentries;
-	//int     line_num = 0;
+	int     line_num = 0;
 	//bool    found = FALSE;
 
 
@@ -2444,14 +2323,14 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 	fp = my_fopen(buf, "r");
 
 	/* Failed */
-	if (!fp) return(-1);
+	if (!fp) return (-1);
 
 	/* Find the entry of the monster */
 	while (TRUE) {
 		/* Get a line from the file */
 		if (my_fgets(fp, buf, 1024, FALSE) == 0) {
 			/* Count the lines */
-			//line_num++;
+			line_num++;
 
 			/* Look for lines starting with 'N:' */
 			if ((buf[0] == 'N') && (buf[1] == ':')) {
@@ -2470,13 +2349,13 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 					}
 				} else {
 					my_fclose(fp);
-					return(-1);
+					return (-1);
 				}
 			}
 		} else {
 			/* Reached end of file */
 			my_fclose(fp);
-			return(-1);
+			return (-1);
 		}
 
 	}
@@ -2486,7 +2365,7 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 		/* Get the line */
 		if (my_fgets(fp, buf, 1024, FALSE) == 0) {
 			/* Count the lines */
-			//line_num++;
+			line_num++;
 
 			/* Look for the number of entries */
 			if (isdigit(buf[0])) {
@@ -2496,10 +2375,10 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 			}
 		} else {
 			/* Count the lines */
-			//line_num++;
+			line_num++;
 
 			my_fclose(fp);
-			return(-1);
+			return (-1);
 		}
 	}
 
@@ -2510,7 +2389,7 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 		/* Get the random line */
 		for (counter = 0; counter <= line; counter++) {
 			/* Count the lines */
-			//line_num++;
+			line_num++;
 
 			/* Try to read the line */
 			if (my_fgets(fp, buf, 1024, FALSE) == 0) {
@@ -2518,7 +2397,7 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 				if (counter == line) break;
 			} else {
 				my_fclose(fp);
-				return(-1);
+				return (-1);
 			}
 		}
 
@@ -2530,12 +2409,12 @@ errr get_rnd_line(cptr file_name, int entry, char *output, int max_len) {
 	my_fclose(fp);
 
 	/* Success */
-	return(line);
+	return (line);
 }
 
 /*
  * Read lines from a file to memory.
- *
+ * 
  * Adapted from get_rnd_line(). This function assumes similar format for files.
  */
 errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out) {
@@ -2543,7 +2422,7 @@ errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out)
 	FILE    *fp = NULL;
 	char    buf[1024];
 	int     counter = 0, numentries = 0;
-	//int     line_num = 0;
+	int     line_num = 0;
 	//bool    found = FALSE;
 
 
@@ -2554,14 +2433,14 @@ errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out)
 	fp = my_fopen(buf, "r");
 
 	/* Failed */
-	if (!fp) return(-1);
+	if (!fp) return (-1);
 
 	/* Find the entry of the monster */
 	while (TRUE) {
 		/* Get a line from the file */
 		if (my_fgets(fp, buf, 1024, FALSE) == 0) {
 			/* Count the lines */
-			//line_num++;
+			line_num++;
 
 			/* Look for lines starting with 'N:' */
 			if ((buf[0] == 'N') && (buf[1] == ':')) {
@@ -2570,7 +2449,7 @@ errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out)
 		} else {
 			/* Reached end of file */
 			my_fclose(fp);
-			return(-1);
+			return (-1);
 		}
 
 	}
@@ -2580,7 +2459,7 @@ errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out)
 		/* Get the line */
 		if (my_fgets(fp, buf, 1024, FALSE) == 0) {
 			/* Count the lines */
-			//line_num++;
+			line_num++;
 
 			/* Look for the number of entries */
 			if (isdigit(buf[0])) {
@@ -2590,20 +2469,20 @@ errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out)
 			}
 		} else {
 			/* Count the lines */
-			//line_num++;
+			line_num++;
 
 			my_fclose(fp);
-			return(-1);
+			return (-1);
 		}
 	}
-
+	
 	/* Allocate array of pointers */
 	C_MAKE(lines, numentries, char *);
 
 	/* Read all entries */
 	for (counter = 0; counter < numentries; counter++) {
 		/* Count the lines */
-		//line_num++;
+		line_num++;
 
 		/* Try to read the line */
 		if (my_fgets(fp, buf, 1024, FALSE) == 0) {
@@ -2611,7 +2490,7 @@ errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out)
 			lines[counter] = strdup(buf);
 		} else {
 			my_fclose(fp);
-			return(-1);
+			return (-1);
 		}
 	}
 
@@ -2623,12 +2502,12 @@ errr read_lines_to_memory(cptr file_name, char ***lines_out, int *num_lines_out)
 	*num_lines_out = numentries;
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 /*
  * Get a random line from an array stored in memory.
- *
+ * 
  * Adapted from get_rnd_line().
  */
 errr get_rnd_line_from_memory(char **lines, int numentries, char *output, int max_len) {
@@ -2640,7 +2519,7 @@ errr get_rnd_line_from_memory(char **lines, int numentries, char *output, int ma
 
 		/* Copy the line */
 		strncpy(output, lines[line], max_len);
-
+		
 		/* Make sure the string is terminated */
 		output[max_len - 1] = '\0';
 	} else {
@@ -2649,7 +2528,7 @@ errr get_rnd_line_from_memory(char **lines, int numentries, char *output, int ma
 	}
 
 	/* Success */
-	return(line);
+	return (line);
 }
 
 /* Clear objects so that artifacts get saved.
@@ -2675,18 +2554,18 @@ void wipeout_needless_objects() {
 			wild = &wild_info[j][i];
 
 			wpos.wz = 0;
-			if (getcave(&wpos) && !players_on_depth(&wpos)) wipe_o_list(&wpos);
+			if(getcave(&wpos) && !players_on_depth(&wpos)) wipe_o_list(&wpos);
 
-			if (wild->flags & WILD_F_UP)
+			if (wild->flags&WILD_F_UP)
 				for (k = 0;k < wild->tower->maxdepth; k++) {
 					wpos.wz = k;
-					if ((getcave(&wpos)) && (!players_on_depth(&wpos))) wipe_o_list(&wpos);
+					if((getcave(&wpos)) && (!players_on_depth(&wpos))) wipe_o_list(&wpos);
 				}
 
-			if (wild->flags & WILD_F_DOWN)
+			if (wild->flags&WILD_F_DOWN)
 				for (k = 0;k < wild->dungeon->maxdepth; k++) {
 					wpos.wz = -k;
-					if ((getcave(&wpos)) && (!players_on_depth(&wpos))) wipe_o_list(&wpos);
+					if((getcave(&wpos)) && (!players_on_depth(&wpos))) wipe_o_list(&wpos);
 				}
 		}
 	}
@@ -2694,7 +2573,7 @@ void wipeout_needless_objects() {
 	struct worldpos cwpos;
 	struct dungeon_type *d_ptr;
 	wilderness_type *w_ptr;
-	int x, y, z;
+	int x,y,z;
 
 	for (y = 0; y < MAX_WILD_Y; y++) {
 		cwpos.wy = y;
@@ -2702,20 +2581,20 @@ void wipeout_needless_objects() {
 			cwpos.wx = x;
 			cwpos.wz = 0;
 			w_ptr = &wild_info[y][x];
-			//if (getcave(&cwpos) && !players_on_depth(&cwpos)) wipe_o_list(&cwpos);
-			if (w_ptr->flags & WILD_F_DOWN) {
+//			if(getcave(&cwpos) && !players_on_depth(&cwpos)) wipe_o_list(&cwpos);
+			if(w_ptr->flags & WILD_F_DOWN){
 				d_ptr = w_ptr->dungeon;
 				for (z = 1; z <= d_ptr->maxdepth; z++) {
 					cwpos.wz = -z;
-					if (d_ptr->level[z - 1].ondepth && d_ptr->level[z - 1].cave)
+					if(d_ptr->level[z-1].ondepth && d_ptr->level[z-1].cave)
 						wipe_o_list(&cwpos);
 				}
 			}
-			if (w_ptr->flags & WILD_F_UP) {
+			if(w_ptr->flags & WILD_F_UP){
 				d_ptr = w_ptr->tower;
 				for (z = 1; z <= d_ptr->maxdepth; z++) {
 					cwpos.wz = z;
-					if (d_ptr->level[z - 1].ondepth && d_ptr->level[z - 1].cave)
+					if(d_ptr->level[z-1].ondepth && d_ptr->level[z-1].cave)
 						wipe_o_list(&cwpos);
 				}
 			}
@@ -2787,7 +2666,6 @@ void exit_game_panic(void) {
 
 		/* Indicate panic save */
 		(void)strcpy(p_ptr->died_from, "(panic save)");
-		p_ptr->died_from_ridx = 0;
 
 		/* Remember depth in the log files */
 		s_printf("Trying panic saving %s on %d %d %d..\n", p_ptr->name, p_ptr->wpos.wx, p_ptr->wpos.wy, p_ptr->wpos.wz);
@@ -2824,7 +2702,7 @@ void exit_game_panic(void) {
 # endif
 	abort();
 #endif
-
+	
 	/* Successful panic save of server info */
 	quit("server panic info save succeeded!");
 }
@@ -2863,14 +2741,13 @@ void save_game_panic(void) {
 
 		/* Indicate panic save */
 //		(void)strcpy(p_ptr->died_from, "(panic save)");
-//		p_ptr->died_from_ridx = 0;
 
 		/* Remember depth in the log files */
 		s_printf("Trying panic saving %s on %d %d %d..\n", p_ptr->name, p_ptr->wpos.wx, p_ptr->wpos.wy, p_ptr->wpos.wz);
 
 		/* Panic save */
 		save_player(i);
-		i++;
+	    	i++;
 	}
 
 //	wipeout_needless_objects();
@@ -2896,14 +2773,14 @@ void save_game_panic(void) {
 
 LPTOP_LEVEL_EXCEPTION_FILTER old_handler;
 
-/* Callback to be called by Windows when our term closes, the user
+/* Callback to be called by Windows when our term closes, the user 
  * logs off, the system is shutdown, etc.
  */
-BOOL ctrl_handler(DWORD fdwCtrlType) {
+BOOL ctrl_handler( DWORD fdwCtrlType ) {
 	/* Save everything and quit the game */
 	shutdown_server();
 
-	return(TRUE);
+	return TRUE;
 }
 
 /* Global unhandled exception handler */
@@ -2911,30 +2788,37 @@ BOOL ctrl_handler(DWORD fdwCtrlType) {
 LONG WINAPI myUnhandledExceptionFilter(
   struct _EXCEPTION_POINTERS* ExceptionInfo) {
 	/* We don't report to the meta server in this case, the meta
-	 * server will detect that we've gone anyway
+	 * server will detect that we've gone anyway 
 	 */
 
 	/* Call the previous exception handler, which we are assuming
 	 * is the MinGW exception handler which should have been implicitly
 	 * setup when we loaded the exchndl.dll library.
 	 */
-	if (old_handler != NULL) old_handler(ExceptionInfo);
+	if(old_handler != NULL)
+	{
+	  old_handler(ExceptionInfo);
+	}
 
 	/* Save everything and quit the game */
 	exit_game_panic();
 
 	/* We don't expect to ever get here... but for what it's worth... */
-	return(EXCEPTION_EXECUTE_HANDLER);
+	return(EXCEPTION_EXECUTE_HANDLER); 
+		
 }
 
 
 void setup_exit_handler(void) {
 	/* Trap CTRL+C, Logoff, Shutdown, etc */
-	if (SetConsoleCtrlHandler((PHANDLER_ROUTINE) ctrl_handler, TRUE)) plog("Initialised exit save handler.");
-	else plog("ERROR: Could not set panic save handler!");
-
+	if( SetConsoleCtrlHandler( (PHANDLER_ROUTINE) ctrl_handler, TRUE ) ) 
+	{
+		plog("Initialised exit save handler.");
+	}else{
+		plog("ERROR: Could not set panic save handler!");
+	}
 	/* Trap unhandled exceptions, i.e. server crashes */
-	old_handler = SetUnhandledExceptionFilter(myUnhandledExceptionFilter);
+	old_handler = SetUnhandledExceptionFilter( myUnhandledExceptionFilter );
 }
 #endif
 #endif
@@ -3024,7 +2908,7 @@ static void handle_signal_simple(int sig) {
 }
 
 #ifdef SIGPIPE
-static void handle_signal_bpipe(int sig) {
+static void handle_signal_bpipe(int sig){
 	(void)signal(sig, SIG_IGN);	/* This should not happen, but for the sake of convention... */
 	s_printf("SIGPIPE received\n");
 	(void)signal(sig, handle_signal_bpipe);
@@ -3217,7 +3101,7 @@ void vfile_receive_input(int fd, int arg) {
 	if (vf->alloc - vf->len < 4096) {
 		vf->alloc += 4096;
 		vf->data = realloc(vf->data, vf->alloc);
-	}
+	}	
 
 	read_len = read(fd, vf->data + vf->len, vf->alloc - vf->len);
 	if (read_len > 0) {
@@ -3259,7 +3143,7 @@ int vopen(const char *pathname, int flags, int (*callback)(int, int)) {
 		vf->vflags |= VFILE_INPUT_INSTALLED;
 	}
 
-	return(fd);
+	return fd;
 }
 
 int vclose(int fd) {
@@ -3279,26 +3163,26 @@ int vclose(int fd) {
 		memset(vf, 0, sizeof(struct vfile));
 	}
 
-	return(n);
+	return n;
 }
 
 ssize_t vread(int fd, char *buf, size_t len) {
 	vfile *vf = &vfiles[fd];
 
 	if (!vf->data) {
-		return(-1);
+		return -1;
 	}
 
 	if (vf->pos + len > vf->len) {
 		len = vf->len - vf->pos;
 	}
 
-	if (len < 0) return(0);
+	if (len < 0) return 0;
 
 	memcpy(buf, &vf->data[vf->pos], len);
 	vf->pos += len;
 
-	return(len);
+	return len;
 }
 
 off_t vseek(int fd, off_t offset, int whence) {
@@ -3311,51 +3195,51 @@ off_t vseek(int fd, off_t offset, int whence) {
 	} else if (whence == SEEK_END) {
 		vf->pos = vf->len + offset;
 	} else {
-		return(-1);
+		return -1;
 	}
 
-	return(vf->pos);
+	return vf->pos;
 }
 
 #endif // 0
 
 /* Erase the current highscore completely - C. Blue */
 bool highscore_reset(int Ind) {
-	char buf[1024];
+        char buf[1024];
 
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_DATA, "scores.raw");
+        /* Build the filename */
+        path_build(buf, 1024, ANGBAND_DIR_DATA, "scores.raw");
 
 	/* bam (delete file, simply) */
-	highscore_fd = fd_open(buf, O_TRUNC);
-	(void)fd_close(highscore_fd);
+        highscore_fd = fd_open(buf, O_TRUNC);
+        (void)fd_close(highscore_fd);
 
-	/* Forget the high score fd */
+        /* Forget the high score fd */
 	highscore_fd = -1;
-	return(TRUE);
+        return(TRUE);
 }
 
 /* remove one specific entry from the highscore - C. Blue */
 bool highscore_remove(int Ind, int slot) {
 	int	i;
 	high_score	tmpscore;
-	char buf[1024];
+        char buf[1024];
 
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_DATA, "scores.raw");
+        /* Build the filename */
+        path_build(buf, 1024, ANGBAND_DIR_DATA, "scores.raw");
 
-	/* Open the binary high score file, for reading */
-	highscore_fd = fd_open(buf, O_RDWR);
-	/* Paranoia -- No score file */
-	if (highscore_fd < 0) {
-		if (Ind) msg_print(Ind, "Score file unavailable!");
-		return(FALSE);
-	}
-	/* Lock (for writing) the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_WRLCK)) {
-		if (Ind) msg_print(Ind, "Couldn't lock highscore file for writing!");
-		return(FALSE);
-	}
+        /* Open the binary high score file, for reading */
+        highscore_fd = fd_open(buf, O_RDWR);
+        /* Paranoia -- No score file */
+        if (highscore_fd < 0) {
+                if (Ind) msg_print(Ind, "Score file unavailable!");
+                return(FALSE);
+        }
+        /* Lock (for writing) the highscore file, or fail */
+        if (fd_lock(highscore_fd, F_WRLCK)) {
+                if (Ind) msg_print(Ind, "Couldn't lock highscore file for writing!");
+                return(FALSE);
+        }
 
 	for (i = slot; i < MAX_HISCORES; i++) {
 		/* Read the following entry, if any */
@@ -3372,15 +3256,15 @@ bool highscore_remove(int Ind, int slot) {
 	if (highscore_seek(i)) return(FALSE);
 	if (highscore_write(&tmpscore)) return(FALSE);
 
-	/* Unlock the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_UNLCK)) {
-		if (Ind) msg_print(Ind, "Couldn't unlock highscore file from writing!");
-		return(FALSE);
-	}
-	/* Shut the high score file */
-	(void)fd_close(highscore_fd);
+        /* Unlock the highscore file, or fail */
+        if (fd_lock(highscore_fd, F_UNLCK)) {
+                if (Ind) msg_print(Ind, "Couldn't unlock highscore file from writing!");
+                return(FALSE);
+        }
+        /* Shut the high score file */
+        (void)fd_close(highscore_fd);
 
-	/* Forget the high score fd */
+        /* Forget the high score fd */
 	highscore_fd = -1;
 
 	return(TRUE);
@@ -3391,18 +3275,18 @@ bool highscore_file_convert(int Ind) {
 	int	i, entries;
 	high_score_old	oldscore[MAX_HISCORES];
 	high_score	newscore[MAX_HISCORES];
-	char buf[1024];
+        char buf[1024];
 
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_DATA, "scores.raw");
+        /* Build the filename */
+        path_build(buf, 1024, ANGBAND_DIR_DATA, "scores.raw");
 
-	/* Open the binary high score file, for reading */
-	highscore_fd = fd_open(buf, O_RDWR);
-	/* Paranoia -- No score file */
-	if (highscore_fd < 0) {
-		if (Ind) msg_print(Ind, "Score file unavailable!");
-		return(FALSE);
-	}
+        /* Open the binary high score file, for reading */
+        highscore_fd = fd_open(buf, O_RDWR);
+        /* Paranoia -- No score file */
+        if (highscore_fd < 0) {
+                if (Ind) msg_print(Ind, "Score file unavailable!");
+                return(FALSE);
+        }
 
 	for (i = 0; i < MAX_HISCORES; i++) {
 		/* Read old entries */
@@ -3411,8 +3295,8 @@ bool highscore_file_convert(int Ind) {
 	}
 	entries = i;
 
-	/* Shut the high score file */
-	(void)fd_close(highscore_fd);
+        /* Shut the high score file */
+        (void)fd_close(highscore_fd);
 
 #if 0 /* old conversion done once, for example */
 	/* convert entries */
@@ -3457,7 +3341,6 @@ bool highscore_file_convert(int Ind) {
 #else /* new conversion: inserting RACE_KOBOLD */
 	for (i = 0; i < entries; i++) {
 		int r;
-
 		strcpy(newscore[i].what, oldscore[i].what);
 		strcpy(newscore[i].pts, oldscore[i].pts);
 		strcpy(newscore[i].gold, oldscore[i].gold);
@@ -3488,39 +3371,39 @@ bool highscore_file_convert(int Ind) {
 	}
 #endif
 	/* bam (delete file, simply) */
-	highscore_fd = fd_open(buf, O_TRUNC);
-	(void)fd_close(highscore_fd);
+        highscore_fd = fd_open(buf, O_TRUNC);
+        (void)fd_close(highscore_fd);
 
-	/* Open the binary high score file, for writing */
-	highscore_fd = fd_open(buf, O_RDWR);
-	/* Paranoia -- No score file */
-	if (highscore_fd < 0) {
-		if (Ind) msg_print(Ind, "Score file unavailable!");
-		return(FALSE);
-	}
+        /* Open the binary high score file, for writing */
+        highscore_fd = fd_open(buf, O_RDWR);
+        /* Paranoia -- No score file */
+        if (highscore_fd < 0) {
+                if (Ind) msg_print(Ind, "Score file unavailable!");
+                return(FALSE);
+        }
 
-	/* Lock (for writing) the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_WRLCK)) {
-		if (Ind) msg_print(Ind, "Couldn't lock highscore file for writing!");
-		return(FALSE);
-	}
+        /* Lock (for writing) the highscore file, or fail */
+        if (fd_lock(highscore_fd, F_WRLCK)) {
+                if (Ind) msg_print(Ind, "Couldn't lock highscore file for writing!");
+                return(FALSE);
+        }
 
 	for (i = 0; i < entries; i++) {
 		/* Skip to end */
-		if (highscore_seek(i)) return(-1);
+		if (highscore_seek(i)) return (-1);
 		/* add new entry */
-		if (highscore_write(&newscore[i])) return(-1);
+		if (highscore_write(&newscore[i])) return (-1);
 	}
 
-	/* Unlock the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_UNLCK)) {
-		if (Ind) msg_print(Ind, "Couldn't unlock highscore file from writing!");
-		return(FALSE);
-	}
-	/* Shut the high score file */
-	(void)fd_close(highscore_fd);
+        /* Unlock the highscore file, or fail */
+        if (fd_lock(highscore_fd, F_UNLCK)) {
+                if (Ind) msg_print(Ind, "Couldn't unlock highscore file from writing!");
+                return(FALSE);
+        }
+        /* Shut the high score file */
+        (void)fd_close(highscore_fd);
 
-	/* Forget the high score fd */
+        /* Forget the high score fd */
 	highscore_fd = -1;
 
 	return(TRUE);

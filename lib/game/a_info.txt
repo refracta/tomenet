@@ -88,7 +88,7 @@ D:A fiery circle of bronze, with mighty spells to ward off evil.
 N:5:of Ingwe
 I:40:11:4
 W:50:40:3:150000
-F:INT | WIS | CHR | SUST_INT | SUST_WIS | SUST_CHR | SEARCH | INFRA | HIDE_TYPE
+F:INT | WIS | CHR | SUST_INT | SUST_WIS | SUST_CHR | SEARCH | INFRA | HIDE_TYPE |
 F:SEE_INVIS | FREE_ACT | ACTIVATE | SLAY_EVIL
 F:RES_ACID | RES_COLD | RES_ELEC | RES_SHARDS | RES_CHAOS
 F:INSTA_ART
@@ -156,7 +156,7 @@ D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
 N:10:of Power 'Narya'
 I:45:34:1
-W:70:60:2:150000
+W:70:600:2:150000
 P:0:1d1:6:6:0
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | LUCK |
 F:ACTIVATE | FREE_ACT | SEE_INVIS | ESP_EVIL
@@ -174,7 +174,7 @@ D:Morgoth.
 
 N:11:of Power 'Nenya'
 I:45:35:2
-W:80:70:2:200000
+W:80:700:2:200000
 P:0:1d1:9:9:0
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | LUCK |
 F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS |
@@ -190,7 +190,7 @@ D:Morgoth.
 
 N:12:of Power 'Vilya'
 I:45:36:3
-W:90:80:2:300000
+W:90:800:2:300000
 P:0:1d1:12:12:0
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | LUCK |
 F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS |
@@ -209,7 +209,7 @@ D:from Morgoth.
 
 N:13:of Power 'The One Ring'
 I:45:37:5
-W:100:100:2:5000000
+W:100:1000:2:5000000
 P:0:1d1:15:15:0
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE |
 F:ACTIVATE | AUTO_CURSE | HEAVY_CURSE | INVIS | MANA |
@@ -233,10 +233,12 @@ N:14:of Space-Time
 I:39:105:0
 W:30:12:15:50000
 P:0:1d1:0:0:0
-F:INSTA_ART | SPECIAL_GENE | LITE3 | WHITE_LIGHT | ACTIVATE
-F:RES_NEXUS | RES_TELE | RES_TIME
-D:A powerful stone that provides a strong light for any who wields it. It is
-D:rumored that it may even protect the wearer from the passing of the time.
+F:INSTA_ART | SPECIAL_GENE | LITE3 | WHITE_LIGHT | RES_TIME
+# ST-anchor is hard-coded!
+#F:NO_TELE
+D:A powerful stone that provides a strong light for any who
+D:wields it. It is rumored that it may even protect the wearer from
+D:the passing of the time.
 
 
 # This artifact has a low artifact level to prevent it being worthless for
@@ -408,7 +410,7 @@ W:70:30:80:150000
 P:9:0d0:0:0:25
 F:FREE_ACT | RES_BLIND | RES_CONF | RES_FEAR | DRAIN_MANA |
 F:REFLECT | RES_NEXUS | SH_FIRE | SUST_INT | SUST_CON | SUST_CHR |
-F:ESP_DRAGONRIDER | CON | CHR | INT | ACTIVATE | LEVITATE |
+F:STEALTH | ESP_DRAGONRIDER | CON | CHR | INT | ACTIVATE | LEVITATE |
 F:RES_ACID | RES_ELEC | IM_COLD | AGGRAVATE | HEAVY_CURSE | CURSED
 F:REGEN_MANA | SPECIAL_GENE | SPEED | HIDE_TYPE
 D:The flying suit of Mardra, very powerful armour that protects
@@ -528,7 +530,7 @@ D:Two Silmarils of Feanor blaze from the thunderous crown of twisted
 D:iron. The corrupted metal feels at once as infernal as hellfire
 D:and as chilling as the Outer Darkness. One protrusion from the
 D:crown is abruptly ended where a third jewel might have shone.
-D:Anyone trying to wear it who isn't royalty will die in a terrible blast.
+
 
 # The Iron Crown of Beruthiel
 
@@ -847,8 +849,8 @@ N:59:of Fingolfin
 I:31:5:4
 W:50:15:40:110000
 P:5:1d1:10:10:20
-F:DEX | HIDE_TYPE | LUCK | SHOW_MODS | ACTIVATE
-F:FREE_ACT | RES_LITE | RES_DARK | RES_CONF | RES_DISEN | RES_FEAR | RES_ACID
+F:DEX | HIDE_TYPE | LUCK | SHOW_MODS
+F:FREE_ACT | RES_LITE | RES_DARK | RES_CONF | RES_DISEN | RES_FEAR | RES_ACID | ACTIVATE
 Z:magic missile
 D:The hand-sheathing of Fingolfin, warrior-king of Elves and Men, who gave
 D:Morgoth seven mighty wounds and pain that will last forever.
@@ -1159,21 +1161,21 @@ F:FREE_ACT | RES_COLD | RES_LITE | LITE1 | SEE_INVIS | SLOW_DIGEST | REGEN |
 F:ACTIVATE | SHOW_MODS | WHITE_LIGHT
 D:The weapon of Fingolfin, High King of the Noldor; it shines like a column
 D:of ice lit by light unquenchable. Morgoth came but unwillingly to meet it
-D:of old; his lame foot will remind him of its might should he meet it again.
+D:of old; his lame foot will remind him of its might should be meet it again.
 
 
 # The Claymore 'Anduril'
 #should be nicer at W:30, but base item is W:40!
-#(side note: from lore supposedly WHITE_LITE in the moonlight,
-# but red light under the sun)
 
 N:83:'Anduril'
 I:23:23:4
 W:40:40:140:120000
-P:0:2d10:20:20:0
-F:STR | DEX | SUST_STR | SUST_DEX | RES_FEAR | FREE_ACT | BLESSED | LUCK
-F:LITE1 | BRAND_FIRE | IM_FIRE | SLAY_EVIL | SLAY_TROLL | SLAY_ORC
-F:SEE_INVIS | ACTIVATE | IGNORE_DISEN | HIDE_TYPE | SHOW_MODS
+P:0:2d8:20:20:5
+F:STR | DEX | HIDE_TYPE | RES_FEAR | FREE_ACT | BLESSED | LUCK |
+F:SLAY_EVIL | BRAND_FIRE | SLAY_TROLL | SLAY_ORC |
+F:RES_FIRE | SUST_DEX | SEE_INVIS | ACTIVATE | SHOW_MODS | LITE1 |
+F:RES_DISEN | ESP_GOOD | RES_CHAOS
+#F:SPECIAL_GENE |
 D:The famed "Flame of the West", the sword that was broken and is forged
 D:again. It glows with the essence of fire, its wearer is mighty in combat,
 D:and no creature of Sauron can withstand it. It will never be stained or
@@ -1295,7 +1297,7 @@ D:owner as they inflict wounds that will never heal.
 N:92:'Vorpal Blade'
 I:23:31:2
 W:60:30:60:160000
-P:0:5d4:32:32:0
+P:0:5d5:32:32:0
 F:VORPAL | SLAY_EVIL | HIDE_TYPE
 F:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN | SPEED | STR | DEX
 # | WOUNDING
@@ -1500,7 +1502,7 @@ D:creatures of the earth.
 
 N:107:of Wrath
 I:22:5:2
-W:27:30:100:80000
+W:27:30:90:80000
 P:0:4d7:16:18:0
 F:STR | DEX | HIDE_TYPE | CHAOTIC | DRAIN_MANA | SPECIAL_GENE |
 F:SLAY_EVIL | KILL_UNDEAD | RES_LITE | RES_DARK | SEE_INVIS |
@@ -1514,7 +1516,7 @@ D:evil and undead.
 
 N:108:of Ulmo
 I:22:5:4
-W:50:90:100:120000
+W:50:90:70:120000
 P:0:3d7:19:19:0
 F:DEX | HIDE_TYPE |
 F:SLAY_DRAGON | SLAY_ANIMAL | FREE_ACT | HOLD_LIFE | IM_ACID |
@@ -1530,7 +1532,7 @@ D:of the undead, and is utterly in command of the element of water.
 
 N:109:'Avavir'
 I:22:17:4
-W:15:8:200:18000
+W:15:8:220:18000
 P:0:6d4:12:12:10
 F:DEX | CHR | HIDE_TYPE |
 F:BRAND_COLD | BRAND_FIRE | FREE_ACT | RES_FIRE | RES_COLD |
@@ -1563,8 +1565,8 @@ N:111:'Grond'
 I:21:50:3
 W:100:1:666:500000
 P:0:9d9:30:30:0
-F:KILL_DRAGON | KILL_DEMON | KILL_UNDEAD | SLAY_EVIL | SLAY_ANIMAL
-F:SLAY_TROLL | SLAY_ORC | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
+F:KILL_DRAGON | KILL_DEMON | KILL_UNDEAD | SLAY_EVIL | SLAY_ANIMAL | SLAY_TROLL | SLAY_ORC |
+F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:AGGRAVATE | CURSED | HEAVY_CURSE | PERMA_CURSE |
 F:INSTA_ART | SPECIAL_GENE | SHOW_MODS | LEVELS | IMPACT |
 F:TUNNEL | LIFE | STR | CON | ESP_ALL | HIDE_TYPE
@@ -1687,8 +1689,9 @@ F:INT | WIS | CHR | MANA | SEARCH | ACTIVATE | SEE_INVIS | ESP_EVIL
 F:SLAY_EVIL | SLAY_TROLL | SLAY_ORC | SLAY_DRAGON | SLAY_UNDEAD | SLAY_DEMON
 F:HOLD_LIFE | RES_SHARDS | RES_FIRE | RES_COLD | RES_ELEC | BRAND_FIRE
 F:SHOW_MODS | HIDE_TYPE | SPECIAL_GENE
-D:A mythical staff said to have belonged to a monkey spirit. You carefully look
-D:around as you pick up the staff but there is still no sign of any such spirit.
+#D:A staff tall and sturdy, with rough-hewn runes that invoke the element of
+#D:Earth, and which strikes down all creatures who live in the shadow of
+#D:mountains.
 
 
 # The Mace of Disruption 'Deathwreaker'
@@ -1741,7 +1744,7 @@ D:known for never having lost in combat.
 
 N:124:'Belthronding'
 I:19:13:5
-W:40:30:80:100000
+W:40:30:40:100000
 P:0:0d0:20:25:0
 F:DEX | STEALTH | HIDE_TYPE |
 F:RES_DISEN | XTRA_SHOTS | SHOW_MODS | XTRA_MIGHT
@@ -1754,7 +1757,7 @@ D:faintly shines a pale clear gold.
 
 N:125:of Bard
 I:19:13:2
-W:60:35:90:100000
+W:60:35:40:100000
 P:0:0d0:27:24:0
 F:DEX | HIDE_TYPE | ESP_DRAGON | LUCK | KILL_DRAGON |
 F:FREE_ACT | XTRA_MIGHT | SHOW_MODS | XTRA_SHOTS
@@ -1767,7 +1770,7 @@ D:songs record.
 
 N:126:'Cubragol'
 I:19:23:6
-W:44:35:100:100000
+W:44:35:110:100000
 P:0:0d0:10:14:0
 F:SPEED | RES_FIRE | BRAND_FIRE | ACTIVATE | SHOW_MODS
 D:A crossbow that grants fiery speed to he who finds it, and from which
@@ -1812,9 +1815,8 @@ N:129:'Glimdrir'
 I:15:4:3
 W:30:25:20:50000
 P:0:3d5:15:16:0
-F:DEX | SPEED | FREE_ACT | BRAND_POIS | SLAY_EVIL | SLAY_UNDEAD | REGEN
-F:HIDE_TYPE | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_SOUND
-F:NO_TELE | CURSED
+F:DEX | SPEED | FREE_ACT | BRAND_POIS | SLAY_EVIL | SLAY_UNDEAD | REGEN | HIDE_TYPE
+F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_SOUND | NO_TELE | CURSED
 D:A powerful boomerang that makes one agile and fast, with a thirst for
 D:evil and undead creatures, but demands its wielder not teleport, for fear
 D:of desertion.
@@ -1839,7 +1841,7 @@ D:wearer to see things not seen by all.
 
 N:134:'Lasher'
 I:21:2:3
-W:41:5:30:150000
+W:41:5:30:125000
 P:0:3d4:12:15:0
 F:DEX | BLOWS | HIDE_TYPE |
 F:SLAY_ANIMAL | SLAY_ORC | BRAND_POIS | VORPAL |
@@ -1874,9 +1876,8 @@ D:A bolt imbued with the powers of the elements.
 #I:14:6:3
 #W:60:10:20:130000
 #P:0:3d4:0:0:0
-#F:CHR | SPEED | WIS | SEE_INVIS | RES_SOUND | ACTIVATE | STEALTH | LUCK
-#F:HIDE_TYPE | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | ESP_DRAGONRIDER
-#F:ESP_UNIQUE
+#F:CHR | SPEED | WIS | SEE_INVIS | RES_SOUND | ACTIVATE | STEALTH | LUCK | HIDE_TYPE
+#F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | ESP_DRAGONRIDER | ESP_UNIQUE |
 #D:This harp that once belonged to Master Robinton makes those who use
 #D:it seem more beautiful.  It is also said that those who have
 #D:used it found themselves walking faster, as if to an unheard beat.
@@ -2065,13 +2066,13 @@ D:against those foes who are already dead.
 
 N:152:of the Elves
 I:19:24:5
-W:127:255:200:8000000
+W:127:255:130:8000000
 P:0:0d0:36:28:0
 F:SEE_INVIS | SLOW_DIGEST | FREE_ACT | SPEED | DEX | CON | LEVITATE | LUCK
 F:XTRA_MIGHT | XTRA_SHOTS | IM_ELEC | REFLECT | INVIS | STEALTH |
 F:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR |
-F:RES_CHAOS | RES_DISEN | RES_CONF | RES_BLIND | INFRA | ESP_ORC | ESP_TROLL
-F:ESP_EVIL | PRECOGNITION | NO_MAGIC | ULTIMATE | HIDE_TYPE
+F:RES_CHAOS | RES_DISEN | RES_CONF | RES_BLIND | INFRA | ESP_ORC | ESP_TROLL | ESP_EVIL |
+F:PRECOGNITION | NO_MAGIC | ULTIMATE | HIDE_TYPE
 F:SPECIAL_GENE
 D:Designed to be used with the Seeker Bolt of the Elves, this crossbow
 D:is perfect against the terrible powers of Morgoth.
@@ -2119,8 +2120,7 @@ N:156:'Orchast'
 I:24:11:4
 W:15:5:150:18000
 P:0:2d7:20:16:0
-F:ACTIVATE | HIDE_TYPE | SHOW_MODS
-F:STR | DEX | SEARCH | SLAY_ORC | BRAND_FIRE | ESP_ORC
+F:STR | DEX | SEARCH | SLAY_ORC | ACTIVATE | HIDE_TYPE | SHOW_MODS | BRAND_FIRE | ESP_ORC
 D:Forged by the dwarves of Khazad-dum in a time of desperation,
 D:this axe turned many a battle against the invading orcs.
 
@@ -2181,7 +2181,7 @@ D:and makes audible whispers from the deceased.
 # The Catapult Trap of Ahromarwar
 
 N:161:of Ahromarwar
-I:46:1:3
+I:46:3:3
 W:20:10:30:20000
 P:0:0d0:25:15:30
 F:STEALTH | AUTOMATIC_99 | XTRA_MIGHT | HIDE_TYPE
@@ -2204,7 +2204,7 @@ D:on coming back for more...
 # The Bolt Trap 'Merlion Karc's Demonbane'
 
 N:163:'Merlion Karc's Demonbane'
-I:46:3:2
+I:46:2:2
 W:20:15:40:20000
 P:0:0d0:17:27:37
 F:STEALTH | XTRA_SHOTS | XTRA_MIGHT | HIDE_TYPE | ONLY_DEMON
@@ -2666,7 +2666,7 @@ D:Its creator didn't believe in much, but he knew all about pain.
 
 N:213:'Doublezee'
 I:19:13:3
-W:40:25:80:50000
+W:40:25:40:50000
 P:0:0d0:25:15:0
 F:CHR | SEARCH | HIDE_TYPE |
 F:XTRA_SHOTS | SHOW_MODS
@@ -2686,8 +2686,8 @@ W:15:1:2:20000
 P:0:1d1:0:0:0
 F:DEX | SUST_DEX | SEE_INVIS | DISARM | HIDE_TYPE
 F:ACTIVATE
-D:It's no surprise that a thi--burglar of the highest caliber would be equipped
-D:with the best tools available for his line of work.
+D:It's no surprise that a thief of highest caliber would come with the best
+D:tools available for his line of work.
 
 
 # The Sling of Halflings
@@ -2715,9 +2715,9 @@ P:0:2d3:0:0:0
 D:In the not too distant past, DarkGod created three pints of magic ale.
 D:This ale was of the highest quality and far stronger than other brews.
 D:But more importantly, it never seemed to run out! One could drink, drink,
-D:and drink some more, and there was always more. It came to pass that these
-D:three pints were bestowed upon Moltor, the drunkest of the Dwarves.
-D:For some time Moltor enjoyed his ale, and all was well.
+D:and drink some more, and there was always more.
+D:It came to pass that these three pints were bestowed upon Moltor, the drunkest
+D:of the Dwarves. For some time Moltor enjoyed his ale, and all was well.
 
 
 # The Sea-blue Silk Cape 'Ocean Soul'
@@ -2801,7 +2801,7 @@ D:Made of alloy of iron and ebonite, a very hard material.
 N:223:'Soul Reaver'
 I:22:30:-10
 W:90:70:300:500000
-P:0:15d4:50:30:0
+P:0:15d4:50:0:0
 F:DRAIN_MANA | DRAIN_EXP | DRAIN_HP | CURSED | HEAVY_CURSE | AGGRAVATE |
 F:SHOW_MODS | HIDE_TYPE | KILL_UNDEAD | SLAY_EVIL | VAMPIRIC | CHR | VORPAL |
 F:IM_COLD | RES_DARK | RES_NETHER | RES_CHAOS | RES_DISEN | RES_TIME
@@ -2855,7 +2855,7 @@ W:65:40:380:100000
 P:60:2d5:-8:0:0
 F:RES_MANA | NO_MAGIC |
 F:RES_ACID | IM_ELEC | RES_DISEN
-D:Made of rare black ore this mighty armour has an extraordinarily hard
+D:Made of this rare black ore this mighty armour has an extraordinarily hard
 D:surface. It also seems to absorb any form of energy.
 
 
@@ -2897,7 +2897,7 @@ D:A black crossbow that shimmers white here and then.
 
 N:231:of Domination
 I:19:13:0
-W:90:75:120:200000
+W:90:75:60:200000
 P:0:0d0:30:30:0
 F:HIDE_TYPE | KILL_DRAGON | KILL_DEMON | SLAY_EVIL | KILL_UNDEAD |
 F:FREE_ACT | XTRA_MIGHT | SHOW_MODS | XTRA_SHOTS | RES_DISEN | RES_FEAR
@@ -2918,11 +2918,11 @@ D:Sacred gloves of an archpriest whose name is not remembered.
 # The Amulet of Grom, the Wyrm Hunter
 
 N:233:of Grom, the Wyrm Hunter
-I:40:38:4
+I:40:38:0
 W:40:80:3:60000
 F:HIDE_TYPE | INSTA_ART | ACTIVATE | SPECIAL_GENE |
 F:RES_FIRE | RES_COLD | RES_ACID | RES_ELEC | RES_POIS |
-F:ESP_DRAGON | KILL_DRAGON | RES_FEAR | STR
+F:ESP_DRAGON | SLAY_DRAGON
 D:The amulet of Grom, the Wyrm Hunter. His whereabouts are unknown.
 
 
@@ -2942,7 +2942,7 @@ D:Gauntlets that convert the wielder's anger to strength in combat.
 N:235:'Artery Cutter'
 I:23:31:10
 W:65:50:50:200000
-P:0:3d4:24:18:0
+P:0:3d5:24:18:0
 F:CRIT | SHOW_MODS | VORPAL | RES_ELEC | SEE_INVIS
 D:A blade which can even cut the skin of stone giants,
 D:and without fail strikes the vital points of any creature.
@@ -2975,7 +2975,7 @@ D:in every glimpse of light it catches.
 # The Pair of Soft Leather Boots 'Skywalker'
 
 N:238:'Skywalker'
-I:30:2:5
+I:30:2:4
 W:40:40:10:100000
 P:2:1d1:0:0:16
 F:FREE_ACT | SPEED | RES_LITE | RES_COLD | RES_ELEC
@@ -3084,15 +3084,15 @@ D:surprise to the unaware victim, striking the vital points,
 D:and devouring its life force.
 
 
-# Awl-Pike 'Misericordia'
+# Trifurcate Spear 'Misericordia'
 
 N:247:'Misericordia'
-I:22:4:2
+I:22:26:2
 W:40:40:140:90000
-P:0:2d11:40:15:0
+P:0:3d7:40:15:0
 F:SHOW_MODS | STR | DEX | CHR | RES_FEAR | IM_COLD | RES_DISEN
 F:SLAY_EVIL | KILL_UNDEAD | SLAY_DEMON
-D:This awl-pike never misses when it comes to giving the final blow.
+D:This spear never misses when it comes to giving the final blow.
 
 
 # Thunder Axe 'Twilight'
@@ -3104,15 +3104,15 @@ P:0:7d10:25:30:0
 F:SHOW_MODS | STR | CON | RES_FEAR | FREE_ACT | IM_ELEC | IM_FIRE
 F:RES_LITE | RES_DARK | SEE_INVIS | SLAY_EVIL | SLAY_GIANT |
 F:SLAY_DEMON | SLAY_DRAGON | SLAY_UNDEAD | SLAY_ANIMAL | AGGRAVATE
-D:Handled calm at first, awaking only when combat draws near, almost like
-D:possessed, this axe splits skull and torso of even the mightiest foes.
+D:An axe of amok, cracking skulls and splitting torsos, causing
+D:mad terror and showing no mercy to anything in its way.
 
 
 # Broad Spear 'Impaler'
 
 N:249:'Impaler'
 I:22:7:0
-W:8:10:80:25000
+W:8:10:100:25000
 P:0:1d10:25:10:0
 F:SHOW_MODS | RES_FEAR | ESP_UNIQUE | RES_COLD | BRAND_COLD
 D:Driving right through the chest, piercing strongest armour.
@@ -3122,11 +3122,10 @@ D:Driving right through the chest, piercing strongest armour.
 
 N:250:of Kronos
 I:22:3:5
-W:80:60:50:100000
-P:0:5d3:111:20:0
+W:80:60:50:70000
+P:0:5d3:111:15:0
 F:SHOW_MODS | VORPAL | INFRA | REGEN | SLAY_ANIMAL |
-F:BRAND_ACID | RES_ACID | SPECIAL_GENE
-#DRAIN_MANA |
+F:BRAND_ACID | RES_ACID | DRAIN_MANA | SPECIAL_GENE
 D:A sickle gleaming with unmatched sharpness.
 
 
@@ -3247,7 +3246,8 @@ N:261:of the Dungeon Master
 I:32:15:0
 W:127:255:5:0
 P:0:0d0:0:0:0
-F:INSTA_ART | HIDE_TYPE | ACTIVATE
+F:INSTA_ART | HIDE_TYPE
+# | AUTO_ID
 D:Sees the things that can't be seen.
 D:(Not to be acquired by players!)
 
@@ -3340,7 +3340,7 @@ D:A bolt that eats through any armour and bites sharply into the flesh.
 
 N:269:of Uruk-Hai
 I:19:24:3
-W:50:10:240:65000
+W:50:10:200:65000
 P:0:4d1:20:24:0
 F:STR | XTRA_MIGHT | XTRA_SHOTS | ESP_GOOD | REGEN
 F:HIDE_TYPE | SHOW_MODS
@@ -3378,8 +3378,7 @@ N:272:'Dreadnought'
 I:37:33:6
 W:100:25:450:300000
 P:100:4d4:-8:0:25
-F:WINNERS_ONLY | STR | CON | RES_ACID | IM_ELEC | RES_MANA | RES_DISEN
-F:RES_SHARDS | RES_FEAR
+F:WINNERS_ONLY | STR | CON | IM_ELEC | RES_MANA | RES_DISEN | RES_FEAR
 D:An armor of thick gleaming layers of adamantite that appears utterly
 D:impenetrable. Powerful engraved runes ornate arm and leg protectors.
 
@@ -3403,7 +3402,7 @@ W:57:60:20:150000
 P:0:1d5:0:0:0
 F:MANA | REGEN_MANA | ACTIVATE
 F:RES_DARK | RES_NETHER | RES_ELEC | RES_COLD | ESP_GOOD
-D:A long sceptre crowned with a ram's skull, imbued with magic allowing you to
+D:An long sceptre crowned with a ram's skull, imbued with magic allowing you to
 D:sense those who oppose evil and to unleash devastating forces on your foe.
 D:A white glow emanates from its hollow eyes as you channel its powers.
 
@@ -3444,82 +3443,8 @@ D:Wielded by Lugh, hero of the skies, this sling will match the skill of even
 D:the greatest of fighters.
 
 
-# The Set of Cesti 'Fist of Chaos'
-
-N:278:'Fist of Chaos'
-I:31:5:-1
-W:65:40:40:0
-P:5:1d1:9:10:-23
-Z:hellfire brand
-F:SHOW_MODS | CURSED | HEAVY_CURSE | AUTO_CURSE | STR | CON | BLOWS
-F:BRAND_FIRE | ACTIVATE | FREE_ACT | RES_FEAR | RES_CHAOS | RES_FIRE | CHAOTIC
-D:Countless souls have fallen to the armoured fist of chaos. Even the most
-D:resilient foes shall get incinerated by its hellfire when invoked.
-
-
-# Infernal Axe 'End of Days'
-
-N:279:'End of Days'
-I:24:32:6
-W:95:40:400:0
-P:0:7d10:-22:30:0
-F:SHOW_MODS | CURSED | HEAVY_CURSE | AUTO_CURSE | STR | IM_FIRE | BRAND_FIRE
-F:SLAY_ANIMAL | SLAY_GIANT | SLAY_UNDEAD | SLAY_DEMON | KILL_DRAGON
-#F:AGGRAVATE
-D:"I had a dream, which was not all a dream. The bright sun was extinguish'd,
-D:and the stars did wander darkling in the eternal space, rayless, and pathless,
-D:and the icy earth swung blind and blackening in the moonless air. And the
-D:clouds perish'd, Darkness had no need of aid from them, she was the Universe."
-
-
-# The Great Spear 'Warp Spear'
-
-N:280:'Warp Spear'
-I:22:26:0
-W:55:30:130:0
-P:0:3d13:20:-20:0
-F:SHOW_MODS | CURSED | HEAVY_CURSE | AUTO_CURSE | CHAOTIC | RES_CHAOS
-F:ACTIVATE | RETURNING
-D:A strange, translucent weapon with flashes of blue light running through it
-D:and along its surface, emitting a constant hum, some call it the singing
-D:spear. It feels surprisingly light. At first the wielder may not notice how
-D:deeply imbued by corruption this spear is.
-
-# The Rhomphaia of Utumno
-
-N:281:of Utumno
-I:22:9:-9
-W:40:40:120:0
-P:0:3d4:16:26:0
-F:SHOW_MODS | CURSED | HEAVY_CURSE | ESP_GOOD | INT | WIS | DEX | SLAY_ANIMAL
-F:RES_FIRE | RES_ACID | RES_COLD | RES_ELEC | IM_POISON | RES_DARK | RES_NEXUS
-D:A relic from the fallen stronghold of Melkor. It will grant its powers only
-D:to those who have become as corrupted as the dwellers of Utumno.
-
-
-# The Pair of Witan Boots of Anchoring
-
-N:282:of Anchoring
-I:30:8:6
-W:60:40:100:140000
-P:8:1d1:0:0:21
-F:IGNORE_ACID | IGNORE_FIRE | SPEED | CLIMB | RES_NEXUS | RES_TELE | FREE_ACT
-F:HIDE_TYPE
-#F:STEALTH
-D:These massive boots seem like they would make each attempt to move a chore,
-D:but as you try and take a step it feels surprisingly swift and sure!
-
-# The Pair of Soft Leather Boots 'Seven-league Boots'
-
-N:283:'Seven-league Boots'
-I:30:2:7
-W:50:50:20:200000
-P:2:1d1:0:0:11
-F:SPEED | ACTIVATE
-D:Taking seven leagues per stride seems outrageous. Whether doing so be possible
-D:or not, it cannot be denied that the wearer of this magical footwear gains
-D:great speed. The seven leagues however might just be a teleportation trick!
-
+#weapon base items that don't have arts yet:
+#Awl-Pike, Rhomphaia
 
 
 # Combined item (3 pieces) Halberd 'Ang-Tir-Calad'
@@ -3537,14 +3462,14 @@ D:great speed. The seven leagues however might just be a teleportation trick!
 #I:tval:sval:pval  [ie. TV_SHIELD, SV_SMALL_LEATHER_SHIELD, +0] (defines.h)
 #W:(depth):(rarity[arts only]):(weight):(price)
 #C. Blue - some current details about depth and rarity:
-#  depth is minimum dlev. however, 'ood' (ie on easier dlevs) is possible.
-#  rarity roll succeeds at chance 1/rarity.
-#  note: rarity should be choosen for gameplay purpose (so arts dont become
-#    too super-rare) somewhat lower in case the k_info base type has
-#    already a very high rarity (this was already mentioned in randart.c).
-#  note: for make_artifact_special (INSTA_ART) the global variable object_level
-#    is also tested as a minimum for the arts k_info base object level
-#    (ood possible here too, ie higher insta art despite lower object level).
+#	depth is minimum dlev. however, 'ood' (ie on easier dlevs) is possible.
+#	rarity roll succeeds at chance 1/rarity.
+#	note: rarity should be choosen for gameplay purpose (so arts dont become
+#	      too super-rare) somewhat lower in case the k_info base type has
+#	      already a very high rarity (this was already mentioned in randart.c).
+#	note: for make_artifact_special (INSTA_ART) the global variable object_level
+#	      is also tested as a minimum for the arts k_info base object level
+#	      (ood possible here too, ie higher insta art despite lower object level).
 #A:(depth)/(chance[1/value])   [multiple definitions are possible]
 #P:(AC):(base dam.):(to-hit):(to-dam):(+AC?)
 #F:(attribute)|...

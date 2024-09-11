@@ -22,7 +22,6 @@ V:4.0.0
 
 
 # 0x00 --> nothing
-# Note: For transparency of t_*.prf files loaded over existing floors etc, use special feat FEAT_ALPHA! (138 / 8A)
 
 N:0:nothing
 G: :w
@@ -32,8 +31,7 @@ F:FLOOR
 
 N:1:open floor
 G:.:w
-F:FLOOR | DONT_NOTICE_RUNNING | SUPPORT_LIGHT | CAN_RUN | LAMP_LITE_SNOW
-F:NO_ARTICLE
+F:FLOOR | DONT_NOTICE_RUNNING | SUPPORT_LIGHT | CAN_RUN | LAMP_LITE_SNOW | NO_ARTICLE
 
 # 0x02 -> fountain
 N:2:fountain
@@ -119,10 +117,10 @@ G:_:W
 F:FLOOR | NOTICE | REMEMBER | CAN_RUN
 D:0:The fountain seems dried out.
 
-N:16:spider webs
+N:16:webs
 G:+:y
 F:CAN_PASS | NOTICE | WEB | NOTICE | TUNNELABLE | NO_ARTICLE
-D:1:You tunnel through the spider webs.
+D:1:You tunnel through the webs.
 
 # Trap -- the flags are not used by the program
 N:17:trap
@@ -159,13 +157,9 @@ F:NO_SHADE
 
 N:21:signpost
 #G:#:y  looks too much like trees.
-#G:+:u  looks too much like a door, sent two people on a wild goose chase..
-# % is used for a lot of things already :/
-# & is same as mirror, pfft - still maybe best
-# : could be used, currently only for rubble and some greens
 #possible: %:U, %:o, &:y, &:o, &:U, +:y, +:u, +:o
-G:&:o
-F:WALL | NO_WALK | CAN_PASS | NOTICE | SUPPORT_LIGHT | PERMANENT
+G:+:u
+F:WALL | NO_WALK | CAN_PASS | NOTICE | SUPPORT_LIGHT
 #NO_VISION |
 
 # 0x28 --> home door (strength 1)
@@ -223,22 +217,6 @@ F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT
 F:DONT_NOTICE_RUNNING | NIGHT_DARK | NO_SHADE
 #Note: For higher town houses, this must have NO_SHADE exactly when #60 has NO_SHADE too.
 
-#fake-wall
-N:29:permanent wall
-G:#:w
-M:183
-F:FLOOR
-F:NO_VISION | PERMANENT | SUPPORT_LIGHT
-F:LAMP_LITE | NO_SHADE
-
-N:30:wooden table
-G:=:u
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-
-N:31:open floor
-G:.:5
-F:FLOOR | DONT_NOTICE_RUNNING | SUPPORT_LIGHT | CAN_RUN | LAMP_LITE_SNOW
-F:NO_ARTICLE
 
 # 0x2x --> locked door (power 0)
 
@@ -404,13 +382,13 @@ F:CAN_LEVITATE | SUPPORT_LIGHT
 F:TUNNELABLE
 D:1:You dig in the rubble.
 
-# 0x32 --> magma vein -- renamed to intrusion, like in umoria
+# 0x32 --> magma vein
 
-N:50:magma intrusion
+N:50:magma vein
 G:%:D
 F:WALL | NO_WALK | CAN_PASS | NO_VISION | NOTICE | SUPPORT_LIGHT
 F:DONT_NOTICE_RUNNING | TUNNELABLE | LAMP_LITE_OPTIONAL
-D:1:You tunnel into the magma intrusion.
+D:1:You tunnel into the magma vein.
 
 # 0x33 --> quartz vein
 
@@ -422,12 +400,12 @@ D:1:You tunnel into the quartz vein.
 
 # 0x34 --> magma vein + treasure
 
-N:52:magma intrusion
+N:52:magma vein
 G:%:D
 M:50
 F:WALL | NO_WALK | CAN_PASS | NO_VISION | NOTICE | SUPPORT_LIGHT
 F:DONT_NOTICE_RUNNING | TUNNELABLE | LAMP_LITE_OPTIONAL
-D:1:You tunnel into the magma intrusion.
+D:1:You tunnel into the magma vein.
 
 # 0x35 --> quartz vein + treasure
 
@@ -440,11 +418,11 @@ D:1:You tunnel into the quartz vein.
 
 # 0x36 --> magma vein + known treasure
 
-N:54:magma intrusion with treasure
+N:54:magma vein with treasure
 G:*:o
 F:WALL | NO_WALK | CAN_PASS | NO_VISION | NOTICE | SUPPORT_LIGHT
 F:DONT_NOTICE_RUNNING | TUNNELABLE
-D:1:You tunnel into the magma intrusion.
+D:1:You tunnel into the magma vein.
 
 # 0x37 --> quartz vein + known treasure
 
@@ -576,7 +554,7 @@ F:FLOOR | REMEMBER | NOTICE | LAMP_LITE_OPTIONAL
 N:74:Building
 G:1:U
 F:FLOOR | PERMANENT | REMEMBER | NOTICE | CAN_RUN
-F:BLOCK_CONTACT | NO_PROB
+F:BLOCK_CONTACT
 
 # 75 --> 78 Quests index
 #Note: If FEAT_PERM_EXTRA has NO_SHADE, so should this,
@@ -607,11 +585,10 @@ F:DONT_NOTICE_RUNNING | LAMP_LITE
 F:NO_SHADE
 
 #added to visually "blank" unused space on floors that are smaller than possible
-#N:79:permanent clear wall
-N:79:nothing
+N:79:permanent clear wall
 G: :w
 F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING | BOUNDARY | NO_ARTICLE
+F:DONT_NOTICE_RUNNING | BOUNDARY
 
 #permanent wall in the Nether Realm
 N:80:spirit wall
@@ -629,13 +606,11 @@ D:2:a very hard and steep stone wall block blocking your way
 
 N:82:solidified clouds
 G:.:W
-F:FLOOR | DONT_NOTICE_RUNNING | CAN_RUN | SUPPORT_LIGHT | LAMP_LITE
-F:NO_ARTICLE
+F:FLOOR | DONT_NOTICE_RUNNING | CAN_RUN | SUPPORT_LIGHT | LAMP_LITE | NO_ARTICLE
 
 N:83:snow
 G:.:w
 F:FLOOR | DONT_NOTICE_RUNNING | CAN_RUN | SUPPORT_LIGHT | LAMP_LITE
-F:NO_ARTICLE
 
 N:84:stream of shallow water
 G:~:B
@@ -650,7 +625,7 @@ G:~:R
 S:r:R:R:R:y:o:R
 E:8d4:2:FIRE
 F:ATTR_MULTI
-F:FLOOR | CAN_FEATHER | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT | GLOW
+F:FLOOR | CAN_FEATHER | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT
 D:0:The lava BURNS you.
 
 N:86:stream of shallow lava
@@ -658,7 +633,7 @@ G:.:r
 S:r:R:R:R:R:R:r
 E:4d4:2:FIRE
 F:ATTR_MULTI
-F:FLOOR | CAN_FEATHER | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT | GLOW
+F:FLOOR | CAN_FEATHER | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT
 D:0:The lava burns you.
 
 N:87:dark pit
@@ -745,7 +720,7 @@ D:2:a tree blocking your way
 
 N:97:mountain chain
 G:^:U
-F:CAN_CLIMB | CAN_PASS | SUPPORT_LIGHT | LAMP_LITE
+F:CAN_CLIMB | CAN_PASS | SUPPORT_LIGHT
 F:WALL | NO_WALK | NO_VISION | NIGHT_DARK
 F:DONT_NOTICE_RUNNING | PERMANENT
 F:LAMP_LITE_OPTIONAL | NO_SHADE | NO_LITE_WHITEN
@@ -806,7 +781,7 @@ S:b:B:B:B:B:b:B
 F:ATTR_MULTI
 #F:FLOOR | CAN_FEATHER | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT | CAN_RUN
 F:DONT_NOTICE_RUNNING | NO_ARTICLE
-F:WALL | NO_WALK | NO_VISION | PERMANENT | BOUNDARY | GLOW
+F:WALL | NO_WALK | NO_VISION | PERMANENT | BOUNDARY
 
 #impassable by admins, like PERM_FEAT_SOLID just as mountain chain
 N:104:high mountain chain
@@ -820,7 +795,7 @@ D:2:a very hard stone block blocking your way
 #just a functional-less marker for divine_gateway(), to look cool */
 N:105:unstable void jumpgate
 G:+:M
-F:FLOOR | NOTICE | REMEMBER | CAN_RUN | GLOW
+F:FLOOR | NOTICE | REMEMBER | CAN_RUN
 D:0:An unstable silhouette of a void jumpgate in the making
 
 N:106:abyss
@@ -852,181 +827,63 @@ F:ATTR_MULTI
 F:FLOOR | CAN_FEATHER | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT | CAN_RUN
 F:DONT_NOTICE_RUNNING
 
-N:111:cordon
+N:111:Cordon
 G:-:u
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
 D:1:You cannot cut this cordon.
 
-N:112:cordon
+N:112:Cordon
 G:|:u
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
 D:1:You cannot cut this cordon.
 
-N:113:cordon
+N:113:Cordon
 G:/:u
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
 D:1:You cannot cut this cordon.
 
-N:114:cordon
+N:114:Cordon
 G:\:u
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
 D:1:You cannot cut this cordon.
 
-N:115:cordon
+N:115:Cordon
 G:o:u
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
 D:1:You cannot cut this cordon.
 
-N:116:bars
+N:116:Bars
 G:-:s
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-F:NO_ARTICLE
 D:1:You cannot break down these bars.
 
-N:117:bars
+N:117:Bars
 G:|:s
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-F:NO_ARTICLE
-D:1:You cannot break down these bars.
+D:1:You cannot break down there bars.
 
-N:118:bars
+N:118:Bars
 G:/:s
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-F:NO_ARTICLE
 D:1:You cannot break down these bars.
 
-N:119:bars
+N:119:Bars
 G:\:s
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-F:NO_ARTICLE
 D:1:You cannot break down these bars.
 
-N:120:bars
+N:120:Bars
 G:o:s
 F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-F:NO_ARTICLE
 D:1:You cannot break down these bars.
 
-N:121:empty sky
-G: :w
-F:WALL | NO_WALK | LOS | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING | BOUNDARY | NO_ARTICLE
 
-N:122:star
-G:.:0
-F:WALL | NO_WALK | LOS | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING | BOUNDARY
+# 121..159 unused -------------------------------------------------------------
 
-N:123:star
-G:+:0
-F:WALL | NO_WALK | LOS | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING | BOUNDARY
-
-N:124:star
-G:*:0
-F:WALL | NO_WALK | LOS | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING | BOUNDARY
-
-N:125:marble wall
-G:#:w
-F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING
-F:NO_SHADE
-#F:LAMP_LITE
-
-N:126:marble balustrade
-G:-:w
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-D:1:You cannot break down this marble balustrade.
-
-N:127:marble balustrade
-G:|:w
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-D:1:You cannot break down this marble balustrade.
-
-N:128:marble balustrade
-G:/:w
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-D:1:You cannot break down this marble balustrade.
-
-N:129:marble balustrade
-G:\:w
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-D:1:You cannot break down this marble balustrade.
-
-N:130:marble balustrade
-G:o:w
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-D:1:You cannot break down this marble balustrade.
-
-#--visual bug: gets shaded outside of lamp rad
-# Fireplace (Inn)
-N:131:hearthfire
-G:*:f
-E:2d5:2:FIRE
-D:0:The blazing fire burns you!
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-F:GLOW | NO_SHADE
-D:0:The inn's hearthfire.
-#--visual bug: gets shaded outside of lamp rad
-N:132:hearthfire's embers
-#using hellfire instead of embers for the ash-grey part ^^
-G:*:X
-E:1d3:2:FIRE
-D:0:The glowing embers burn you!
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-F:GLOW | NO_SHADE
-D:0:Embers of the inn's hearthfire.
-
-N:133:off-grid floor
-G:.:7
-F:FLOOR | DONT_NOTICE_RUNNING | SUPPORT_LIGHT | CAN_RUN | LAMP_LITE_SNOW
-F:NO_ARTICLE
-
-N:134:inn floor
-G:.:u
-F:FLOOR | CAN_RUN | SUPPORT_LIGHT | NO_ARTICLE
-F:DONT_NOTICE_RUNNING | PROTECTED | LAMP_LITE_OPTIONAL | NO_SHADE | REMEMBER
-
-#special cyclic staircase 'up' to leave a dungeon in traversal direction at the final floor
-N:135:staircase leading out
-G:<:w
-F:FLOOR | PERMANENT | NOTICE | SUPPORT_LIGHT | REMEMBER | CAN_RUN
-D:0:A staircase leading out
-
-#special cyclic staircase 'down' to leave a dungeon in traversal direction at the final floor
-N:136:staircase leading out
-G:>:w
-F:FLOOR | PERMANENT | NOTICE | SUPPORT_LIGHT | REMEMBER | CAN_RUN
-D:0:A staircase leading out
-
-# Permanent floor, added for t_refuge.txt, just to prevent monster spawn (cave_naked_bold() avoids PERMANENT)
-N:137:open floor
-G:.:w
-M:1
-F:FLOOR | DONT_NOTICE_RUNNING | SUPPORT_LIGHT | CAN_RUN | LAMP_LITE_SNOW
-F:PERMANENT | ALLOW_TELE | NO_ARTICLE
-
-# Special floor that gets ignored in init1.c -> process_dungeon_file_aux() -> 'D:' lines
-N:138:alpha-transparent floor
-G:.:m
-F:FLOOR
-
-
-# HOLE 139..158 -------------------------------------------------------------
-
-
-#permanent magma vein
-N:159:magma intrusion
-G:%:D
-M:50
-F:WALL | NO_WALK | SUPPORT_LIGHT | LAMP_LITE_OPTIONAL
-F:DONT_NOTICE_RUNNING | PERMANENT | BOUNDARY
-D:1:This magma wall seems astonishingly solid.
 
 N:160:void jumpgate
 G:+:v
-F:FLOOR | REMEMBER | NOTICE | PERMANENT | CAN_RUN | GLOW
+F:FLOOR | REMEMBER | NOTICE | PERMANENT | CAN_RUN
 D:0:A dark rift opens to the void here.
 
 
@@ -1052,9 +909,15 @@ G:0:D
 F:FLOOR | REMEMBER | NOTICE | CAN_RUN
 D:0:Images of pain and death feels your mind.
 
-
-# HOLE 165..171 -------------------------------------------------------------
-
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
+# XXX
 
 # Used as a marked for random quests
 N:172:floor
@@ -1082,23 +945,23 @@ F:FLOOR
 
 N:176:Transport beacon
 G:>:G
-F:FLOOR | REMEMBER | NOTICE | PERMANENT | CAN_RUN | GLOW
+F:FLOOR | REMEMBER | NOTICE | PERMANENT | CAN_RUN
 D:0:A teleporter beacon.
 
 N:177:lava wall
 G:#:R
 S:R:R:r:r:U:u:R
 F:ATTR_MULTI
-F:WALL | NO_WALK | NO_VISION | PERMANENT | DONT_NOTICE_RUNNING | GLOW
+F:WALL | NO_WALK | NO_VISION | PERMANENT | DONT_NOTICE_RUNNING
 D:1:The lava is far too hot to tunnel into it.
 D:2:a lava wall blocking your way
 
 N:178:great fire
 G:%:v
 S:R:R:y:v:y:v:R
-E:150d2:10:HELLFIRE
+E:150d2:10:HELL_FIRE
 F:ATTR_MULTI
-F:FLOOR | REMEMBER | NOTICE | PERMANENT | GLOW
+F:FLOOR | REMEMBER | NOTICE | PERMANENT
 D:0:This fire is so powerful it could destroy even the most powerful artifacts.
 
 N:179:path to the next area
@@ -1133,14 +996,8 @@ G:#:w
 F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT
 F:DONT_NOTICE_RUNNING | LAMP_LITE | NO_SHADE | BOUNDARY
 
-#like 183, but special extended colour (testing)
-N:184:permanent wall
-G:#:7
-F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING | LAMP_LITE | NO_SHADE | BOUNDARY
 
-
-# HOLE 185..186 -------------------------------------------------------------
+# XXX 184 - 186  unused -------------------------------------------------------------
 
 
 # 187 --> terrain -- deep water
@@ -1155,11 +1012,9 @@ F:FLOOR | CAN_FEATHER | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT
 N:188:glass wall
 #G:.:B
 G:#:B
-#F:NO_WALK | WALL | PERMANENT | NOTICE
-#F:DONT_NOTICE_RUNNING
-F:LOS | NO_WALK | WALL | PERMANENT | DONT_NOTICE_RUNNING | BLOCK_CONTACT
-#making glass transparent again? - Kurzel
-D:1:This glass seems to be totally impenetrable.
+F:NO_WALK | WALL | PERMANENT | NOTICE
+F:DONT_NOTICE_RUNNING
+D:1:This glass seems to be totaly impenetrable.
 D:2:a glass wall blocking your way
 
 # Illusion wall -- can't see but can pass
@@ -1251,7 +1106,7 @@ S:y:y:y:R:r:y:R
 E:2d5:2:FIRE
 D:0:The blazing fire burns you!
 F:ATTR_MULTI
-F:FLOOR | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT | GLOW
+F:FLOOR | CAN_LEVITATE | REMEMBER | SUPPORT_LIGHT
 F:DONT_NOTICE_RUNNING
 
 # Permanent rubble -- town use
@@ -1282,7 +1137,7 @@ F:DONT_NOTICE_RUNNING
 N:210:protected floor
 G:.:u
 F:FLOOR | CAN_RUN | SUPPORT_LIGHT | NO_ARTICLE
-F:DONT_NOTICE_RUNNING | PROTECTED | NO_PROB
+F:DONT_NOTICE_RUNNING | PROTECTED
 
 # Some decoration grids, made for Gondolin entrance to prevent people from getting stuck in there - C. Blue
 
@@ -1341,7 +1196,7 @@ D:2:a very hard stone block blocking your way
 N:218:decorative deep lava
 G:~:R
 S:R:R:r:R:R:o:y
-F:ATTR_MULTI | NO_ARTICLE | GLOW
+F:ATTR_MULTI | NO_ARTICLE
 F:WALL | NO_WALK | NO_VISION | PERMANENT | DONT_NOTICE_RUNNING | SUPPORT_LIGHT
 
 N:219:bush
@@ -1388,11 +1243,11 @@ D:2:A hideous looking ornate door is blocking your way.
 
 N:225:unsealed door
 G:':r
-F:FLOOR | NOTICE | REMEMBER | CAN_RUN 
+F:FLOOR | NOTICE | REMEMBER | CAN_RUN
 
 N:226:highly protected floor
 G:.:U
-F:FLOOR | CAN_RUN | SUPPORT_LIGHT | NO_PROB
+F:FLOOR | CAN_RUN | SUPPORT_LIGHT
 F:DONT_NOTICE_RUNNING | PROTECTED | BLOCK_CONTACT
 
 $ARCADE_SERVER$N:227:orange wall
@@ -1415,48 +1270,23 @@ D:1:You tunnel into the moving powerup.
 N:230:sealed door
 G:+:r
 F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT
-F:DONT_NOTICE_RUNNING | NOTICE | ENTER_FROM_SPECIAL
+F:DONT_NOTICE_RUNNING | NOTICE
 D:0:A hideous looking ornate door is blocking your way.
 D:1:You bash the door but it doesn't seem to move.
 D:2:A hideous looking ornate door is blocking your way.
 
 N:231:sickbay exit
 G:+:g
-F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT | PROTECTED
-F:DONT_NOTICE_RUNNING | NOTICE | ENTER_FROM_SPECIAL | NO_PROB
+F:WALL | NO_WALK | NO_VISION | PERMANENT | SUPPORT_LIGHT
+F:DONT_NOTICE_RUNNING | NOTICE
 D:0:You are not allowed to enter the temple's sickbay.
 D:1:Please do not disturb the patients!
 D:2:You are not allowed to enter the temple's sickbay.
 
 N:232:sickbay area
 G:_:u
-F:FLOOR | CAN_RUN | SUPPORT_LIGHT | ENTER_FROM_SPECIAL
-F:DONT_NOTICE_RUNNING | PROTECTED | BLOCK_CONTACT | NO_PROB
-
-N:233:Iridescent Gate
-G:+:M
-F:FLOOR | REMEMBER | NOTICE | PERMANENT | CAN_RUN | GLOW
-D:0:An iridescent rift opens to the void here.
-
-N:234:grand mirror
-G:&:c
-F:WALL | NO_WALK | LOS
-F:REMEMBER | PERMANENT | DONT_NOTICE_RUNNING | NOTICE
-D:0:A great mirror stands before you. Suddenly your image moves!
-#D:1:You bash the mirror and it shatters into a thousand pieces!
-D:2:A great mirror stands before you. Suddenly your image moves!
-
-N:235:shattered mirror
-G:_:c
-F:FLOOR | CAN_RUN
-F:REMEMBER | PERMANENT | DONT_NOTICE_RUNNING | NOTICE
-D:0:A shattered mirror lies on the floor, its shards twinkling magically.
-D:2:A shattered mirror lies on the floor, its shards twinkling magically.
-
-N:236:barred floor
-G:.:w
-F:FLOOR | DONT_NOTICE_RUNNING | SUPPORT_LIGHT | CAN_RUN | LAMP_LITE_SNOW
-F:NO_ARTICLE | ENTER_FROM_SPECIAL
+F:FLOOR | CAN_RUN | SUPPORT_LIGHT
+F:DONT_NOTICE_RUNNING | PROTECTED | BLOCK_CONTACT
 
 
 # NOTE: 255 is reserved for special purpose ('not done yet' indicator)

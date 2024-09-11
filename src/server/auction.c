@@ -13,7 +13,7 @@
 
 #ifdef AUCTION_SYSTEM
 
-/*
+/* 
  * TODO:
  * - Debugging
  */
@@ -26,10 +26,7 @@ void auction_clear(int auction_id);
 void auction_add_bid(int auction_id, s32b bid, s32b bidder);
 void auction_remove_bid(int auction_id, int bid_id);
 void auction_list_print_item(int Ind, int auction_id);
-#if 0 /* not needed, it's in common.c/externs.h */
-//cptr my_strcasestr(cptr haystack, cptr needle);
-char* my_strcasestr(cptr haystack, cptr needle);
-#endif
+cptr my_strcasestr(cptr haystack, cptr needle);
 
 /* TODO: How badly can this mess up shopping? */
 void process_auctions()
@@ -94,7 +91,7 @@ void process_auctions()
 								auc_ptr->winning_bid = j;
 								break;
 							}
-
+							
 						}
 						if (auc_ptr->winning_bid == -1)
 						{
@@ -221,7 +218,7 @@ int new_auction()
 		if (auctions[i].status == AUCTION_STATUS_EMPTY &&
 		    auctions[i].start + 3600 < now)
 		{
-			return(i);
+			return i;
 		}
 	}
 
@@ -229,7 +226,7 @@ int new_auction()
 	GROW(auctions, auction_alloc, auction_alloc + 16, auction_type);
 	i = auction_alloc;
 	auction_alloc += 16;
-	return(i);
+	return i;
 }
 
 int count_auctions_player(s32b player)
@@ -245,7 +242,7 @@ int count_auctions_player(s32b player)
 		}
 	}
 
-	return(count);
+	return count;
 }
 
 bool auction_parse_money(cptr s, s32b *amount)
@@ -283,13 +280,13 @@ bool auction_parse_money(cptr s, s32b *amount)
 		else
 		{
 			/* Error */
-			return(FALSE);
+			return FALSE;
 		}
 		i++;
 	}
 
 	*amount = price;
-	return(TRUE);
+	return TRUE;
 }
 
 bool auction_parse_time(cptr s, time_t *amount)
@@ -336,7 +333,7 @@ bool auction_parse_time(cptr s, time_t *amount)
 		else
 		{
 			/* Error */
-			return(FALSE);
+			return FALSE;
 		}
 		i++;
 	}
@@ -345,7 +342,7 @@ bool auction_parse_time(cptr s, time_t *amount)
 	len += value;
 
 	*amount = len;
-	return(TRUE);
+	return TRUE;
 }
 
 /* Return the amount of time in a human readable form */
@@ -418,7 +415,7 @@ char *auction_format_time(time_t t)
 		}
 	}
 
-	return(buf);
+	return buf;
 }
 
 void auction_clear(int auction_id)
@@ -482,7 +479,7 @@ void auction_add_bid(int auction_id, s32b bid, s32b bidder)
 		auc_ptr->bids_cnt++;
 
 		placed = FALSE;
-
+		
 		/* Keep the bids sorted, lowest bid is first */
 		for (i = 0; i < auc_ptr->bids_cnt - 1; i++)
 		{
@@ -531,7 +528,7 @@ void auction_remove_bid(int auction_id, int bid_id)
 	{
 		SHRINK(auc_ptr->bids, auc_ptr->bids_cnt, auc_ptr->bids_cnt - 1, bid_type);
 	}
-	auc_ptr->bids_cnt--;
+	auc_ptr->bids_cnt--;	
 }
 
 bool auction_mode_check(int Ind, int auction_id)
@@ -541,12 +538,12 @@ bool auction_mode_check(int Ind, int auction_id)
 	player_type *p_ptr = Players[Ind];
 
 	if ((auc_ptr->mode == MODE_EVERLASTING) && (p_ptr->mode != MODE_EVERLASTING))
-		return(FALSE); /* covers charmode_trading_restrictions 0 and 1 */
+		return FALSE; /* covers charmode_trading_restrictions 0 and 1 */
 	if ((cfg.charmode_trading_restrictions == 2) &&
 	    ((auc_ptr->mode & MODE_EVERLASTING) != (p_ptr->mode & MODE_EVERLASTING)))
-		return(FALSE); /* added check for charmode_trading_restrictions level 2 */
+		return FALSE; /* added check for charmode_trading_restrictions level 2 */
 
-	return(TRUE);
+	return TRUE;
 
 #else
 
@@ -555,7 +552,7 @@ bool auction_mode_check(int Ind, int auction_id)
 	forge_dummy.owner = auc_ptr->owner; /* assuming auction_type.owner is same kind of 'id' value
 					    as o_ptr->owner here; correct me if wrong please - C. Blue */
 	forge_dummy.mode = auc_ptr->mode;
-	return(compat_pomode(Ind, &forge_dummy) == NULL);
+	return (compat_pomode(Ind, &forge_dummy) == NULL);
 #endif
 }
 
@@ -768,7 +765,7 @@ void auction_player_death(s32b id)
 	if (X < 0) { \
 		inven_carry(Ind, o_ptr); \
 		auction_clear(auction_id); \
-		return(AUCTION_ERROR_OVERFLOW); \
+		return AUCTION_ERROR_OVERFLOW; \
 	}
 
 int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price_string, cptr duration_string)
@@ -787,19 +784,19 @@ int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price
 	if (slot < 0 || slot >= INVEN_PACK)
 	{
 		/* Illegal slot */
-		return(AUCTION_ERROR_INVALID_SLOT);
+		return AUCTION_ERROR_INVALID_SLOT;
 	}
 
 	if (!p_ptr->inventory[slot].k_idx)
 	{
 		/* Empty slot */
-		return(AUCTION_ERROR_EMPTY_SLOT);
+		return AUCTION_ERROR_EMPTY_SLOT;
 	}
 
 	if (count_auctions_player(p_ptr->id) > AUCTION_MAX_ITEMS_PLAYER)
 	{
 		/* Too many auctions */
-		return(AUCTION_ERROR_TOO_MANY);
+		return AUCTION_ERROR_TOO_MANY;
 	}
 
 	auction_id = new_auction();
@@ -816,11 +813,6 @@ int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price
 	o_ptr->number = 1;
 	if (is_magic_device(o_ptr->tval)) divide_charged_item(o_ptr, &p_ptr->inventory[slot], 1);
 
-#ifdef ENABLE_SUBINVEN
-	/* If we auction a subinventory, remove all items and place them into the player's inventory */
-	if (o_ptr->tval == TV_SUBINVEN && 1 >= o_ptr->number) empty_subinven(Ind, slot, FALSE);
-#endif
-
 	inven_item_increase(Ind, slot, -1);
 	inven_item_describe(Ind, slot);
 	inven_item_optimize(Ind, slot);
@@ -836,7 +828,7 @@ int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price
 		auction_clear(auction_id);
 
 		/* Too cheap */
-		return(AUCTION_ERROR_TOO_CHEAP);
+		return AUCTION_ERROR_TOO_CHEAP;
 	}
 #endif
 
@@ -848,19 +840,19 @@ int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price
 		auction_clear(auction_id);
 
 		/* Too cheap */
-		return(AUCTION_ERROR_INVALID_PRICE);
+		return AUCTION_ERROR_INVALID_PRICE;
 	}
 	auction_overflow_check(starting_price);
 
 	if (!auction_parse_money(buyout_price_string, &buyout_price))
 	{
-		/* return(the item */
+		/* Return the item */
 		inven_carry(Ind, o_ptr);
 
 		auction_clear(auction_id);
 
 		/* Too cheap */
-		return(AUCTION_ERROR_INVALID_PRICE);
+		return AUCTION_ERROR_INVALID_PRICE;
 	}
 	auction_overflow_check(buyout_price);
 
@@ -909,7 +901,7 @@ int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price
 		auction_clear(auction_id);
 
 		/* Too cheap */
-		return(AUCTION_ERROR_EITHER_BID_OR_BUYOUT);
+		return AUCTION_ERROR_EITHER_BID_OR_BUYOUT;		
 	}
 
 	if (!auction_parse_time(duration_string, &duration))
@@ -920,7 +912,7 @@ int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price
 		auction_clear(auction_id);
 
 		/* Too cheap */
-		return(AUCTION_ERROR_INVALID_DURATION);
+		return AUCTION_ERROR_INVALID_DURATION;
 	}
 	auction_overflow_check(duration);
 
@@ -974,7 +966,7 @@ int auction_set(int Ind, int slot, cptr starting_price_string, cptr buyout_price
 	msg_print(Ind, "\377B[@] \377wIf you want to start this auction, type \377G/auction start");
 	msg_print(Ind, "\377B[@] \377wIf not, type \377G/auction cancel");
 
-	return(0);
+	return 0;
 }
 
 /* Player confirms that (s)he wants to start the auction */
@@ -1001,16 +993,16 @@ int auction_start(int Ind)
 		else
 		{
 			/* Cannot start */
-			return(AUCTION_ERROR_ALREADY_STARTED);
+			return AUCTION_ERROR_ALREADY_STARTED;
 		}
 	}
 	else
 	{
 		/* No auction to be started */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
-	return(0);
+	return 0;
 }
 
 /* Multi-purpose cancel function */
@@ -1024,7 +1016,7 @@ int auction_cancel(int Ind, int auction_id)
 	if (auction_id <= 0 || auction_id >= auction_alloc)
 	{
 		/* Invalid id */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
 	auc_ptr = &auctions[auction_id];
@@ -1042,12 +1034,12 @@ int auction_cancel(int Ind, int auction_id)
 			else
 			{
 				/* Not owner, wrong id */
-				return(AUCTION_ERROR_INVALID_ID);
+				return AUCTION_ERROR_INVALID_ID;
 			}
 			break;
 		case AUCTION_STATUS_BIDDING:
 #ifdef AUCTION_ALLOW_CANCEL_OWN_ITEM
-/* Not allowed by default */
+/* Not allowed by default */	
 			if (auc_ptr->owner == p_ptr->id)
 			{
 				auc_ptr->status = AUCTION_STATUS_CANCELLED;
@@ -1127,20 +1119,20 @@ int auction_cancel(int Ind, int auction_id)
 						/* Remove bid */
 						auction_remove_bid(auction_id, i);
 
-						return(0);
+						return 0;
 					}
 				}
 
 				/* No bid found, (s)he cannot do anything */
-				return(AUCTION_ERROR_NOT_SUPPORTED);
+				return AUCTION_ERROR_NOT_SUPPORTED;
 			}
 			break;
 		default:
 			/* Not supported */
-			return(AUCTION_ERROR_NOT_SUPPORTED);
+			return AUCTION_ERROR_NOT_SUPPORTED;
 	}
 
-	return(0);
+	return 0;
 }
 
 int auction_place_bid(int Ind, int auction_id, cptr bid_string)
@@ -1157,13 +1149,13 @@ int auction_place_bid(int Ind, int auction_id, cptr bid_string)
 	if (auction_id <= 0 || auction_id >= auction_alloc)
 	{
 		/* Invalid id */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
 	if (p_ptr->inval)
 	{
 		/* Invalid account */
-		return(AUCTION_ERROR_INVALID_ACCOUNT);
+		return AUCTION_ERROR_INVALID_ACCOUNT;
 	}
 
 	auc_ptr = &auctions[auction_id];
@@ -1171,26 +1163,26 @@ int auction_place_bid(int Ind, int auction_id, cptr bid_string)
 	if (auc_ptr->status != AUCTION_STATUS_BIDDING)
 	{
 		/* Not in bidding phase */
-		return(AUCTION_ERROR_NOT_BIDDING);
+		return AUCTION_ERROR_NOT_BIDDING;
 	}
 
 	if (auc_ptr->owner == p_ptr->id || lookup_player_account(auc_ptr->owner) == p_ptr->account)
 	{
 		/* Own item, go cancel it */
-		return(AUCTION_ERROR_OWN_ITEM);
+		return AUCTION_ERROR_OWN_ITEM;
 	}
 
 	if (!auc_ptr->starting_price)
 	{
 		/* Not open for bidding */
-		return(AUCTION_ERROR_NO_BIDDING);
+		return AUCTION_ERROR_NO_BIDDING;
 	}
 
 	if (!auction_mode_check(Ind, auction_id))
 	{
 		/* Non-everlasting / everlasting mode restrictions */
-		if (p_ptr->mode & MODE_EVERLASTING) return(AUCTION_ERROR_NONEVERLASTING_ITEM);
-		else return(AUCTION_ERROR_EVERLASTING_ITEM);
+		if (p_ptr->mode & MODE_EVERLASTING) return AUCTION_ERROR_NONEVERLASTING_ITEM;
+		else return AUCTION_ERROR_EVERLASTING_ITEM;
 	}
 
 #ifndef RPG_SERVER
@@ -1199,31 +1191,31 @@ int auction_place_bid(int Ind, int auction_id, cptr bid_string)
 	if (o_ptr->level > p_ptr->lev)
 	{
 		/* The player's level is too low */
-		return(AUCTION_ERROR_INSUFFICIENT_LEVEL);
+		return AUCTION_ERROR_INSUFFICIENT_LEVEL;
 	}
 #endif
 
 	if (!auction_parse_money(bid_string, &bid))
 	{
 		/* Invalid price */
-		return(AUCTION_ERROR_INVALID_PRICE);
+		return AUCTION_ERROR_INVALID_PRICE;
 	}
 	if (bid < 0)
 	{
 		/* Overflow */
-		return(AUCTION_ERROR_OVERFLOW);
+		return AUCTION_ERROR_OVERFLOW;
 	}
 
 	if (bid < auc_ptr->starting_price)
 	{
 		/* Bid is too small */
-		return(AUCTION_ERROR_TOO_SMALL);
+		return AUCTION_ERROR_TOO_SMALL;
 	}
 
 	if (auc_ptr->buyout_price && bid >= auc_ptr->buyout_price)
 	{
 		/* Buy-out */
-		return(auction_buyout(Ind, auction_id));
+		return auction_buyout(Ind, auction_id);
 	}
 
 	for (i = 0; i < auc_ptr->bids_cnt; i++)
@@ -1241,7 +1233,7 @@ int auction_place_bid(int Ind, int auction_id, cptr bid_string)
 	msg_format(Ind, "\377B[@] \377GYour bid of %d on item #%d has been placed.", bid, auction_id);
 	msg_format(Ind, "\377B[@]  \377w%s", auc_ptr->desc);
 
-	return(0);
+	return 0;
 }
 
 int auction_buyout(int Ind, int auction_id)
@@ -1258,13 +1250,13 @@ int auction_buyout(int Ind, int auction_id)
 	if (auction_id <= 0 || auction_id >= auction_alloc)
 	{
 		/* Invalid id */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
 	if (p_ptr->inval)
 	{
 		/* Invalid account */
-		return(AUCTION_ERROR_INVALID_ACCOUNT);
+		return AUCTION_ERROR_INVALID_ACCOUNT;
 	}
 
 	auc_ptr = &auctions[auction_id];
@@ -1272,26 +1264,26 @@ int auction_buyout(int Ind, int auction_id)
 	if (auc_ptr->status != AUCTION_STATUS_BIDDING)
 	{
 		/* Not in bidding phase */
-		return(AUCTION_ERROR_NOT_BIDDING);
+		return AUCTION_ERROR_NOT_BIDDING;
 	}
 
 	if (auc_ptr->owner == p_ptr->id || lookup_player_account(auc_ptr->owner) == p_ptr->account)
 	{
 		/* Own item, go cancel it */
-		return(AUCTION_ERROR_OWN_ITEM);
+		return AUCTION_ERROR_OWN_ITEM;
 	}
 
 	if (!auc_ptr->buyout_price)
 	{
 		/* Buyout isn't allowed */
-		return(AUCTION_ERROR_NO_BUYOUT);
+		return AUCTION_ERROR_NO_BUYOUT;
 	}
 
 	if (!auction_mode_check(Ind, auction_id))
 	{
 		/* Non-everlasting / everlasting mode restrictions */
-		if (p_ptr->mode & MODE_EVERLASTING) return(AUCTION_ERROR_NONEVERLASTING_ITEM);
-		else return(AUCTION_ERROR_EVERLASTING_ITEM);
+		if (p_ptr->mode & MODE_EVERLASTING) return AUCTION_ERROR_NONEVERLASTING_ITEM;
+		else return AUCTION_ERROR_EVERLASTING_ITEM;
 	}
 
 #ifndef RPG_SERVER
@@ -1300,14 +1292,14 @@ int auction_buyout(int Ind, int auction_id)
 	if (o_ptr->level > p_ptr->lev)
 	{
 		/* The player's level is too low */
-		return(AUCTION_ERROR_INSUFFICIENT_LEVEL);
+		return AUCTION_ERROR_INSUFFICIENT_LEVEL;
 	}
 #endif
 
 	if (total_money < auc_ptr->buyout_price)
 	{
 		/* Can't afford it */
-		return(AUCTION_ERROR_INSUFFICIENT_MONEY);
+		return AUCTION_ERROR_INSUFFICIENT_MONEY;
 	}
 
 	/* Use cash from the bank first */
@@ -1355,7 +1347,7 @@ int auction_buyout(int Ind, int auction_id)
 	msg_format(Ind, "\377B[@] \377GYou have bought auction item #%d for %d:", auction_id, auc_ptr->buyout_price);
 	msg_format(Ind, "\377B[@]   \377w%s", auc_ptr->desc);
 
-	return(0);
+	return 0;
 }
 
 void auction_list_print_item(int Ind, int auction_id)
@@ -1408,12 +1400,12 @@ cptr my_strcasestr(cptr haystack, cptr needle)
 	{
 		if (!strncasecmp(haystack + i, needle, len))
 		{
-			return(haystack + i);
+			return haystack + i;
 		}
 		i++;
 	}
 
-	return(NULL);
+	return NULL;
 }
 #endif
 
@@ -1517,13 +1509,13 @@ int auction_show(int Ind, int auction_id)
 	if (auction_id <= 0 || auction_id >= auction_alloc)
 	{
 		/* Invalid id */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
 	if (auctions[auction_id].status == AUCTION_STATUS_EMPTY)
 	{
 		/* Invalid id */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
 	auc_ptr = &auctions[auction_id];
@@ -1553,7 +1545,7 @@ int auction_show(int Ind, int auction_id)
 	msg_format(Ind, "\377B[@] \377wTime left: %s", time_string);
 	C_FREE(time_string, 160, char);
 
-	return(0);
+	return 0;
 }
 
 /* Examine the item */
@@ -1565,13 +1557,13 @@ int auction_examine(int Ind, int auction_id)
 	if (auction_id <= 0 || auction_id >= auction_alloc)
 	{
 		/* Invalid id */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
 	if (auctions[auction_id].status == AUCTION_STATUS_EMPTY)
 	{
 		/* Invalid id */
-		return(AUCTION_ERROR_INVALID_ID);
+		return AUCTION_ERROR_INVALID_ID;
 	}
 
 	auc_ptr = &auctions[auction_id];
@@ -1582,10 +1574,10 @@ int auction_examine(int Ind, int auction_id)
 		msg_print(Ind, "No information available.");
 
 	/* Describe it fully */
-	if (!identify_fully_aux(Ind, o_ptr, FALSE, -1, 0))
+	if (!identify_fully_aux(Ind, o_ptr, FALSE, -1))
 		msg_print(Ind, "You see nothing special.");
 
-	return(0);
+	return 0;
 }
 
 #endif

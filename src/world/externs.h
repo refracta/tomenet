@@ -1,6 +1,6 @@
 extern struct serverinfo slist[];
 extern int snum;
-extern struct list *clist;
+struct list *clist;
 
 extern void initrand();
 extern int createsocket(int port, uint32_t ip);

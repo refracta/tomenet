@@ -2,7 +2,6 @@
 
 GLOBELIGHT_I = add_spell {
 	["name"] = 	"Globe of Light I",
-	["name2"] = 	"GoL I",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	2,
 	["mana"] = 	4,
@@ -12,7 +11,7 @@ GLOBELIGHT_I = add_spell {
 		if get_level(Ind, GLOBELIGHT_I, 50) >= 10 then
 			lite_area(Ind, 1 + get_level(Ind, GLOBELIGHT_I, 50), 2 + get_level(Ind, GLOBELIGHT_I, 6))
 		else
-			msg_print(Ind, "You are surrounded by a globe of light.")
+			msg_print(Ind, "You are surrounded by a globe of light")
 			lite_room(Ind, player.wpos, player.py, player.px)
 		end
 	end,
@@ -30,14 +29,13 @@ GLOBELIGHT_I = add_spell {
 }
 GLOBELIGHT_II = add_spell {
 	["name"] = 	"Globe of Light II",
-	["name2"] = 	"GoL II",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	22,
 	["mana"] = 	15,
 	["mana_max"] = 	15,
 	["fail"] = 	-25,
 	["spell"] = 	function()
-			msg_print(Ind, "You are surrounded by a globe of light.")
+			msg_print(Ind, "You are surrounded by a globe of light")
 			lite_room(Ind, player.wpos, player.py, player.px)
 			fire_ball(Ind, GF_LITE, 0, 10 + get_level(Ind, GLOBELIGHT_I, 100), 5 + get_level(Ind, GLOBELIGHT_I, 6), " calls a globe of light for")
 	end,
@@ -48,16 +46,16 @@ GLOBELIGHT_II = add_spell {
 }
 
 function get_firebolt_dam(Ind, limit_lev)
+	--return 5 + get_level(Ind, FIREBOLT, 25), 7 + get_level(Ind, FIREBOLT, 25) + 1
 	local lev
 
 	lev = get_level(Ind, FIREBOLT_I, 50)
 	if limit_lev ~= 0 and lev > limit_lev then lev = limit_lev + (lev - limit_lev) / 3 end
 
-	return 5 + ((lev * 3) / 5), 7 + ((lev * 5) / 7) + 1
+	return 5 + ((lev * 3) / 5), 7 + (lev / 2) + 1
 end
 FIREBOLT_I = add_spell {
 	["name"] = 	"Fire Bolt I",
-	["name2"] = 	"FBolt I",
 	["school"] = 	SCHOOL_FIRE,
 	["level"] = 	10,
 	["mana"] = 	3,
@@ -78,7 +76,6 @@ FIREBOLT_I = add_spell {
 }
 FIREBOLT_II = add_spell {
 	["name"] = 	"Fire Bolt II",
-	["name2"] = 	"FBolt II",
 	["school"] = 	SCHOOL_FIRE,
 	["level"] = 	25,
 	["mana"] = 	6,
@@ -99,7 +96,6 @@ FIREBOLT_II = add_spell {
 }
 FIREBOLT_III = add_spell {
 	["name"] = 	"Fire Bolt III",
-	["name2"] = 	"FBolt III",
 	["school"] = 	SCHOOL_FIRE,
 	["level"] = 	40,
 	["mana"] = 	12,
@@ -121,7 +117,6 @@ FIREBOLT_III = add_spell {
 
 FIREBALL_I = add_spell {
 	["name"] = 	"Fire Ball I",
-	["name2"] = 	"FBall I",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	23,
 	["mana"] = 	10,
@@ -139,7 +134,6 @@ FIREBALL_I = add_spell {
 }
 FIREBALL_II = add_spell {
 	["name"] = 	"Fire Ball II",
-	["name2"] = 	"FBall II",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	40,
 	["mana"] = 	25,
@@ -158,7 +152,6 @@ FIREBALL_II = add_spell {
 
 FIREFLASH_I = add_spell {
 	["name"] = 	"Fireflash I",
-	["name2"] = 	"FFlash I",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	30,
 	["mana"] = 	20,
@@ -176,7 +169,6 @@ FIREFLASH_I = add_spell {
 }
 FIREFLASH_II = add_spell {
 	["name"] = 	"Fireflash II",
-	["name2"] = 	"FFlash II",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	42,
 	["mana"] = 	35,
@@ -195,7 +187,6 @@ FIREFLASH_II = add_spell {
 
 FIERYAURA_I = add_spell {
 	["name"] = 	"Fiery Shield I",
-	["name2"] = 	"FShield I",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	16,
 	["mana"] = 	25,
@@ -220,7 +211,6 @@ FIERYAURA_I = add_spell {
 }
 FIERYAURA_II = add_spell {
 	["name"] = 	"Fiery Shield II",
-	["name2"] = 	"FShield II",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	36,
 	["mana"] = 	50,
@@ -246,7 +236,6 @@ FIERYAURA_II = add_spell {
 
 FIREWALL_I = add_spell {
 	["name"] = 	"Firewall I",
-	["name2"] = 	"FWall I",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	20,
 	["mana"] = 	25,
@@ -263,7 +252,6 @@ FIREWALL_I = add_spell {
 }
 FIREWALL_II = add_spell {
 	["name"] = 	"Firewall II",
-	["name2"] = 	"FWall II",
 	["school"] = 	{SCHOOL_FIRE},
 	["level"] = 	40,
 	["mana"] = 	80,

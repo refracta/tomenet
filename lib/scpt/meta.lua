@@ -68,9 +68,6 @@ function meta_display(xml_feed)
 	local meta_name = "Unknown metaserver"
 	local nb_servers = 0
 
-	-- META_PINGS
-	local tmp_line
-
 	for i = 1, getn(x) do
 		if type(x[i]) == 'table' then
 			if x[i].label == "server" then
@@ -117,37 +114,23 @@ function meta_display(xml_feed)
 
 	line = 0
 	nb = 0
-	color_print(line, 0, "\255B" .. meta_name .. "\255B, " .. nb_servers .. " live servers available."); line = line + 3;
+	color_print(line, 0, "\255y" .. meta_name .. " \255Wwith " .. nb_servers .. " connected servers"); line = line + 1; line = line + 1
 	for k, e in categories do
 		color_print(line, 0, "\255o" .. e.name .. " :"); line = line + 1
 
 		e = e.servers
 		for i = 1, getn(e) do
-			tmp_line = line
 			color_print(line, 2, "\255G" .. strchar(nb + strbyte('a')) .. ") \255w" .. e[i].name)
 			color_print(line, 50, e[i].extra); line = line + 1
-			color_print(line, 4, "\255b" .. e[i].players); line = line + 1
+			color_print(line, 4, e[i].players); line = line + 1
 
-			-- Store the info for retrieval -- add <line position> and <'0'> for ping in ms (META_PINGS)
-			meta_list[nb] = { e[i].name, e[i].port, e[i].protocol, tmp_line, 0 }
+			-- Store the info for retrieval
+			meta_list[nb] = { e[i].name, e[i].port, e[i].protocol }
 			nb = nb + 1
 		end
 	end
-
-	line = 1
-	if nb_servers == 0 then
-		color_print(line, 0, "\255BPress \255RQ\255B to enter a server (IP or hostname) manually or to quit."); line = line + 1
-	elseif nb_servers == 1 then
-		--color_print(line, 0, "\255BSelect the server with \255Ra"); line = line + 1
-		--color_print(line, 0, "\255Bor press \255RQ\255B to enter an IP or hostname manually or to quit."); line = line + 1
-		color_print(line, 0, "\255BSelect the server with \255Ra\255B or press \255RQ\255B to enter a server manually or to quit."); line = line + 1
-	else
-		--local c = string.char(96 + nb_servers)
-		local c = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-		--color_print(line, 0, "\255BSelect a server with \255Ra\255B-\255R" .. c[nb_servers]); line = line + 1
-		--color_print(line, 0, "\255Bor press \255RQ\255B to enter an IP or hostname manually or to quit."); line = line + 1
-		color_print(line, 0, "\255BSelect a server with \255Ra\255B-\255R" .. c[nb_servers]  .. "\255B or press \255RQ\255B to enter a server manually or to quit."); line = line + 1
-	end
+	line = line + 1
+	color_print(line, 0, "\255BSelect a server or press \255RQ\255B to enter an IP or hostname manually."); line = line + 1
 
 	return nb
 end
@@ -157,43 +140,6 @@ function meta_get(xml_feed, pos)
 	server_protocol = meta_list[pos][3]
 
 	return meta_list[pos][1], meta_list[pos][2]
-end
-
--- META_PINGS - set/update ping and display it
-function meta_add_ping(pos, ping)
-	local attr
-	local unit
-
-	meta_list[pos][5] = ping
-	unit = " ms"
-
-	if ping >= 1000 then spacer = "" -- not possible actually as 1000 ms is used as timeout for the ping commands
-	elseif ping >= 100 then spacer = " "
-	elseif ping >= 10 then spacer = "  "
-	else spacer = "   "
-	end
-
-	-- Keep this colour-coding consistent with prt_lagometer()
-	if ping == -2 then
-		attr = "w"
-		ping = "pinging..."
-		unit = ""
-		spacer = ""
-	elseif ping == -1 then
-		attr = "R"
-		ping = "---"
-		unit = ""
-		spacer = " "
-	elseif ping >= 400 then attr = "r"
-	elseif ping >= 300 then attr = "o"
-	elseif ping >= 200 then attr = "y"
-	elseif ping >= 100 then attr = "g"
-	else attr = "G"
-	end
-
-	color_print(meta_list[pos][4], 50 + 16, "\255" .. attr .. spacer .. ping .. unit.."       ")
-
-	return 0
 end
 
 -- Restore a good neat handler

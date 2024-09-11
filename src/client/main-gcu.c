@@ -49,12 +49,10 @@
 #ifdef USE_GCU
 
 
-#if 0 /* C99 _Bool */
 /*
  * Hack -- play games with "bool"
  */
- #undef bool
-#endif
+#undef bool
 
 /*
  * Include the proper "header" file
@@ -76,7 +74,9 @@ struct term_data
 	WINDOW *win;
 };
 
-static term_data data[MAX_TERM_DATA_GCU];
+#define MAX_TERM_DATA 4
+
+static term_data data[MAX_TERM_DATA];
 
 
 /*
@@ -218,9 +218,9 @@ static int active = 0;
  * Hack -- define "A_BRIGHT" to be "A_BOLD", because on many
  * machines, "A_BRIGHT" produces ugly "inverse" video.
  */
- #ifndef A_BRIGHT
- # define A_BRIGHT A_BOLD
- #endif
+#ifndef A_BRIGHT
+# define A_BRIGHT A_BOLD
+#endif
 
 /*
  * Software flag -- we are allowed to use color
@@ -240,10 +240,7 @@ static int can_use_256_color = TRUE;
 /*
  * Simple Angband to Curses color conversion table
  */
-
- static int colortable[CLIENT_PALETTE_SIZE];
-
-//todo: EXTENDED_BG_COLOURS
+static int colortable[16];
 
 #endif
 
@@ -496,7 +493,7 @@ static errr Term_xtra_gcu_alive(int v) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -600,22 +597,21 @@ static errr Term_xtra_gcu_event(int v) {
 		nodelay(stdscr, TRUE);
 
 		/* Check for keypresses */
-//return(0);
-		i = getch();		// <-(4)!! in -c (terminal) mode, this causes metaserver-display to blank out (META_DISPLAYPINGS_LATER)
+		i = getch();
 
 		/* Wait for it next time */
 		nodelay(stdscr, FALSE);
 
 		/* None ready */
-		if (i == ERR) return(1);
-		if (i == EOF) return(1);
+		if (i == ERR) return (1);
+		if (i == EOF) return (1);
 	}
 
 	/* Enqueue the keypress */
 	Term_keypress(i);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 #else	/* USE_GETCH */
@@ -642,26 +638,26 @@ static errr Term_xtra_gcu_event(int v) {
 		k = fcntl(0, F_GETFL, 0);
 
 		/* Oops */
-		if (k < 0) return(1);
+		if (k < 0) return (1);
 
 		/* Tell stdin not to block */
-		if (fcntl(0, F_SETFL, k | O_NDELAY) < 0) return(1);
+		if (fcntl(0, F_SETFL, k | O_NDELAY) < 0) return (1);
 
 		/* Read one byte, if possible */
 		i = read(0, buf, 1);
 
 		/* Replace the flags for stdin */
-		if (fcntl(0, F_SETFL, k)) return(1);
+		if (fcntl(0, F_SETFL, k)) return (1);
 	}
 
 	/* Ignore "invalid" keys */
-	if ((i != 1) || (!buf[0])) return(1);
+	if ((i != 1) || (!buf[0])) return (1);
 
 	/* Enqueue the keypress */
 	Term_keypress(buf[0]);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 #endif	/* USE_GETCH */
@@ -679,48 +675,48 @@ static errr Term_xtra_gcu(int n, int v) {
 		case TERM_XTRA_CLEAR:
 		touchwin(td->win);
 		(void)wclear(td->win);
-		return(0);
+		return (0);
 
 		/* Make a noise */
 		case TERM_XTRA_NOISE:
 		n = write(1, "\007", 1);
-		return(0);
+		return (0);
 
 		/* Flush the Curses buffer */
 		case TERM_XTRA_FRESH:
 		(void)wrefresh(td->win);
-		return(0);
+		return (0);
 
 #ifdef USE_CURS_SET
 
 		/* Change the cursor visibility */
 		case TERM_XTRA_SHAPE:
 		curs_set(v);
-		return(0);
+		return (0);
 
 #endif
 
 		/* Suspend/Resume curses */
 		case TERM_XTRA_ALIVE:
-		return(Term_xtra_gcu_alive(v));
+		return (Term_xtra_gcu_alive(v));
 
 		/* Process events */
 		case TERM_XTRA_EVENT:
-		return(Term_xtra_gcu_event(v));		// <-(3)!! in -c (terminal) mode, this causes metaserver-display to blank out (META_DISPLAYPINGS_LATER)
+		return (Term_xtra_gcu_event(v));
 
 		/* Flush events */
 		case TERM_XTRA_FLUSH:
 		while (!Term_xtra_gcu_event(FALSE));
-		return(0);
+		return (0);
 
 		/* Delay */
 		case TERM_XTRA_DELAY:
 		usleep(1000 * v);
-		return(0);
+		return (0);
 	}
 
 	/* Unknown */
-	return(1);
+	return (1);
 }
 
 
@@ -734,7 +730,7 @@ static errr Term_curs_gcu(int x, int y) {
 	wmove(td->win, y, x);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -758,7 +754,7 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 	}
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -781,14 +777,6 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s) {
 	/* Move the cursor and dump the string */
 	wmove(td->win, y, x);
 
-#ifdef EXTENDED_BG_COLOURS
-	/* For now disable extended colours in gcu client: */
-	if (a >= TERMX_START && a < TERMX_START + TERMX_AMT) a = TERM_WHITE;
-	else
-#endif
-
-	a = term2attr(a);
-
 #ifdef A_COLOR
 	/* Set the color */
 	if (can_use_color) wattrset(td->win, colortable[a & 0x0F]);
@@ -798,7 +786,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s) {
 	waddstr(td->win, text);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -808,14 +796,14 @@ static errr term_data_init(term_data *td, int rows, int cols, int y, int x)
 	term *t = &td->t;
 
 	/* Make sure the window has a positive size */
-	if (rows <= 0 || cols <= 0) return(0);
+	if (rows <= 0 || cols <= 0) return (0);
 
 	td->win = newwin(rows, cols, y, x);
 
 	if (!td->win)
 	{
 		plog("Failed to setup curses window.");
-		return(-1);
+		return (-1);
 	}
 
 	/* Store size */
@@ -850,7 +838,7 @@ static errr term_data_init(term_data *td, int rows, int cols, int y, int x)
 
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 /*
@@ -866,31 +854,20 @@ errr init_gcu(void) {
 	/*term *t = &term_screen_body;*/
 	int num_term = 4, next_win = 0;
 
+
 	/* hack -- work on Xfce4's 'Terminal' without requiring the user to set this */
 	if (!getenv("TERM") ||
 	    (!strcmp(getenv("TERM"), "xterm") &&
 	    !getenv("XTERM_VERSION")))
 		setenv("TERM", "xterm-16color", -1);
 
-	/* Graphic tiles are not supported in GCU client */
-	use_graphics = FALSE;
 
-#ifndef GLOBAL_BIG_MAP
 	/* BIG_MAP is currently not supported in GCU client */
 	c_cfg.big_map = FALSE;
 	Client_setup.options[CO_BIGMAP] = FALSE;
 	(*option_info[CO_BIGMAP].o_var) = FALSE;
 	screen_hgt = SCREEN_HGT;
-#else
-	global_c_cfg_big_map = FALSE;
-	screen_hgt = SCREEN_HGT;
-#endif
 
-	/* Hack for now: Palette animation seems to cause segfault on login in command-line client */
-	//no effect here, as it gets reset by check_immediate_options()
-	c_cfg.palette_animation = FALSE;
-	(*option_info[CO_PALETTE_ANIMATION].o_var) = FALSE;
-	Client_setup.options[CO_PALETTE_ANIMATION] = FALSE;
 
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
@@ -898,19 +875,16 @@ errr init_gcu(void) {
 
 #if defined(USG)
 	/* Initialize for USG Unix */
-	if (initscr() == NULL) return(-1);
+	if (initscr() == NULL) return (-1);
 #else
 	/* Initialize for others systems */
-	if (initscr() == (WINDOW*)ERR) return(-1);
+	if (initscr() == (WINDOW*)ERR) return (-1);
 #endif
 
-	/* Require large screen, or fail with a message. */
-	if ((LINES < 24) || (COLS < 80)) {
-		fprintf(stderr, "TomeNET needs an 80x24 'curses' screen\n");
-		/* Restore terminal first, then fail. */
-		endwin();
-		return(-2);
-	}
+
+	/* Hack -- Require large screen, or Quit with message */
+	i = ((LINES < 24) || (COLS < 80));
+	if (i) quit("Angband needs an 80x24 'curses' screen");
 
 
 	/* set OS-specific resize_main_window() hook */
@@ -936,14 +910,26 @@ errr init_gcu(void) {
 	/* Attempt to use customized colors */
 	if (can_fix_color) {
 		/* Prepare the color pairs */
-		for (i = 0; i < CLIENT_PALETTE_SIZE; i++)
-			init_pair(i, i, COLOR_BLACK);	/*black */
+		init_pair(0, 0, COLOR_BLACK);	/*black */
+		init_pair(1, 1, COLOR_BLACK);	/*white */
+		init_pair(2, 2, COLOR_BLACK);	/*grey */
+		init_pair(3, 3, COLOR_BLACK);	/*orange */
+		init_pair(4, 4, COLOR_BLACK);	/*red */
+		init_pair(5, 5, COLOR_BLACK);	/*green */
+		init_pair(6, 6, COLOR_BLACK);	/*blue */
+		init_pair(7, 7, COLOR_BLACK);	/*umber */
+		init_pair(8, 8, COLOR_BLACK);	/*dark grey */
+		init_pair(9, 9, COLOR_BLACK);	/*light grey */
+		init_pair(10, 10, COLOR_BLACK);	/*violet */
+		init_pair(11, 11, COLOR_BLACK);	/*yellow */
+		init_pair(12, 12, COLOR_BLACK);	/*light red */
+		init_pair(13, 13, COLOR_BLACK);	/*light green */
+		init_pair(14, 14, COLOR_BLACK);	/*light blue */
+		init_pair(15, 15, COLOR_BLACK);	/*light umber */
 
 		/* XXX XXX XXX Take account of "gamma correction" */
 
-		/* Store original terminal colours to remember them and restore them on exit: */
-		for (i = 0; i < CLIENT_PALETTE_SIZE; i++)
-			color_content(i, &cor[i], &cog[i], &cob[i]);
+		for (i = 0; i < 16; i++) color_content(i, &cor[i], &cog[i], &cob[i]);
 
 		/* Using the real colours if terminal supports redefining -  thanks Pepe for the patch */
 		/* Prepare the "Angband Colors" */
@@ -951,53 +937,79 @@ errr init_gcu(void) {
 		#define RED(i)   (((client_color_map[i] >> 16 & 0xff) * 1000 + 127) / 255)
 		#define GREEN(i) (((client_color_map[i] >> 8 & 0xff) * 1000 + 127) / 255)
 		#define BLUE(i)  (((client_color_map[i] & 0xff) * 1000 + 127) / 255)
-
-		for (i = 0; i < CLIENT_PALETTE_SIZE; i++) {
+		for (i = 0; i < 16; i++) {
 			init_color(i, RED(i), GREEN(i), BLUE(i));
-
-			/* Prepare the "Angband Colors" */
-			colortable[i] = (COLOR_PAIR(i % 16) | A_NORMAL);
 		}
+
+		/* Prepare the "Angband Colors" */
+		colortable[0] = (COLOR_PAIR(0) | A_NORMAL);	/* Black */
+		colortable[1] = (COLOR_PAIR(1) | A_NORMAL);	/* White */
+		colortable[2] = (COLOR_PAIR(2) | A_NORMAL);	/* Grey XXX */
+		colortable[3] = (COLOR_PAIR(3) | A_NORMAL);	/* Orange XXX */
+		colortable[4] = (COLOR_PAIR(4) | A_NORMAL);	/* Red */
+		colortable[5] = (COLOR_PAIR(5) | A_NORMAL);	/* Green */
+		colortable[6] = (COLOR_PAIR(6) | A_NORMAL);	/* Blue */
+		colortable[7] = (COLOR_PAIR(7) | A_NORMAL);	/* Umber */
+
+		colortable[8] = (COLOR_PAIR(8) | A_NORMAL);	/* Dark-grey XXX */
+		colortable[9] = (COLOR_PAIR(9) | A_NORMAL);	/* Light-grey XXX */
+		colortable[10] = (COLOR_PAIR(10) | A_NORMAL);	/* Purple */
+		colortable[11] = (COLOR_PAIR(11) | A_NORMAL);	/* Yellow */
+		colortable[12] = (COLOR_PAIR(12) | A_NORMAL);	/* Light Red XXX */
+		colortable[13] = (COLOR_PAIR(13) | A_NORMAL);	/* Light Green */
+		colortable[14] = (COLOR_PAIR(14) | A_NORMAL);	/* Light Blue */
+		colortable[15] = (COLOR_PAIR(15) | A_NORMAL);	/* Light Umber XXX */
 	}
 
 	else if (can_use_256_color) {
 		int j;
-		int color_palette[CLIENT_PALETTE_SIZE] = { 0 };
-
-		/* Read the fixed color palette from the colours given to us by our terminal we're running in */
-		for (i = 0; i < 256; i++)
+		int color_palette[16] = { 0 };
+		
+		/* Read the fixed color palette */
+		for (i = 0; i < 256; i++) {
 			color_content(i, &cor[i], &cog[i], &cob[i]);
+		}
 
 		/* Find the closest match in the palette for each desired color */
-		for (i = 0; i < BASE_PALETTE_SIZE; i++) {
+		for (i = 0; i < 16; i++) {
 			int want_red = RED(i);
 			int want_green = GREEN(i);
 			int want_blue = BLUE(i);
 			int best_idx = COLOR_WHITE;
 			int best_distance = 3 * 256;
-
 			for (j = 0; j < 256; j++) {
 				int distance = abs(want_red - cor[j]) + abs(want_green - cog[j]) + abs(want_blue - cob[j]);
-
 				if (distance < best_distance) {
 					best_distance = distance;
 					best_idx = j;
 				}
 			}
 			color_palette[i] = best_idx;
- #ifdef EXTENDED_COLOURS_PALANIM
-			/* Clonerino */
-			color_palette[i + BASE_PALETTE_SIZE] = color_palette[i];
- #endif
 		}
 
 		/* Prepare the color pairs */
-		for (i = 0; i < CLIENT_PALETTE_SIZE; i++)
+		for (i = 0; i < 16; i++) {
 			init_pair(i, color_palette[i], COLOR_BLACK);
+		}
 
 		/* Prepare the "Angband Colors" */
-		for (i = 0; i < CLIENT_PALETTE_SIZE; i++)
-			colortable[i] = (COLOR_PAIR(i) | A_NORMAL);
+		colortable[0] = (COLOR_PAIR(0) | A_NORMAL);	/* Black */
+		colortable[1] = (COLOR_PAIR(1) | A_NORMAL);	/* White */
+		colortable[2] = (COLOR_PAIR(2) | A_NORMAL);	/* Grey XXX */
+		colortable[3] = (COLOR_PAIR(3) | A_NORMAL);	/* Orange XXX */
+		colortable[4] = (COLOR_PAIR(4) | A_NORMAL);	/* Red */
+		colortable[5] = (COLOR_PAIR(5) | A_NORMAL);	/* Green */
+		colortable[6] = (COLOR_PAIR(6) | A_NORMAL);	/* Blue */
+		colortable[7] = (COLOR_PAIR(7) | A_NORMAL);	/* Umber */
+
+		colortable[8] = (COLOR_PAIR(8) | A_NORMAL);	/* Dark-grey XXX */
+		colortable[9] = (COLOR_PAIR(9) | A_NORMAL);	/* Light-grey XXX */
+		colortable[10] = (COLOR_PAIR(10) | A_NORMAL);	/* Purple */
+		colortable[11] = (COLOR_PAIR(11) | A_NORMAL);	/* Yellow */
+		colortable[12] = (COLOR_PAIR(12) | A_NORMAL);	/* Light Red XXX */
+		colortable[13] = (COLOR_PAIR(13) | A_NORMAL);	/* Light Green */
+		colortable[14] = (COLOR_PAIR(14) | A_NORMAL);	/* Light Blue */
+		colortable[15] = (COLOR_PAIR(15) | A_NORMAL);	/* Light Umber XXX */
 	}
 
 	/* Attempt to use colors */
@@ -1029,10 +1041,6 @@ errr init_gcu(void) {
 		colortable[13] = (COLOR_PAIR(2) | A_BRIGHT);	/* Light Green */
 		colortable[14] = (COLOR_PAIR(4) | A_BRIGHT);	/* Light Blue */
 		colortable[15] = (COLOR_PAIR(3) | A_NORMAL);	/* Light Umber XXX */
- #ifdef EXTENDED_COLOURS_PALANIM
-		for (i = 0; i < BASE_PALETTE_SIZE; i++)
-			colortable[i + BASE_PALETTE_SIZE] = colortable[i]; //just clone
- #endif
 	}
 #endif
 
@@ -1062,34 +1070,36 @@ errr init_gcu(void) {
 		int y, x;
 
 		switch (i) {
-		case 0: rows = 24;
-			cols = 80;
-			y = x = 0;
-			break;
-		case 1: rows = LINES - 25;
-			cols = 80;
-			y = 25;
-			x = 0;
-			break;
-		case 2: rows = 24;
-			cols = COLS - 81;
-			y = 0;
-			x = 81;
-			break;
-		case 3: rows = LINES - 25;
-			cols = COLS - 81;
-			y = 25;
-			x = 81;
-			break;
-		default: rows = cols = 0;
-			 y = x = 0;
-			 break;
+			case 0: rows = 24;
+				cols = 80;
+				y = x = 0;
+				break;
+			case 1: rows = LINES - 25;
+				cols = 80;
+				y = 25;
+				x = 0;
+				break;
+			case 2: rows = 24;
+				cols = COLS - 81;
+				y = 0;
+				x = 81;
+				break;
+			case 3: rows = LINES - 25;
+				cols = COLS - 81;
+				y = 25;
+				x = 81;
+				break;
+			default: rows = cols = 0;
+				 y = x = 0;
+				 break;
 		}
 
 		if (rows <= 0 || cols <= 0) continue;
 
 		term_data_init(&data[next_win], rows, cols, y, x);
+
 		ang_term[next_win] = Term;
+
 		next_win++;
 	}
 
@@ -1099,21 +1109,12 @@ errr init_gcu(void) {
 	term_screen = &data[0].t;
 
 	/* Success */
-	return(0);
-}
-
-void enable_readability_blue_gcu(void) {
-	/* New colour code */
-	client_color_map[6] = 0x0033ff;
-#ifdef EXTENDED_COLOURS_PALANIM
-	client_color_map[BASE_PALETTE_SIZE + 6] = 0x0033ff;
-#endif
+	return (0);
 }
 
 void gcu_restore_colours(void) {
 	int i;
-
-	for (i = 0; i < BASE_PALETTE_SIZE; i++) init_color(i, cor[i], cog[i], cob[i]);
+	for (i = 0; i < 16; i++) init_color(i, cor[i], cog[i], cob[i]);
 }
 
 /* for big_map mode */
@@ -1149,7 +1150,7 @@ void resize_main_window_gcu(int cols, int rows) {
 #ifndef USE_X11
 /* automatically store name+password to ini file if we're a new player? */
 void store_crecedentials(void) {
-	write_mangrc(TRUE, TRUE, FALSE);
+	write_mangrc(TRUE);
 }
 #endif
 #endif /* USE_GCU */

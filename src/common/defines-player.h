@@ -3,7 +3,7 @@
 
 /* Purpose: global constants and macro definitions for player.pre lua file */
 
-#define PW_PLAYER	4
+#define PW_PLAYER	8
 
 #define PY_FOOD_MAX	15000	/* Food value (Bloated) */
 #define PY_FOOD_FULL	10000	/* Food value (Normal) */
@@ -107,46 +107,46 @@
 /*
  * Skills
  */
-#define SKILL_MAX		50000	/* Maximun skill value */
-#define SKILL_STEP		1000	/* 1 skill point */
+#define SKILL_MAX               50000           /* Maximun skill value */
+#define SKILL_STEP              1000            /* 1 skill point */
 
-#define SKILL_EXCLUSIVE		9999	/* Flag to tell exclusive skills */
+#define SKILL_EXCLUSIVE         9999            /* Flag to tell exclusive skills */
 
-#define SKILL_COMBAT		1
-#define SKILL_MASTERY		2
-#define SKILL_SWORD		3
-#define SKILL_CRITS		4
-#define SKILL_POLEARM		5
+#define SKILL_COMBAT            1
+#define SKILL_MASTERY           2
+#define SKILL_SWORD             3
+#define SKILL_CRITS             4
+#define SKILL_POLEARM           5
 #define SKILL_BLUNT		6
-#define SKILL_ARCHERY		7
-#define SKILL_SLING		8
-#define SKILL_BOW		9
-#define SKILL_XBOW		10
-#define SKILL_BACKSTAB		11
-#define SKILL_MAGIC		12
-//#define SKILL_CASTSPEED	13
+#define SKILL_ARCHERY           7
+#define SKILL_SLING             8
+#define SKILL_BOW               9
+#define SKILL_XBOW              10
+#define SKILL_BACKSTAB          11
+#define SKILL_MAGIC             12
+//#define SKILL_CASTSPEED         13
 #define SKILL_SHOOT_TILL_KILL	13
-#define SKILL_SORCERY		14
-#define SKILL_MAGERY		15
-#define SKILL_MIMIC		16
-#define SKILL_DEVICE		17
-#define SKILL_SHADOW		18
-#define SKILL_PRAY		19
-#define SKILL_SPELLLENGTH	20
-#define SKILL_SNEAKINESS	21
-#define SKILL_DISARM		22
-#define SKILL_STEALTH		23
-#define SKILL_STEALING		24
-#define SKILL_NECROMANCY	25
-#define SKILL_ANTIMAGIC		26
-/* #define SKILL_AURA_POWER	27 */
-#define SKILL_TRAUMATURGY	27
-#define SKILL_AURA_FEAR		28
-#define SKILL_AURA_SHIVER	29
-#define SKILL_AURA_DEATH	30
+#define SKILL_SORCERY           14
+#define SKILL_MAGERY            15
+#define SKILL_MIMIC             16
+#define SKILL_DEVICE            17
+#define SKILL_SHADOW            18
+#define SKILL_PRAY              19
+#define SKILL_SPELLLENGTH       20
+#define SKILL_SNEAKINESS        21
+#define SKILL_DISARM            22
+#define SKILL_STEALTH           23
+#define SKILL_STEALING          24
+#define SKILL_NECROMANCY        25
+#define SKILL_ANTIMAGIC         26
+/* #define SKILL_AURA_POWER       27 */
+#define SKILL_TRAUMATURGY       27
+#define SKILL_AURA_FEAR         28
+#define SKILL_AURA_SHIVER       29
+#define SKILL_AURA_DEATH        30
 #define SKILL_HUNTING		31
 #define SKILL_TECHNIQUE		32
-#define SKILL_MISC		33
+#define SKILL_MISC              33
 #define SKILL_AGILITY		34
 #define SKILL_CALMNESS		35
 #define SKILL_SWIM		36
@@ -159,23 +159,23 @@
 #define SKILL_HEALTH		43
 #define SKILL_DIG		44
 #define SKILL_SPELLRAD		45
-#define SKILL_TRAPPING		46
+#define SKILL_TRAPPING          46
 #define SKILL_AXE		47	/* hrm, bad order */
 
 /* School skills */
-#define SKILL_CONVEYANCE	48
+#define SKILL_CONVEYANCE        48
 #define SKILL_SPELL		49
-#define SKILL_MANA		50
-#define SKILL_FIRE		51
-#define SKILL_AIR		52
-#define SKILL_WATER		53
-#define SKILL_NATURE		54
-#define SKILL_EARTH		55
-#define SKILL_DIVINATION	56
-#define SKILL_TEMPORAL		57
-#define SKILL_META		58
-#define SKILL_MIND		59
-#define SKILL_UDUN		60
+#define SKILL_MANA              50
+#define SKILL_FIRE              51
+#define SKILL_AIR               52
+#define SKILL_WATER             53
+#define SKILL_NATURE            54
+#define SKILL_EARTH             55
+#define SKILL_DIVINATION        56
+#define SKILL_TEMPORAL          57
+#define SKILL_META              58
+#define SKILL_MIND              59
+#define SKILL_UDUN              60
 
 /* for future use, if we ever can get these balanced in a sensible manner (seems unlikely without heavy changes to all other game elements oO) */
 #define SKILL_SCHOOL_CRAFTING	61	/* dummy skill for clustering */
@@ -188,10 +188,10 @@
 #define SKILL_ALCHEMY		68
 #define SKILL_ENCHANTING	69
 
-#define SKILL_HOFFENSE		70
-#define SKILL_HDEFENSE		71
-#define SKILL_HCURING		72
-#define SKILL_HSUPPORT		73
+#define SKILL_HOFFENSE          70
+#define SKILL_HDEFENSE          71
+#define SKILL_HCURING           72
+#define SKILL_HSUPPORT          73
 
 #define SKILL_DRUID_ARCANE	74
 #define SKILL_DRUID_PHYSICAL	75
@@ -202,7 +202,7 @@
 #define SKILL_STANCE		79 /* combat stances for warriors */
 
 #define SKILL_PPOWER		80 /* the new mindcrafter skills */
-#define SKILL_ATTUNEMENT	81 /* the new mindcrafter skills */
+#define SKILL_TCONTACT		81 /* the new mindcrafter skills */
 #define SKILL_MINTRUSION	82 /* the new mindcrafter skills */
 
 /* Dummy skills - just to make the mass of schools appear more ordered - C. Blue */
@@ -217,9 +217,6 @@
  #define SKILL_SCHOOL_OCCULT	89
  //#ifdef ENABLE_OHERETICISM
   #define SKILL_OHERETICISM	94
- //#endif
- //#ifdef ENABLE_OUNLIFE
-  #define SKILL_OUNLIFE		105
  //#endif
 //#endif
 
@@ -251,6 +248,5 @@
 
 /* For Draconians */
 #define SKILL_BREATH		110
-#define SKILL_PICK_BREATH	111
 
-#define MAX_SKILLS		128
+#define MAX_SKILLS              128

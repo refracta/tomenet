@@ -46,12 +46,8 @@ typedef struct {
 	short		stat_order[6];
 	client_setup_t	Client_setup;
 
-	unsigned long int laston_real;
-	//char		q_static[MAX_RELIABLE_DATA_PACKET_SIZE]; /* for paralysation */
-
-	short int	audio_sfx, audio_mus;
-	short int	use_graphics;
-	char graphic_tiles[512], fname[512];
+	int		audio_sfx, audio_mus;
+//	char		q_static[MAX_RELIABLE_DATA_PACKET_SIZE]; /* for paralysation */
 } connection_t;
 
 #endif

@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#define MAX_CHARS 80		/* Just for unicode-translation in irc-relay.c, which #includes this world.h. */
 #define MSG_LEN 256
 
 #define MAX_LTTL	20	/* Max TTL for temporary locks */
@@ -16,8 +15,8 @@
 #define WP_NPLAYER	2	/* player enters */
 #define WP_QPLAYER	3	/* player leaves */
 #define WP_DEATH	4	/* player death */
-#define WP_LOCK		5	/* obtain a lock (timed) on a server item -- not implemented */
-#define WP_UNLOCK	6	/* free the lock of a server item -- not implemented */
+#define WP_LOCK		5	/* obtain a lock (timed) */
+#define WP_UNLOCK	6	/* free the lock */
 #define WP_MESSAGE	7	/* all critical server messages */
 #define WP_AUTH		8	/* server authing */
 #define WP_SQUIT	9	/* server quits */
@@ -43,7 +42,6 @@
 #define WPF_PMSG	0x0800	/* private message - P */
 #define WPF_SINFO	0x1000
 #define WPF_IRCCHAT	0x2000	/* chat message from IRC relay - S */
-#define WPF_PORTAL	0x8000	/* SERVER_PORTALS */
 
 /* World message flags */
 #define WMF_LVLUP	0x01
@@ -63,8 +61,7 @@
 
 #define CL_QUIT		1
 
-struct serverinfo {
-	int static_index;	/* Just for SERVER_PORTALS: Server world index (defined in 'servers' file too, not the dynamic index servers get when getting added to the servers array). */
+struct serverinfo{
 	char name[20];		/* server world name */
 	char pass[20];		/* server plaintext password */
 	uint32_t rflags;	/* relay flags for packets sent to server */
@@ -72,25 +69,25 @@ struct serverinfo {
 };
 
 /* Single linked list - its not like we are sorting it */
-struct list {
+struct list{
 	struct list *next;
 	void *data;		/* pointer to the data structure */
 };
 
-struct rplist {
+struct rplist{
 	uint32_t id;
 	int16_t server;
 	char name[30];
 };
 
 /* linked list will use less mem */
-struct objlock {
+struct objlock{
 	int16_t owner;		/* Owner ID */
 	uint32_t ttl;	/* time to live for non final lock */
 	uint32_t obj;	/* lock object by number (monster, item etc.) */
 };
 
-struct client {
+struct client{
 	int fd;
 	uint16_t flags;
 	int16_t authed;		/* Server ID (>0), authing (0), or failed authentication (-1) */
@@ -98,7 +95,7 @@ struct client {
 	char buf[1024];
 };
 
-struct secure {
+struct secure{
 	int16_t secure;	/* kick off ALL unauthed clients */
 	int16_t chat;	/* Permit chat if unauthed (and not secure) */
 	int16_t play;	/* Players online messages (no tracing on unauthed) */
@@ -108,26 +105,26 @@ struct secure {
 /* The structures of these packets will be
    changed when we merge data */
 
-struct player {
+struct player{
 	uint32_t id;	/* UNIQUE player id */
 	uint16_t server;		/* server info 0 means unknown */
 	char name[30];		/* temp. player name */
 	uint8_t silent;	/* Left due to death for instance */
 };
 
-struct death {
+struct death{
 	uint32_t id;
 	uint16_t dtype;	/* death type */
 	char name[30];		/* temp. player name */
 	char method[40];	/* death method */
 };
 
-struct chat {
+struct chat{
 	uint32_t id;	/* From ID */
 	char ctxt[MSG_LEN];
 };
 
-struct pmsg {
+struct pmsg{
 	uint32_t id;	/* From ID */
 	uint16_t sid;	/* To server ID */
 	char player[80];	/* thats what it is in server :( */
@@ -135,7 +132,7 @@ struct pmsg {
 	char ctxt[MSG_LEN];
 };
 
-struct sinfo {
+struct sinfo{
 	uint16_t sid;
 	uint16_t port;	/* needed for client transfers */
 	char name[30];
@@ -143,7 +140,7 @@ struct sinfo {
 
 
 /* server world authentication */
-struct auth {
+struct auth{
 	char pass[21];
 	uint32_t val;
 };
@@ -157,7 +154,7 @@ struct auth {
 
 /* identical to struct account */
 /* only AUTHED servers can do this */
-struct pl_auth {
+struct pl_auth{
 	uint32_t id;	/* account id */
 	uint16_t flags;	/* account flags */
 	uint16_t stat;	/* status (for return) */
@@ -169,17 +166,17 @@ struct pl_auth {
 #define LT_ARTIFACT	1
 #define LT_MONSTER	2	/* not sure how i'm gonna do this yet */
 
-struct lock {
+struct lock{
 	uint16_t ltype;	/* Lock type */
 	uint32_t ttl;	/* time to live for non final lock */
 	uint32_t obj;	/* lock object by number (monster, item etc.) */
 };
 
-struct smsg {
+struct smsg{
 	char stxt[MSG_LEN];		/* may need more info than this sometime */
 };
-
-struct wpacket {
+  
+struct wpacket{
 	uint16_t type;	/* TYPE */
 	uint16_t serverid;
 	union {

@@ -1,4 +1,3 @@
-@S%
 @S:
 @S s
 anna
@@ -7,15 +6,12 @@ nalfesh
 asschen
 5 hit
 ?s hit
-?s hi t?
 s5
 -5
  55
 45
 a 5
 as 5
-as @S
-as 25
 as sa
 as sc
 as se
@@ -34,8 +30,6 @@ as su
 as sv
 as sw
 as sy
-as 1s
- as holes
 assad
 assai
 assam
@@ -58,24 +52,14 @@ assura
 assure
 assyr
 badass
-bada$$
 bad-ass
-bad-a$$
 bad ass
-bad a$$
 kickass
-kicka$$
 kick ass
 kick-ass
-kick a$$
-kick-a$$
 asskick
-a$$kick
 ass-kick
-a$$-kick
 ass kick
-a$$ kick
-kick some ass
 embarass
 harass
 cutlass
@@ -121,9 +105,6 @@ shiite
 shiiti
 shiito
 shiitu
-sht?
-sh+?
-?sht
  cha
  che
  chi
@@ -164,27 +145,3 @@ cuntu
 alfa
 laptop
 hobbit h
-ShLt
-+W,Att
-faggr
-happen is
- bit (h
-suck at
-suck a 
-suck al
-suck an
-(0k)
-(ok
-asuka
-faaggr
-halfassed
-half-assed
-half assed
-anal?
-?anal
-dafuq
-FA got
-sh t?
-ap/door
-cockatrice
-geass

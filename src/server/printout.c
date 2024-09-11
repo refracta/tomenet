@@ -27,100 +27,60 @@ static int initp = FALSE;
 static FILE *fpl = NULL;	/* the 'legends.log' file */
 static int initl = FALSE;
 
-static FILE *fps = NULL;	/* the 'superuniques.log' file */
-static int inits = FALSE;
-
-static FILE *fpe = NULL;	/* the 'erasure.log' file */
-static int inite = FALSE;
-
-static FILE *fpx = NULL;	/* the 'external.log' file */
-//static int initx = FALSE;
-
-/* s_print_only_to_file
+/* s_print_only_to_file 
  * Controls if we should only print to file
  * FALSE = screen and file
  * TRUE = only to a file
  */
-extern int s_print_only_to_file(int which) {
+extern int s_print_only_to_file(int which)
+{
 	print_to_file = which;
 	return(TRUE);
 }
 
 
-extern int s_setup(char *str) {
-	if (init == FALSE) {
-		if ((fp = fopen(str, "w+")) == NULL) quit("Cannot Open Log file\n");
+extern int s_setup(char *str)
+{
+
+	if(init == FALSE)
+	{
+		if( (fp = fopen(str, "w+")) == NULL )
+		{
+			quit("Cannot Open Log file\n");
+		}
 		init = TRUE;
 	}
 	return(TRUE);
 }
 
-extern int s_shutdown(void) {
-	if (fp != NULL) fclose(fp);
+extern int s_shutdown( void )
+{
+	if( fp != NULL)
+		fclose(fp);
+
 	return(TRUE);
 }
 
-extern int s_printf(const char *str, ...) {
+extern int s_printf(const char *str, ...)
+{
 	va_list va;
 
-	if (init == FALSE) {  /* in case we don't start her up properly */
+	if(init == FALSE)   /* in case we don't start her up properly */
+	{
 		fp = fopen("tomenet.log", "w+");
 		init = TRUE;
 	}
 
 	va_start(va, str);
-	vfprintf(fp, str, va);
+	vfprintf(fp,str,va);
 	va_end(va);
 	va_start(va, str);
-	if (!print_to_file) vprintf(str, va);
+	if(!print_to_file)
+		vprintf(str,va);
 	va_end(va);
 
 	/* KLJ -- Flush the log so that people can look at it while the server is running */
 	fflush(fp);
-
-	return(TRUE);
-}
-
-/* This one does not keep a file continuously open, because another external source might
-   reinitialize (aka erase) the file at any time, after processing! */
-extern int x_printf(const char *str, ...) {
-	char path[MAX_PATH_LENGTH];
-	va_list va;
-	struct stat filestat;
-	bool fail = FALSE;
-
-
-	/* First, check if SSH connection to process external.log even exists right now. */
-	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "external.lock");
-	/* Check file stats, for change time (via 'touch' from client-side polling script) */
-	if (stat(path, &filestat) == -1) {
-		/* No file at all even? Easy abort. */
-		s_printf("File 'external.lock' doesn't exist yet.\n");
-		fail = TRUE;
-	}
-	/* Check that we're within close time diff (measured in seconds) at most! */
-	if (time(NULL) - filestat.st_ctime > 30) {
-		s_printf("File 'external.lock' is out of date.\n");
-		fail = TRUE;
-	}
-	/* Give same reply as client-side polling script would, if it cannot access the AI momentarily */
-	if (fail) {
-		exec_lua(0, format("eight_ball(\"<Sorry, no response available. Auxiliary brain currently offline.>\")"));
-		return(FALSE);
-	}
-
-
-	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "external.log");
-
-	fpx = fopen(path, "a+");
-	//initx = TRUE;
-
-	fprintf(fpx, "%s - ", showtime());
-
-	va_start(va, str);
-	vfprintf(fpx, str, va);
-	va_end(va);
-	fflush(fpx);
 
 	return(TRUE);
 }
@@ -133,9 +93,14 @@ extern int x_printf(const char *str, ...) {
 static FILE *fpr = NULL;
 static int initr = FALSE;
 
-extern bool s_setupr(char *str) {
-	if (initr == FALSE) {
-		if ((fpr = fopen(str, "a+")) == NULL) {
+
+extern bool s_setupr(char *str)
+{
+
+	if(initr == FALSE)
+	{
+		if( (fpr = fopen(str, "a+")) == NULL )
+		{
 //			quit("Cannot Open Log file\n");
 			s_printf("Cannot Open RFE file\n");
 		}
@@ -144,20 +109,23 @@ extern bool s_setupr(char *str) {
 	return(TRUE);
 }
 
-extern bool rfe_printf(char *str, ...) {
+extern bool rfe_printf(char *str, ...)
+{
 	va_list va;
 
-	if (initr == FALSE) { /* in case we don't start her up properly */
+	if(initr == FALSE)   /* in case we don't start her up properly */
+	{
 		fpr = fopen("tomenet.rfe", "a+");
 		initr = TRUE;
 	}
 
 	va_start(va, str);
-	vfprintf(fpr, str, va);
+	vfprintf(fpr,str,va);
 	/*
 	va_end(va);
 	va_start(va, str);
-	if (!print_to_file) vprintf(str, va);
+	if(!print_to_file)
+		vprintf(str,va);
 	*/
 	va_end(va);
 
@@ -166,6 +134,29 @@ extern bool rfe_printf(char *str, ...) {
 
 	return(TRUE);
 }
+
+#if 1	// obsolete, use do_cmd_check_other_prepare() instead!
+/* better move to cmd4.c? */
+extern bool do_cmd_view_rfe(int Ind, char *str, int line)
+{
+	//player_type *p_ptr = Players[Ind];
+	/* Path buffer */
+	char    path[MAX_PATH_LENGTH];
+
+//	if (!is_admin(p_ptr)) return(FALSE);
+
+	/* Hack - close the file once, so that show_file can 'open' it
+	my_fclose(fpr);
+	initr = FALSE; */
+
+	/* Build the filename */
+	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, str);
+
+	/* Display the file contents */
+	show_file(Ind, path, str, line, FALSE, 0);
+	return(TRUE);
+}
+#endif	// 0
 
 /* Amount of tailing lines to read (older ones will be skipped) [200]; -1 = all */
 #define REVERSE_LINES_TAIL 200
@@ -181,33 +172,34 @@ int reverse_lines(cptr input_file, cptr output_file) {
 
 	/* Open the input file */
 	fd1 = open(input_file, O_RDONLY);
-	if (fd1 == -1) return(-1);
+	if (fd1 == -1) {
+		return -1;
+	}
 
 	fp1 = fdopen(fd1, "rb");
 	if (!fp1) {
 		close(fd1);
-		return(-2);
+		return -2;
 	}
 
 	/* Use fstat to get the size of the file */
 	if (fstat(fd1, &stbuf) == -1) {
 		fclose(fp1);
-		return(-3);
+		return -3;
 	}
 
 	file_size = stbuf.st_size;
 
 	buf = mem_alloc(file_size);
 	if (!buf) {
-		fclose(fp1);
-		return(-4);
+		return -4;
 	}
 
 	/* Read the whole input file */
 	if (fread(buf, 1, file_size, fp1) < file_size) {
 		mem_free(buf);
 		fclose(fp1);
-		return(-5);
+		return -5;
 	}
 
 	/* Open the output file */
@@ -215,7 +207,7 @@ int reverse_lines(cptr input_file, cptr output_file) {
 	if (!fp2) {
 		mem_free(buf);
 		fclose(fp1);
-		return(-6);
+		return -6;
 	}
 
 
@@ -225,7 +217,6 @@ int reverse_lines(cptr input_file, cptr output_file) {
 	    /* are there any records? */
 	    && deep_dive_level[0]) {
 		int i;
-
 		fprintf(fp2, "\\{UIronman Deep Dive Challenge Records:\n");
 		/* Display only the first n records */
 		for (i = 0; i < IDDC_HIGHSCORE_DISPLAYED && deep_dive_level[i] != 0; i++) {
@@ -274,7 +265,7 @@ int reverse_lines(cptr input_file, cptr output_file) {
 					mem_free(buf);
 					fclose(fp1);
 					fclose(fp2);
-					return(-7);
+					return -7;
 				}
 			}
 			prev_linebreak = tmp;
@@ -291,7 +282,7 @@ int reverse_lines(cptr input_file, cptr output_file) {
 			mem_free(buf);
 			fclose(fp1);
 			fclose(fp2);
-			return(-7);
+			return -7;
 		}
 	}
 
@@ -300,17 +291,16 @@ int reverse_lines(cptr input_file, cptr output_file) {
 	fclose(fp1);
 	fclose(fp2);
 
-	return(0);
+	return 0;
 }
 
 /* Log "legends" (achievements of various sort, viewable in the town hall) - C. Blue */
 extern int l_printf(char *str, ...) {
 	char path[MAX_PATH_LENGTH];
 	char path_rev[MAX_PATH_LENGTH];
-	va_list va;
-
 	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "legends.log");
 	path_build(path_rev, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "legends-rev.log");
+	va_list va;
 
 	if (initl == FALSE) { /* in case we don't start her up properly */
 		fpl = fopen(path, "a+");
@@ -332,9 +322,9 @@ extern int l_printf(char *str, ...) {
 /* Log all -CHEEZY- transactions into a separate file besides tomenet.log */
 extern int c_printf(char *str, ...) {
 	char path[MAX_PATH_LENGTH];
+	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "cheeze.log");
 	va_list va;
 
-	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "cheeze.log");
 	if (initc == FALSE) { /* in case we don't start her up properly */
 		fpc = fopen(path, "a+");
 		initc = TRUE;
@@ -350,9 +340,9 @@ extern int c_printf(char *str, ...) {
 /* Log amount of players logged on, to generate a "traffic chart" :) - C. Blue */
 extern int p_printf(char *str, ...) {
 	char path[MAX_PATH_LENGTH];
+	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "traffic.log");
 	va_list va;
 
-	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "traffic.log");
 	if (initp == FALSE) { /* in case we don't start her up properly */
 		fpp = fopen(path, "a+");
 		initp = TRUE;
@@ -362,43 +352,5 @@ extern int p_printf(char *str, ...) {
 	vfprintf(fpp, str, va);
 	va_end(va);
 	fflush(fpp);
-	return(TRUE);
-}
-
-/* Log superunique kills - C. Blue */
-extern int su_print(char *str) {
-	char path[MAX_PATH_LENGTH];
-	int dwd = 0, dd = 0, dm = 0, dy = 0;
-
-	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "superuniques.log");
-	get_date(&dwd, &dd, &dm, &dy);
-
-	if (inits == FALSE) { /* in case we don't start her up properly */
-		fps = fopen(path, "a+");
-		inits = TRUE;
-	}
-
-	fprintf(fps, "%04d-%02d-%02d : %s", dy, dm, dd, str);
-	fflush(fps);
-
-	return(TRUE);
-}
-
-/* Log character erasures. Note that these aren't caused by death,
-   but instead from either /erasechar command or inactivity timeout. */
-extern int e_printf(char *str, ...) {
-	char path[MAX_PATH_LENGTH];
-	va_list va;
-
-	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "erasure.log");
-	if (inite == FALSE) { /* in case we don't start her up properly */
-		fpe = fopen(path, "a+");
-		inite = TRUE;
-	}
-
-	va_start(va, str);
-	vfprintf(fpe, str, va);
-	va_end(va);
-	fflush(fpe);
 	return(TRUE);
 }

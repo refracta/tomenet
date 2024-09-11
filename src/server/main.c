@@ -125,17 +125,14 @@ static void migrate_files(void) {
 	FILE *fp;
 
 	/* Check that lib/config exists */
-	printf("Verifying ANGBAND_DIR_CONFIG: %s ...", ANGBAND_DIR_CONFIG);
 	dp = opendir(ANGBAND_DIR_CONFIG);
 	if (!dp) {
-		printf("failed.\nTrying to create ANGBAND_DIR_CONFIG instead ...");
 		/* Try to create lib/config */
 #ifdef WINDOWS
 		if (mkdir(ANGBAND_DIR_CONFIG) != 0) {
 #else
 		if (mkdir(ANGBAND_DIR_CONFIG, 0777) != 0) {
 #endif
-			printf("failed.\n");
 			errval = errno;
 			fprintf(stderr, "Failed to create directory \"%s\"! (errno = %d)", ANGBAND_DIR_CONFIG, errval);
 		} else {
@@ -153,31 +150,24 @@ static void migrate_files(void) {
 			rename("tomenet.cfg", buf);
 		}
 	} else {
-		printf("ok.\n");
 		closedir(dp);
 	}
 
 	/* Check the new location of account file */
 	path_build(buf, 1024, ANGBAND_DIR_SAVE, "tomenet.acc");
-	printf("Verifying account file location: %s ...", buf);
 	fp = fopen(buf, "r");
 	if (!fp) {
-		printf("failed.\nTrying to locate it in working folder instead ...");
 		/* Check the old location */
 		fp = fopen("tomenet.acc", "r");
 		if (fp) {
 			fclose(fp);
 
-			printf("ok.\nTrying to move it to ANGBAND_DIR_SAVE ...");
-
 			/* Move from old to new location */
 			if (rename("tomenet.acc", buf) != 0) {
-				printf("failed.\n");
 				fprintf(stderr, "Could not move tomenet.acc to new location in %s!\n", buf);
-			} else printf("ok.\n");
+			}
 		}
 	} else {
-		printf("ok.\n");
 		fclose(fp);
 	}
 }
@@ -219,7 +209,7 @@ static void post_init_lua(void) {
  * "-dWHAT=PATH" syntax for simplicity.
  */
 int main(int argc, char *argv[]) {
-	bool new_game = FALSE, all_terrains = FALSE, dry_Bree = FALSE, TOC_near_Bree = FALSE, new_wilderness = FALSE, new_flavours = FALSE, new_houses = FALSE;
+	bool new_game = FALSE, all_terrains = FALSE, dry_Bree = FALSE, new_wilderness = FALSE, new_flavours = FALSE, new_houses = FALSE;
 	bool config_specified = FALSE;
 	char buf[1024];
 	int catch_signals = TRUE;
@@ -228,7 +218,7 @@ int main(int argc, char *argv[]) {
 	/* Initialize WinSock */
 	WSAStartup(MAKEWORD(1, 1), &wsadata);
 #endif
-
+  
 
 	/* Save the "program name" */
 	argv0 = argv[0];
@@ -256,12 +246,6 @@ int main(int argc, char *argv[]) {
 	/* Get the file paths */
 	init_paths();
 
-	/* Acquire the version strings */
-	version_build();
-
-	printf("%s\n", longVersion);
-	printf("%s\n", os_version);
-
 	/* Possibly move the server config files and the account file */
 	migrate_files();
 
@@ -286,6 +270,9 @@ int main(int argc, char *argv[]) {
 	/* Tell the scripts that the server is up now */
 	update_check_file();
 
+	/* Acquire the version strings */
+	version_build();
+
 #ifdef SET_UID
 
 	/* Initialize the "time" checker */
@@ -308,61 +295,55 @@ int main(int argc, char *argv[]) {
 
 		/* Analyze option */
 		switch (argv[0][1]) {
-#if 0 /* this folder isn't really used on server-side */
-		case 'u':
+			case 'c':
 			ANGBAND_DIR_USER = &argv[0][2];
 			break;
-#endif
 
 #ifndef VERIFY_SAVEFILE
-		case 's':
+			case 'd':
 			ANGBAND_DIR_SAVE = &argv[0][2];
 			break;
 #endif
 
-		case 't':
+			case 'i':
 			ANGBAND_DIR_TEXT = &argv[0][2];
 			break;
 
-		case 'r': //reset
+			case 'r':
 			new_game = TRUE;
 			break;
 
-		case 'a':
-			all_terrains = TRUE;
-			break;
-
-		case 'b':
+			case 'b':
 			dry_Bree = TRUE;
 			break;
 
-		case 'c': //the orc caves nearby (could be extended to manage more dungeon placements than just OC)
-			TOC_near_Bree = TRUE;
+			case 'a':
+			all_terrains = TRUE;
 			break;
 
-		case 'w':
+			case 'w':
 			new_wilderness = TRUE;
 			break;
 
-		case 'f':
+			case 'f':
 			new_flavours = TRUE;
 			break;
 
-		case 'h':
+			case 'h':
 			new_houses = TRUE;
 			break;
 
-		case 'z':
+			case 'z':
 			catch_signals = FALSE;
 			break;
 
-		case 'm':
+			case 'm':
 			MANGBAND_CFG = &argv[0][2];
 			config_specified = TRUE;
 			break;
 
 
-		default:
+			default:
 			usage:
 
 			/* Note -- the Term is NOT initialized */
@@ -373,12 +354,11 @@ int main(int argc, char *argv[]) {
 			puts("  -f        Reset the server partially: New flavours");
 			puts("  -a        (On server creation!) Ensure that all terrain types are created");
 			puts("  -b        (On server creation!) Don't allow watery wilderness around Bree");
-			puts("  -c        (On server creation!) Place The Orc Cave not too far from Bree");
 			puts("  -h        Reinitialize houses");
 			puts("  -z        Don't catch signals");
-			//puts("  -u<path>  Look for user files in the directory <path>"); -- this folder isn't really used on server-side
-			puts("  -s<path>  Look for save files in the directory <path>");
-			puts("  -t<path>  Look for text files in the directory <path>");
+			puts("  -c<path>  Look for pref files in the directory <path>");
+			puts("  -d<path>  Look for save files in the directory <path>");
+			puts("  -i<path>  Look for info files in the directory <path>");
 			puts("  -m<file>  Specify configuration <file>");
 
 			/* Actually abort the process */
@@ -393,7 +373,7 @@ int main(int argc, char *argv[]) {
 	/* Catch nasty signals */
 	if (catch_signals == TRUE)
 		signals_init();
-
+	
 	/* Catch nasty "signals" on Windows */
 #ifdef WINDOWS
 #ifndef HANDLE_SIGNALS
@@ -437,30 +417,32 @@ int main(int argc, char *argv[]) {
 
 
 	/* Play the game */
-	play_game(new_game, all_terrains, dry_Bree, TOC_near_Bree, new_wilderness, new_flavours, new_houses);
+	play_game(new_game, all_terrains, dry_Bree, new_wilderness, new_flavours, new_houses);
 
 	/* Quit */
 	quit(NULL);
 
 	/* Exit */
-	return(0);
+	return (0);
 }
 
 #ifdef DUMB_WIN
 int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
-                       LPSTR lpCmdLine, int nCmdShow) {
+                       LPSTR lpCmdLine, int nCmdShow)
+{
 	MSG      msg;
 
-	//main(0, NULL);
+//        main(0, NULL);
 
 	/* Process messages forever */
-	while (GetMessage(&msg, NULL, 0, 0)) {
+	while (GetMessage(&msg, NULL, 0, 0))
+	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
-	main(0, NULL);
+        main(0, NULL);
 
-	return(0);
+	return (0);
 }
 #endif

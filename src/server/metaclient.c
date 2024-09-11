@@ -54,7 +54,7 @@ static void meta_sched_output_callback(int fd, int arg);
  */
 static void meta_init(void) {
 	struct hostent *hp;
-
+	
 	if (!meta_initialized) {
 		/* Find out the hostname of the server */
 		if (cfg.bind_name) {
@@ -62,12 +62,12 @@ static void meta_init(void) {
 		} else {
 			GetLocalHostName(meta_local_name, 1024);
 		}
-
+		
 		/* Initialize the metaserver address structure */
 		memset(&meta_sockaddr, 0, sizeof(meta_sockaddr));
 		meta_sockaddr.sin_family = AF_INET;
 		meta_sockaddr.sin_port = htons(cfg.meta_port);
-
+		
 		/* Look up the metaserver hostname */
 		hp = gethostbyname(cfg.meta_address);
 		if (hp == NULL) {
@@ -76,7 +76,7 @@ static void meta_init(void) {
 		} else {
 			meta_sockaddr.sin_addr.s_addr = ((struct in_addr*)(hp->h_addr))->s_addr;
 		}
-
+		
 		/* Set the flag */
 		meta_initialized = TRUE;
 	}
@@ -108,7 +108,7 @@ void meta_tick(void) {
  */
 static void meta_connect(int blocking) {
 	int sock;
-
+	
 	/* Create a socket */
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1) {
@@ -117,26 +117,23 @@ static void meta_connect(int blocking) {
 #else
 		int errval = errno;
 #endif
-
 		s_printf("Failed to create meta socket! (errno = %d)\n", errval);
 		return;
 	}
-
+	
 	if (!blocking) {
 		/* Make it non-blocking */
 		if (SetSocketNonBlocking(sock, 1) == -1) {
 			s_printf("Failed to make meta socket non-blocking!\n");
 		}
 	}
-
+	
 	if (connect(sock, (struct sockaddr *)&meta_sockaddr, sizeof(meta_sockaddr)) == -1) {
 #ifdef WINDOWS
 		int errval = WSAGetLastError();
-
 		if (errval != WSAEINPROGRESS && errval != WSAEWOULDBLOCK) {
 #else
 		int errval = errno;
-
 		if (errval != EINPROGRESS && errval != EWOULDBLOCK) {
 #endif
 			s_printf("Failed to connect to metaserver! (errno = %d)\n", errval);
@@ -144,7 +141,7 @@ static void meta_connect(int blocking) {
 			return;
 		}
 	}
-
+	
 	install_output(meta_sched_output_callback, sock, 0);
 	meta_output_installed = TRUE;
 	meta_fd = sock;
@@ -160,24 +157,24 @@ static int meta_write(int flag) {
 	char *url, *notes;
 	int num_dungeon_masters = 0;
 	int i;
-
+	
 	memset(buf_meta, 0, sizeof(buf_meta));
-
+	
 	url = html_escape(meta_local_name);
 	sprintf(buf_meta, "<server url=\"%s\" port=\"%d\" protocol=\"2\"", url, (int) cfg.game_port);
 	free(url);
-
+	
 	if (flag & META_DIE) {
 		strcat(buf_meta, " death=\"true\"></server>");
 	} else {
 		strcat(buf_meta, ">");
-
+		
 		strcat(buf_meta, "<notes>");
 		notes = html_escape(cfg.server_notes);
 		strcat(buf_meta, notes);
 		free(notes);
 		strcat(buf_meta, "</notes>");
-
+		
 		for (i = 1; i <= NumPlayers; i++) {
 			if (Players[i]->admin_dm && cfg.secret_dungeon_master) num_dungeon_masters++;
 		}
@@ -196,7 +193,7 @@ static int meta_write(int flag) {
 				strcat(buf_meta, "</player>");
 			}
 		}
-
+	
 #ifdef TEST_SERVER
 		strcat(buf_meta, "<game>TomeNET TEST-ONLY</game>");
 #else
@@ -211,44 +208,38 @@ static int meta_write(int flag) {
    #ifdef FUN_SERVER
 		strcat(buf_meta, "<game>TomeNET Fun</game>");
    #else
-    #if 0
-		if (my_strcasestr(cfg.bind_name, "apac")) strcat(buf_meta, "<game>TomeNET APAC region</game>");
-		else
-    #endif
-		strcat(buf_meta, "<game>TomeNET</game>");
+                strcat(buf_meta, "<game>TomeNET</game>");
    #endif
   #endif
  #endif
 #endif
-		/* Append the version number */
-		snprintf(temp, sizeof(temp), "<version>%d.%d.%d%s</version></server>", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, SERVER_VERSION_TAG);
-		strcat(buf_meta, temp);
+                /* Append the version number */
+                snprintf(temp, sizeof(temp), "<version>%d.%d.%d%s</version></server>", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, SERVER_VERSION_TAG);
+                strcat(buf_meta, temp);
 	}
-
+	
 	/* Send data to metaserver */
 	if (send(meta_fd, buf_meta, strlen(buf_meta), 0) == -1) {
 #ifdef WINDOWS
 		int errval = WSAGetLastError();
-
 		if (errval != WSAEWOULDBLOCK) {
 #else
 		int errval = errno;
-
 		if (errval != EINPROGRESS && errval != EWOULDBLOCK) {
 #endif
 			s_printf("Writing to meta socket failed! (errno = %d)\n", errval);
 		} else {
 			s_printf("Writing to meta socket would block!\n");
 		}
-
+		
 		/* Failed to connect or send data */
 		meta_needs_update = FALSE;
-		return(FALSE);
+		return FALSE;
 	}
-
+	
 	/* Toggle the update needed flag */
 	meta_needs_update = FALSE;
-	return(TRUE);
+	return TRUE;
 }
 
 /*
@@ -263,7 +254,7 @@ static void meta_close(void) {
 		close(meta_fd);
 		meta_fd = -1;
 	}
-
+	
 	meta_state = META_NONE;
 }
 
@@ -290,7 +281,7 @@ void meta_report(int flag) {
 		meta_needs_update = TRUE;
 	} else if (flag & META_DIE) {
 		meta_close();
-
+		
 		/* Block the timer so that connect() succeeds */
 		block_timer();
 		meta_connect(TRUE);

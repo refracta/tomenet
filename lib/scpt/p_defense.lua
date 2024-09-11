@@ -2,11 +2,10 @@
 
 HBLESSING_I = add_spell {
 	["name"] = 	"Blessing I",
-	["name2"] = 	"Bless I",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
-	["level"] = 	3,
+	["level"] = 	1,
 	["mana"] = 	4,
 	["mana_max"] = 	4,
 	["fail"] = 	10,
@@ -25,14 +24,12 @@ HBLESSING_I = add_spell {
 	end,
 	["desc"] = 	{
 			"Protects you with a shield of righteousness.",
-			"Also increases your to-hit bonus by half that AC bonus.",
 			"***Automatically projecting***",
 	}
 }
 __lua_HBLESSING = HBLESSING_I
 HBLESSING_II = add_spell {
 	["name"] = 	"Blessing II",
-	["name2"] = 	"Bless II",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -55,13 +52,11 @@ HBLESSING_II = add_spell {
 	end,
 	["desc"] = 	{
 			"Protects you with a shield of righteousness.",
-			"Also increases your to-hit bonus by half that AC bonus.",
 			"***Automatically projecting***",
 	}
 }
 HBLESSING_III = add_spell {
 	["name"] = 	"Blessing III",
-	["name2"] = 	"Bless III",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -84,14 +79,12 @@ HBLESSING_III = add_spell {
 	end,
 	["desc"] = 	{
 			"Protects you with a shield of righteousness.",
-			"Also increases your to-hit bonus by half that AC bonus.",
 			"***Automatically projecting***",
 	}
 }
 
 HRESISTS_I = add_spell {
 	["name"] = 	"Holy Resistance I",
-	["name2"] = 	"HRes I",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -119,7 +112,6 @@ HRESISTS_I = add_spell {
 }
 HRESISTS_II = add_spell {
 	["name"] = 	"Holy Resistance II",
-	["name2"] = 	"HRes II",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -142,7 +134,7 @@ HRESISTS_II = add_spell {
 		fire_ball(Ind, GF_RESACID_PLAYER, 0, dur, 1, "")
 	end,
 	["info"] = 	function()
-			return "Base resist, dur "..(get_level(Ind, HRESISTS_I, 50) + 15)..".."..(get_level(Ind, HRESISTS_I, 50) + 25)
+			return "Res heat/cold/elec/acid, dur "..(get_level(Ind, HRESISTS_I, 50) + 15)..".."..(get_level(Ind, HRESISTS_I, 50) + 25)
 	end,
 	["desc"] = 	{
 			"Lets you resist heat, cold, lightning and acid.",
@@ -151,7 +143,6 @@ HRESISTS_II = add_spell {
 }
 HRESISTS_III = add_spell {
 	["name"] = 	"Holy Resistance III",
-	["name2"] = 	"HRes III",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -186,7 +177,6 @@ HRESISTS_III = add_spell {
 
 HPROTEVIL = add_spell {
 	["name"] = 	"Protection from Evil",
-	["name2"] = 	"PfE",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -206,19 +196,20 @@ HPROTEVIL = add_spell {
 
 DISPELMAGIC = add_spell {
 	["name"] = 	"Dispel Magic",
-	["name2"] = 	"DispMag",
 	["school"] = 	{SCHOOL_HDEFENSE},
-	["level"] = 	10,
+	["level"] = 	18,
 	["mana"] = 	30,
 	["mana_max"] = 	30,
 	["fail"] = 	10,
 	["stat"] = 	A_WIS,
+	-- Unaffected by blindness
 	["blind"] = 	FALSE,
+	-- Unaffected by confusion
 	["confusion"] = FALSE,
 	["spell"] = 	function()
 			set_blind(Ind, 0)
 			set_confused(Ind, 0)
-			if get_level(Ind, DISPELMAGIC, 50) >= 7 then
+			if get_level(Ind, DISPELMAGIC, 50) >= 8 then
 				set_image(Ind, 0)
 			end
 			if get_level(Ind, DISPELMAGIC, 50) >= 13 then
@@ -233,14 +224,13 @@ DISPELMAGIC = add_spell {
 	["desc"] = 	{
 			"Dispels a lot of magic that can affect you, be it good or bad.",
 			"Level 1: blindness and confusion.",
-			"Level 7: hallucination.",
+			"Level 8: hallucination.",
 			"Level 13: speed (both bad or good) and stun.",
 	}
 }
 
 HRUNEPROT = add_spell {
 	["name"] = 	"Glyph of Warding",
-	["name2"] = 	"Glyph",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -263,11 +253,10 @@ HRUNEPROT = add_spell {
 
 HMARTYR = add_spell {
 	["name"] = 	"Martyrdom",
-	["name2"] = 	"Martyr",
 	["school"] = 	{SCHOOL_HDEFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
-	["level"] = 	47,
+	["level"] = 	45,
 	["mana"]= 	50,
 	["mana_max"] = 	50,
 	["fail"] = 	-60,

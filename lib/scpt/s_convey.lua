@@ -2,7 +2,6 @@
 
 BLINK = add_spell {
 	["name"] = 	"Phase Door",
-	["name2"] = 	"Phase",
 	["school"] = 	{SCHOOL_CONVEYANCE},
 	["level"] = 	2,
 	["mana"] = 	3,
@@ -20,7 +19,6 @@ BLINK = add_spell {
 
 DISARM = add_spell {
 	["name"] = 	"Disarm",
-	["name2"] = 	"Disarm",
 	["school"] = 	{SCHOOL_CONVEYANCE},
 	["level"] = 	5,
 	["mana"] = 	4,
@@ -37,7 +35,6 @@ DISARM = add_spell {
 
 TELEPORT = add_spell {
 	["name"] = 	"Teleportation",
-	["name2"] = 	"Tele",
 	["school"] = 	{SCHOOL_CONVEYANCE},
 	["level"] = 	10,
 	["mana"] = 	12,
@@ -55,7 +52,6 @@ TELEPORT = add_spell {
 
 TELEAWAY_I = add_spell {
 	["name"] = 	"Teleport Away I",
-	["name2"] = 	"TAway I",
 	["school"] = 	{SCHOOL_CONVEYANCE},
 	["level"] = 	23,
 	["mana"] = 	15,
@@ -72,7 +68,6 @@ TELEAWAY_I = add_spell {
 }
 TELEAWAY_II = add_spell {
 	["name"] = 	"Teleport Away II",
-	["name2"] = 	"TAway II",
 	["school"] = 	{SCHOOL_CONVEYANCE},
 	["level"] = 	43,
 	["mana"] = 	40,
@@ -90,7 +85,6 @@ TELEAWAY_II = add_spell {
 
 RECALL = add_spell {
 	["name"] = 	"Recall",
-	["name2"] = 	"Rec",
 	["school"] = 	{SCHOOL_CONVEYANCE},
 	["level"] = 	30,
 	["mana"] = 	25,
@@ -101,6 +95,7 @@ RECALL = add_spell {
 
 			if args.book < 0 then return end
 			set_recall(Ind, dur, player.inventory[1 + args.book])
+			--fire_ball(Ind, GF_RECALL_PLAYER, 0, dur, 1, "")
 	end,
 	["info"] = 	function()
 			return "dur "..(15 - get_level(Ind, RECALL, 10)).."+d"..(21 - get_level(Ind, RECALL, 15))
@@ -113,7 +108,6 @@ RECALL = add_spell {
 
 PROBABILITY_TRAVEL = add_spell {
 	["name"] = 	"Probability Travel",
-	["name2"] = 	"Prob",
 	["school"] = 	{SCHOOL_CONVEYANCE},
 	["level"] = 	35,
 	["mana"] = 	50,
@@ -126,69 +120,8 @@ PROBABILITY_TRAVEL = add_spell {
 			return "dur "..get_level(Ind, PROBABILITY_TRAVEL, 60).."+d20"
 	end,
 	["desc"] = 	{
-			"Renders you instable, when you hit a wall you travel throught it and instantly",
-			"appear on the other side of it. You can also float up and down at will."
+			"Renders you instable, when you hit a wall you travel throught it and",
+			"instantly appear on the other side of it. You can also float up and down",
+			"at will."
 	}
 }
-
-if (def_hack("TEMP1", nil) == 0) then
-TELEKINESIS = add_spell {
-	["name"] = 	"Telekinesis I",
-	["name2"] = 	"TK I",
-	["school"] = 	{SCHOOL_CONVEYANCE},
-	["level"] = 	40,
-	["mana"] = 	25,
-	["mana_max"] = 	25,
-	["fail"] = 	10,
-	["am"] = 	75,
-	["get_item"] = {
-		["prompt"] = 	"Teleport which object? ",
-		["inven"] = 	TRUE,
-		["get"] = 	function (obj)
-			if obj.weight * obj.number <= 4 + get_level(Ind, TELEKINESIS, 390, 0) then
-				return TRUE
-			end
-			return FALSE
-		end,
-	},
-	["spell"] = 	function(args)
-		if args.item == -1 then return end
-		if player.inventory[1 + args.item].weight * player.inventory[1 + args.item].number <= 4 + get_level(Ind, TELEKINESIS, 390, 0) then
-			player.current_telekinesis = player.inventory[1 + args.book]
-			telekinesis_aux(Ind, args.item)
-		else
-			msg_print(Ind, "Pfft trying to hack your client ? pretty lame ...")
-		end
-	end,
-	["info"] = 	function()
-		return "max wgt "..((4 + get_level(Ind, TELEKINESIS, 390, 0)) / 10).."."..(imod(4 + get_level(Ind, TELEKINESIS, 390, 0), 10))
-	end,
-	["desc"] = 	{
-		"Inscribe your book with @Pplayername, cast it, select an item and the item",
-		"will be teleported to that player whereever he/she might be in the Universe.",
-	}
-}
-else
-TELEKINESIS = add_spell {
-	["name"] = 	"Telekinesis I",
-	["name2"] = 	"TK I",
-	["school"] = 	{SCHOOL_CONVEYANCE},
-	["level"] = 	40,
-	["mana"] = 	25,
-	["mana_max"] = 	25,
-	["fail"] = 	10,
-	["am"] = 	75,
-	["spell"] = 	function(args)
-		--telekinesis(Ind, player.inventory[1 + args.book], 4 + get_level(Ind, TELEKINESIS, 330, 0)) (conv/mind)
-		telekinesis(Ind, player.inventory[1 + args.book], 4 + get_level(Ind, TELEKINESIS, 390, 0))
-	end,
-	["info"] = 	function()
-		--return "max wgt "..((4 + get_level(Ind, TELEKINESIS, 330, 0)) / 10).."."..(imod(4 + get_level(Ind, TELEKINESIS, 330, 0), 10)) (conv/mind)
-		return "max wgt "..((4 + get_level(Ind, TELEKINESIS, 390, 0)) / 10).."."..(imod(4 + get_level(Ind, TELEKINESIS, 390, 0), 10))
-	end,
-	["desc"] = 	{
-		"Inscribe your book with @Pplayername, cast it, select an item and the item",
-		"will be teleported to that player whereever he/she might be in the Universe.",
-	}
-}
-end

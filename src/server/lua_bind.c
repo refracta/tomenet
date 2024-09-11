@@ -24,10 +24,10 @@
 magic_power *new_magic_power(int num) {
 	magic_power *m_ptr;
 	C_MAKE(m_ptr, num, magic_power);
-	return(m_ptr);
+	return (m_ptr);
 }
 magic_power *grab_magic_power(magic_power *m_ptr, int num) {
-	return(&m_ptr[num]);
+	return (&m_ptr[num]);
 }
 static char *magic_power_info_lua_fct;
 static void magic_power_info_lua(char *p, int power) {
@@ -41,7 +41,7 @@ static void magic_power_info_lua(char *p, int power) {
 }
 int get_magic_power_lua(int *sn, magic_power *powers, int max_powers, char *info_fct, int plev, int cast_stat) {
 	magic_power_info_lua_fct = info_fct;
-	return(get_magic_power(sn, powers, max_powers, magic_power_info_lua, plev, cast_stat));
+	return (get_magic_power(sn, powers, max_powers, magic_power_info_lua, plev, cast_stat));
 }
 
 bool lua_spell_success(magic_power *spell, int stat, char *oups_fct) {
@@ -58,10 +58,12 @@ bool lua_spell_success(magic_power *spell, int stat, char *oups_fct) {
 	chance -= adj_mag_stat[p_ptr->stat_ind[stat]] - 3;
 
 	/* Not enough mana to cast */
-	if (spell->mana_cost > p_ptr->cmp) chance += 5 * (spell->mana_cost - p_ptr->cmp);
+	if (spell->mana_cost > p_ptr->csp) {
+		chance += 5 * (spell->mana_cost - p_ptr->csp);
+	}
 
 	/* Extract the minimum failure rate */
-	minfail = adj_mag_fail[p_ptr->stat_ind[stat]];
+        minfail = adj_mag_fail[p_ptr->stat_ind[stat]];
 
 	/* Minimum failure rate */
 	if (chance < minfail) chance = minfail;
@@ -84,9 +86,9 @@ bool lua_spell_success(magic_power *spell, int stat, char *oups_fct) {
 
 		if (oups_fct != NULL)
 			exec_lua(format("%s(%d)", oups_fct, chance));
-		return(FALSE);
+		return (FALSE);
 	}
-	return(TRUE);
+	return (TRUE);
 }
 
 /*
@@ -95,7 +97,7 @@ bool lua_spell_success(magic_power *spell, int stat, char *oups_fct) {
 object_type *new_object() {
 	object_type *o_ptr;
 	MAKE(o_ptr, object_type);
-	return(o_ptr);
+	return (o_ptr);
 }
 
 void end_object(object_type *o_ptr) {
@@ -125,7 +127,7 @@ s16b add_new_power(cptr name, cptr desc, cptr gain, cptr lose, byte level, byte 
 	powers_type[power_max - 1].stat = stat;
 	powers_type[power_max - 1].diff = diff;
 
-	return(power_max - 1);
+	return (power_max - 1);
 }
 
 static char *lua_item_tester_fct;
@@ -138,7 +140,7 @@ static bool lua_item_tester(object_type* o_ptr) {
 	lua_call(L, 1, 1);
 	ret = lua_tonumber(L, -1);
 	lua_settop(L, oldtop);
-	return(ret);
+	return (ret);
 }
 
 void lua_set_item_tester(int tval, char *fct) {
@@ -154,7 +156,7 @@ char *lua_object_desc(object_type *o_ptr, int pref, int mode) {
 	static char buf[150];
 
 	object_desc(buf, o_ptr, pref, mode);
-	return(buf);
+	return (buf);
 }
 
 /*
@@ -179,7 +181,7 @@ bool summon_lua_okay(int r_idx) {
 	lua_call(L, 1, 1);
 	ret = lua_tonumber(L, -1);
 	lua_settop(L, oldtop);
-	return(ret);
+	return (ret);
 }
 
 bool lua_summon_monster(int y, int x, int lev, bool friend, char *fct) {
@@ -195,7 +197,7 @@ bool lua_summon_monster(int y, int x, int lev, bool friend, char *fct) {
 //	if (ok) sound_near_site(y, x, wpos, 0, "summon", NULL, SFX_TYPE_MON_SPELL, FALSE);
 #endif
 
-	return(ok);
+	return ok;
 }
 
 /*
@@ -212,7 +214,7 @@ s16b add_new_quest(char *name) {
 	for (i = 0; i < 10; i++)
 		strncpy(quest[max_xo_idx - 1].desc[i], "", 39);
 
-	return(max_xo_idx - 1);
+	return (max_xo_idx - 1);
 }
 
 void desc_quest(int q_idx, int d, char *desc) {
@@ -226,9 +228,9 @@ void desc_quest(int q_idx, int d, char *desc) {
 bool get_com_lua(cptr prompt, int *com) {
 	char c;
 
-	if (!get_com(prompt, &c)) return(FALSE);
+	if (!get_com(prompt, &c)) return (FALSE);
 	*com = c;
-	return(TRUE);
+	return (TRUE);
 }
 #endif	// 0
 
@@ -236,22 +238,22 @@ bool get_com_lua(cptr prompt, int *com) {
 s16b new_school(int i, cptr name, s16b skill) {
 	schools[i].name = string_make(name);
 	schools[i].skill = skill;
-	return(i);
+	return (i);
 }
 
 s16b new_spell(int i, cptr name) {
 	school_spells[i].name = string_make(name);
 	school_spells[i].level = 0;
 	school_spells[i].level = 0;
-	return(i);
+	return (i);
 }
 
 spell_type *grab_spell_type(s16b num) {
-	return(&school_spells[num]);
+	return (&school_spells[num]);
 }
 
 school_type *grab_school_type(s16b num) {
-	return(&schools[num]);
+	return (&schools[num]);
 }
 
 /* Change this fct if I want to switch to learnable spells */
@@ -318,16 +320,16 @@ s32b lua_get_level(int Ind, s32b s, s32b lvl, s32b max, s32b min, s32b bonus) {
  #endif
 #endif
 
-	return(lvl);
+	return lvl;
 }
 
 /* adj_mag_stat? stat_ind??  pfft */
 /* NOTE: KEEP CONSISTENT WITH CLIENT-SIDE lua_bind.c:lua_spell_chance()! */
 s32b lua_spell_chance(int i, s32b chance, int level, int skill_level, int mana, int cur_mana, int stat) {
 	player_type *p_ptr = Players[i];
-	int	     minfail;
+	int             minfail;
 
-//s_printf("i %d - chance %d - level %d - skill_level %d - mana %d - cur_mana %d - stat %d\n", i, chance, level, skill_level, mana, cur_mana, stat);
+//DEBUG:s_printf("chance %d - level %d - skill_level %d", chance, level, skill_level);
 
 	/* correct LUA overflow bug ('fail' is type char, ie unsigned byte) */
 	if (chance > 100) chance -= 256;
@@ -367,20 +369,17 @@ s32b lua_spell_chance(int i, s32b chance, int level, int skill_level, int mana, 
 	if (p_ptr->stun > 50) chance += 25;
 	else if (p_ptr->stun) chance += 15;
 
-	/* icky_wield increases fail chance */
-	if (p_ptr->icky_wield) chance += 15;
-
 	/* Always a 5 percent chance of working */
 	if (chance > 95) chance = 95;
 
 	/* Return the chance */
-	return(chance);
+	return (chance);
 }
 
 #if 0
 /* Cave */
 cave_type *lua_get_cave(int y, int x) {
-	return(&(cave[y][x]));
+	return (&(cave[y][x]));
 }
 
 void set_target(int y, int x) {
@@ -418,7 +417,7 @@ bool alloc_room(int by0, int bx0, int ysize, int xsize, int *y1, int *x1, int *y
 	int xval, yval, x, y;
 
 	/* Try to allocate space for room.  If fails, exit */
-	if (!room_alloc(xsize + 2, ysize + 2, FALSE, by0, bx0, &xval, &yval)) return(FALSE);
+	if (!room_alloc(xsize + 2, ysize + 2, FALSE, by0, bx0, &xval, &yval)) return FALSE;
 
 	/* Get corner values */
 	*y1 = yval - ysize / 2;
@@ -435,7 +434,7 @@ bool alloc_room(int by0, int bx0, int ysize, int xsize, int *y1, int *x1, int *y
 			c_ptr->info |= (CAVE_GLOW);
 		}
 	}
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -457,43 +456,44 @@ static bool lua_mon_hook_bounty(int r_idx) {
 	monster_race* r_ptr = &r_info[r_idx];
 
 	/* Reject 'non-spawning' monsters */
-	if (!r_ptr->rarity) return(FALSE);
+	if (!r_ptr->rarity) return (FALSE);
 
 	/* Reject uniques */
-	if ((r_ptr->flags1 & RF1_UNIQUE)) return(FALSE);
+	if ((r_ptr->flags1 & RF1_UNIQUE)) return (FALSE);
 
 	/* Reject quest NPCs */
-	//if ((r_ptr->flags1 & RF1_QUESTOR)) return(FALSE);
+	if ((r_ptr->flags1 & RF1_QUESTOR)) return (FALSE);
 
 	/* Reject those who cannot leave anything */
-	if (!(r_ptr->flags9 & RF9_DROP_CORPSE)) return(FALSE);
+	if (!(r_ptr->flags9 & RF9_DROP_CORPSE)) return (FALSE);
 
 	/* Accept only monsters that can be generated */
-	if ((r_ptr->flags9 & RF9_SPECIAL_GENE)) return(FALSE);
+	if ((r_ptr->flags9 & RF9_SPECIAL_GENE)) return (FALSE);
+	if ((r_ptr->flags9 & RF9_NEVER_GENE)) return (FALSE);
 
 	/* Reject pets */
-	if ((r_ptr->flags7 & RF7_PET)) return(FALSE);
+	if ((r_ptr->flags7 & RF7_PET)) return (FALSE);
 
 	/* Reject friendly creatures */
-	if ((r_ptr->flags7 & RF7_FRIENDLY)) return(FALSE);
+	if ((r_ptr->flags7 & RF7_FRIENDLY)) return (FALSE);
 
 	/* Reject neutral creatures */
-	if ((r_ptr->flags7 & RF7_NEUTRAL)) return(FALSE);
+	if ((r_ptr->flags7 & RF7_NEUTRAL)) return (FALSE);
 
 	/* Accept only monsters that are not breeders */
-	if ((r_ptr->flags4 & RF4_MULTIPLY)) return(FALSE);
+	if ((r_ptr->flags4 & RF4_MULTIPLY)) return (FALSE);
 
 	/* Forbid joke monsters */
-	if ((r_ptr->flags8 & RF8_JOKEANGBAND)) return(FALSE);
+	if ((r_ptr->flags8 & RF8_JOKEANGBAND)) return (FALSE);
 
 	/* Forbid C. Blue's monsters */
-	if ((r_ptr->flags8 & RF8_BLUEBAND)) return(FALSE);
+	if ((r_ptr->flags8 & RF8_BLUEBAND)) return (FALSE);
 
 	/* Accept only monsters that are not good */
-	if ((r_ptr->flags3 & RF3_GOOD)) return(FALSE);
+	if ((r_ptr->flags3 & RF3_GOOD)) return (FALSE);
 
 	/* The rest are acceptable */
-	return(TRUE);
+	return (TRUE);
 }
 
 int lua_get_new_bounty_monster(int lev) {
@@ -512,7 +512,7 @@ int lua_get_new_bounty_monster(int lev) {
 	/* Undo the filters */
 	get_mon_num_hook = dungeon_aux;
 
-	return(r_idx);
+	return r_idx;
 }
 
 #endif
@@ -537,11 +537,6 @@ void lua_s_print(cptr logstr) {
 	s_printf("%s", logstr);
 }
 
-/* Write a time-stamped string to an external file. - Added for AI experiments - C. Blue */
-void lua_x_print(cptr logstr) {
-	x_printf("%s", logstr);
-}
-
 void lua_add_anote(char *anote) {
 	int i;
 
@@ -564,18 +559,11 @@ void lua_del_anotes(void) {
 }
 void lua_broadcast_motd(void) {
 	int p, i;
-	bool first = TRUE;
 
-	for (i = 0; i < MAX_ADMINNOTES; i++) {
-		if (!strcmp(admin_note[i], "")) continue;
-		if (first) {
-			first = FALSE;
+	for (i = 0; i < MAX_ADMINNOTES; i++)
+		if (strcmp(admin_note[i], ""))
 			for (p = 1; p <= NumPlayers; p++)
-				msg_print(p, "\375\377sMotD:");
-		}
-		for (p = 1; p <= NumPlayers; p++)
-			msg_format(p, "\375\377s %s", admin_note[i]);
-	}
+				msg_format(p, "\375\377sMotD: %s", admin_note[i]);
 
 	if (server_warning[0])
 		for (p = 1; p <= NumPlayers; p++)
@@ -610,7 +598,7 @@ void lua_count_houses(int Ind) {
 		}
 }
 int lua_count_houses_id(s32b id) {
-	int i, ho = 0, co = 0, lev = lookup_player_maxplv(id);
+	int i, ho = 0, co = 0, lev = lookup_player_level(id);
 
 	for (i = 0; i < num_houses; i++)
 		if ((houses[i].dna->owner_type == OT_PLAYER) &&
@@ -633,7 +621,7 @@ int lua_count_houses_id(s32b id) {
 					s_printf("HOUSES_EXCEEDED: non-(ex)winner %s owns castle(s).\n", lookup_player_name(id));
 			}
 		}
-	return(ho);
+	return ho;
 }
 
 /* keep whole function in sync with birth.c! */
@@ -648,7 +636,7 @@ void lua_recalc_char(int Ind) {
 	/* keep in sync with birth.c! */
 #if 0
 	/* Minimum hitpoints at highest level */
-	min_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 3) / 8;
+        min_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 3) / 8;
 	min_value += PY_MAX_LEVEL;
 
 	/* Maximum hitpoints at highest level */
@@ -657,14 +645,14 @@ void lua_recalc_char(int Ind) {
 #endif
 #if 0 /* 300 tries */
 	/* Minimum hitpoints at kinging level */
-	min_value_king = (50 * (p_ptr->hitdie - 1) * 15) / 32;
+        min_value_king = (50 * (p_ptr->hitdie - 1) * 15) / 32;
 	min_value_king += 50;
 	/* Maximum hitpoints at kinging level */
 	max_value_king = (50 * (p_ptr->hitdie - 1) * 17) / 32;
 	max_value_king += 50;
 
 	/* Minimum hitpoints at highest level */
-	min_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 15) / 32;
+        min_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 15) / 32;
 	min_value += PY_MAX_LEVEL;
 	/* Maximum hitpoints at highest level */
 	max_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 17) / 32;
@@ -693,9 +681,9 @@ void lua_recalc_char(int Ind) {
 	while (--tries) {
 		/* Roll the hitpoint values */
 		for (i = 1; i < PY_MAX_LEVEL; i++) {
-			//j = randint(p_ptr->hitdie);
+//			j = randint(p_ptr->hitdie);
 			j = 2 + randint(p_ptr->hitdie - 4);
-			p_ptr->player_hp[i] = p_ptr->player_hp[i - 1] + j;
+			p_ptr->player_hp[i] = p_ptr->player_hp[i-1] + j;
 		}
 		/* XXX Could also require acceptable "mid-level" hitpoints */
 
@@ -718,7 +706,7 @@ void lua_recalc_char(int Ind) {
 }
 
 void lua_examine_item(int Ind, int Ind_target, int item) {
-	identify_fully_aux(Ind, &Players[Ind_target]->inventory[item], FALSE, item, Ind_target != Ind ? Ind_target : 0);
+	identify_fully_aux(Ind, &Players[Ind_target]->inventory[item], FALSE, item);
 }
 
 void lua_determine_level_req(int Ind, int item) {
@@ -791,19 +779,34 @@ void lua_strip_true_arts_from_absent_players(void) {
 	strip_true_arts_from_hashed_players();
 }
 
-/* Remove all true artifacts in the world, excluding traditional houses. */
+/* Remove all true artifacts lying on the (mang-house) floor
+   anywhere in the world. Not processing traditional houses atm. */
 void lua_strip_true_arts_from_floors(void) {
 	int i, cnt = 0, dcnt = 0;
 	object_type *o_ptr;
+#if 0
+	cave_type **zcave;
+#endif
 
 	for (i = 0; i < o_max; i++) {
 		o_ptr = &o_list[i];
 		if (o_ptr->k_idx) {
 			cnt++;
-			if (resettable_artifact_p(o_ptr)) {
-				delete_object_idx(i, TRUE);
-				dcnt++;
+			/* check items on the world's floors */
+#if 0
+			if ((zcave = getcave(&o_ptr->wpos)) &&
+			    resettable_artifact_p(o_ptr))
+			{
+				delete_object_idx(zcave[o_ptr->iy][o_ptr->ix].o_idx, TRUE);
+                                dcnt++;
 			}
+#else
+			if (resettable_artifact_p(o_ptr))
+			{
+				delete_object_idx(i, TRUE);
+                                dcnt++;
+			}
+#endif
 		}
 	}
 	s_printf("Scanned %d objects. Removed %d artefacts.\n", cnt, dcnt);
@@ -820,17 +823,12 @@ char *lua_get_mon_name(int r_idx) {
 
 /* Return the last chat line */
 inline char *lua_get_last_chat_line() {
-	return(last_chat_line);
+	return last_chat_line;
 }
 
 /* Return the last person who said the last chat line */
 char *lua_get_last_chat_owner() {
-	return(last_chat_owner);
-}
-
-/* Return the last person's account name who said the last chat line */
-char *lua_get_last_chat_account() {
-	return(last_chat_account);
+	return last_chat_owner;
 }
 
 /* Reset all towns */
@@ -846,29 +844,29 @@ void lua_towns_treset(void) {
 		wpos.wy = y;
 		if (istown(&wpos)) {
 			unstatic_level(&wpos);
-			if (getcave(&wpos)) dealloc_dungeon_level(&wpos);
+			if(getcave(&wpos)) dealloc_dungeon_level(&wpos);
 		}
 	}
 }
 
 /* To do some connection magik ! */
 long lua_player_exp(int level, int expfact) {
+	//s32b adv_exp;
 	s64b adv;
-
-	if (level < 1) level = 1;
-	if (level > PY_MAX_LEVEL) level = PY_MAX_LEVEL;
-
+	if ((level > 1) && (level < 100))
 #ifndef ALT_EXPRATIO
-	adv = ((s64b)player_exp[level - 2] * (s64b)expfact / 100L);
+		adv = ((s64b)player_exp[level - 2] * (s64b)expfact / 100L);
 #else
-	adv = (s64b)player_exp[level - 2];
+		adv = (s64b)player_exp[level - 2];
 #endif
+	else
+		adv = 0;
 
-	return(adv);
+	//adv_exp = (s32b)(adv);
+	return adv;
 }
 
-/* Fix all spellbooks not in players inventories, but in houses or on the floor.
-   Currently does not handle carried (monster inventory) or embedded (special floor) objects.
+/* Fix all spellbooks not in players inventories (houses...)
  * Adds mod to spellbook pval if it's greater than or equal to spell
  * spell in most cases is the number of the new spell and mod is 1
  * - mikaelh */
@@ -877,6 +875,7 @@ void lua_fix_spellbooks(int spell, int mod) {
 	object_type *o_ptr;
 	house_type *h_ptr;
 
+#ifndef USE_MANG_HOUSE_ONLY
 	/* scan world (includes MAngband-style houses) */
 	for (i = 0; i < o_max; i++) {
 		o_ptr = &o_list[i];
@@ -896,8 +895,8 @@ void lua_fix_spellbooks(int spell, int mod) {
 			}
 		}
 	}
+#endif
 
-#ifndef USE_MANG_HOUSE_ONLY
 	/* scan traditional (vanilla) houses */
 	for (j = 0; j < num_houses; j++) {
 		h_ptr = &houses[j];
@@ -921,7 +920,6 @@ void lua_fix_spellbooks(int spell, int mod) {
 			}
 		}
 	}
-#endif
 }
 
 /* hacked crap if above function wasn't executed properly -.- regarding custom tomes */
@@ -1094,24 +1092,24 @@ void lua_apply_item_changes(int Ind, int changes) {
 	/* scan world/houses */
 #ifndef USE_MANG_HOUSE_ONLY
 		/* scan traditional (vanilla) houses */
-		for (j = 0; j < num_houses; j++) {
+		for(j = 0; j < num_houses; j++){
 			h_ptr = &houses[j];
-			for (i = 0; i < h_ptr->stock_num; i++) {
+			for (i = 0; i < h_ptr->stock_num; i++){
 				o_ptr = &h_ptr->stock[i];
-				if (!o_ptr->k_idx) continue;
+		                if(!o_ptr->k_idx) continue;
 				lua_apply_item_changes_aux(o_ptr, changes);
 			}
 		}
 #endif
 		/* scan world (includes MAngband-style houses) */
-		for (i = 0; i < o_max; i++) {
+		for(i = 0; i < o_max; i++) {
 			o_ptr = &o_list[i];
-			if (!o_ptr->k_idx) continue;
+			if(!o_ptr->k_idx) continue;
 			lua_apply_item_changes_aux(o_ptr, changes);
 		}
 	} else {
 		/* scan a player's inventory/equipment */
-		for (i = 0; i < INVEN_TOTAL; i++) {
+		for (i = 0; i < INVEN_TOTAL; i++){
 			o_ptr = &Players[Ind]->inventory[i];
 			if (!o_ptr->k_idx) continue;
 			lua_apply_item_changes_aux(o_ptr, changes);
@@ -1130,14 +1128,14 @@ s32b lua_get_skill_mod(int Ind, int i) {
 	s32b value = 0, mod = 0;
 	player_type *p_ptr = Players[Ind];
 	compute_skills(p_ptr, &value, &mod, i);
-	return(mod);
+	return mod;
 }
 
 s32b lua_get_skill_value(int Ind, int i) {
 	s32b value = 0, mod = 0;
 	player_type *p_ptr = Players[Ind];
 	compute_skills(p_ptr, &value, &mod, i);
-	return(value);
+	return value;
 }
 
 /* fix dual-wield slot position change */
@@ -1159,8 +1157,10 @@ void lua_fix_equip_slots(int Ind) {
 			    p_ptr->inventory[i].tval == TV_RING)
 				continue;
 
-			inven_takeoff(Ind, i, 255, FALSE, TRUE);
+			bypass_inscrption = TRUE;
+			inven_takeoff(Ind, i, 255, FALSE);
 	}
+	bypass_inscrption = FALSE;
 
 	/* excise bugged zero-items */
 	/* (same as in do_cmd_refresh) */
@@ -1200,20 +1200,20 @@ void lua_get_date(int *weekday, int *day, int *month, int *year)
 
 /* for Player-Customizable Tomes feature - C. Blue */
 int get_inven_sval(int Ind, int inven_slot) {
-	return(Players[Ind]->inventory[inven_slot].sval);
+	return (Players[Ind]->inventory[inven_slot].sval);
 }
 s16b get_inven_xtra(int Ind, int inven_slot, int n) {
 	switch (n) {
-	case 1: return(Players[Ind]->inventory[inven_slot].xtra1);
-	case 2: return(Players[Ind]->inventory[inven_slot].xtra2);
-	case 3: return(Players[Ind]->inventory[inven_slot].xtra3);
-	case 4: return(Players[Ind]->inventory[inven_slot].xtra4);
-	case 5: return(Players[Ind]->inventory[inven_slot].xtra5);
-	case 6: return(Players[Ind]->inventory[inven_slot].xtra6);
-	case 7: return(Players[Ind]->inventory[inven_slot].xtra7);
-	case 8: return(Players[Ind]->inventory[inven_slot].xtra8);
-	case 9: return(Players[Ind]->inventory[inven_slot].xtra9);
-	default: return(0); //failure
+	case 1: return (Players[Ind]->inventory[inven_slot].xtra1);
+	case 2: return (Players[Ind]->inventory[inven_slot].xtra2);
+	case 3: return (Players[Ind]->inventory[inven_slot].xtra3);
+	case 4: return (Players[Ind]->inventory[inven_slot].xtra4);
+	case 5: return (Players[Ind]->inventory[inven_slot].xtra5);
+	case 6: return (Players[Ind]->inventory[inven_slot].xtra6);
+	case 7: return (Players[Ind]->inventory[inven_slot].xtra7);
+	case 8: return (Players[Ind]->inventory[inven_slot].xtra8);
+	case 9: return (Players[Ind]->inventory[inven_slot].xtra9);
+	default: return (0); //failure
 	}
 }
 
@@ -1228,13 +1228,13 @@ void lua_fix_skill_chart(int Ind) {
 		p_ptr->s_info[i].dev = FALSE;
 #endif
 	for (i = 0; i < MAX_SKILLS; i++) {
-		//s32b value = 0, mod = 0;
+//		s32b value = 0, mod = 0;
 		/* Make sure all are touched */
 		p_ptr->s_info[i].touched = TRUE;
-		//compute_skills(p_ptr, &value, &mod, i);
-		//init_skill(p_ptr, value, mod, i);
+//		compute_skills(p_ptr, &value, &mod, i);
+//		init_skill(p_ptr, value, mod, i);
 		/* pseudo-init-skill */
-#if 0 //SMOOTHSKILLS
+#if 0 //SMOOTH_SKILLS
 		if (s_info[i].flags1 & SKF1_HIDDEN) {
 			p_ptr->s_info[i].hidden = TRUE;
 		} else {
@@ -1288,44 +1288,46 @@ void lua_takeoff_costumes(int Ind) {
 	player_type *p_ptr = Players[Ind];
 
 	if ((p_ptr->inventory[INVEN_BODY].tval == TV_SOFT_ARMOR) && (p_ptr->inventory[INVEN_BODY].sval == SV_COSTUME)) {
-		inven_takeoff(Ind, INVEN_BODY, 255, FALSE, TRUE);
+		bypass_inscrption = TRUE;
+		inven_takeoff(Ind, INVEN_BODY, 255, FALSE);
+		bypass_inscrption = FALSE;
 		msg_print(Ind, "It's not that time of the year anymore.");
 	}
 }
 
 bool lua_is_unique(int r_idx) {
-	if (r_info[r_idx].flags1 & RF1_UNIQUE) return(TRUE); else return(FALSE);
+	if (r_info[r_idx].flags1 & RF1_UNIQUE) return TRUE; else return FALSE;
 }
 
 /* Return if a certain race/class combo could in theory learn a monster form if mimicry was high enough */
 bool lua_mimic_eligible(int Ind, int r_idx) {
 	/* also filter out unattainable (in theory) forms */
-	if (r_info[r_idx].rarity == 255) return(FALSE);
-	if ((r_info[r_idx].flags1 & RF1_UNIQUE)) return(FALSE);
-	if (!mon_allowed_chance(&r_info[r_idx])) return(FALSE);
+	if (r_info[r_idx].rarity == 255) return FALSE;
+	if ((r_info[r_idx].flags1 & RF1_UNIQUE)) return FALSE;
+	if (!mon_allowed_chance(&r_info[r_idx])) return FALSE;
 
 	if (Players[Ind]->prace == RACE_VAMPIRE) {
-		return(mimic_vampire(r_idx, Players[Ind]->lev));
+		return (mimic_vampire(r_idx, Players[Ind]->lev));
 	}
 
 	if (Players[Ind]->pclass == CLASS_SHAMAN) {
-		return(mimic_shaman(r_idx));
+		return (mimic_shaman(r_idx));
 	} else if (Players[Ind]->pclass == CLASS_DRUID) {
-		return(mimic_druid(r_idx, Players[Ind]->lev));
+		return (mimic_druid(r_idx, Players[Ind]->lev));
 	}
 
-	return(TRUE);
+	return TRUE;
 }
 
 /* Return if a monster form is considered basically humanoid, ie has all extremities required for full equipment */
 bool lua_mimic_humanoid(int r_idx) {
-	if (!r_info[r_idx].body_parts[BODY_WEAPON]) return(FALSE);
-	if (r_info[r_idx].body_parts[BODY_FINGER] < 2) return(FALSE);
-	if (!r_info[r_idx].body_parts[BODY_HEAD]) return(FALSE);
-	if (!r_info[r_idx].body_parts[BODY_ARMS]) return(FALSE);
-	if (!r_info[r_idx].body_parts[BODY_TORSO]) return(FALSE);
-	if (!r_info[r_idx].body_parts[BODY_LEGS]) return(FALSE);
-	return(TRUE);
+	if (!r_info[r_idx].body_parts[BODY_WEAPON]) return FALSE;
+	if (r_info[r_idx].body_parts[BODY_FINGER] < 2) return FALSE;
+	if (!r_info[r_idx].body_parts[BODY_HEAD]) return FALSE;
+	if (!r_info[r_idx].body_parts[BODY_ARMS]) return FALSE;
+	if (!r_info[r_idx].body_parts[BODY_TORSO]) return FALSE;
+	if (!r_info[r_idx].body_parts[BODY_LEGS]) return FALSE;
+	return TRUE;
 }
 
 void swear_add(char *word, int level) {
@@ -1339,12 +1341,9 @@ void swear_add(char *word, int level) {
 	}
 	s_printf("FAILED to add swear word '%s' (%d).\n", word, level);
 }
-char *swear_get_word(int i) {
-	return(swear[i].word);
-}
-int swear_get_level(int i) {
-	return(swear[i].level);
-}
+char *swear_get_word(int i) { return swear[i].word; }
+int swear_get_level(int i) { return swear[i].level; }
+
 void nonswear_add(char *word, int affix) {
 	int i;
 
@@ -1356,33 +1355,8 @@ void nonswear_add(char *word, int affix) {
 	}
 	s_printf("FAILED to add non-swear word '%s'.\n", word);
 }
-char *nonswear_get(int i) {
-	return(nonswear[i]);
-}
-int nonswear_affix_get(int i) {
-	return(nonswear_affix[i]);
-}
-void lua_swear_list(int Ind, int level) {
-	int i, c = 0;
-
-	for (i = 0; i < MAX_SWEAR; i++) {
-		if (!swear[i].word[0]) continue;
-		if (swear[i].level < level) continue;
-		c++;
-		msg_format(Ind, "%3d (Lv %d): %s", i, swear[i].level, swear[i].word);
-	}
-	msg_format(Ind, "Total of %d/%d swear words.", c, MAX_SWEAR);
-}
-void lua_nonswear_list(int Ind) {
-	int i, c = 0;
-
-	for (i = 0; i < MAX_NONSWEAR; i++) {
-		if (!nonswear[i][0]) continue;
-		c++;
-		msg_format(Ind, "%3d (Pre/Suf %c%c): %s", i, (nonswear_affix[i] & 0x1) ? '*' : '-', (nonswear_affix[i] & 0x2) ? '*' : '-', nonswear[i]);
-	}
-	msg_format(Ind, "Total of %d/%d nonswear terms.", c, MAX_NONSWEAR);
-}
+char *nonswear_get(int i) { return nonswear[i]; }
+int nonswear_affix_get(int i) { return nonswear_affix[i]; }
 
 void lua_fix_max_depth(int Ind) {
 	player_type *p_ptr = Players[Ind];
@@ -1454,49 +1428,4 @@ void lua_forget_guilds(void) {
 		for (j = 0; j < BBS_LINES; j++)
 			gbbs_line[i][j][0] = '\0';
 	}
-}
-
-/* Workaround for ACC_HOUSE_LIMIT bug:
-   Just recount houses after every login, this should fix the glitch where people can suddenly have 33 (instead of the limit of 30) houses or more..
-   This is usually only called from custom.lua, when a player logs in. */
-void lua_fix_acc_house_limit(int Ind) {
-	player_type *p_ptr = Players[Ind];
-	int i, j;
-	struct account acc;
-#if 0
-	int h, ht = 0, ids, *id_list;
-	hash_entry *ptr;
-#endif
-
-	/* how many houses he should have */
-	i = acc_get_houses(p_ptr->accountname);
-
-	if (!GetAccount(&acc, p_ptr->accountname, NULL, FALSE)) {
-		s_printf("lua_fix_acc_house_limit: Couldn't find that account.\n");
-		return;
-	}
-
-	/* recount how many houses he really has */
-	j = acc_sum_houses(&acc, TRUE);
-
-#if 0
-	/* recount how many houses he really has */
-	ids = player_id_list(&id_list, acc.id);
-	for (i = 0; i < ids; i++) {
-		ptr = lookup_player(id_list[i]);
-		h = lua_count_houses_id(id_list[i]);
-		ht += h;
-	}
-	if (ids) C_KILL(id_list, ids, int);
-#endif
-
-	if (i != j) {
-		acc_set_houses(p_ptr->accountname, j);
-		s_printf("lua_fix_acc_house_limit: FIXED '%s'('%s'): %d houses are really -> %d.\n", p_ptr->name, p_ptr->accountname, i, j);
-	}
-}
-
-/* Simplified wish() version for lua scripts */
-void lua_wish(int Ind, int tval, int sval, int number, int bpval, int pval, int name1, int name2, int name2b, int level) {
-	wish(Ind, NULL, tval, sval, number, bpval, pval, name1, name2, name2b, level, NULL);
 }

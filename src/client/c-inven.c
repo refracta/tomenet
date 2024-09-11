@@ -23,100 +23,68 @@ bool abort_prompt = FALSE;
 
 s16b index_to_label(int i) {
 	/* Indices for "inven" are easy */
-	if (i < INVEN_WIELD) return(I2A(i));
+	if (i < INVEN_WIELD) return (I2A(i));
 
 	/* Indices for "equip" are offset */
-	return(I2A(i - INVEN_WIELD));
+	return (I2A(i - INVEN_WIELD));
 }
 
 
 bool item_tester_okay(object_type *o_ptr) {
-	/* Hack for live_timeouts: If showing equip via cmd_equip(), always show all slots. */
-	if (showing_equip) return(TRUE);
-
 	/* Hack -- allow testing empty slots */
-	if (item_tester_full) return(TRUE);
+	if (item_tester_full) return (TRUE);
 
 	/* Require an item */
-	if (!o_ptr->tval) return(FALSE);
+	if (!o_ptr->tval) return (FALSE);
 
 	/* Hack -- ignore "gold" */
-	if (o_ptr->tval == TV_GOLD) return(FALSE);
+	if (o_ptr->tval == TV_GOLD) return (FALSE);
 
 	/* Check the tval */
 	if (item_tester_tval) {
-		if (!(item_tester_tval == o_ptr->tval)) return(FALSE);
+		if (!(item_tester_tval == o_ptr->tval)) return (FALSE);
 	}
 
 	/* Check the weight */
 	if (item_tester_max_weight) {
-		if (item_tester_max_weight < o_ptr->weight * o_ptr->number) return(FALSE);
+		if (item_tester_max_weight < o_ptr->weight * o_ptr->number) return (FALSE);
 	}
 
 	/* Check the hook */
 	if (item_tester_hook) {
-		if (!(*item_tester_hook)(o_ptr)) return(FALSE);
+		if (!(*item_tester_hook)(o_ptr)) return (FALSE);
 	}
 
 	/* Assume okay */
-	return(TRUE);
+	return (TRUE);
 }
 
 
 static bool get_item_okay(int i) {
-#ifdef ENABLE_SUBINVEN
-	if (using_subinven != -1) {
-		/* Illegal items */
-		if ((i < 0) || (i >= using_subinven_size)) return(FALSE);
-
-		/* Verify the item */
-		if (!item_tester_okay(&subinventory[using_subinven][i])) return(FALSE);
-
-		/* Assume okay */
-		return(TRUE);
-	} else if (i >= 100) {
-		int s = i / 100 - 1;
-
-		i = i % 100;
-
-		/* Illegal items */
-		if ((i < 0) || (i >= inventory[s].pval)) return(FALSE);
-
-		/* Verify the item */
-		if (!item_tester_okay(&subinventory[s][i])) return(FALSE);
-
-		/* Assume okay */
-		return(TRUE);
-	}
-#endif
 	/* Illegal items */
-	if ((i < 0) || (i >= INVEN_TOTAL)) return(FALSE);
+	if ((i < 0) || (i >= INVEN_TOTAL)) return (FALSE);
 
 	/* Verify the item */
-	if (!item_tester_okay(&inventory[i])) return(FALSE);
+	if (!item_tester_okay(&inventory[i])) return (FALSE);
 
 	/* Assume okay */
-	return(TRUE);
+	return (TRUE);
 }
 
-/* For c_get_item(): Capital letter leads to asking whether we really want to try that item. */
+
 static bool verify(cptr prompt, int item) {
 	char	o_name[ONAME_LEN];
 	char	out_val[MSG_LEN];
 
+
 	/* Describe */
-#ifdef ENABLE_SUBINVEN
-	if (using_subinven != -1)
-		strcpy(o_name, subinventory_name[using_subinven][item]);
-	else
-#endif
 	strcpy(o_name, inventory_name[item]);
 
 	/* Prompt */
 	(void)sprintf(out_val, "%s %s?", prompt, o_name);
 
 	/* Query */
-	return(get_check2(out_val, FALSE));
+	return (get_check2(out_val, FALSE));
 }
 
 
@@ -127,18 +95,13 @@ static s16b c_label_to_inven(int c) {
 	i = (islower(c) ? A2I(c) : -1);
 
 	/* Verify the index */
-	if ((i < 0) || (i > INVEN_PACK)) return(-1);
+	if ((i < 0) || (i > INVEN_PACK)) return (-1);
 
 	/* Empty slots can never be chosen */
-#ifdef ENABLE_SUBINVEN
-	if (using_subinven != -1) {
-		if (!subinventory[using_subinven][i].tval) return(-1);
-	} else
-#endif
-	if (!inventory[i].tval) return(-1);
+	if (!inventory[i].tval) return (-1);
 
 	/* Return the index */
-	return(i);
+	return (i);
 }
 
 static s16b c_label_to_equip(int c) {
@@ -148,13 +111,13 @@ static s16b c_label_to_equip(int c) {
 	i = (islower(c) ? A2I(c) : -1) + INVEN_WIELD;
 
 	/* Verify the index */
-	if ((i < INVEN_WIELD) || (i >= INVEN_TOTAL)) return(-1);
+	if ((i < INVEN_WIELD) || (i >= INVEN_TOTAL)) return (-1);
 
 	/* Empty slots can never be chosen */
-	if (!inventory[i].tval) return(-1);
+	if (!inventory[i].tval) return (-1);
 
 	/* Return the index */
-	return(i);
+	return (i);
 }
 
 
@@ -174,25 +137,22 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 	int i, j;
 	int start, stop, step;
 	cptr s;
-	bool inven_first = (mode & INVEN_FIRST) != 0;
+	bool inven_first = mode & INVEN_FIRST;
 #ifdef SMART_SWAP
 	int i_found = -1;
 	char buf1[ONAME_LEN], buf3[ONAME_LEN];
-	bool multi = (mode & CHECK_MULTI) != 0;
+	bool multi = mode & CHECK_MULTI;
 	bool postpone;
 #endif
 	bool charged = (mode & CHECK_CHARGED) != 0;
 
 	/* neither inventory nor equipment is allowed to be searched? */
-	if (!inven && !equip) return(FALSE);
+	if (!inven && !equip) return (FALSE);
 
 	/* search tag in inventory before looking in equipment? (default is other way round) */
 	if (inven_first) {
 		start = inven ? 0 : INVEN_WIELD;
 		stop = equip ? INVEN_TOTAL : INVEN_PACK;
-#ifdef ENABLE_SUBINVEN
-		if (using_subinven != -1 && stop == INVEN_PACK) stop = using_subinven_size;
-#endif
 		step = 1;
 	} else {
 		start = (equip ? INVEN_TOTAL : INVEN_PACK) - 1;
@@ -220,20 +180,11 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 			i = j;
 		}
 
-#ifdef ENABLE_SUBINVEN
-		if (using_subinven != -1) buf = subinventory_name[using_subinven][i];
-		else
-#endif
 		buf = inventory_name[i];
 
 		/* Skip empty objects */
 		if (!buf[0]) continue;
 
-#ifdef ENABLE_SUBINVEN
-		if (using_subinven != -1) {
-			if (!item_tester_okay(&subinventory[using_subinven][i])) continue;
-		} else
-#endif
 		/* Skip items that don't fit (for mkey) */
 		if (!item_tester_okay(&inventory[i])) continue;
 
@@ -248,8 +199,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 			/* Check the normal tags */
 			if (s[1] == tag) {
 				if (charged && (
-				    strstr(buf, "(charging)") || strstr(buf, "(#)") || /* rods (and other devices, in theory) */
-				    //(partially charging) || strstr(buf, "(~)")
+				    strstr(buf, "charging)") || strstr(buf, "(#)") || strstr(buf, "(~)") || /* rods (and other devices, in theory) */
 				    strstr(buf, "(0 charges") || strstr(buf, "{empty}") /* wands, staves */
 				    )) {
 					/* Check for same item in the equipment, if found, search inventory for a non-same alternative */
@@ -267,35 +217,6 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 					}
 
 					if (!(buf1p = strstr(buf1, " of "))) buf1p = buf1; //skip item's article/amount
-#ifdef ENABLE_SUBINVEN
-					if (using_subinven != -1)
-					for (k = 0; k <= using_subinven_size; k++) {
-						if (k == i) continue;
-						strcpy(buf3, subinventory_name[using_subinven][k]);
-						buf3p = buf3;
-						while (*buf3p) {
-							/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-							   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-							if (*buf3p == '@') buf3p ++;
-							else *buf3p = tolower(*buf3p);
-							buf3p++;
-						}
-						/* Skip fully charging stacks */
-						if (strstr(buf3, "(charging)") || strstr(buf3, "(#)") || /* rods (and other devices, in theory) */
-						    //(partially charging) || strstr(buf3, "(~)")
-						    strstr(buf3, "(0 charges") || strstr(buf3, "{empty}")) /* wands, staves */
-							continue;
-
-						if (!(buf3p = strstr(buf3, " of "))) buf3p = buf3; //skip item's article/amount
-						s3 = strchr(buf3, '@');
-						if (subinventory[using_subinven][k].tval == subinventory[using_subinven][i].tval && /* unnecessary check, but whatever */
-						    s3 && s3[1] == tag) {
-							i = k;
-							break;
-						}
-					}
-					else
-#endif
 					for (k = 0; k <= INVEN_PACK; k++) {
 						if (k == i) continue;
 						strcpy(buf3, inventory_name[k]);
@@ -307,9 +228,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 							else *buf3p = tolower(*buf3p);
 							buf3p++;
 						}
-						/* Skip fully charging stacks */
-						if (strstr(buf3, "(charging)") || strstr(buf3, "(#)") || /* rods (and other devices, in theory) */
-						    //(partiallu charging) || strstr(buf3, "(~)")
+						if (strstr(buf3, "charging)") || strstr(buf3, "(#)") || strstr(buf3, "(~)") || /* rods (and other devices, in theory) */
 						    strstr(buf3, "(0 charges") || strstr(buf3, "{empty}")) /* wands, staves */
 							continue;
 
@@ -323,16 +242,6 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 					}
 				}
 #ifdef SMART_SWAP /* not really cool, with the ' of ' hack.. problem was eg 'ring' vs 'rings' */
- #ifdef ENABLE_SUBINVEN
-				/* short way.. */
-				if (using_subinven != -1) {
-					/* Save the actual inventory ID */
-					*cp = i;
-
-					/* Success */
-					return(TRUE);
-				}
- #endif
 				postpone = FALSE;
 				if (multi && i <= INVEN_PACK) {
 					/* Check for same item in the equipment, if found, search inventory for a non-same alternative */
@@ -350,7 +259,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 					}
 
 					if (!(buf1p = strstr(buf1, " of "))) buf1p = buf1; //skip item's article/amount
-					for (k = INVEN_WIELD; k < INVEN_TOTAL; k++) {
+					for (k = INVEN_WIELD; k <= INVEN_TOTAL; k++) {
 						strcpy(buf3, inventory_name[k]);
 						buf3p = buf3;
 						while (*buf3p) {
@@ -372,7 +281,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 							break;
 						}
 					}
-					if (k < INVEN_TOTAL && i_found != -1) postpone = TRUE;
+					if (k <= INVEN_TOTAL && i_found != -1) postpone = TRUE;
 				}
 			    if (!postpone) {
 #endif
@@ -380,7 +289,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 				*cp = i;
 
 				/* Success */
-				return(TRUE);
+				return (TRUE);
 #ifdef SMART_SWAP
 			    }
 #endif
@@ -389,8 +298,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 			/* Check the special tags */
 			if ((s[1] == command_cmd) && (s[2] == tag)) {
 				if (charged && (
-				    strstr(buf, "(charging)") || strstr(buf, "(#)") || /* rods (and other devices, in theory) */
-				    //(partially charging) || strstr(buf, "(~)")
+				    strstr(buf, "charging)") || strstr(buf, "(#)") || strstr(buf, "(~)") || /* rods (and other devices, in theory) */
 				    strstr(buf, "(0 charges") || strstr(buf, "{empty}") /* wands, staves */
 				    )) {
 					/* Check for same item in the equipment, if found, search inventory for a non-same alternative */
@@ -408,30 +316,6 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 					}
 
 					if (!(buf1p = strstr(buf1, " of "))) buf1p = buf1; //skip item's article/amount
-#ifdef ENABLE_SUBINVEN
-					if (using_subinven != -1)
-					for (k = 0; k <= using_subinven_size; k++) {
-						if (k == i) continue;
-						strcpy(buf3, subinventory_name[using_subinven][k]);
-						buf3p = buf3;
-						while (*buf3p) {
-							/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-							   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-							if (*buf3p == '@') buf3p ++;
-							else *buf3p = tolower(*buf3p);
-							buf3p++;
-						}
-
-						if (!(buf3p = strstr(buf3, " of "))) buf3p = buf3; //skip item's article/amount
-						s3 = strchr(buf3, '@');
-						if (subinventory[using_subinven][k].tval == subinventory[using_subinven][i].tval && /* unnecessary check, but whatever */
-						    s3 && s3[1] == command_cmd && s3[2] == tag) {
-							i = k;
-							break;
-						}
-					}
-					else
-#endif
 					for (k = 0; k <= INVEN_PACK; k++) {
 						if (k == i) continue;
 						strcpy(buf3, inventory_name[k]);
@@ -454,16 +338,6 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 					}
 				}
 #ifdef SMART_SWAP /* not really cool, with the ' of ' hack.. problem was eg 'ring' vs 'rings' */
- #ifdef ENABLE_SUBINVEN
-				/* short way.. */
-				if (using_subinven != -1) {
-					/* Save the actual inventory ID */
-					*cp = i;
-
-					/* Success */
-					return(TRUE);
-				}
- #endif
 				postpone = FALSE;
 				if (multi && i <= INVEN_PACK) {
 					/* Check for same item in the equipment, if found, search inventory for a non-same alternative */
@@ -481,7 +355,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 					}
 
 					if (!(buf1p = strstr(buf1, " of "))) buf1p = buf1; //skip item's article/amount
-					for (k = INVEN_WIELD; k < INVEN_TOTAL; k++) {
+					for (k = INVEN_WIELD; k <= INVEN_TOTAL; k++) {
 						strcpy(buf3, inventory_name[k]);
 						buf3p = buf3;
 						while (*buf3p) {
@@ -503,7 +377,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 							break;
 						}
 					}
-					if (k < INVEN_TOTAL && i_found != -1) postpone = TRUE;
+					if (k <= INVEN_TOTAL && i_found != -1) postpone = TRUE;
 				}
 			    if (!postpone) {
 #endif
@@ -511,7 +385,7 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 				*cp = i;
 
 				/* Success */
-				return(TRUE);
+				return (TRUE);
 #ifdef SMART_SWAP
 			    }
 #endif
@@ -525,11 +399,11 @@ static int get_tag(int *cp, char tag, bool inven, bool equip, int mode) {
 #ifdef SMART_SWAP
 	if (i_found != -1) {
 		*cp = i_found;
-		return(TRUE);
+		return TRUE;
 	}
 #endif
 	/* No such tag */
-	return(FALSE);
+	return (FALSE);
 }
 
 /*
@@ -542,174 +416,18 @@ bool get_item_hook_find_obj(int *item, int mode) {
 	int i, j;
 	char buf[ONAME_LEN];
 	char buf1[ONAME_LEN], buf2[ONAME_LEN], *ptr; /* for manual strcasestr() */
-	bool inven_first = (mode & INVEN_FIRST) != 0;
+	bool inven_first = mode & INVEN_FIRST;
 #ifdef SMART_SWAP
 	char buf3[ONAME_LEN];
-	bool multi = (mode & CHECK_MULTI) != 0;
+	bool multi = mode & CHECK_MULTI;
 	int i_found = -1;
 #endif
 	bool charged = (mode & CHECK_CHARGED) != 0;
-#ifdef ENABLE_SUBINVEN
-	bool subinven = (mode & USE_SUBINVEN);
-#endif
 
 	strcpy(buf, "");
 	if (!get_string(get_item_hook_find_obj_what, buf, 79))
-		return(FALSE);
+		return FALSE;
 
-#ifdef ENABLE_SUBINVEN
-    if (using_subinven != -1) {
-	for (j = 0; j < using_subinven_size; j++) {
-		i = j;
-
-		object_type *o_ptr = &subinventory[using_subinven][i];
-
-		if (!item_tester_okay(o_ptr)) continue;
-
- #if 0
-		if (my_strcasestr(subinventory_name[using_subinven][i], buf)) {
- #else
-		strcpy(buf1, subinventory_name[using_subinven][i]);
-		strcpy(buf2, buf);
-		ptr = buf1;
-		while (*ptr) {
-			/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-			   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-			if (*ptr == '@') ptr ++;
-			else *ptr = tolower(*ptr);
-			ptr++;
-		}
-		ptr = buf2;
-		while (*ptr) {
-			/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-			   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-			if (*ptr == '@') ptr += 2;
-			*ptr = tolower(*ptr);
-			ptr++;
-		}
-		if (strstr(buf1, buf2)) {
- #endif
-			if (charged && (
-			    strstr(buf1, "(charging)") || strstr(buf1, "(#)") || /* rods (and other devices, in theory) */
-			    //(partially charging) || strstr(buf1, "(~)")
-			    strstr(buf1, "(0 charges") || strstr(buf1, "{empty}") /* wands, staves */
-			    )) {
-				/* Especially added for non-stackable rods (Havoc): check for same rod, but not 'charging' */
-				char *buf1p, *buf3p;
-				int k;
-
-				if (!(buf1p = strstr(buf1, " of "))) buf1p = buf1; //skip item's article/amount
-				for (k = 0; k <= using_subinven_size; k++) {
-					if (k == i) continue;
-					strcpy(buf3, subinventory_name[using_subinven][k]);
-					ptr = buf3;
-					while (*ptr) {
-						/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-						   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-						if (*ptr == '@') ptr++;
-						else *ptr = tolower(*ptr);
-						ptr++;
-					}
-					/* Skip fully charging stacks */
-					if (strstr(buf3, "(charging)") || strstr(buf3, "(#)") || /* rods (and other devices, in theory) */
-					    //(partially charging) || strstr(buf3, "(~)")
-					    strstr(buf3, "(0 charges") || strstr(buf3, "{empty}")) /* wands, staves */
-						continue;
-
-					if (!(buf3p = strstr(buf3, " of "))) buf3p = buf3; //skip item's article/amount
-					if (subinventory[using_subinven][k].tval == subinventory[using_subinven][i].tval && /* unnecessary check, but whatever */
-					    strstr(buf3, buf2)) {
-						i = k;
-						break;
-					}
-				}
-			}
-			*item = i;
-			return(TRUE);
-		}
-	}
-	return(FALSE);
-    } else if (subinven) {
-	/* Scan all subinvens for item name match */
-	int l;
-
-	for (l = 0; l < INVEN_PACK; l++) {
-		/* Assume that subinvens are always at the beginning of the inventory! */
-		if (inventory[l].tval != TV_SUBINVEN) break;
-
-		for (j = 0; j < inventory[l].pval; j++) {
-			i = j;
-
-			object_type *o_ptr = &subinventory[l][i];
-
-			if (!item_tester_okay(o_ptr)) continue;
-
- #if 0
-			if (my_strcasestr(subinventory_name[l][i], buf)) {
- #else
-			strcpy(buf1, subinventory_name[l][i]);
-			strcpy(buf2, buf);
-			ptr = buf1;
-			while (*ptr) {
-				/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-				   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-				if (*ptr == '@') ptr ++;
-				else *ptr = tolower(*ptr);
-				ptr++;
-			}
-			ptr = buf2;
-			while (*ptr) {
-				/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-				   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-				if (*ptr == '@') ptr += 2;
-				*ptr = tolower(*ptr);
-				ptr++;
-			}
-			if (strstr(buf1, buf2)) {
- #endif
-				if (charged && (
-				    strstr(buf1, "(charging)") || strstr(buf1, "(#)") || /* rods (and other devices, in theory) */
-				    //(partially charging) || strstr(buf1, "(~)")
-				    strstr(buf1, "(0 charges") || strstr(buf1, "{empty}") /* wands, staves */
-				    )) {
-					/* Especially added for non-stackable rods (Havoc): check for same rod, but not 'charging' */
-					char *buf1p, *buf3p;
-					int k;
-
-					if (!(buf1p = strstr(buf1, " of "))) buf1p = buf1; //skip item's article/amount
-					for (k = 0; k < inventory[l].pval; k++) {
-						if (k == i) continue;
-						strcpy(buf3, subinventory_name[l][k]);
-						ptr = buf3;
-						while (*ptr) {
-							/* hack: if search string is actually an inscription (we just test if it starts on '@' char),
-							   do not lower-case the following character! (Because for example @a0 is a different command than @A0) */
-							if (*ptr == '@') ptr++;
-							else *ptr = tolower(*ptr);
-							ptr++;
-						}
-						/* Skip fully charging stacks */
-						if (strstr(buf3, "(charging)") || strstr(buf3, "(#)") || /* rods (and other devices, in theory) */
-						    //(partially charging) || strstr(buf3, "(~)")
-						    strstr(buf3, "(0 charges") || strstr(buf3, "{empty}")) /* wands, staves */
-							continue;
-
-						if (!(buf3p = strstr(buf3, " of "))) buf3p = buf3; //skip item's article/amount
-						if (subinventory[l][k].tval == subinventory[l][i].tval && /* unnecessary check, but whatever */
-						    strstr(buf3, buf2)) {
-							i = k;
-							break;
-						}
-					}
-				}
-				*item = i + (l + 1) * 100;
-				return(TRUE);
-			}
-		}
-	}
-	/* Fall through and scan inventory normally, after we didn't find anything in subinvens. */
-    }
-#endif
 	for (j = inven_first ? 0 : INVEN_TOTAL - 1;
 	    inven_first ? (j < INVEN_TOTAL) : (j >= 0);
 	    inven_first ? j++ : j--) {
@@ -754,7 +472,7 @@ bool get_item_hook_find_obj(int *item, int mode) {
 				int k;
 
 				if (!(buf1p = strstr(buf1, " of "))) buf1p = buf1; //skip item's article/amount
-				for (k = INVEN_WIELD; k < INVEN_TOTAL; k++) {
+				for (k = INVEN_WIELD; k <= INVEN_TOTAL; k++) {
 					strcpy(buf3, inventory_name[k]);
 					ptr = buf3;
 					while (*ptr) {
@@ -774,12 +492,11 @@ bool get_item_hook_find_obj(int *item, int mode) {
 						break;
 					}
 				}
-				if (k < INVEN_TOTAL && i_found != -1) continue;
+				if (k <= INVEN_TOTAL && i_found != -1) continue;
 			}
 #endif
 			if (charged && (
-			    strstr(buf1, "(charging)") || strstr(buf1, "(#)") || /* rods (and other devices, in theory) */
-			    //(partially charging) || strstr(buf1, "(~)")
+			    strstr(buf1, "charging)") || strstr(buf1, "(#)") || strstr(buf1, "(~)") || /* rods (and other devices, in theory) */
 			    strstr(buf1, "(0 charges") || strstr(buf1, "{empty}") /* wands, staves */
 			    )) {
 				/* Especially added for non-stackable rods (Havoc): check for same rod, but not 'charging' */
@@ -798,9 +515,7 @@ bool get_item_hook_find_obj(int *item, int mode) {
 						else *ptr = tolower(*ptr);
 						ptr++;
 					}
-					/* Skip fully charging stacks */
-					if (strstr(buf3, "(charging)") || strstr(buf3, "(#)") || /* rods (and other devices, in theory) */
-					    //(partially charging) || strstr(buf3, "(~)")
+					if (strstr(buf3, "charging)") || strstr(buf3, "(#)") || strstr(buf3, "(~)") || /* rods (and other devices, in theory) */
 					    strstr(buf3, "(0 charges") || strstr(buf3, "{empty}")) /* wands, staves */
 						continue;
 
@@ -813,16 +528,16 @@ bool get_item_hook_find_obj(int *item, int mode) {
 				}
 			}
 			*item = i;
-			return(TRUE);
+			return TRUE;
 		}
 	}
 #ifdef SMART_SWAP
 	if (i_found != -1) {
 		*item = i_found;
-		return(TRUE);
+		return TRUE;
 	}
 #endif
-	return(FALSE);
+	return FALSE;
 }
 
 bool (*get_item_extra_hook)(int *cp, int mode);
@@ -843,13 +558,8 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 	bool extra = FALSE, limit = FALSE;
 	bool special_req = FALSE;
 	bool newest = FALSE;
-	bool equip_first = FALSE;
-#ifdef ENABLE_SUBINVEN
-	bool subinven = FALSE, found_subinven = FALSE;
-	int sub_i = (using_subinven + 1) * 100;
-#endif
-	bool safe_input = FALSE;
 
+	bool safe_input = FALSE;
 
 	/* The top line is icky */
 	topline_icky = TRUE;
@@ -866,33 +576,19 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 	/* Clear previous flag */
 	verified_item = FALSE;
 
-	if (mode & USE_EQUIP) equip = TRUE;
-	if (mode & USE_INVEN) inven = TRUE;
-	//if (mode & (USE_FLOOR) floor = TRUE;
-	if (mode & USE_EXTRA) extra = TRUE;
-	if (mode & SPECIAL_REQ) special_req = TRUE;
-	//if (mode & NEWEST)
+	if (mode & (USE_EQUIP)) equip = TRUE;
+	if (mode & (USE_INVEN)) inven = TRUE;
+	//if (mode & (USE_FLOOR)) floor = TRUE;
+	if (mode & (USE_EXTRA)) extra = TRUE;
+	if (mode & (SPECIAL_REQ)) special_req = TRUE;
+	//if (mode & (NEWEST))
 	newest = (item_newest != -1); /* experimental: always on if available */
-	if (mode & USE_LIMIT) limit = TRUE;
-	if (mode & EQUIP_FIRST) equip_first = TRUE;
-#ifdef ENABLE_SUBINVEN
-	if (mode & USE_SUBINVEN) subinven = extra = TRUE; /* Since we cannot list normal inven + subinven at the same time, we NEED 'extra' access via item name */
-#endif
+	if (mode & (USE_LIMIT)) limit = TRUE;
 
 	/* Too long description - shorten? */
 	if (special_req && newest) spammy = TRUE;
 
-#ifdef ENABLE_SUBINVEN
-	if (using_subinven != -1) {
-		inven = equip = FALSE; /* If we are inside a specific subinventory already, disallow normal inventory */
-		subinven = TRUE; /* ..and definitely allow subinven, of course. */
-	}
-#endif
-
 	/* Paranoia */
-#ifdef ENABLE_SUBINVEN
-	if (!subinven)
-#endif
 	if (!inven && !equip) {
 		/* Forget the item_tester_tval restriction */
 		item_tester_tval = 0;
@@ -901,10 +597,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 		/* Forget the item_tester_hook restriction */
 		item_tester_hook = 0;
 
-		/* Stop macro execution if we're on safe_macros! */
-		if (parse_macro && c_cfg.safe_macros) flush_now();
-
-		return(FALSE);
+		return (FALSE);
 	}
 
 	/* Command macros work as an exception here */
@@ -912,48 +605,15 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 	/* Full inventory */
 	i1 = 0;
-#ifdef ENABLE_SUBINVEN
-	if (using_subinven != -1) {
-		i2 = using_subinven_size - 1;
-
-		/* Restrict subinventory indices (for unstow this basically reduces max capacity to actually used capacity) */
-		while ((i1 <= i2) && (!get_item_okay(i1))) i1++;
-		while ((i1 <= i2) && (!get_item_okay(i2))) i2--;
-	} else
-	    /* Don't restrict items inside subinventories, as we don't have a function for this yet
-	       (would need to pass subinven flag+index to get_item_okay() or something).
-	       Just leave it to server-side checks for now. */
-    {
-#endif
 	i2 = INVEN_PACK - 1;
+
 	/* Forbid inventory */
 	if (!inven) i2 = -1;
 
 	/* Restrict inventory indices */
 	while ((i1 <= i2) && (!get_item_okay(i1))) i1++;
 	while ((i1 <= i2) && (!get_item_okay(i2))) i2--;
-#ifdef ENABLE_SUBINVEN
-    }
-#endif
 
-#ifdef ENABLE_SUBINVEN
-	if (subinven) {
-		int j;
-
-		/* Also scan all subinventories for at least one valid item */
-		for (k = 0; k < INVEN_PACK; k++) {
-			if (inventory[k].tval != TV_SUBINVEN) continue;
-			/* Check all _specialized_ container types. Chests are not eligible. */
-			if (inventory[k].sval >= SV_SI_CHEST_SMALL_WOODEN && inventory[k].sval <= SV_SI_CHEST_LARGE_STEEL) continue;
-
-			for (j = 0; j < inventory[k].pval; j++) {
-				if (!get_item_okay((k + 1) * 100 + j)) continue;
-				found_subinven = TRUE;
-				break;
-			}
-		}
-	}
-#endif
 
 	/* Full equipment */
 	e1 = INVEN_WIELD;
@@ -969,12 +629,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 	command_see = c_cfg.always_show_lists;
 	command_wrk = FALSE;
 
-	if ((i1 > i2) && (e1 > e2)
-#ifdef ENABLE_SUBINVEN
-	    /* Nothing to display, but at least allow selecting a subinven item via @name */
-	    && !found_subinven
-#endif
-	    ) {
+	if ((i1 > i2) && (e1 > e2)) {
 		/* Cancel command_see */
 		command_see = FALSE;
 
@@ -990,10 +645,8 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 		topline_icky = FALSE;
 		if (!(mode & NO_FAIL_MSG)) c_msg_print("You do not have an eligible item.");
 
-		/* Stop macro execution if we're on safe_macros! */
-		if (parse_macro && c_cfg.safe_macros) flush_now();
 		/* Flush any events */
-		Flush_queue(); //I thought this also cleared macro execution, making flush_now() superfluous, but sometimes (delay-dependant?) it didn't
+		Flush_queue();//this will cancel macro execution already, so an additional 'c_cfg.safe_macros' check isn't needed here
 
 		/* Hack -- Cancel "display" */
 		command_see = FALSE;
@@ -1023,12 +676,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 		else if (inven) command_wrk = FALSE;
 		/* Use equipment if allowed */
 		else if (equip) command_wrk = TRUE;
-		/* Use subinventory if allowed */
-		else if (subinven) command_wrk = FALSE;
 	}
-
-	/* Start with equipment? ('A'ctivate command) */
-	if (equip_first) command_wrk = TRUE;
 
 	/* Redraw inventory */
 	p_ptr->window |= PW_INVEN;
@@ -1064,10 +712,6 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 			//n2 = I2A(i2);
 
 			/* Redraw if needed */
-#ifdef ENABLE_SUBINVEN
-			if (command_see && using_subinven != -1) show_subinven(using_subinven);
-			else
-#endif
 			if (command_see) show_inven();
 		}
 
@@ -1170,7 +814,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 		case KTRL('T'):
 			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", FALSE);
+			xhtml_screenshot("screenshot????");
 			break;
 
 		case '*':
@@ -1192,8 +836,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 		case '/':
 			/* Verify legality */
 			if (!inven || !equip) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 
@@ -1216,30 +859,19 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 		case '7': case '8': case '9':
 			/* XXX XXX Look up that tag */
 			if (!get_tag(&k, which, inven, equip, mode)) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
-#ifdef ENABLE_SUBINVEN
-			if (using_subinven != -1) {
-				if ((k < using_subinven_size) ? !inven : !equip) {
-					if (c_cfg.item_error_beep) bell();
-					else bell_silent();
-					break;
-				}
-			} else
-#endif
+
 			/* Hack -- verify item */
 			if ((k < INVEN_WIELD) ? !inven : !equip) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 
 			/* Validate the item */
 			if (!get_item_okay(k)) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 
@@ -1252,9 +884,6 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 			/* Use that item */
 			(*cp) = k;
-#ifdef ENABLE_SUBINVEN
-			if (using_subinven != -1) (*cp) += sub_i;
-#endif
 			item = TRUE;
 			done = TRUE;
 			break;
@@ -1268,8 +897,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 			/* Validate the item */
 			if (!get_item_okay(k)) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 
@@ -1283,9 +911,6 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 			/* Accept that choice */
 			(*cp) = k;
-#ifdef ENABLE_SUBINVEN
-			if (using_subinven != -1) (*cp) += sub_i;
-#endif
 			item = TRUE;
 			done = TRUE;
 			break;
@@ -1296,20 +921,15 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 			if (extra && get_item_extra_hook(&i, mode)) {
 				(*cp) = i;
-#ifdef ENABLE_SUBINVEN
-				if (using_subinven != -1) (*cp) += sub_i;
-#endif
 				item = TRUE;
 				done = TRUE;
-			} else if (c_cfg.item_error_beep) bell();
-			else bell_silent();
+			} else bell();
 			break;
 		}
 
 		case '#':
 			if (!limit) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 			hack_force_spell_level = c_get_quantity("Limit spell level (0 for unlimited)? ", -1);
@@ -1320,8 +940,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 		case '-':
 			if (!special_req) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 			command_gap = 50;
@@ -1332,13 +951,11 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 		case '+':
 			if (!newest) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 			which = 'a' + item_newest;
 			/* fall through to process 'which' */
-			__attribute__ ((fallthrough));
 
 		default:
 			/* Extract "query" setting */
@@ -1352,8 +969,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 			/* Validate the item */
 			if (!get_item_okay(k)) {
-				if (c_cfg.item_error_beep) bell();
-				else bell_silent();
+				bell();
 				break;
 			}
 
@@ -1373,9 +989,6 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 			/* Accept that choice */
 			(*cp) = k;
-#ifdef ENABLE_SUBINVEN
-			if (using_subinven != -1) (*cp) += sub_i;
-#endif
 			item = TRUE;
 			done = TRUE;
 
@@ -1385,8 +998,6 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 		}
 	}
 
-	screen_line_icky = -1;
-	screen_column_icky = -1;
 
 	/* Fix the screen if necessary */
 	if (command_see) Term_load();
@@ -1399,6 +1010,7 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 
 	/* Hack -- Cancel "display" */
 	command_see = FALSE;
+
 
 
 	/* Forget the item_tester_tval restriction */
@@ -1425,8 +1037,5 @@ bool c_get_item(int *cp, cptr pmt, int mode) {
 	abort_prompt = FALSE;
 
 	/* Return TRUE if something was picked */
-#ifdef ENABLE_SUBINVEN
-	//if (using_subinven != -1) cp += sub_i;
-#endif
-	return(item);
+	return (item);
 }

@@ -15,23 +15,6 @@
 #define PKT_ACK			8
 #define PKT_TALK		9
 
-
-/* HACK -- used for SKILL_INIT */
-#define PKT_SKILL_INIT_NAME     0
-#define PKT_SKILL_INIT_DESC     1
-#define PKT_SKILL_INIT_MKEY     2
-
-/* Not hack - file transfer packet subtypes */
-/* DO NOT TOUCH - work in progress */
-#define PKT_FILE_DATA		1
-#define PKT_FILE_END		2
-#define PKT_FILE_CHECK		3
-#define PKT_FILE_ACK		4	/* acknowledge whatever */
-#define PKT_FILE_ERR		5	/* failure - close */
-#define PKT_FILE_SUM		6	/* checksum reply */
-#define	PKT_FILE_INIT		7	/* initiate a transfer */
-
-
 #define PKT_START		10
 #define PKT_END			11
 #define PKT_LOGIN		12
@@ -47,7 +30,7 @@
 #define PKT_EXPERIENCE		22
 #define PKT_GOLD		23
 #define PKT_HP			24
-#define PKT_MP			25
+#define PKT_SP			25
 #define PKT_CHAR_INFO		26
 #define PKT_VARIOUS		27
 #define PKT_STAT		28
@@ -174,9 +157,8 @@
 #define PKT_MINI_MAP_POS	134
 #define PKT_AUTOINSCRIBE	135
 #define PKT_MARTYR		136	/* client lua notification client for updating spell mana costs */
-#define PKT_PALETTE		137	/* Since 4.7.1.2+ */
-#define PKT_IDLE		138	/* for mute_when_idle option */
-#define PKT_POWERS_INFO		139	/* Mimic spells */
+
+//XXX 137-143
 
 //debugging:
 #define PKT_CLIENT_SETUP_U	140
@@ -218,6 +200,21 @@
 #define PKT_PING		166 /* Ping packet */
 /* 167+ are further below.. */
 
+/* HACK -- used for SKILL_INIT */
+#define PKT_SKILL_INIT_NAME     0
+#define PKT_SKILL_INIT_DESC     1
+#define PKT_SKILL_INIT_MKEY     2
+
+/* Not hack - file transfer packet subtypes */
+/* DO NOT TOUCH - work in progress */
+#define PKT_FILE_DATA		1
+#define PKT_FILE_END		2
+#define PKT_FILE_CHECK		3
+#define PKT_FILE_ACK		4	/* acknowledge whatever */
+#define PKT_FILE_ERR		5	/* failure - close */
+#define PKT_FILE_SUM		6	/* checksum reply */
+#define	PKT_FILE_INIT		7	/* initiate a transfer */
+
 /* new things for v4.4.1 or 4.4.0d (dual-wield & co) - C. Blue */
 #define PKT_SIP			167
 #define PKT_TELEKINESIS		168
@@ -250,29 +247,6 @@
 
 #define PKT_WARNING_BEEP	192
 #define PKT_STAND_ONE		193
-#define PKT_WIELD3		194
-#define PKT_AUDIO		195	/* Audio capabilities */
-
-#define PKT_GUIDE		196	/* Server issues Guide-invocation on client-side */
-#define PKT_INDICATORS		197
-#define PKT_PLAYERLIST		198
-#define PKT_WEATHERCOL		199
-#define PKT_MUSIC_VOL		200	/* background music at specific volume */
-#define PKT_WHATS_UNDER_YOUR_FEET		201
-
-#define PKT_STAND_AUTO		202
-#define PKT_SCREENFLASH		203
-
-//#ifdef ENABLE_SUBINVEN  --defines are not included in pack.h, so we cannot make this conditional
- #define PKT_SI_MOVE		204	/* Used by client and by server for slightly different purpose each (!) */
- #define PKT_SI_REMOVE		205
-//#endif
-#define PKT_SPECIAL_LINE_POS	206
-#define PKT_VERSION		207
-#define PKT_FONT		208	/* Main screen font */
-#define PKT_EQUIP_WIDE		209
-#define PKT_PLISTW_NOTIFY	210
-#define PKT_UNKNOWNPACKET	211
 
 
 /*
@@ -284,7 +258,7 @@
 #define E_NEED_INFO	0x03
 #define E_TWO_PLAYERS	0x04
 #define E_PASSWORD	0x05
-#define E_IN_USE_DUP	0x06
+//#define E_		0x06
 #define E_LETTER	0x07
 #define E_IN_USE	0x08
 #define E_SOCKET	0x09
@@ -292,8 +266,6 @@
 #define E_INVITE	0x0B
 #define E_BANNED	0x0C
 #define E_VERSION_UNKNOWN	0x0D
-#define E_LENGTH	0x0E
-#define E_IN_USE_PC	0x0F
 #ifdef CLIENT_SIDE /* RETRY_LOGIN: */
  #define E_RETRY_CONTACT	0xFF
  #define E_RETRY_LOGIN		0xFE

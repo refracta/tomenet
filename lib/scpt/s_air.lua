@@ -2,7 +2,6 @@
 
 NOXIOUSCLOUD_I = add_spell {
 	["name"] = 	"Noxious Cloud I",
-	["name2"] = 	"Nox I",
 	["school"] = 	{SCHOOL_AIR},
 	["level"] = 	3,
 	["mana"] = 	5,
@@ -22,7 +21,6 @@ NOXIOUSCLOUD_I = add_spell {
 }
 NOXIOUSCLOUD_II = add_spell {
 	["name"] = 	"Noxious Cloud II",
-	["name2"] = 	"Nox II",
 	["school"] = 	{SCHOOL_AIR},
 	["level"] = 	18,
 	["mana"] = 	20,
@@ -42,7 +40,6 @@ NOXIOUSCLOUD_II = add_spell {
 }
 NOXIOUSCLOUD_III = add_spell {
 	["name"] = 	"Noxious Cloud III",
-	["name2"] = 	"Nox III",
 	["school"] = 	{SCHOOL_AIR},
 	["level"] = 	33,
 	["mana"] = 	40,
@@ -62,17 +59,17 @@ NOXIOUSCLOUD_III = add_spell {
 }
 
 function get_lightningbolt_dam(Ind, limit_lev)
+	--return 3 + get_level(Ind, LIGHTNINGBOLT, 25), 5 + get_level(Ind, LIGHTNINGBOLT, 25) - 1
 	local lev
 
 	lev = get_level(Ind, LIGHTNINGBOLT_I, 50)
 	if limit_lev ~= 0 and lev > limit_lev then lev = limit_lev + (lev - limit_lev) / 3 end
 
-	return 3 + ((lev * 3) / 5), 5 + ((lev * 5) / 7) - 1
+	return 3 + ((lev * 3) / 5), 5 + (lev / 2) - 1
 end
 
 LIGHTNINGBOLT_I = add_spell {
 	["name"] = 	"Lightning Bolt I",
-	["name2"] = 	"LBolt I",
 	["school"] = 	SCHOOL_AIR,
 	["level"] = 	6,
 	["mana"] = 	2,
@@ -94,11 +91,10 @@ LIGHTNINGBOLT_I = add_spell {
 }
 LIGHTNINGBOLT_II = add_spell {
 	["name"] = 	"Lightning Bolt II",
-	["name2"] = 	"LBolt II",
 	["school"] = 	SCHOOL_AIR,
 	["level"] = 	21,
-	["mana"] = 	5,
-	["mana_max"] = 	5,
+	["mana"] = 	6,
+	["mana_max"] = 	6,
 	["fail"] = 	-30,
 	["direction"] = TRUE,
 	["ftk"] = 	1,
@@ -116,11 +112,10 @@ LIGHTNINGBOLT_II = add_spell {
 }
 LIGHTNINGBOLT_III = add_spell {
 	["name"] = 	"Lightning Bolt III",
-	["name2"] = 	"LBolt III",
 	["school"] = 	SCHOOL_AIR,
 	["level"] = 	40,
-	["mana"] = 	10,
-	["mana_max"] = 	10,
+	["mana"] = 	11,
+	["mana_max"] = 	11,
 	["fail"] = 	-75,
 	["direction"] = TRUE,
 	["ftk"] = 	1,
@@ -139,8 +134,7 @@ LIGHTNINGBOLT_III = add_spell {
 
 AIRWINGS = add_spell {
 	["name"] = 	"Wings of Winds",
-	["name2"] = 	"WoW",
-	["school"] = 	{SCHOOL_AIR},
+	["school"] = 	{SCHOOL_AIR, SCHOOL_CONVEYANCE},
 	["level"] = 	16,
 	["mana"] = 	30,
 	["mana_max"] = 	30,
@@ -161,13 +155,13 @@ AIRWINGS = add_spell {
 
 INVISIBILITY = add_spell {
 	["name"] = 	"Invisibility",
-	["name2"] = 	"Inv",
 	["school"] = 	{SCHOOL_AIR},
 	["level"] = 	30,
 	["mana"] = 	35,
 	["mana_max"] = 	35,
 	["fail"] = 	-30,
 	["spell"] = 	function()
+--			if player.tim_invisibility == 0 then set_invis(Ind, randint(20) + 15 + get_level(Ind, INVISIBILITY, 50), 20 + get_level(Ind, INVISIBILITY, 50)) end
 			set_invis(Ind, randint(20) + 15 + get_level(Ind, INVISIBILITY, 50), 20 + get_level(Ind, INVISIBILITY, 50))
 	end,
 	["info"] = 	function()
@@ -180,7 +174,7 @@ INVISIBILITY = add_spell {
 
 POISONBLOOD = add_spell {
 	["name"] = 	"Poison Blood",
-	["name2"] = 	"PBlood",
+	--["school"] = 	{SCHOOL_AIR},
 	["school"] = 	{SCHOOL_NATURE},
 	["level"] = 	30,
 	["mana"] = 	15,
@@ -190,19 +184,19 @@ POISONBLOOD = add_spell {
 			local dur
 			dur = randint(30) + 25 + get_level(Ind, POISONBLOOD, 25)
 			set_oppose_pois(Ind, dur)
-			set_melee_brand(Ind, dur, TBRAND_POIS, 10, TRUE, FALSE)
+			--if get_level(Ind, POISONBLOOD, 50) >= 5 then 
+			set_brand(Ind, dur, BRAND_POIS, 10)
 	end,
 	["info"] = 	function()
 			return "dur "..(25 + get_level(Ind, POISONBLOOD, 25)).."+d30"
 	end,
 	["desc"] = 	{
-			"Grants poison resistance and adds poison brand to your melee attacks.",
+			"Grants poison resistance and adds poison brand to your attacks.",
 	}
 }
 
 THUNDERSTORM = add_spell {
 	["name"] = 	"Thunderstorm",
-	["name2"] = 	"Thunder",
 	["school"] = 	{SCHOOL_AIR, SCHOOL_NATURE},
 	["level"] = 	15,
 	["mana"] = 	10,
@@ -212,11 +206,11 @@ THUNDERSTORM = add_spell {
 	["spell"] = 	function()
 			--hack: linear spell-power gain
 			local lev = (player.s_info[SKILL_SPELL + 1].value) / 2500
-			set_tim_thunder(Ind, randint(10) + 15 + get_level(Ind, THUNDERSTORM, 25), 5 + get_level(Ind, THUNDERSTORM, 14), 10 + get_level(Ind, THUNDERSTORM, 98) + lev)
+			set_tim_thunder(Ind, randint(10) + 10 + get_level(Ind, THUNDERSTORM, 25), 5 + get_level(Ind, THUNDERSTORM, 14), 10 + get_level(Ind, THUNDERSTORM, 98) + lev)
 	end,
 	["info"] = 	function()
 			local lev = (player.s_info[SKILL_SPELL + 1].value) / 2500
-			return "dam "..(5 + get_level(Ind, THUNDERSTORM, 14)).."d"..(10 + get_level(Ind, THUNDERSTORM, 98) + lev).." dur "..(15 + get_level(Ind, THUNDERSTORM, 25)).."+d10"
+			return "dam "..(5 + get_level(Ind, THUNDERSTORM, 14)).."d"..(10 + get_level(Ind, THUNDERSTORM, 98) + lev).." dur "..(10 + get_level(Ind, THUNDERSTORM, 25)).."+d10"
 	end,
 	["desc"] = 	{
 			"Charges up the air around you with electricity,",

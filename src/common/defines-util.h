@@ -7,19 +7,9 @@
 /*
  * Bit flags for the "c_get_item" function
  */
-#define USE_EQUIP	0x0001	/* Allow equip items */
-#define USE_INVEN	0x0002	/* Allow inven items */
-#ifdef ENABLE_SUBINVEN
- #define USE_SUBINVEN	0x1000	/* Allow subinventory items */
-#endif
+#define USE_EQUIP	0x01	/* Allow equip items */
+#define USE_INVEN	0x02	/* Allow inven items */
 
-
-#define BASE_PALETTE_SIZE 16
-#ifdef EXTENDED_COLOURS_PALANIM
- #define CLIENT_PALETTE_SIZE (BASE_PALETTE_SIZE * 2)
-#else
- #define CLIENT_PALETTE_SIZE BASE_PALETTE_SIZE
-#endif
 
 #define TERM_DARK	0	/* 'd' */	/* 0,0,0 */
 #define TERM_WHITE	1	/* 'w' */	/* 4,4,4 */
@@ -99,76 +89,20 @@
  #define TERM_STARLITE	57
  #define TERM_HAVOC	58
 
- #define TERM_SELECTOR	59
- #define TERM_SMOOTHPAL	60
- #define TERM_SEL_RED	61
- #define TERM_SEL_BLUE	62
-
- #ifdef EXTENDED_COLOURS_PALANIM
-  #define TERMA_OFFSET	64
-  /* Clones of the 16 default colours, aka 'really used' colours (non-compounds), for palette animation. */
-  #define TERMA_DARK	64
-  #define TERMA_WHITE	65
-  #define TERMA_SLATE	66
-  #define TERMA_ORANGE	67
-  #define TERMA_RED	68
-  #define TERMA_GREEN	69
-  #define TERMA_BLUE	70
-  #define TERMA_UMBER	71
-  #define TERMA_L_DARK	72
-  #define TERMA_L_WHITE	73
-  #define TERMA_VIOLET	74
-  #define TERMA_YELLOW	75
-  #define TERMA_L_RED	76
-  #define TERMA_L_GREEN	77
-  #define TERMA_L_BLUE	78
-  #define TERMA_L_UMBER	79
-
-  /* Problem: Not enough colours! So we need to change these masks to actual colours. */
-  #define TERM_BNW	120	/* black & white, for admin wizards and pandas */
-  #define TERM_BNWM	121	/* black & white + holyfire, for martyr */
-  #define TERM_BNWSR	122	/* black & white + blue, for shadow running */
-  #define TERM_BNWKS	123	/* black & white + psi, for kinetic shield */
-  #define TERM_BNWKS2	124	/* black & white + orange, for kinetic shield running out */
-  #define TERM_PVPBB	125	/* black/slate/yellow, for bloodbond */
-  #define TERM_PVP	126	/* black/yellow/red, for active PvP-hostility (or stormbringer) */
-  #define TERM_RESERVED	127	/* since 0xFF is reserved for RLE and 0x80 is for hilite_player, we need to reserve this colour too, so it won't get combined with 0x80 ever. */
-  /* For comeback of hilite_player in 4.7.3: */
-  #define TERM_HILITE_PLAYER	0x80	/* 128 */
-  /* ..for compatibility with old clients: */
-  #define TERM_OLD2_BNW	0x40	/* 64: black & white MASK, for admin wizards */
-  #define TERM_OLD2_PVP	0x80	/* 128: black & red MASK, for active PvP-hostility (or stormbringer) */
-  /* ..for more backward compatibility: */
-  #define TERM_OLD3_BNW		248	/* black & white, for admin wizards and pandas */
-  #define TERM_OLD3_BNWM	249	/* black & white + holyfire, for martyr */
-  #define TERM_OLD3_BNWSR	250	/* black & white + blue, for shadow running */
-  #define TERM_OLD3_BNWKS	251	/* black & white + psi, for kinetic shield */
-  #define TERM_OLD3_BNWKS2	252	/* black & white + orange, for kinetic shield running out */
-  #define TERM_OLD3_PVPBB	253	/* black/slate/yellow, for bloodbond */
-  #define TERM_OLD3_PVP		254	/* black/yellow/red, for active PvP-hostility (or stormbringer) */
-  /* Note: 0xFF (255) is reserved for RLE, see Send_line_info(). */
-  #define TERM_RESERVED_RLE	255
- #else
-  #define TERM_BNW	0x40	/* 64: black & white MASK, for admin wizards */
-  #define TERM_PVP	0x80	/* 128: black & red MASK, for active PvP-hostility (or stormbringer) */
+ #ifdef EXTENDED_BG_COLOURS
+  #define TERM2_BLUE	63
  #endif
+
+ #define TERM_BNW	0x40	/* 64: black & white MASK, for admin wizards */
+ #define TERM_PVP	0x80	/* 128: black & red MASK, for active PvP-hostility (or stormbringer) */
 #else
  #define TERM_BNW	0x20	/* 32: black & white MASK, for admin wizards */
  #define TERM_PVP	0x40	/* 64: black & red MASK, for active PvP-hostility (or stormbringer) */
+
  /* Reserved attr values - do not exceed */
  #define TERM_RESERVED	0x80	/* 128 */
 #endif
-#ifdef EXTENDED_BG_COLOURS
- #define TERMX_START	80
- #define TERMX_AMT	7
- #define TERMX_BLUE	80
- #define TERMX_GREEN	81
- #define TERMX_RED	82
- #define TERMX_YELLOW	83
- #define TERMX_GREY	84
- #define TERMX_WHITE	85
- #define TERMX_PURPLE	86
-#endif
+
 
 
 /* Hooks, scripts  (currently not accessed from LUA actually) */
@@ -225,46 +159,3 @@
 #define HOOK_GET                50
 #define HOOK_NPCTEST            51
 #define MAX_HOOKS               52
-
-/*
- * Bit flags for the "project()" function
- * Allowing LUA to call project() - Kurzel
- */
-#define PROJECT_JUMP	0x00000001	/* Jump directly to the target location (this is a hack) */
-#define PROJECT_BEAM	0x00000002	/* Work as a beam weapon (affect every grid passed through) */
-#define PROJECT_THRU	0x00000004	/* Continue "through" the target (used for "bolts"/"beams") */
-#define PROJECT_STOP	0x00000008	/* Stop as soon as we hit a monster (used for "bolts") */
-
-#define PROJECT_GRID	0x00000010	/* Affect each grid in the "blast area" in some way */
-#define PROJECT_ITEM	0x00000020	/* Affect each object in the "blast area" in some way */
-#define PROJECT_KILL	0x00000040	/* Affect each monster in the "blast area" in some way */
-#define PROJECT_HIDE	0x00000080	/* Hack -- disable "visual" feedback from projection */
-
-#define PROJECT_STAY	0x00000100	/* Create an 'effect' on the grid (cloud/wall/special fx) */
-#define PROJECT_SELF	0x00000200	/* Affect the projector too */
-#define PROJECT_DUMY	0x00000400	/* Don't affect anything or anybody (just visual fx, used for EFF_FIREWORKS etc.) */
-#define PROJECT_GRAV	0x00000800	/* Affected by gravity ie running along the ground. Example: Fire Wall. (Will hence stop at FEAT_DARK_PIT) */
-
-#define PROJECT_PLAY	0x00001000	/* Affect friendly players too, including the projector. (for GF_HEALINGCLOUD) */
-#define PROJECT_NORF	0x00002000	/* cannot be deflected by REFLECT monster flag */
-#define PROJECT_FULL	0x00004000	/* Deal full damage over radius spread (May dehack many things with this! - Kurzel) */
-#define PROJECT_EVSG	0x00008000	/* 'Entity vs Grid': It's a bolt spell that can hit EITHER mon/py OR floor/item. */
-
-#define PROJECT_NODO	0x00010000	/* cannot be dodged (basically used in the same places as NORF) */
-#define PROJECT_LODF	0x00020000	/* can not often be deflected by shield-blocking. */
-#define PROJECT_NODF	0x00040000	/* cannot be deflected by shield-blocking at all. */
-#define PROJECT_RNAF	0x00080000	/* has no adverse effects if resisted (added for time runecraft on high-elven characters) */
-
-#define PROJECT_STAR	0x00100000	/* Cast 8 rays and hit the central grid at target location. - Kurzel */
-#define PROJECT_TRAP	0x00200000	/* Caused by a set-up incident, added for blast charges (ENABLE_DEMOLITIONIST) to allow larger GF_DETONATION radius */
-
-/* Allowing LUA to call project() - Kurzel */
-/* special 'projector' types, used in project(). */
-#define PROJECTOR_UNUSUAL	-1000
-#define PROJECTOR_TRAP		-1001
-#define PROJECTOR_POTION	-1002
-#define PROJECTOR_TERRAIN	-1003
-#define PROJECTOR_MON_TRAP	-1004
-#define PROJECTOR_EFFECT	-1005
-#define PROJECTOR_PLAYER	-1006
-#define PROJECTOR_RUNE		-1007

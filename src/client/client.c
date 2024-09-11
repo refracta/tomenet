@@ -11,7 +11,7 @@
 #include "angband.h"
 
 
-char mangrc_filename[100] = "";
+static char mangrc_filename[100] = "";
 
 /* linux clients: load subwindow prefs from .tomenetrc - C. Blue */
 static void read_mangrc_aux(int t, cptr sec_name) {
@@ -49,11 +49,16 @@ static void read_mangrc_aux(int t, cptr sec_name) {
 
 	if ((val = strstr(sec_name, "_Columns"))) {
 		term_prefs[t].columns = atoi(val + 8);
-		if (!term_prefs[t].columns) term_prefs[t].columns = DEFAULT_TERM_WID;
+		if (!term_prefs[t].columns) term_prefs[t].columns = 80;
+		if (t == 0) {
+			if (term_prefs[t].columns != 80) term_prefs[t].columns = 80;
+			screen_wid = term_prefs[0].columns - SCREEN_PAD_X;
+		}
 	}
 	if ((val = strstr(sec_name, "_Lines"))) {
 		term_prefs[t].lines = atoi(val + 6);
-		if (!term_prefs[t].lines) term_prefs[t].lines = DEFAULT_TERM_HGT;
+		if (!term_prefs[t].lines) term_prefs[t].lines = 24;
+		if (t == 0) screen_hgt = term_prefs[0].lines - SCREEN_PAD_Y;
 	}
 
 	if ((val = strstr(sec_name, "_Font"))) {
@@ -74,8 +79,6 @@ static bool read_mangrc(cptr filename) {
 	FILE *config;
 	char buf[1024];
 	bool skip = FALSE;
-
-	lighterdarkblue = FALSE;
 
 	/* empty filename means use default */
 	if (!strlen(filename)) {
@@ -225,44 +228,40 @@ static bool read_mangrc(cptr filename) {
 				skip = TRUE;
 
 			/* READABILITY_BLUE */
-			if (!strncmp(buf, "lighterDarkBlue", 15)) lighterdarkblue = TRUE;
+			if (!strncmp(buf, "lighterDarkBlue", 15)) {
+				/* New code */
+				client_color_map[6] = 0x0033ff;
+			}
 
 			/* Color map */
-			if (!strncmp(buf, "colormap_", 9)) {
+			if (!strncmp(buf, "colormap_", 9))
+			{
 				int colornum = atoi(buf + 9);
 				char *p;
-				u32b c;
 
 				/* Extract path */
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 
-				c = parse_color_code(p);
-				if (colornum >= 0 && colornum < BASE_PALETTE_SIZE && c < 0x01000000) client_color_map[colornum] = c;
+				u32b c = parse_color_code(p);
+				if (colornum >= 0 && colornum <= 15 && c < 0x01000000) {
+					client_color_map[colornum] = c;
+				}
 			}
 
 #ifdef USE_GRAPHICS
 			/* graphics */
 			if (!strncmp(buf, "graphics", 8)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) use_graphics = (atoi(p) != 0);
 			}
-			if (!strncmp(buf, "graphic_tiles", 5)) {
-				char *p;
-
-				p = strtok(buf, " \t\n");
-				p = strtok(NULL, "\t\n");
-				if (p) strcpy(graphic_tiles, p);
-			}
 #endif
 #ifdef USE_SOUND
 			/* sound */
-			if (!strncmp(buf, "sound", 5) && strncmp(buf, "soundpackFolder", 15)) {
+			if (!strncmp(buf, "sound", 5)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) {
@@ -277,7 +276,6 @@ static bool read_mangrc(cptr filename) {
 			/* don't cache audio (41.5 MB of ogg samples deflated in memory!) */
 			if (!strncmp(buf, "cacheAudio", 10)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) no_cache_audio = !(atoi(p) != 0);
@@ -285,7 +283,6 @@ static bool read_mangrc(cptr filename) {
 			/* audio sample rate */
 			if (!strncmp(buf, "audioSampleRate", 15)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_rate = atoi(p);
@@ -293,7 +290,6 @@ static bool read_mangrc(cptr filename) {
 			/* maximum number of allocated mixer channels */
 			if (!strncmp(buf, "audioChannels", 13)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_max_channels = atoi(p);
@@ -301,80 +297,55 @@ static bool read_mangrc(cptr filename) {
 			/* Mixed sample size (larger = more lagging sound, smaller = skipping on slow machines) */
 			if (!strncmp(buf, "audioBuffer", 11)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_buffer = atoi(p);
 			}
-			/* Folder of the currently selected sound pack */
-			if (!strncmp(buf, "soundpackFolder", 15)) {
-				char *p;
-
-				p = strtok(buf, " \t\n");
-				p = strtok(NULL, "\t\n");
-				if (p) strcpy(cfg_soundpackfolder, p);
-			}
-			/* Folder of the currently selected music pack */
-			if (!strncmp(buf, "musicpackFolder", 15)) {
-				char *p;
-
-				p = strtok(buf, " \t\n");
-				p = strtok(NULL, "\t\n");
-				if (p) strcpy(cfg_musicpackfolder, p);
-			}
 			/* audio mixer settings */
 			if (!strncmp(buf, "audioMaster", 11)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_master = (atoi(p) != 0);
 			}
 			if (!strncmp(buf, "audioMusic", 10)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_music = (atoi(p) != 0);
 			}
 			if (!strncmp(buf, "audioSound", 10)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_sound = (atoi(p) != 0);
 			}
 			if (!strncmp(buf, "audioWeather", 12)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_weather = (atoi(p) != 0);
 			}
 			if (!strncmp(buf, "audioVolumeMaster", 17)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_master_volume = atoi(p);
 			}
 			if (!strncmp(buf, "audioVolumeMusic", 16)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_music_volume = atoi(p);
 			}
 			if (!strncmp(buf, "audioVolumeSound", 16)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_sound_volume = atoi(p);
 			}
 			if (!strncmp(buf, "audioVolumeWeather", 18)) {
 				char *p;
-
 				p = strtok(buf, " \t\n");
 				p = strtok(NULL, "\t\n");
 				if (p) cfg_audio_weather_volume = atoi(p);
@@ -398,77 +369,82 @@ static bool read_mangrc(cptr filename) {
 				read_mangrc_aux(6, buf);
 			if (!strncmp(buf, "Term-7window", 12))
 				read_mangrc_aux(7, buf);
+#if 0 /* keep n/a for now, not really needed */
 			if (!strncmp(buf, "Term-8window", 12))
 				read_mangrc_aux(8, buf);
 			if (!strncmp(buf, "Term-9window", 12))
 				read_mangrc_aux(9, buf);
+#endif
 
 			/* big_map hint */
-			if (!strncmp(buf, "hintBigmap", 10)) {
-				bigmap_hint = FALSE;
-				firstrun = FALSE;
-			}
+			if (!strncmp(buf, "hintBigmap", 10)) bigmap_hint = FALSE;
 
 			/*** Everything else is ignored ***/
 		}
 		fclose(config);
-
-		(void)validate_term_screen_dimensions(&(term_prefs[0].columns), &(term_prefs[0].lines));
-		/* Calculate game screen dimensions from main window dimensions. */
-		screen_wid = term_prefs[0].columns - SCREEN_PAD_X;
-		screen_hgt = term_prefs[0].lines - SCREEN_PAD_Y;
-#ifdef GLOBAL_BIG_MAP
-		/* Only the rc/ini file determines big_map state now! It is not saved anywhere else! */
-		if (screen_hgt <= SCREEN_HGT) global_c_cfg_big_map = FALSE;
-		else global_c_cfg_big_map = TRUE;
- #if 0 /* the visuals aren't initialized yet! ANGBAND_SYS is not a valid string! */
-		if (!strcmp(ANGBAND_SYS, "gcu")) {
-			screen_hgt = SCREEN_HGT;
-			global_c_cfg_big_map = FALSE;
-		}
-		resize_main_window(CL_WINDOW_WID, CL_WINDOW_HGT);
- #endif
-#endif
-
-		if (lighterdarkblue && client_color_map[6] == 0x0000ff)
-#ifdef USE_X11
-			enable_readability_blue_x11();
-#else
-			enable_readability_blue_gcu();
-#endif
 	}
-	return(skip);
+	return (skip);
 }
 
 #ifdef USE_X11
 /* linux clients: save subwindow prefs to .tomenetrc - C. Blue */
 static void write_mangrc_aux(int t, cptr sec_name, FILE *cfg_file) {
+	int x, y, c, r;
+	char font_name[1024];
+
+	x11win_getinfo(t, &x, &y, &c, &r, font_name);
+
 	if (t != 0) {
 		fputs(format("%s_Title\t%s\n", sec_name, ang_term_name[t]), cfg_file);
 		fputs(format("%s_Visible\t%c\n", sec_name, term_prefs[t].visible ? '1' : '0'), cfg_file);
 	}
-	if (term_prefs[t].x != -32000) /* don't save windows in minimized state */
-		fputs(format("%s_X\t\t%d\n", sec_name, term_prefs[t].x), cfg_file);
-	if (term_prefs[t].y != -32000) /* don't save windows in minimized state */
-		fputs(format("%s_Y\t\t%d\n", sec_name, term_prefs[t].y), cfg_file);
+	if (x != -32000) /* don't save windows in minimized state */
+		fputs(format("%s_X\t\t%d\n", sec_name, x), cfg_file);
+//		fputs(format("%s_X\t\t%d\n", sec_name, term_prefs[t].x), cfg_file);
+	if (y != -32000) /* don't save windows in minimized state */
+		fputs(format("%s_Y\t\t%d\n", sec_name, y), cfg_file);
+//		fputs(format("%s_Y\t\t%d\n", sec_name, term_prefs[t].y), cfg_file);
 	if (t != 0) {
+#if 0
 		fputs(format("%s_Columns\t%d\n", sec_name, term_prefs[t].columns), cfg_file);
 		fputs(format("%s_Lines\t%d\n", sec_name, term_prefs[t].lines), cfg_file);
-		fputs(format("%s_Font\t%s\n", sec_name, term_prefs[t].font), cfg_file);
+#else /* if user has mouse-resized a window, save the new dimensions */
+		fputs(format("%s_Columns\t%d\n", sec_name, c), cfg_file);
+		fputs(format("%s_Lines\t%d\n", sec_name, r), cfg_file);
+#endif
+		fputs(format("%s_Font\t%s\n", sec_name, font_name), cfg_file);
 	} else {
+		int hgt;
+		if (c_cfg.big_map || r > SCREEN_HGT + SCREEN_PAD_Y) {
+			/* only change height if we're currently running the default short height */
+			if (screen_hgt <= SCREEN_HGT)
+				hgt = SCREEN_PAD_Y + MAX_SCREEN_HGT;
+			/* also change it however if the main window was resized manually (ie by mouse dragging) */
+			else if (r != SCREEN_PAD_Y + screen_hgt)
+				hgt = r;
+			/* keep current, modified screen size */
+			else
+				hgt = SCREEN_PAD_Y + screen_hgt;
+		} else hgt = SCREEN_PAD_Y + SCREEN_HGT;
+		if (hgt > MAX_WINDOW_HGT) hgt = MAX_WINDOW_HGT;
+
 		/* one more tab, or formatting looks bad ;) */
-		fputs(format("%s_Font\t\t%s\n", sec_name, term_prefs[t].font), cfg_file);
-		fputs(format("%s_Lines\t%d\n", sec_name, term_prefs[t].lines), cfg_file);
+		fputs(format("%s_Font\t\t%s\n", sec_name, font_name), cfg_file);
+		/* only change to double-screen if we're not already in some kind of enlarged screen */
+		fputs(format("%s_Lines\t%d\n", sec_name, hgt), cfg_file);
 	}
 	fputs("\n", cfg_file);
 }
 
 /* linux clients: save one line of subwindow prefs to .tomenetrc - C. Blue */
 static void write_mangrc_aux_line(int t, cptr sec_name, char *buf_org) {
-	char buf[1024], *ter_name = buf_org + strlen(sec_name);
- #if 0 /* we still want to save at least the new visibility state, if it was toggled via in-game menu */
+	char buf[1024], *ter_name = buf_org + strlen(sec_name), font_name[1024] = { '\0' };
+	int x = -32000, y = -32000, c = 0, r = 24;
+
+	x11win_getinfo(t, &x, &y, &c, &r, font_name);
+#if 0 /* we still want to save at least the new visibility state, if it was toggled via in-game menu */
 	if (!c) return; /* invisible window? */
- #endif
+#endif
 
 	/* no line that gets modified? then keep original! */
 	strcpy(buf, buf_org);
@@ -479,40 +455,54 @@ static void write_mangrc_aux_line(int t, cptr sec_name, char *buf_org) {
 	} else if (!strncmp(ter_name, "_Visible", 8)) {
 		if (t != 0)
 			sprintf(buf, "%s_Visible\t%c\n", sec_name, term_prefs[t].visible ? '1' : '0');
-	} else if (!strncmp(ter_name, "_X", 2)) {
-		if (term_prefs[t].x != -32000) /* don't save windows in minimized state */
-			sprintf(buf, "%s_X\t\t%d\n", sec_name, term_prefs[t].x);
-	} else if (!strncmp(ter_name, "_Y", 2)) {
-		if (term_prefs[t].y != -32000) /* don't save windows in minimized state */
-			sprintf(buf, "%s_Y\t\t%d\n", sec_name, term_prefs[t].y);
-	} else if (!strncmp(ter_name, "_Columns", 8)) {
+	} else if (c && !strncmp(ter_name, "_X", 2)) {
+		if (x != -32000) /* don't save windows in minimized state */
+			sprintf(buf, "%s_X\t\t%d\n", sec_name, x);
+//			sprintf(buf, "%s_X\t\t%d\n", sec_name, term_prefs[t].x);
+	} else if (c && !strncmp(ter_name, "_Y", 2)) {
+		if (y != -32000) /* don't save windows in minimized state */
+			sprintf(buf, "%s_Y\t\t%d\n", sec_name, y);
+//			sprintf(buf, "%s_Y\t\t%d\n", sec_name, term_prefs[t].y);
+	} else if (c && !strncmp(ter_name, "_Columns", 8)) {
 		if (t != 0)
-			sprintf(buf, "%s_Columns\t%d\n", sec_name, term_prefs[t].columns);
-	} else if (!strncmp(ter_name, "_Lines", 6)) {
-			sprintf(buf, "%s_Lines\t%d\n", sec_name, term_prefs[t].lines);
-	} else if (!strncmp(ter_name, "_Font", 5) && term_prefs[t].font[0] != '\0') {
+			sprintf(buf, "%s_Columns\t%d\n", sec_name, c);
+	} else if (c && !strncmp(ter_name, "_Lines", 6)) {
 		if (t != 0)
-			snprintf(buf, 1024, "%s_Font\t%s\n", sec_name, term_prefs[t].font);
+			sprintf(buf, "%s_Lines\t%d\n", sec_name, r);
+		else {
+			int hgt;
+			if (c_cfg.big_map || r > SCREEN_HGT + SCREEN_PAD_Y) {
+				/* only change height if we're currently running the default short height */
+				if (screen_hgt <= SCREEN_HGT)
+					hgt = SCREEN_PAD_Y + MAX_SCREEN_HGT;
+				/* also change it however if the main window was resized manually (ie by mouse dragging) */
+				else if (r != SCREEN_PAD_Y + screen_hgt)
+					hgt = r;
+				/* keep current, modified screen size */
+				else
+					hgt = SCREEN_PAD_Y + screen_hgt;
+			} else hgt = SCREEN_PAD_Y + SCREEN_HGT;
+			if (hgt > MAX_WINDOW_HGT) hgt = MAX_WINDOW_HGT;
+
+			/* only change to double-screen if we're not already in some kind of enlarged screen */
+			sprintf(buf, "%s_Lines\t%d\n", sec_name, hgt);
+		}
+	} else if (!strncmp(ter_name, "_Font", 5) && font_name[0] != '\0') {
+		if (t != 0)
+			sprintf(buf, "%s_Font\t%s\n", sec_name, font_name);
 		else
 			/* one more tab, or formatting looks bad ;) */
-			snprintf(buf, 1024, "%s_Font\t\t%s\n", sec_name, term_prefs[t].font);
+			sprintf(buf, "%s_Font\t\t%s\n", sec_name, font_name);
 	}
 
 	strcpy(buf_org, buf);
 }
 #endif
-/* linux clients: save some prefs to .tomenetrc - C. Blue
-   If creds_only is TRUE, all other settings will be skipped. This is used to instantiate nick+pass in case they were still commented out. (1st run)
-   Already existing nick+pass will only be updated if update_creds is TRUE.
-   If audiopacks_only is TRUE, all other settings except for sound+music pack will be skipped. */
-bool write_mangrc(bool creds_only, bool update_creds, bool audiopacks_only) {
+/* linux clients: save some prefs to .tomenetrc - C. Blue */
+bool write_mangrc(bool creds_only) {
 	char config_name2[100];
 	FILE *config, *config2;
 	char buf[1024];
-#ifdef USE_SOUND_2010
-	/* backward compatibility */
-	bool compat_apf = FALSE;
-#endif
 
 	buf[0] = 0;//valgrind warning it seems..?
 
@@ -524,371 +514,236 @@ bool write_mangrc(bool creds_only, bool update_creds, bool audiopacks_only) {
 
 	/* Attempt to open file */
 	if (config2) {
-		if (config) {
-			/* Read until end */
-			while (!feof(config)) {
-				/* Get a line */
-				if (!fgets(buf, 1024, config)) break;
-
-				if (audiopacks_only) {
-					/* modify the line */
-					if (!strncmp(buf, "soundpackFolder", 15)) {
-						strcpy(buf, "soundpackFolder\t\t");
-						strcat(buf, cfg_soundpackfolder);
-						strcat(buf, "\n");
+	    if (config) {
+		/* Read until end */
+		while (!feof(config)) {
+			/* Get a line */
+			if (!fgets(buf, 1024, config)) break;
+    if (!creds_only) {
 #ifdef USE_SOUND_2010
-						compat_apf = TRUE;
-#endif
-					} else if (!strncmp(buf, "musicpackFolder", 15)) {
-						strcpy(buf, "musicpackFolder\t\t");
-						strcat(buf, cfg_musicpackfolder);
-						strcat(buf, "\n");
-					}
-				} else {
-					if (!creds_only) {
-						/* modify the line */
-						if (!strncmp(buf, "soundpackFolder", 15)) {
-							strcpy(buf, "soundpackFolder\t\t");
-							strcat(buf, cfg_soundpackfolder);
-							strcat(buf, "\n");
-#ifdef USE_SOUND_2010
-							compat_apf = TRUE;
-#endif
-						} else if (!strncmp(buf, "musicpackFolder", 15)) {
-							strcpy(buf, "musicpackFolder\t\t");
-							strcat(buf, cfg_musicpackfolder);
-							strcat(buf, "\n");
-						}
-#ifdef USE_SOUND_2010
-						/* audio mixer settings */
-						if (!strncmp(buf, "audioMaster", 11)) {
-							strcpy(buf, "audioMaster\t\t");
-							strcat(buf, cfg_audio_master ? "1\n" : "0\n");
-
-							/* add newly released entries to older config file versions */
-							if (!compat_apf) {
-								fputs("\nsoundpackFolder\t\tsound\n", config2);
-								fputs("musicpackFolder\t\tmusic\n\n", config2);
-							}
-						} else if (!strncmp(buf, "audioMusic", 10)) {
-							strcpy(buf, "audioMusic\t\t");
-							strcat(buf, cfg_audio_music ? "1\n" : "0\n");
-						} else if (!strncmp(buf, "audioSound", 10)) {
-							strcpy(buf, "audioSound\t\t");
-							strcat(buf, cfg_audio_sound ? "1\n" : "0\n");
-						} else if (!strncmp(buf, "audioWeather", 12)) {
-							strcpy(buf, "audioWeather\t\t");
-							strcat(buf, cfg_audio_weather ? "1\n" : "0\n");
-						} else if (!strncmp(buf, "audioVolumeMaster", 17)) {
-							strcpy(buf, "audioVolumeMaster\t");
-							strcat(buf, format("%d\n", cfg_audio_master_volume));
-						} else if (!strncmp(buf, "audioVolumeMusic", 16)) {
-							strcpy(buf, "audioVolumeMusic\t");
-							strcat(buf, format("%d\n", cfg_audio_music_volume));
-						} else if (!strncmp(buf, "audioVolumeSound", 16)) {
-							strcpy(buf, "audioVolumeSound\t");
-							strcat(buf, format("%d\n", cfg_audio_sound_volume));
-						} else if (!strncmp(buf, "audioVolumeWeather", 18)) {
-							strcpy(buf, "audioVolumeWeather\t");
-							strcat(buf, format("%d\n", cfg_audio_weather_volume));
-						}
+			/* modify the line */
+			/* audio mixer settings */
+			if (!strncmp(buf, "audioMaster", 11)) {
+				strcpy(buf, "audioMaster\t\t");
+				strcat(buf, cfg_audio_master ? "1\n" : "0\n");
+			} else if (!strncmp(buf, "audioMusic", 10)) {
+				strcpy(buf, "audioMusic\t\t");
+				strcat(buf, cfg_audio_music ? "1\n" : "0\n");
+			} else if (!strncmp(buf, "audioSound", 10)) {
+				strcpy(buf, "audioSound\t\t");
+				strcat(buf, cfg_audio_sound ? "1\n" : "0\n");
+			} else if (!strncmp(buf, "audioWeather", 12)) {
+				strcpy(buf, "audioWeather\t\t");
+				strcat(buf, cfg_audio_weather ? "1\n" : "0\n");
+			} else if (!strncmp(buf, "audioVolumeMaster", 17)) {
+				strcpy(buf, "audioVolumeMaster\t");
+				strcat(buf, format("%d\n", cfg_audio_master_volume));
+			} else if (!strncmp(buf, "audioVolumeMusic", 16)) {
+				strcpy(buf, "audioVolumeMusic\t");
+				strcat(buf, format("%d\n", cfg_audio_music_volume));
+			} else if (!strncmp(buf, "audioVolumeSound", 16)) {
+				strcpy(buf, "audioVolumeSound\t");
+				strcat(buf, format("%d\n", cfg_audio_sound_volume));
+			} else if (!strncmp(buf, "audioVolumeWeather", 18)) {
+				strcpy(buf, "audioVolumeWeather\t");
+				strcat(buf, format("%d\n", cfg_audio_weather_volume));
+			}
 #endif
 
 #ifdef USE_X11
-						/* Don't do this in terminal mode ('-c') */
-						if (!strcmp(ANGBAND_SYS, "x11")) {
-							/* new: save window positions/sizes/visibility (and possibly fonts) */
-							if (!strncmp(buf, "Mainwindow", 10))
-								write_mangrc_aux_line(0, "Mainwindow", buf);
-							else if (!strncmp(buf, "Mirrorwindow", 12))
-								write_mangrc_aux_line(1, "Mirrorwindow", buf);
-							else if (!strncmp(buf, "Recallwindow", 12))
-								write_mangrc_aux_line(2, "Recallwindow", buf);
-							else if (!strncmp(buf, "Choicewindow", 12))
-								write_mangrc_aux_line(3, "Choicewindow", buf);
-							else if (!strncmp(buf, "Term-4window", 12))
-								write_mangrc_aux_line(4, "Term-4window", buf);
-							else if (!strncmp(buf, "Term-5window", 12))
-								write_mangrc_aux_line(5, "Term-5window", buf);
-							else if (!strncmp(buf, "Term-6window", 12))
-								write_mangrc_aux_line(6, "Term-6window", buf);
-							else if (!strncmp(buf, "Term-7window", 12))
-								write_mangrc_aux_line(7, "Term-7window", buf);
-							else if (!strncmp(buf, "Term-8window", 12))
-								write_mangrc_aux_line(8, "Term-8window", buf);
-							else if (!strncmp(buf, "Term-9window", 12))
-								write_mangrc_aux_line(9, "Term-9window", buf);
-						}
-#endif /* USE_X11 */
-					}
-
-					if (!strncmp(buf, "#nick", 5) && nick[0] && pass[0]) {
-						/* Set accountname for the first time */
-						strcpy(buf, "nick\t\t");
-						strcat(buf, nick);
-						strcat(buf, "\n");
-					} else if (update_creds && !strncmp(buf, "nick", 4) && nick[0] && pass[0]) {
-						/* Set/update accountname */
-						strcpy(buf, "nick\t\t");
-						strcat(buf, nick);
-						strcat(buf, "\n");
-					}
-
-					if (!strncmp(buf, "#pass", 5) && nick[0] && pass[0]) {
-						/* Set password for the first time */
-						char tmp[MAX_CHARS];
-
-						strcpy(tmp, pass);
-						my_memfrob(tmp, strlen(tmp));
-						strcpy(buf, "pass\t\t");
-						strcat(buf, tmp); //security hole here, buf doesn't get zero'ed
-						memset(tmp, 0, MAX_CHARS);
-						strcat(buf, "\n");
-					} else if (update_creds && !strncmp(buf, "pass", 4) && nick[0] && pass[0]) {
-						/* Set/update password */
-						char tmp[MAX_CHARS];
-
-						strcpy(tmp, pass);
-						my_memfrob(tmp, strlen(tmp));
-						strcpy(buf, "pass\t\t");
-						strcat(buf, tmp); //security hole here, buf doesn't get zero'ed
-						memset(tmp, 0, MAX_CHARS);
-						strcat(buf, "\n");
-					}
-
-					/*** Everything else is ignored ***/
-				}
-
-				/* copy the line over */
-				fputs(buf, config2);
-
-#ifdef USE_SOUND_2010
-				if (!creds_only) {
-					/* hack: disable one-time hint */
-					if (!strncmp(buf, "sound", 5) && strncmp(buf, "soundpackFolder", 15) && sound_hint) fputs("hintSound\n", config2);
-				}
-#endif
+			/* Don't do this in terminal mode ('-c') */
+			if (!strcmp(ANGBAND_SYS, "x11")) {
+				/* new: save window positions/sizes/visibility (and possibly fonts) */
+				if (!strncmp(buf, "Mainwindow", 10))
+					write_mangrc_aux_line(0, "Mainwindow", buf);
+				else if (!strncmp(buf, "Mirrorwindow", 12))
+					write_mangrc_aux_line(1, "Mirrorwindow", buf);
+				else if (!strncmp(buf, "Recallwindow", 12))
+					write_mangrc_aux_line(2, "Recallwindow", buf);
+				else if (!strncmp(buf, "Choicewindow", 12))
+					write_mangrc_aux_line(3, "Choicewindow", buf);
+				else if (!strncmp(buf, "Term-4window", 12))
+					write_mangrc_aux_line(4, "Term-4window", buf);
+				else if (!strncmp(buf, "Term-5window", 12))
+					write_mangrc_aux_line(5, "Term-5window", buf);
+				else if (!strncmp(buf, "Term-6window", 12))
+					write_mangrc_aux_line(6, "Term-6window", buf);
+				else if (!strncmp(buf, "Term-7window", 12))
+					write_mangrc_aux_line(7, "Term-7window", buf);
+ #if 0 /* keep n/a for now, not really needed */
+				else if (!strncmp(buf, "Term-8window", 12))
+					write_mangrc_aux_line(8, "Term-8window", buf);
+				else if (!strncmp(buf, "Term-9window", 12))
+					write_mangrc_aux_line(9, "Term-9window", buf);
+ #endif
 			}
-
-			//if (!creds_only) {
-				/* hack: disable one-time hint */
-				if (bigmap_hint) fputs("\nhintBigmap\n", config2);
-			//}
-
-			fclose(config);
-			fclose(config2);
-
-			/* replace old by new */
-			remove(mangrc_filename);
-			rename(config_name2, mangrc_filename);
-
-			return(TRUE); //success
-
-		} else {
-			/* create .tomenetrc file, because it doesn't exist yet */
-			fputs("# TomeNET config file\n", config2);
-			fputs("# (basic version - generated automatically because it was missing)\n", config2);
-			fputs("\n\n", config2);
-
-			if (nick[0] && pass[0]) {
+#endif /* USE_X11 */
+    }
+			if (!strncmp(buf, "#nick", 5) && nick[0] && pass[0]) {
+				strcpy(buf, "nick\t\t");
+				strcat(buf, nick);
+				strcat(buf, "\n");
+			}
+			if (!strncmp(buf, "#pass", 5) && nick[0] && pass[0]) {
 				char tmp[MAX_CHARS];
 
-				fputs(format("nick\t\t%s\n", nick), config2);
 				strcpy(tmp, pass);
 				my_memfrob(tmp, strlen(tmp));
-				fputs(format("pass\t\t%s\n", tmp), config2);
+				strcpy(buf, "pass\t\t");
+				strcat(buf, tmp); //security hole here, buf doesn't get zero'ed
 				memset(tmp, 0, MAX_CHARS);
-			} else {
-				fputs(format("#nick\t\t%s\n", nick), config2);
-				fputs(format("#pass\t\t%s\n", ""), config2);//keep pass secure maybe
+				strcat(buf, "\n");
 			}
-			fputs(format("#name\t\t%s\n", cname), config2);
-			fputs("\n", config2);
 
-			fputs(format("#meta\t\t%s\n", ""), config2);//keep using internal defaults
-			fputs(format("#server\t\t%s\n", svname), config2);
-#if 0 /* let's keep empty in case newbie accidentally went to RPG server first and then uncomments this entry */
-			fputs(format("#port\t\t%d\n", cfg_game_port), config2);
-#else
-			fputs(format("#port\t\t%s\n", ""), config2);
-#endif
-			fputs("\n", config2);
+			/*** Everything else is ignored ***/
 
-			fputs(format("fps\t\t%d\n", cfg_client_fps), config2);//or maybe just write '100'?
-			fputs(format("#realname\t%s\n", real_name), config2);
-			fputs(format("#path\t\t%s\n", path), config2);
-			fputs("\n", config2);
+			/* copy the line over */
+			fputs(buf, config2);
 
-			fputs("#fullauto\n", config2);
-			fputs("\n", config2);
-
-			fputs("# Use lighter 'dark blue' colour to increase readability on some screens\n", config2);
-			fputs("# Sets blue to #0033ff instead of #0000ff\n", config2);
-			fputs("lighterDarkBlue\n", config2);
-			fputs("\n", config2);
-
-			fputs("# Full color remapping\n", config2);
-			fputs("# 0 = black, 1 = white, 2 = gray, 3 = orange, 4 = red, 5 = green, 6 = blue\n", config2);
-			fputs("# 7 = umber, 8 = dark gray, 9 = light gray, 10 = violet, 11 = yellow\n", config2);
-			fputs("# 12 = light red, 13 = light green, 14 = light blue, 15 = light umber\n", config2);
-			fputs("#colormap_0\t\t#000000\n", config2);
-			fputs("#colormap_1\t\t#ffffff\n", config2);
-			fputs("#colormap_2\t\t#9d9d9d\n", config2);
-			fputs("#colormap_3\t\t#ff8d00\n", config2);
-			fputs("#colormap_4\t\t#b70000\n", config2);
-			fputs("#colormap_5\t\t#009d44\n", config2);
-			fputs("#colormap_6\t\t#0000ff\n", config2);
-			fputs("#colormap_7\t\t#8d6600\n", config2);
-			fputs("#colormap_8\t\t#666666\n", config2);
-			fputs("#colormap_9\t\t#cdcdcd\n", config2);
-			fputs("#colormap_10\t\t#af00ff\n", config2);
-			fputs("#colormap_11\t\t#ffff00\n", config2);
-			fputs("#colormap_12\t\t#ff3030\n", config2);
-			fputs("#colormap_13\t\t#00ff00\n", config2);
-			fputs("#colormap_14\t\t#00ffff\n", config2);
-			fputs("#colormap_15\t\t#c79d55\n", config2);
-			fputs("\n", config2);
-
-			fputs(format("graphics\t\t%s\n", use_graphics ? "1" : "0"), config2);
-#ifdef USE_GRAPHICS
-			fputs(format("graphic_tiles\t\t%s\n", graphic_tiles), config2);
-#endif
-			fputs("\n", config2);
-//#ifdef USE_SOUND
-			fputs(format("sound\t\t\t%s\n", use_sound_org ? "1" : "0"), config2);
-//#endif
 #ifdef USE_SOUND_2010
-			fputs("hintSound\n", config2);
-			fputs(format("cacheAudio\t\t%s\n", no_cache_audio ? "0" : "1"), config2);
-			fputs(format("audioSampleRate\t\t%d\n", cfg_audio_rate), config2);
-			fputs(format("audioChannels\t\t%d\n", cfg_max_channels), config2);
-			fputs(format("audioBuffer\t\t%d\n", cfg_audio_buffer), config2);
-			fputs(format("soundpackFolder\t\t%s\n", cfg_soundpackfolder), config2);
-			fputs(format("musicpackFolder\t\t%s\n", cfg_musicpackfolder), config2);
-			fputs(format("audioMaster\t\t%s\n", cfg_audio_master ? "1" : "0"), config2);
-			fputs(format("audioMusic\t\t%s\n", cfg_audio_music ? "1" : "0"), config2);
-			fputs(format("audioSound\t\t%s\n", cfg_audio_sound ? "1" : "0"), config2);
-			fputs(format("audioWeather\t\t%s\n", cfg_audio_weather ? "1" : "0"), config2);
-			fputs(format("audioVolumeMaster\t%d\n", cfg_audio_master_volume), config2);
-			fputs(format("audioVolumeMusic\t%d\n", cfg_audio_music_volume), config2);
-			fputs(format("audioVolumeSound\t%d\n", cfg_audio_sound_volume), config2);
-			fputs(format("audioVolumeWeather\t%d\n", cfg_audio_weather_volume), config2);
+    if (!creds_only) {
+			/* hack: disable one-time hint */
+			if (!strncmp(buf, "sound", 5) && sound_hint) fputs("hintSound\n", config2);
+    }
 #endif
-			fputs("\n", config2);
+		}
+
+    if (!creds_only) {
+		/* hack: disable one-time hint */
+		if (bigmap_hint) fputs("\nhintBigmap\n", config2);
+    }
+
+		fclose(config);
+		fclose(config2);
+
+		/* replace old by new */
+		remove(mangrc_filename);
+		rename(config_name2, mangrc_filename);
+
+		return (TRUE); //success
+	    } else {
+		/* create .tomenetrc file, because it doesn't exist yet */
+		fputs("# TomeNET config file\n", config2);
+		fputs("# (basic version - generated automatically because it was missing)\n", config2);
+		fputs("\n\n", config2);
+
+		if (nick[0] && pass[0]) {
+			char tmp[MAX_CHARS];
+
+			fputs(format("nick\t\t%s\n", nick), config2);
+			strcpy(tmp, pass);
+			my_memfrob(tmp, strlen(tmp));
+			fputs(format("pass\t\t%s\n", tmp), config2);
+			memset(tmp, 0, MAX_CHARS);
+		} else {
+			fputs(format("#nick\t\t%s\n", nick), config2);
+			fputs(format("#pass\t\t%s\n", ""), config2);//keep pass secure maybe
+		}
+		fputs(format("#name\t\t%s\n", cname), config2);
+		fputs("\n", config2);
+
+		fputs(format("#meta\t\t%s\n", ""), config2);//keep using internal defaults
+		fputs(format("#server\t\t%s\n", svname), config2);
+#if 0 /* let's keep empty in case newbie accidentally went to RPG server first and then uncomments this entry */
+		fputs(format("#port\t\t%d\n", cfg_game_port), config2);
+#else
+		fputs(format("#port\t\t%s\n", ""), config2);
+#endif
+		fputs("\n", config2);
+
+		fputs(format("fps\t\t%d\n", cfg_client_fps), config2);//or maybe just write '100'?
+		fputs(format("#realname\t%s\n", real_name), config2);
+		fputs(format("#path\t\t%s\n", path), config2);
+		fputs("\n", config2);
+
+		fputs("#fullauto\n", config2);
+		fputs("\n", config2);
+
+		fputs("# Use lighter 'dark blue' colour to increase readability on some screens\n", config2);
+		fputs("# Sets blue to #0033ff instead of #0000ff\n", config2);
+		fputs("lighterDarkBlue\n", config2);
+		fputs("\n", config2);
+
+		fputs("# Full color remapping\n", config2);
+		fputs("# 0 = black, 1 = white, 2 = gray, 3 = orange, 4 = red, 5 = green, 6 = blue\n", config2);
+		fputs("# 7 = umber, 8 = dark gray, 9 = light gray, 10 = violet, 11 = yellow\n", config2);
+		fputs("# 12 = light red, 13 = light green, 14 = light blue, 15 = light umber\n", config2);
+		fputs("#colormap_0\t\t#000000\n", config2);
+		fputs("#colormap_1\t\t#ffffff\n", config2);
+		fputs("#colormap_2\t\t#9d9d9d\n", config2);
+		fputs("#colormap_3\t\t#ff8d00\n", config2);
+		fputs("#colormap_4\t\t#b70000\n", config2);
+		fputs("#colormap_5\t\t#009d44\n", config2);
+		fputs("#colormap_6\t\t#0000ff\n", config2);
+		fputs("#colormap_7\t\t#8d6600\n", config2);
+		fputs("#colormap_8\t\t#666666\n", config2);
+		fputs("#colormap_9\t\t#d7d7d7\n", config2);
+		fputs("#colormap_10\t\t#af00ff\n", config2);
+		fputs("#colormap_11\t\t#ffff00\n", config2);
+		fputs("#colormap_12\t\t#ff3030\n", config2);
+		fputs("#colormap_13\t\t#00ff00\n", config2);
+		fputs("#colormap_14\t\t#00ffff\n", config2);
+		fputs("#colormap_15\t\t#c79d55\n", config2);
+		fputs("\n", config2);
+
+//#ifdef USE_GRAPHICS
+		fputs(format("graphics\t\t%s\n", use_graphics ? "1" : "0"), config2);
+		fputs("\n", config2);
+//#endif
+//#ifdef USE_SOUND
+		fputs(format("sound\t\t\t%s\n", use_sound_org ? "1" : "0"), config2);
+//#endif
+//#ifdef USE_SOUND_2010
+		fputs("hintSound\n", config2);
+		fputs(format("cacheAudio\t\t%s\n", no_cache_audio ? "0" : "1"), config2);
+		fputs(format("audioSampleRate\t\t%d\n", cfg_audio_rate), config2);
+		fputs(format("audioChannels\t\t%d\n", cfg_max_channels), config2);
+		fputs(format("audioBuffer\t\t%d\n", cfg_audio_buffer), config2);
+
+		fputs(format("audioMaster\t\t%s\n", cfg_audio_master ? "1" : "0"), config2);
+		fputs(format("audioMusic\t\t%s\n", cfg_audio_music ? "1" : "0"), config2);
+		fputs(format("audioSound\t\t%s\n", cfg_audio_sound ? "1" : "0"), config2);
+		fputs(format("audioWeather\t\t%s\n", cfg_audio_weather ? "1" : "0"), config2);
+		fputs(format("audioVolumeMaster\t%d\n", cfg_audio_master_volume), config2);
+		fputs(format("audioVolumeMusic\t%d\n", cfg_audio_music_volume), config2);
+		fputs(format("audioVolumeSound\t%d\n", cfg_audio_sound_volume), config2);
+		fputs(format("audioVolumeWeather\t%d\n", cfg_audio_weather_volume), config2);
+		fputs("\n", config2);
+//#endif
 
 #ifdef USE_X11
 ///LINUX_TERM_CFG
 /* Don't do this in terminal mode ('-c') */
-			if (!strcmp(ANGBAND_SYS, "x11")) {
-				write_mangrc_aux(0, "Mainwindow", config2);
-				write_mangrc_aux(1, "Mirrorwindow", config2);
-				write_mangrc_aux(2, "Recallwindow", config2);
-				write_mangrc_aux(3, "Choicewindow", config2);
-				write_mangrc_aux(4, "Term-4window", config2);
-				write_mangrc_aux(5, "Term-5window", config2);
-				write_mangrc_aux(6, "Term-6window", config2);
-				write_mangrc_aux(7, "Term-7window", config2);
-				write_mangrc_aux(8, "Term-8window", config2);
-				write_mangrc_aux(9, "Term-9window", config2);
-			}
+if (!strcmp(ANGBAND_SYS, "x11")) {
+		write_mangrc_aux(0, "Mainwindow", config2);
+		write_mangrc_aux(1, "Mirrorwindow", config2);
+		write_mangrc_aux(2, "Recallwindow", config2);
+		write_mangrc_aux(3, "Choicewindow", config2);
+		write_mangrc_aux(4, "Term-4window", config2);
+		write_mangrc_aux(5, "Term-5window", config2);
+		write_mangrc_aux(6, "Term-6window", config2);
+		write_mangrc_aux(7, "Term-7window", config2);
+#if 0 /* keep n/a for now, not really needed */
+		write_mangrc_aux(8, "Term-8window", config2);
+		write_mangrc_aux(9, "Term-9window", config2);
+#endif
+}
 #endif
 
-			if (!creds_only) {
-				fputs("\n", config2);
-				fputs("hintBigmap\n", config2);
-			}
+    if (!creds_only) {
+		fputs("\n", config2);
+		fputs("hintBigmap\n", config2);
+    }
 
-			fclose(config2);
+		fclose(config2);
 
-			/* rename temporary file to new ".tomenetrc" */
-			rename(config_name2, mangrc_filename);
-		}
-
-	/* shouldn't really happen, but Matfil had a weird bug where only 'hintBigMap' is left in his .tomenetrc as the only line, so maybe: */
+		/* rename temporary file to new ".tomenetrc" */
+		rename(config_name2, mangrc_filename);
+	    }
+	//shouldn't really happen, but Matfil had a weird bug where only 'hintBigMap' is left in his .tomenetrc as the only line, so maybe:
 	} else if (config) fclose(config);
 
-	return(FALSE); //failure
-}
-
-bool write_mangrc_colourmap(void) {
-	char config_name2[100];
-	FILE *config, *config2;
-	char buf[1024];
-	bool found_start = FALSE, found = FALSE;
-	int i;
-	unsigned long c;
-
-	buf[0] = 0;//valgrind warning it seems..?
-
-	strcpy(config_name2, mangrc_filename);
-	strcat(config_name2, ".$$$");
-
-	config = fopen(mangrc_filename, "r");
-	config2 = fopen(config_name2, "w");
-
-	/* Attempt to open file */
-	if (config2) {
-		if (config) {
-			/* Read until end */
-			while (!feof(config)) {
-				/* Get a line */
-				if (!fgets(buf, 1024, config)) break;
-
-				/* Remove all colourmap lines */
-				if (!strncmp(buf, "#colormap_", 10) || !strncmp(buf, ";colormap_", 10) || !strncmp(buf, "colormap_", 9)) {
-					found_start = TRUE;
-					continue;
-				}
-
-				/* Find good place to fit them in (at comment about colourmap) */
-				if (buf[0] == '#' && strstr(buf, "Full color remapping")) found_start = TRUE;
-
-				/* Insert colourmap info here */
-				if ((!buf[0] || buf[0] == '\n') && found_start && !found) {
-					found = TRUE;
-#ifndef CUSTOMIZE_COLOURS_FREELY
-					for (i = 1; i < BASE_PALETTE_SIZE; i++) {
-#else
-					for (i = 0; i < BASE_PALETTE_SIZE; i++) {
-#endif
-						c = client_color_map[i];
-						sprintf(buf, "colormap_%d\t\t#%06lx\n", i, c);
-						fputs(buf, config2);
-					}
-					fputs("\n", config2);
-					continue;
-				}
-
-				/* copy everything else over */
-				fputs(buf, config2);
-			}
-
-			/* Just append new colourmap? */
-			if (!found) {
-				fputs("\n", config2);
-#ifndef CUSTOMIZE_COLOURS_FREELY
-					for (i = 1; i < BASE_PALETTE_SIZE; i++) {
-#else
-					for (i = 0; i < BASE_PALETTE_SIZE; i++) {
-#endif
-					c = client_color_map[i];
-					sprintf(buf, "colormap_%d\t\t#%06lx\n", i, c);
-					fputs(buf, config2);
-				}
-			}
-
-			fclose(config);
-			fclose(config2);
-
-			/* replace old by new */
-			remove(mangrc_filename);
-			rename(config_name2, mangrc_filename);
-
-			return(TRUE); //success
-		}
-	}
-
-	return(FALSE); //failure
+	return (FALSE); //failure
 }
 
 static void default_set(void) {
@@ -924,21 +779,21 @@ static void default_set(void) {
 #endif
 
 #ifdef AMIGA
-	if ((GetVar("tomenet_name", real_name, 80, 0L)) != -1) {
-	  strcpy(nick, real_name);
+        if ((GetVar("tomenet_name", real_name, 80, 0L)) != -1) {
+          strcpy(nick,real_name);
 	}
 #endif
 #ifdef SET_UID
 	temp = getenv("TOMENET_PLAYER");
-	if (temp) strcpy(nick, temp);
+	if (temp) strcpy(nick, temp); 
 	temp = getenv("TOMENET_USER");
-	if (temp) strcpy(real_name, temp);
+	if (temp) strcpy(real_name, temp); 
 #endif
 }
 
 int main(int argc, char **argv) {
-	int i, j, modus = 0;
-	bool done = FALSE, skip = FALSE;
+	int i, modus = 0;
+	bool done = FALSE, skip = FALSE, force_cui = FALSE;
 
 	/* Save the program name */
 	argv0 = argv[0];
@@ -947,18 +802,8 @@ int main(int argc, char **argv) {
 	/* Set default values */
 	default_set();
 
-	/* Get temp path for version-building below */
-	init_temp_path();
 	/* Acquire the version strings */
 	version_build();
-
-	/* Make a copy to use in colour blindness menu when we want to reset palette to default values.
-	   This must happen before we read the config file, as it contains colour-(re)definitions. */
-	for (i = 0; i < CLIENT_PALETTE_SIZE; i++) client_color_map_org[i] = client_color_map[i];
-
-	/* assume defaults */
-	strcpy(cfg_soundpackfolder, "sound");
-	strcpy(cfg_musicpackfolder, "music");
 
 	/* read default rc file */
 	skip = read_mangrc("");
@@ -985,7 +830,6 @@ int main(int argc, char **argv) {
 		/* ignore rc files */
 		case 'i':
 			skip = FALSE;
-
 			strcpy(cname, "");
 			strcpy(svname, "");
 #ifdef USE_SOUND_2010
@@ -993,38 +837,9 @@ int main(int argc, char **argv) {
 			cfg_max_channels = 32;
 			cfg_audio_buffer = 1024;
 			cfg_audio_master = cfg_audio_music = cfg_audio_sound = cfg_audio_weather = TRUE;
-			cfg_audio_master_volume = cfg_audio_music_volume = cfg_audio_sound_volume = cfg_audio_weather_volume = AUDIO_VOLUME_DEFAULT;
+			cfg_audio_master_volume = 75;
+			cfg_audio_music_volume = cfg_audio_sound_volume = cfg_audio_weather_volume = 100;
 #endif
-
-			/* Reset certain variables that were possibly one-time set by reading the default .tomenetrc above */
-			nick[0] = pass[0] = meta_address[0] = 0;
-			//real_name[0] = path[0] = 0; --nope! or we can't login due to invalid real_name (it's just 'PLAYER' default)
-			cfg_game_port = 18348;
-			cfg_client_fps = 100;
-			use_graphics = disable_numlock = 0;
-			lighterdarkblue = FALSE;
-			for (j = 0; j < BASE_PALETTE_SIZE; j++) client_color_map[j] = client_color_map_org[j];
-			use_sound = TRUE;
-			quiet_mode = FALSE;
-#ifdef USE_SOUND_2010
-			sound_hint = TRUE;
-			no_cache_audio = FALSE;
-#endif
-			cfg_soundpackfolder[0] = cfg_musicpackfolder[0] = 0;
-			firstrun = TRUE;
-			bigmap_hint = TRUE;
-#ifdef GLOBAL_BIG_MAP
-			/* Also reset main window to non-big_map */
-			global_c_cfg_big_map = FALSE;
-			screen_hgt = SCREEN_HGT;
- #ifdef WINDOWS
-			data[0].rows = screen_hgt + SCREEN_PAD_Y;
- #else /* POSIX */
-			//screen->rows = screen_hgt + SCREEN_PAD_Y;
-			term_prefs[0].lines = screen_hgt + SCREEN_PAD_Y;
- #endif
-#endif
-			//resize_main_window(CL_WINDOW_WID, CL_WINDOW_HGT); --visuals aren't initialized yet -> segfault.
 
 #if 0 /* This skips command-line arguments, not rc file */
 			modus = 2;
@@ -1046,20 +861,19 @@ int main(int argc, char **argv) {
 			break;
 
 		case 'P':
-			strcpy(path, argv[i] + 2);
+			strcpy(path, argv[i]+2);
 			break;
 
 		case 'R':
 			auto_reincarnation = TRUE;
-			/* Fall through */
 		case 'N':
-			strcpy(cname, argv[i] + 2);
+			strcpy(cname, argv[i]+2);
 			break;
 
 		/* Pull login id */
 		case 'l':
 			if (argv[i][2]) { /* Hack -- allow space after '-l' */
-				strcpy(nick, argv[i] + 2);
+				strcpy(nick, argv[i]+2);
 				modus = 2;
 			}
 			else modus = 1;
@@ -1069,7 +883,7 @@ int main(int argc, char **argv) {
 		case 'n':
 			if (argv[i][2])	/* Hack -- allow space after '-l' */
 			{
-				strcpy(real_name, argv[i] + 2);
+				strcpy(real_name, argv[i]+2);
 				break;
 			}
 			/* Fall through */
@@ -1106,10 +920,6 @@ int main(int argc, char **argv) {
 			save_chat = 2;
 			break;
 
-		case 'x':
-			save_chat = 3;
-			break;
-
 		case 'e': {
 			/* Since ALSA might spam underrun errors.. */
 			FILE *fr = freopen("tomenet.log", "w", stderr);
@@ -1131,34 +941,28 @@ int main(int argc, char **argv) {
 	if (modus == 1 || modus < 0) {
 		/* Dump usage information */
 		puts(longVersion);
-		puts(format("Running on %s.", os_version));
 		puts("Usage  : tomenet [options] [servername]");
 		puts("Example: tomenet -lMorgoth MorgyPass -p18348 europe.tomenet.eu");
 		puts("       : tomenet -f.myrc -lOlorin_archer");
-		puts("  -h                 Display this help");
 		puts("  -c                 Always use CUI(GCU) interface");
 		puts("  -C                 Compatibility mode for very old servers");
 		puts("  -e                 Create file 'tomenet.log' instead of displaying");
 		puts("                     error messages in the terminal");
-		puts("  -i                 Ignore .tomenetrc (must come before any '-f' !)");
-		puts("  -f                 Specify an additional rc-file to read. The last file");
-		puts("                     that is read is used as default config file and any");
-		puts("                     changes that are saved will be saved to this file.");
+		puts("  -f                 specify rc File to read");
 		puts("  -F                 Client FPS");
-		//puts("  -k                 don't disable numlock on client startup");
+		puts("  -i                 Ignore .tomenetrc");
 		puts("  -l<nick> <passwd>  Login as");
-		puts("  -m                 Skip motd (message of the day) on login");
-		puts("  -N<name>           Character name");
-		puts("  -R<name>           Character name, auto-reincarnate");
-		puts("  -p<num>            Change game Port number");
-		puts("  -P<path>           Set the lib directory Path");
-		puts("  -q                 Disable audio capabilities ('quiet mode')");
-		puts("  -u                 Disable client-side automatic lua updates");
+		puts("  -m                 skip motd (message of the day) on login");
+		puts("  -N<name>           character name");
+		puts("  -R<name>           character name, auto-reincarnate");
+		puts("  -p<num>            change game Port number");
+		puts("  -P<path>           set the lib directory Path");
+		puts("  -q                 disable audio capabilities ('quiet mode')");
+		puts("  -u                 disable client-side automatic lua updates");
 		puts("                     (you shouldn't use this option!");
-		puts("  -v                 Save chat log on exit, don't prompt");
-		puts("  -V                 Save complete message log on exit, don't prompt");
-		puts("  -x                 Don't save chat/message log on exit (don't prompt)");
-		puts("  -w                 Disable client-side weather effects");
+		puts("  -v                 save chat log on exit, don't prompt");
+		puts("  -V                 save complete message log on exit, don't prompt");
+		puts("  -w                 disable client-side weather effects");
 
 #ifdef USE_SOUND_2010
 #if 0 //we don't have 'modules' for everything, yet :-p only sound_modules for now - C. Blue
@@ -1268,12 +1072,8 @@ int main(int argc, char **argv) {
 		Rand_state_init(seed);
 	}
 
-	/* Attempt to read default name/password from mangrc file.
-	   skip: set by reading name+pass from config (rc/ini) file.
-	   ..or via commandline args above:
-	   modus == 2: We got a nick (account name)
-	   modus == 3: We also got the password.
-	   !done: present login screen to prompt user for name+pass. */
+	/* Attempt to read default name/password from mangrc file */
+
 	done = (modus > 2 || skip) ? TRUE : FALSE;
 
 #ifdef UNIX_SOCKETS
@@ -1290,5 +1090,5 @@ int main(int argc, char **argv) {
 #endif
 
 
-	return(0);
+	return 0;
 }

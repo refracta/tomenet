@@ -16,4 +16,5 @@ typedef struct {
 	long	last_activity;
 	sockbuf_t	r;
 	sockbuf_t	w;
+	
 } gw_connection_t;

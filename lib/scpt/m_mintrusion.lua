@@ -13,6 +13,8 @@ function get_psiblast_dam(Ind, limit_lev)
 	lev2 = get_level(Ind, MMINDBLAST_I, 250)
 	if limit_lev ~= 0 and lev2 > limit_lev * 5 then lev2 = limit_lev * 5 + (lev2 - limit_lev * 5) / 3 end
 
+--	return 4 + get_level(Ind, MMINDBLAST, 4), 3 + get_level(Ind, MMINDBLAST, 45) <- just 50% of targetted value
+--	return 2 + get_level(Ind, MMINDBLAST, 6), 3 + get_level(Ind, MMINDBLAST, 45), get_level(Ind, MMINDBLAST, 200)
 	return 2 + get_level(Ind, MMINDBLAST_I, 7), 3 + lev, lev2
 end
 
@@ -25,7 +27,6 @@ end
 
 MSCARE_I = add_spell {
 	["name"] = 	"Scare I",
-	["name2"] = 	"Scare I",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -45,11 +46,10 @@ MSCARE_I = add_spell {
 __lua_MSCARE = MSCARE_I
 MSCARE_II = add_spell {
 	["name"] = 	"Scare II",
-	["name2"] = 	"Scare II",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
-	["level"] = 	10,
+	["level"] = 	15,
 	["mana"] = 	10,
 	["mana_max"] = 	10,
 	["fail"] = 	-20,
@@ -65,7 +65,6 @@ MSCARE_II = add_spell {
 
 MCONFUSE_I = add_spell {
 	["name"] = 	"Confuse I",
-	["name2"] = 	"Conf I",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -84,11 +83,10 @@ MCONFUSE_I = add_spell {
 }
 MCONFUSE_II = add_spell {
 	["name"] = 	"Confuse II",
-	["name2"] = 	"Conf II",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
-	["level"] = 	14,
+	["level"] = 	18,
 	["mana"] = 	14,
 	["mana_max"] = 	14,
 	["fail"] = 	-20,
@@ -104,7 +102,6 @@ MCONFUSE_II = add_spell {
 
 MSLEEP_I = add_spell {
 	["name"] = 	"Hypnosis I",
-	["name2"] = 	"Hyp I",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	33,
 	["spell_power"] = 0,
@@ -123,11 +120,10 @@ MSLEEP_I = add_spell {
 }
 MSLEEP_II = add_spell {
 	["name"] = 	"Hypnosis II",
-	["name2"] = 	"Hyp II",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	33,
 	["spell_power"] = 0,
-	["level"] = 	18,
+	["level"] = 	20,
 	["mana"] = 	15,
 	["mana_max"] = 	15,
 	["fail"] = 	-20,
@@ -142,8 +138,7 @@ MSLEEP_II = add_spell {
 }
 
 MSLOWMONSTER_I = add_spell {
-	["name"] = 	"Apathy I",
-	["name2"] = 	"Apa I",
+	["name"] = 	"Drain Strength I",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -153,16 +148,15 @@ MSLOWMONSTER_I = add_spell {
 	["fail"] = 	10,
 	["direction"] = TRUE,
 	["spell"] = 	function(args)
-				fire_grid_bolt(Ind, GF_MIND_SLOW, args.dir, 5 + get_level(Ind, MSLOWMONSTER_I, 100), "drains power from your muscles")
+				fire_grid_bolt(Ind, GF_OLD_SLOW, args.dir, 5 + get_level(Ind, MSLOWMONSTER_I, 100), "drains power from your muscles")
 			end,
 	["info"] = 	function()
 				return "power "..(5 + get_level(Ind, MSLOWMONSTER_I, 100))
 			end,
-	["desc"] = 	{ "Makes an opponent falter, slowing it down.", }
+	["desc"] = 	{ "Drains power from the muscles of your opponent, slowing it down.", }
 }
 MSLOWMONSTER_II = add_spell {
-	["name"] = 	"Apathy II",
-	["name2"] = 	"Apa II",
+	["name"] = 	"Drain Strength II",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -172,17 +166,16 @@ MSLOWMONSTER_II = add_spell {
 	["fail"] = 	-20,
 	["direction"] = FALSE,
 	["spell"] = 	function()
-				project_los(Ind, GF_MIND_SLOW, 5 + get_level(Ind, MSLOWMONSTER_I, 100), "drains power from your muscles")
+				project_los(Ind, GF_OLD_SLOW, 5 + get_level(Ind, MSLOWMONSTER_I, 100), "drains power from your muscles")
 			end,
 	["info"] = 	function()
 				return "power "..(5 + get_level(Ind, MSLOWMONSTER_I, 100))
 			end,
-	["desc"] = 	{ "Makes all opponents in sight falter, slowing them down.", }
+	["desc"] = 	{ "Drains power from the muscles of all opponents in sight, slowing them down.", }
 }
 
 MMINDBLAST_I = add_spell {
 	["name"] = 	"Psionic Blast I",
-	["name2"] = 	"PsiBlast I",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -206,7 +199,6 @@ MMINDBLAST_I = add_spell {
 }
 MMINDBLAST_II = add_spell {
 	["name"] = 	"Psionic Blast II",
-	["name2"] = 	"PsiBlast II",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -230,7 +222,6 @@ MMINDBLAST_II = add_spell {
 }
 MMINDBLAST_III = add_spell {
 	["name"] = 	"Psionic Blast III",
-	["name2"] = 	"PsiBlast III",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -255,7 +246,6 @@ MMINDBLAST_III = add_spell {
 
 MPSISTORM_I = add_spell {
 	["name"] = 	"Psi Storm I",
-	["name2"] = 	"PStorm I",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -265,9 +255,12 @@ MPSISTORM_I = add_spell {
 	["fail"] = 	5,
 	["direction"] = TRUE,
 	["spell"] = function(args)
+--	["spell"] = function()
 		local d
 		d = get_psistorm_dam(Ind, 1)
 		fire_cloud(Ind, GF_PSI, args.dir, d, 3 + get_level(Ind, MPSISTORM_I, 4), 6 + get_level(Ind, MPSISTORM_I, 4), 14, " releases a psi storm for")
+--		fire_cloud(Ind, GF_PSI, 0, (1 + get_level(Ind, MPSISTORM, 76)), 2 + get_level(Ind, MPSISTORM, 4), 5 + get_level(Ind, MPSISTORM, 5), 14, " releases a psi storm for")
+--		fire_wave(Ind, GF_PSI, 0, (1 + get_level(Ind, MPSISTORM, 76)), 2 + get_level(Ind, MPSISTORM, 4), 5 + get_level(Ind, MPSISTORM, 5), 14, EFF_STORM, " releases a psi storm for
 	end,
 	["info"] = function()
 		local d
@@ -278,7 +271,6 @@ MPSISTORM_I = add_spell {
 }
 MPSISTORM_II = add_spell {
 	["name"] = 	"Psi Storm II",
-	["name2"] = 	"PStorm II",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -288,9 +280,12 @@ MPSISTORM_II = add_spell {
 	["fail"] = 	-90,
 	["direction"] = TRUE,
 	["spell"] = function(args)
+--	["spell"] = function()
 		local d
 		d = get_psistorm_dam(Ind, 0)
 		fire_cloud(Ind, GF_PSI, args.dir, d, 3 + get_level(Ind, MPSISTORM_I, 4), 6 + get_level(Ind, MPSISTORM_I, 4), 14, " releases a psi storm for")
+--		fire_cloud(Ind, GF_PSI, 0, (1 + get_level(Ind, MPSISTORM, 76)), 2 + get_level(Ind, MPSISTORM, 4), 5 + get_level(Ind, MPSISTORM, 5), 14, " releases a psi storm for")
+--		fire_wave(Ind, GF_PSI, 0, (1 + get_level(Ind, MPSISTORM, 76)), 2 + get_level(Ind, MPSISTORM, 4), 5 + get_level(Ind, MPSISTORM, 5), 14, EFF_STORM, " releases a psi storm for
 	end,
 	["info"] = function()
 		local d
@@ -302,7 +297,6 @@ MPSISTORM_II = add_spell {
 
 MSILENCE = add_spell {
 	["name"] = 	"Psychic Suppression",
-	["name2"] = 	"Supp",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -324,8 +318,8 @@ MSILENCE = add_spell {
 
 MMAP = add_spell {
 	["name"] = 	"Remote Vision",
-	["name2"] = 	"Vision",
 	["school"] = 	{SCHOOL_MINTRUSION},
+--	["school"] = 	{SCHOOL_MINTRUSION, SCHOOL_TCONTACT}
 	["am"] = 	50,
 	["spell_power"] = 0,
 	["level"] = 	20,
@@ -345,88 +339,81 @@ MMAP = add_spell {
 			end,
 	["desc"] = 	{
 			"Forcefully uses the vision of sentient life forms around.",
-			"The effect will additionally be transferred to allied open minds on the same",
-			"floor if your Attunement skill is at least 20.",
+			"*** Will be transferred to allied open",
+			"    minds on the same floor if your",
+			"    Attunement skill is at least 20. ***",
 	}
 }
 
--- Monsters will ignore you (and often your party members too ;)
+--[[ Old version, requiring pets. Not cool though. See new variant below!
 MCHARM = add_spell {
-	["name"] = 	"Charm I",
-	["name2"] = 	"Charm I",
+	["name"] = 	"Charm",
+	["school"] = 	{SCHOOL_MINTRUSION},
+	["am"] = 	50,
+	["spell_power"] = 0,
+	["level"] = 	1,
+	["mana"] = 	1,
+	["mana_max"] = 	20,
+	["fail"] = 	10,
+	["direction"] = function () if get_level(Ind, CHARM, 50) >= 35 then return FALSE else return TRUE end end,
+	["spell"] = 	function(args)
+			if get_level(Ind, CHARM, 50) >= 35 then
+				project_los(Ind, GF_CHARM, 10 + get_level(Ind, CHARM, 150), "mumbles softly")
+			elseif get_level(Ind, CHARM, 50) >= 15 then
+				fire_ball(Ind, GF_CHARM, args.dir, 10 + get_level(Ind, CHARM, 150), 3, "mumbles softly")
+			else
+				fire_grid_bolt(Ind, GF_CHARM, args.dir, 10 + get_level(Ind, CHARM, 150), "mumbles softly")
+			end
+
+	end,
+	["info"] = 	function()
+			return "power "..(10 + get_level(Ind, CHARM, 150))
+	end,
+	["desc"] = 	{
+			"Tries to manipulate the mind of a monster to make it friendly",
+			"At level 15 it turns into a ball",
+			"At level 35 it affects all monsters in sight",
+	}
+}
+]]
+
+-- New idea: works like *invincibility*: monsters will ignore you (and often your party members too ;)
+MCHARM = add_spell {
+	["name"] = 	"Charm",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	50,
 	["spell_power"] = 0,
 	["level"] = 	33,
-	["mana"] = 	6,
-	["mana_max"] = 	6,
-	["fail"] = 	-60,
-	["stat"] = 	A_CHR,
-	["direction"] = TRUE,
-	["spell"] = 	function(args)
-			fire_grid_bolt(Ind, GF_CHARMIGNORE, args.dir, 10 + get_level(Ind, MCHARM, 150), "focusses")
-	end,
-	["info"] = 	function()
-			--return "power "..(10 + get_level(Ind, MCHARM, 150))
-			return ""
-	end,
-	["desc"] = 	{
-			"Tries to manipulate the mind of a monster",
-			" to make them ignore you at the cost of your mana.",
-	}
-}
-MCHARM_II = add_spell {
-	["name"] = 	"Charm II",
-	["name2"] = 	"Charm II",
-	["school"] = 	{SCHOOL_MINTRUSION},
-	["am"] = 	50,
-	["spell_power"] = 0,
-	["level"] = 	39,
-	["mana"] = 	8,
-	["mana_max"] = 	8,
-	["fail"] = 	-70,
-	["stat"] = 	A_CHR,
-	["direction"] = TRUE,
-	["spell"] = 	function(args)
-			fire_ball(Ind, GF_CHARMIGNORE, args.dir, 10 + get_level(Ind, MCHARM, 150), 3, "focusses")
-	end,
-	["info"] = 	function()
-			--return "power "..(10 + get_level(Ind, MCHARM, 150))
-			return ""
-	end,
-	["desc"] = 	{
-			"Tries to manipulate the mind of your target and others around it",
-			" to make them ignore you at the cost of your mana.",
-	}
-}
-MCHARM_III = add_spell {
-	["name"] = 	"Charm III",
-	["name2"] = 	"Charm III",
-	["school"] = 	{SCHOOL_MINTRUSION},
-	["am"] = 	50,
-	["spell_power"] = 0,
-	["level"] = 	45,
 	["mana"] = 	10,
 	["mana_max"] = 	10,
-	["fail"] = 	-93,
+	["fail"] = 	10,
 	["stat"] = 	A_CHR,
-	["direction"] = FALSE,
+	["direction"] = function () if get_level(Ind, MCHARM, 50) >= 13 then return FALSE else return TRUE end end,
 	["spell"] = 	function(args)
-			project_los(Ind, GF_CHARMIGNORE, 10 + get_level(Ind, MCHARM, 150), "focusses")
+			--reset previous charm spell first:
+			do_mstopcharm(Ind)
+			--cast charm!
+			if get_level(Ind, MCHARM, 50) >= 13 then
+				project_los(Ind, GF_CHARMIGNORE, 10 + get_level(Ind, MCHARM, 150), "focusses")
+			elseif get_level(Ind, MCHARM, 50) >= 7 then
+				fire_ball(Ind, GF_CHARMIGNORE, args.dir, 10 + get_level(Ind, MCHARM, 150), 3, "focusses")
+			else
+				fire_grid_bolt(Ind, GF_CHARMIGNORE, args.dir, 10 + get_level(Ind, MCHARM, 150), "focusses")
+			end
 	end,
 	["info"] = 	function()
-			--return "power "..(10 + get_level(Ind, MCHARM, 150))
+--			return "power "..(10 + get_level(Ind, MCHARM, 150))
 			return ""
 	end,
 	["desc"] = 	{
-			"Tries to manipulate the mind of all monsters in sight",
-			" to make them ignore you at the cost of your mana.",
+			"Tries to manipulate the mind of a monster to make it ignore you.",
+			"At level 7 it turns into a ball.",
+			"At level 13 it affects all monsters in sight.",
 	}
 }
 
 MSTOPCHARM = add_spell {
 	["name"] = 	"Stop Charm",
-	["name2"] = 	"SCharm",
 	["school"] = 	{SCHOOL_MINTRUSION},
 	["am"] = 	0,
 	["spell_power"] = 0,

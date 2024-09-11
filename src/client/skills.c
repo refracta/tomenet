@@ -26,10 +26,10 @@ static s16b find_skill(cptr name) {
 	/* Scan skill list */
 	for (i = 1; i < MAX_SKILLS; i++)
 		/* The name matches */
-		if (streq((char*)s_info[i].name, name)) return(i);
+		if (streq((char*)s_info[i].name, name)) return (i);
 
 	/* No match found */
-	return(-1);
+	return (-1);
 }
 #endif
 
@@ -38,7 +38,7 @@ static s16b find_skill(cptr name) {
  *
  */
 s16b get_skill(int skill) {
-	return(p_ptr->s_info[skill].value / SKILL_STEP);
+	return (p_ptr->s_info[skill].value / SKILL_STEP);
 }
 
 
@@ -47,9 +47,8 @@ s16b get_skill(int skill) {
  */
 s16b get_skill_scale(player_type *pfft, int skill, u32b scale) {
 	(void) pfft; /* first parameter ignored in client code */
-
 	/* XXX XXX XXX */
-	return(((p_ptr->s_info[skill].value / 10) * (scale * (SKILL_STEP / 10)) /
+	return (((p_ptr->s_info[skill].value / 10) * (scale * (SKILL_STEP / 10)) /
 	    (SKILL_MAX / 10)) /
 	    (SKILL_STEP / 10));
 }
@@ -61,8 +60,8 @@ static int get_idx(int i) {
 	int j;
 
 	for (j = 1; j < MAX_SKILLS; j++)
-		if (s_info[j].order == i) return(j);
-	return(0);
+		if (s_info[j].order == i) return (j);
+	return (0);
 }
 
 
@@ -70,8 +69,8 @@ static bool has_child(int sel) {
 	int i;
 
 	for (i = 1; i < MAX_SKILLS; i++)
-		if (s_info[i].father == sel) return(TRUE);
-	return(FALSE);
+		if (s_info[i].father == sel) return (TRUE);
+	return (FALSE);
 }
 
 static bool has_active_child(int sel) {
@@ -81,8 +80,8 @@ static bool has_active_child(int sel) {
 		if ((s_info[i].father == sel) &&
 		    ((p_ptr->s_info[i].mod) || (p_ptr->s_info[i].value) ||
 		    has_active_child(i)))
-			return(TRUE);
-	return(FALSE);
+			return (TRUE);
+	return (FALSE);
 }
 
 /*
@@ -191,12 +190,12 @@ static void print_skills(int table[MAX_SKILLS][2], int max, int sel, int start) 
 	Term_get_size(&wid, &hgt);
 
 	if (c_cfg.rogue_like_commands)
-		Term_putstr(0, 0, -1, TERM_WHITE, " === TomeNET Skills Screen ===  [help:\377R?\377- move:\377sj\377-,\377sk\377-,\377sg\377-,\377sG\377-,\377s#\377-,\377ss\377- fold:\377s<CR>\377-,\377sc\377-,\377so\377- train:\377sl\377-]");
+		c_prt(TERM_WHITE, " === TomeNET Skills Screen ===  [move:j,k,g,G,#  fold:<CR>,c,o  advance:l]", 0, 0);
 	else
-		Term_putstr(0, 0, -1, TERM_WHITE, " === TomeNET Skills Screen ===  [help:\377R?\377- move:\377s2\377-,\377s8\377-,\377sg\377-,\377sG\377-,\377s#\377-,\377ss\377- fold:\377s<CR>\377-,\377sc\377-,\377so\377- train:\377s6\377-]");
+		c_prt(TERM_WHITE, " === TomeNET Skills Screen ===  [move:2,8,g,G,#  fold:<CR>,c,o  advance:6]", 0, 0);
 
-	Term_putstr(0, 1, -1, (p_ptr->skill_points) ? TERM_L_BLUE : TERM_SLATE,
-	      format(" Skill points left: %-5d       \377wType \377s/undoskills\377- in chat if you made a mistake.", p_ptr->skill_points));
+	c_prt((p_ptr->skill_points) ? TERM_L_BLUE : TERM_L_RED,
+	      format("Skill points left: %d", p_ptr->skill_points), 1, 0);
 	print_desc_aux((char*)s_info[table[sel][0]].desc, 2, 0);
 
 	for (j = start; j < start + (hgt - 4); j++) {
@@ -221,15 +220,7 @@ static void print_skills(int table[MAX_SKILLS][2], int max, int sel, int start) 
 		if (p_ptr->s_info[i].flags1 & SKF1_DUMMY) color = TERM_SLATE;
 
 		if (j == sel) {
-#if defined(USE_X11) || defined(WINDOWS)
- #if defined(TEST_CLIENT) && defined(EXTENDED_BG_COLOURS)
-			color = TERMX_BLUE;
- #else
 			color = TERM_L_GREEN;
- #endif
-#else
-			color = TERM_L_GREEN;
-#endif
 			deb = '[';
 			end = ']';
 		}
@@ -246,7 +237,7 @@ static void print_skills(int table[MAX_SKILLS][2], int max, int sel, int start) 
 			c_prt(color, format("%c+%c%s", deb, end, s_info[i].name),
 			      j + 4 - start, table[j][1] * 4);
 		}
-
+		
 		if (!(p_ptr->s_info[i].flags1 & SKF1_DUMMY)) {
 			if (p_ptr->s_info[i].mod)
 				c_prt(color,
@@ -286,15 +277,14 @@ void do_redraw_skills() {
 /*
  * Interact with skills.
  */
-#define SKILL_SCREEN_PAD_TOP 4		/* The top n lines of the skill screen that don't contain skill lines but some other stuff/text/diz */
 void do_cmd_skill() {
 	char c;
 	int i;
 	int wid, hgt;
 
 	/* Initialize global variables */
-	//sel = 0;
-	//start = 0;
+	sel = 0;
+	start = 0;
 
 	/* Save the screen */
 	Term_save();
@@ -319,15 +309,8 @@ void do_cmd_skill() {
 		/* Leave the skill screen */
 		if (c == ESCAPE || c == KTRL('Q')) break;
 
-		else if (c == '?') {
-			/* Exception for runecraft, since the runes are not spells/schools:
-			   Just redirect to runecraft in general. */
-			if (s_info[table[sel][0]].father == SKILL_SCHOOL_RUNECRAFT) cmd_the_guide(3, 0, "Runecraft");
-			else cmd_the_guide(3, 0, (char*)s_info[table[sel][0]].name);
-		}
-
 		/* Take a screenshot */
-		else if (c == KTRL('T')) xhtml_screenshot("screenshot????", FALSE);
+		else if (c == KTRL('T')) xhtml_screenshot("screenshot????");
 
 		/* specialty: allow chatting from within here */
 		else if (c == ':') cmd_message();
@@ -360,14 +343,13 @@ void do_cmd_skill() {
 			start = sel = 0;
 		else if (c == 'G') {
 			sel = max - 1;
-			start = sel - (hgt - SKILL_SCREEN_PAD_TOP);
+			start = sel - (hgt - 4);
 			if (start < 0) start = 0;
-			if (sel >= start + (hgt - SKILL_SCREEN_PAD_TOP)) start = sel - (hgt - SKILL_SCREEN_PAD_TOP) + 1;
+			if (sel >= start + (hgt - 4)) start = sel - (hgt - 4) + 1;
 		}
 		/* Hack -- go to a specific line */
 		else if (c == '#') {
 			char tmp[80];
-
 			prt(format("Goto Line(max %d): ", max), 23 + HGT_PLUS, 0);
 			strcpy(tmp, "1");
 			if (askfor_aux(tmp, 10, 0)) {
@@ -379,64 +361,18 @@ void do_cmd_skill() {
 
 		/* Next page */
 		else if (c == 'n' || c == ' ') {
-			sel += (hgt - SKILL_SCREEN_PAD_TOP);
-			start += (hgt - SKILL_SCREEN_PAD_TOP);
+			sel += (hgt - 4);
+			start += (hgt - 4);
 			if (sel >= max) sel = max - 1;
 			if (start >= max) start = max - 1;
 		}
 
 		/* Previous page */
 		else if (c == 'p' || c == 'b') {
-			sel -= (hgt - SKILL_SCREEN_PAD_TOP);
-			start -= (hgt - SKILL_SCREEN_PAD_TOP);
+			sel -= (hgt - 4);
+			start -= (hgt - 4);
 			if (sel < 0) sel = 0;
 			if (start < 0) start = 0;
-		}
-
-		/* Search for skill name */
-		else if (c == 's' || c == '/') {
-			char tmp[MAX_CHARS];
-			bool inkey_msg_old = inkey_msg;
-			int j, k;
-
-			prt("Search for skill: ", 23 + HGT_PLUS, 0);
-			tmp[0] = 0;
-			inkey_msg = TRUE; /* suppress hybrid macros */
-			if (!askfor_aux(tmp, MAX_CHARS, 0)) {
-				inkey_msg = inkey_msg_old;
-				continue;
-			}
-			inkey_msg = inkey_msg_old;
-
-			for (j = 1; j < MAX_SKILLS; j++) {
-				i = get_idx(j);
-
-				if (p_ptr->s_info[i].flags1 & SKF1_HIDDEN) continue;
-				if (!my_strcasestr((char*)s_info[i].name, tmp)) continue;
-
-				/* If the skill we're looking for is currently not developed, develop it and all
-				   parent skills recursively, so it's visible in our table and we can select it */
-				k = i;
-				while (!p_ptr->s_info[k].dev) {
-					p_ptr->s_info[k].dev = TRUE;
-					Send_skill_dev(k, TRUE);
-					k = s_info[k].father;
-					if (k == -1) break;
-				}
-				init_table(table, &max, FALSE);
-
-				for (i = 0; i < max; i++) {
-					if (!my_strcasestr((char*)s_info[table[i][0]].name, tmp)) continue;
-
-					sel = i;
-					start = i - (hgt - SKILL_SCREEN_PAD_TOP) / 2 - 1;
-					if (start + hgt >= max) start = max - (hgt - SKILL_SCREEN_PAD_TOP);
-					if (start < 0) start = 0;
-					break;
-				}
-
-				break;
-			}
 		}
 
 		/* Select / increase a skill */
@@ -461,7 +397,7 @@ void do_cmd_skill() {
 			if (sel < 0) sel = max - 1;
 			if (sel >= max) sel = 0;
 			if (sel < start) start = sel;
-			if (sel >= start + (hgt - SKILL_SCREEN_PAD_TOP)) start = sel - (hgt - SKILL_SCREEN_PAD_TOP) + 1;
+			if (sel >= start + (hgt - 4)) start = sel - (hgt - 4) + 1;
 		}
 	}
 
@@ -496,12 +432,7 @@ static void print_skill_batch(int *p, int start, int max, bool mode) {
 		j++;
 	}
 	if (mode) prt("", 2 + j, 20);
-	//note: since the "skill screen" contains "skills", these 'meta' skills have been dubbed "abilities" for now,
-	//just to avoid (er hopefully) confusion.. (keep consistent with tomenet*.hlp files):
-	prompt_topline(format("Select an ability (a-%c), * to list, @ to select by name/No., +/- to scroll:", I2A(j - 1)));
-
-	screen_line_icky = 2 + j + 1;
-	screen_column_icky = 20 - 1;
+	prompt_topline(format("Select a skill (a-%c), * to list, @ to select by name/No., +/- to scroll:", I2A(j - 1)));
 }
 
 static int do_cmd_activate_skill_aux() {
@@ -515,8 +446,7 @@ static int do_cmd_activate_skill_aux() {
 	C_MAKE(p, MAX_SKILLS, int);
 
 	for (i = 1; i < MAX_SKILLS; i++) {
-		/* At least gain one whole skill level to use it! - Kurzel */
-		if (s_info[i].action_mkey && p_ptr->s_info[i].value > 999) {
+		if (s_info[i].action_mkey && p_ptr->s_info[i].value) {
 			int j;
 			bool next = FALSE;
 
@@ -535,9 +465,7 @@ static int do_cmd_activate_skill_aux() {
 
 	if (!max) {
 		c_msg_print("You don't have any activable skills.");
-		/* Stop macro execution if we're on safe_macros! */
-		if (parse_macro && c_cfg.safe_macros) flush_now();
-		return(-1);
+		return -1;
 	}
 /*	if (max == 1 && c_cfg.quick_messages)
 	{
@@ -562,9 +490,9 @@ static int do_cmd_activate_skill_aux() {
 			break;
 		} else if (which == KTRL('T')) {
 			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", FALSE);
+			xhtml_screenshot("screenshot????");
 		} else if (which == '*' || which == '?' || which == ' ') {
-			mode = (mode) ? FALSE : TRUE;
+			mode = (mode)?FALSE:TRUE;
 			if (!mode && term_saved) {
 				Term_load();
 				term_saved = FALSE;
@@ -595,9 +523,7 @@ static int do_cmd_activate_skill_aux() {
 			strcpy(buf, "Cast a spell");
 			if (!get_string("Skill action? ", buf, 79)) {
 				if (term_saved) Term_load();
-				screen_line_icky = -1;
-				screen_column_icky = -1;
-				return(FALSE);
+				return FALSE;
 			}
 
 			/* Can we convert to a number? */
@@ -646,9 +572,6 @@ static int do_cmd_activate_skill_aux() {
 		}
 	}
 
-	screen_line_icky = -1;
-	screen_column_icky = -1;
-
 	if (term_saved) Term_load();
 	topline_icky = FALSE;
 
@@ -666,10 +589,10 @@ static int do_cmd_activate_skill_aux() {
 bool item_tester_hook_device(object_type *o_ptr) {
 	if ((o_ptr->tval == TV_ROD) ||
 	    (o_ptr->tval == TV_STAFF) ||
-	    (o_ptr->tval == TV_WAND)) return(TRUE);
+	    (o_ptr->tval == TV_WAND)) return (TRUE);
 
 	/* Assume not */
-	return(FALSE);
+	return (FALSE);
 }
 
 /*
@@ -678,25 +601,25 @@ bool item_tester_hook_device(object_type *o_ptr) {
 static bool item_tester_hook_potion(object_type *o_ptr) {
 	if ((o_ptr->tval == TV_POTION) ||
 	    (o_ptr->tval == TV_POTION2) ||
-	    (o_ptr->tval == TV_FLASK)) return(TRUE);
+	    (o_ptr->tval == TV_FLASK)) return (TRUE);
 
 	/* Assume not */
-	return(FALSE);
+	return (FALSE);
 }
 
 static bool item_tester_hook_scroll_rune(object_type *o_ptr) {
 	if ((o_ptr->tval == TV_SCROLL) ||
-	    (o_ptr->tval == TV_RUNE)) return(TRUE);
+	    (o_ptr->tval == TV_RUNE)) return (TRUE);
 
 	/* Assume not */
-	return(FALSE);
+	return (FALSE);
 }
 
 bool item_tester_hook_armour(object_type *o_ptr) {
-	return(is_armour(o_ptr->tval));
+	return (is_armour(o_ptr->tval));
 }
 bool item_tester_hook_weapon(object_type *o_ptr) {
-	return(is_melee_weapon(o_ptr->tval) || is_ammo(o_ptr->tval) ||
+	return (is_melee_weapon(o_ptr->tval) || is_ammo(o_ptr->tval) ||
 	    o_ptr->tval == TV_BOW || o_ptr->tval == TV_BOOMERANG ||
 	    (o_ptr->tval == TV_TRAPKIT && is_firearm_trapkit(o_ptr->sval)) ||
 	    o_ptr->tval == TV_DIGGING || o_ptr->tval == TV_MSTAFF);
@@ -708,8 +631,8 @@ bool item_tester_hook_custom_tome(object_type *o_ptr) {
 #endif
 
 	/* check for correct book type */
-	if (o_ptr->tval != TV_BOOK || o_ptr->sval != SV_SPELLBOOK) return(FALSE);
-	return(TRUE);
+	if (o_ptr->tval != TV_BOOK || o_ptr->sval != SV_SPELLBOOK) return FALSE;
+	return TRUE;
 
 #if 0
 	/* and even check for blank pages left */
@@ -744,51 +667,28 @@ bool item_tester_hook_custom_tome(object_type *o_ptr) {
 #endif
 }
 bool item_tester_hook_armour_no_shield(object_type *o_ptr) {
-	return(is_armour(o_ptr->tval) && o_ptr->tval != TV_SHIELD);
-}
-
-//ENABLE_DEMOLITIONIST
-bool item_tester_hook_chemical(object_type *o_ptr) {
-	return(o_ptr->tval == TV_CHEMICAL
-	    || o_ptr->tval == TV_BOTTLE
-	    || o_ptr->tval == TV_POTION
-	    || o_ptr->tval == TV_POTION2
-	    || o_ptr->tval == TV_SCROLL
-	    || o_ptr->tval == TV_FLASK);
+	return (is_armour(o_ptr->tval) && o_ptr->tval != TV_SHIELD);
 }
 
 /*
  * set a trap .. it's out of place somewhat.	- Jir -
- * (item_kit is -1 when called normally via m skills menu.)
  */
 void do_trap(int item_kit) {
 	int item_load;
-	object_type *o_ptr = NULL;
+	object_type *o_ptr;
 
 	if (item_kit < 0) {
 		item_tester_tval = TV_TRAPKIT;
 		get_item_hook_find_obj_what = "Trap kit name? ";
 		get_item_extra_hook = get_item_hook_find_obj;
-#ifdef ENABLE_SUBINVEN
-		if (!c_get_item(&item_kit, "Use which trapping kit? ", (USE_INVEN | USE_EXTRA | NO_FAIL_MSG | USE_SUBINVEN))) {
-			if (item_kit == -2) c_msg_print("You have no trapping kits.");
-			if (parse_macro && c_cfg.safe_macros) flush_now();//Term_flush();
-			return;
-		}
-#else
 		if (!c_get_item(&item_kit, "Use which trapping kit? ", (USE_INVEN | USE_EXTRA | NO_FAIL_MSG))) {
 			if (item_kit == -2) c_msg_print("You have no trapping kits.");
-			if (parse_macro && c_cfg.safe_macros) flush_now();//Term_flush();
+			if (c_cfg.safe_macros) flush_now();//Term_flush();
 			return;
 		}
-#endif
 	}
 
-#ifdef ENABLE_SUBINVEN
-	if (item_kit >= 100) o_ptr = &subinventory[item_kit / 100 - 1][item_kit % 100];
-	else
-#endif
-	if (!o_ptr) o_ptr = &inventory[item_kit];
+	o_ptr = &inventory[item_kit];
 
 	/* Trap kits need a second object */
 	switch (o_ptr->sval) {
@@ -812,26 +712,18 @@ void do_trap(int item_kit) {
 		break;
 	default:
 		c_msg_print("Unknown trapping kit type!");
-		if (parse_macro && c_cfg.safe_macros) flush_now();//Term_flush();
+		if (c_cfg.safe_macros) flush_now();//Term_flush();
 		break;
 	}
 
 	get_item_hook_find_obj_what = "Item name? ";
 	get_item_extra_hook = get_item_hook_find_obj;
-#ifdef ENABLE_SUBINVEN
-	/* Allow getting magic devices from a device bag (and any load item from chests, as a consequence too) */
-	if (!c_get_item(&item_load, "Load with what? ", (USE_EQUIP | USE_INVEN | USE_EXTRA | NO_FAIL_MSG | USE_SUBINVEN))) {
-		if (item_load == -2) c_msg_print("You have nothing to load that trap with.");
-		if (parse_macro && c_cfg.safe_macros) flush_now();//Term_flush();
-		return;
-	}
-#else
 	if (!c_get_item(&item_load, "Load with what? ", (USE_EQUIP | USE_INVEN | USE_EXTRA | NO_FAIL_MSG))) {
 		if (item_load == -2) c_msg_print("You have nothing to load that trap with.");
-		if (parse_macro && c_cfg.safe_macros) flush_now();//Term_flush();
+		if (c_cfg.safe_macros) flush_now();//Term_flush();
 		return;
 	}
-#endif
+
 
 	/* Send it */
 	Send_activate_skill(MKEY_TRAP, item_kit, item_load, 0, 0, 0);
@@ -854,7 +746,7 @@ void do_activate_skill(int x_idx, int item) {
 			do_trap(item);
 			break;
 		case MKEY_RCRAFT:
-			do_runecraft();
+			do_runespell();
 			break;
 		case MKEY_STANCE:
 			do_stance();
@@ -868,9 +760,6 @@ void do_activate_skill(int x_idx, int item) {
 		case MKEY_BREATH:
 			do_breath();
 			break;
-		case MKEY_PICK_BREATH:
-			do_pick_breath();
-			break;
 		default:
 			c_msg_print("Very sorry, you need more recent client.");
 			break;
@@ -881,7 +770,7 @@ void do_activate_skill(int x_idx, int item) {
 
 		/* Ask for a spell, allow cancel */
 		if ((spell = get_school_spell("cast", &item)) == -1) {
-			if (parse_macro && c_cfg.safe_macros) flush_now();//Term_flush();
+			if (c_cfg.safe_macros) flush_now();//Term_flush();
 			return;
 		}
 
@@ -914,9 +803,7 @@ void do_activate_skill(int x_idx, int item) {
 	} else if (s_info[x_idx].flags1 & SKF1_MKEY_SPELL) {
 		if (item < 0) {
 			item_tester_tval = s_info[x_idx].tval;
-			if (!c_get_item(&item, "Cast from which book? ", (USE_INVEN |
-			    USE_EQUIP | /* for WIELD_BOOKS */
-			    NO_FAIL_MSG))) {
+			if (!c_get_item(&item, "Cast from which book? ", (USE_INVEN | NO_FAIL_MSG))) {
 				if (item == -2) c_msg_print("You have no books that you can cast from.");
 				return;
 			}

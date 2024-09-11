@@ -30,7 +30,7 @@ static bool lua_item_tester(object_type* o_ptr) {
 	lua_call(L, 1, 1);
 	ret = lua_tonumber(L, -1);
 	lua_settop(L, oldtop);
-	return(ret);
+	return (ret);
 }
 
 void lua_set_item_tester(int tval, char *fct) {
@@ -45,22 +45,22 @@ void lua_set_item_tester(int tval, char *fct) {
 s16b new_school(int i, cptr name, s16b skill) {
 	schools[i].name = string_make(name);
 	schools[i].skill = skill;
-	return(i);
+	return (i);
 }
 
 s16b new_spell(int i, cptr name) {
 	school_spells[i].name = string_make(name);
 	school_spells[i].level = 0;
 	school_spells[i].level = 0;
-	return(i);
+	return (i);
 }
 
 spell_type *grab_spell_type(s16b num) {
-	return(&school_spells[num]);
+	return (&school_spells[num]);
 }
 
 school_type *grab_school_type(s16b num) {
-	return(&schools[num]);
+	return (&schools[num]);
 }
 
 /* Change this fct if I want to switch to learnable spells */
@@ -127,7 +127,7 @@ s32b lua_get_level(int Ind, s32b s, s32b lvl, s32b max, s32b min, s32b bonus) {
  #endif
 #endif
 
-	return(lvl);
+	return lvl;
 }
 
 /* adj_mag_stat? stat_ind??  pfft */
@@ -176,20 +176,17 @@ s32b lua_spell_chance(int i, s32b chance, int level, int skill_level, int mana, 
 	if (p_ptr->stun > 50) chance += 25;
 	else if (p_ptr->stun) chance += 15;
 
-	/* icky_wield increases fail chance */
-	if (p_ptr->icky_wield) chance += 15;
-
 	/* Always a 5 percent chance of working */
 	if (chance > 95) chance = 95;
 
 	/* Return the chance */
-	return(chance);
+	return (chance);
 }
 
 #if 0
 /* Cave */
 cave_type *lua_get_cave(int y, int x) {
-	return(&(cave[y][x]));
+	return (&(cave[y][x]));
 }
 
 void set_target(int y, int x) {
@@ -226,7 +223,7 @@ bool alloc_room(int by0, int bx0, int ysize, int xsize, int *y1, int *x1, int *y
 	int xval, yval, x, y;
 
 	/* Try to allocate space for room.  If fails, exit */
-	if (!room_alloc(xsize + 2, ysize + 2, FALSE, by0, bx0, &xval, &yval)) return(FALSE);
+	if (!room_alloc(xsize + 2, ysize + 2, FALSE, by0, bx0, &xval, &yval)) return FALSE;
 
 	/* Get corner values */
 	*y1 = yval - ysize / 2;
@@ -243,7 +240,7 @@ bool alloc_room(int by0, int bx0, int ysize, int xsize, int *y1, int *x1, int *y
 			c_ptr->info |= (CAVE_GLOW);
 		}
 	}
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -265,31 +262,32 @@ static bool lua_mon_hook_bounty(int r_idx) {
 	monster_race* r_ptr = &r_info[r_idx];
 
 	/* Reject uniques */
-	if (r_ptr->flags1 & RF1_UNIQUE) return(FALSE);
+	if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
 
 	/* Reject those who cannot leave anything */
-	if (!(r_ptr->flags9 & RF9_DROP_CORPSE)) return(FALSE);
+	if (!(r_ptr->flags9 & RF9_DROP_CORPSE)) return (FALSE);
 
 	/* Accept only monsters that can be generated */
-	if (r_ptr->flags9 & RF9_SPECIAL_GENE) return(FALSE);
+	if (r_ptr->flags9 & RF9_SPECIAL_GENE) return (FALSE);
+	if (r_ptr->flags9 & RF9_NEVER_GENE) return (FALSE);
 
 	/* Reject pets */
-	if (r_ptr->flags7 & RF7_PET) return(FALSE);
+	if (r_ptr->flags7 & RF7_PET) return (FALSE);
 
 	/* Reject friendly creatures */
-	if (r_ptr->flags7 & RF7_FRIENDLY) return(FALSE);
+	if (r_ptr->flags7 & RF7_FRIENDLY) return (FALSE);
 
 	/* Accept only monsters that are not breeders */
-	if (r_ptr->flags4 & RF4_MULTIPLY) return(FALSE);
+	if (r_ptr->flags4 & RF4_MULTIPLY) return (FALSE);
 
 	/* Forbid joke monsters */
-	if (r_ptr->flags8 & RF8_JOKEANGBAND) return(FALSE);
+	if (r_ptr->flags8 & RF8_JOKEANGBAND) return (FALSE);
 
 	/* Accept only monsters that are not good */
-	if (r_ptr->flags3 & RF3_GOOD) return(FALSE);
+	if (r_ptr->flags3 & RF3_GOOD) return (FALSE);
 
 	/* The rest are acceptable */
-	return(TRUE);
+	return (TRUE);
 }
 
 int lua_get_new_bounty_monster(int lev) {
@@ -309,47 +307,47 @@ int lua_get_new_bounty_monster(int lev) {
 	get_mon_num_hook = NULL;
 	get_mon_num_prep();
 
-	return(r_idx);
+	return r_idx;
 }
 
 #endif
 
 int get_inven_sval(int Ind, int inven_slot) {
 	(void) Ind; /* suppress compiler warning */
-	return(inventory[inven_slot].sval);
+	return (inventory[inven_slot].sval);
 }
 int get_inven_pval(int Ind, int inven_slot) {
 	(void) Ind; /* suppress compiler warning */
-	return(inventory[inven_slot].pval);
+	return (inventory[inven_slot].pval);
 }
 s16b get_inven_xtra(int Ind, int inven_slot, int n) {
 	(void) Ind; /* suppress compiler warning */
 	/* browsing item in a store? */
 	if (inven_slot < 0) {
 		switch (n) {
-		case 1: return(store.stock[(-inven_slot) - 1].xtra1);
-		case 2: return(store.stock[(-inven_slot) - 1].xtra2);
-		case 3: return(store.stock[(-inven_slot) - 1].xtra3);
-		case 4: return(store.stock[(-inven_slot) - 1].xtra4);
-		case 5: return(store.stock[(-inven_slot) - 1].xtra5);
-		case 6: return(store.stock[(-inven_slot) - 1].xtra6);
-		case 7: return(store.stock[(-inven_slot) - 1].xtra7);
-		case 8: return(store.stock[(-inven_slot) - 1].xtra8);
-		case 9: return(store.stock[(-inven_slot) - 1].xtra9);
-		default: return(0); //failure
+		case 1: return (store.stock[(-inven_slot) - 1].xtra1);
+		case 2: return (store.stock[(-inven_slot) - 1].xtra2);
+		case 3: return (store.stock[(-inven_slot) - 1].xtra3);
+		case 4: return (store.stock[(-inven_slot) - 1].xtra4);
+		case 5: return (store.stock[(-inven_slot) - 1].xtra5);
+		case 6: return (store.stock[(-inven_slot) - 1].xtra6);
+		case 7: return (store.stock[(-inven_slot) - 1].xtra7);
+		case 8: return (store.stock[(-inven_slot) - 1].xtra8);
+		case 9: return (store.stock[(-inven_slot) - 1].xtra9);
+		default: return (0); //failure
 		}
 	} else  { /* browsing item in inventory */
 		switch (n) {
-		case 1: return(inventory[inven_slot].xtra1);
-		case 2: return(inventory[inven_slot].xtra2);
-		case 3: return(inventory[inven_slot].xtra3);
-		case 4: return(inventory[inven_slot].xtra4);
-		case 5: return(inventory[inven_slot].xtra5);
-		case 6: return(inventory[inven_slot].xtra6);
-		case 7: return(inventory[inven_slot].xtra7);
-		case 8: return(inventory[inven_slot].xtra8);
-		case 9: return(inventory[inven_slot].xtra9);
-		default: return(0); //failure
+		case 1: return (inventory[inven_slot].xtra1);
+		case 2: return (inventory[inven_slot].xtra2);
+		case 3: return (inventory[inven_slot].xtra3);
+		case 4: return (inventory[inven_slot].xtra4);
+		case 5: return (inventory[inven_slot].xtra5);
+		case 6: return (inventory[inven_slot].xtra6);
+		case 7: return (inventory[inven_slot].xtra7);
+		case 8: return (inventory[inven_slot].xtra8);
+		case 9: return (inventory[inven_slot].xtra9);
+		default: return (0); //failure
 		}
 	}
 }

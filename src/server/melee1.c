@@ -21,7 +21,7 @@
  */
 //#define SUPPRESS_MONSTER_STUN // HERESY !
 
-/*
+/* 
  * This one is more moderate; kick, punch, crush etc. still stuns, but
  * normal 'hit' doesn't.
  */
@@ -43,9 +43,6 @@
    providing that the attack type indicates a phsyical attack? - C. Blue */
 //#define ELEMENTAL_AC_MITIGATION
 
-/* Let RBE_UN_POWER additionally drain MP from the player? */
-//#define UNPOWER_DRAINS_MP
-
 
 /*
  * Critical blow.  All hits that do 95% of total possible damage,
@@ -57,10 +54,10 @@ static int monster_critical(int dice, int sides, int dam) {
 	int total = dice * sides;
 
 	/* Must do at least 95% of perfect */
-	if (dam < total * 19 / 20) return(0);
+	if (dam < total * 19 / 20) return (0);
 
 	/* Weak blows rarely work */
-	if ((dam < 20) && (rand_int(100) >= dam)) return(0);
+	if ((dam < 20) && (rand_int(100) >= dam)) return (0);
 
 	/* Perfect damage */
 	if (dam == total) max++;
@@ -69,12 +66,12 @@ static int monster_critical(int dice, int sides, int dam) {
 	if (dam >= 40 && !rand_int(50)) max++;
 
 	/* Critical damage */
-	if (dam > 60) return(6 + max);
-	if (dam > 45) return(5 + max);
-	if (dam > 30) return(4 + max);
-	if (dam > 18) return(3 + max);
-	if (dam > 11) return(2 + max);
-	return(1 + max);
+	if (dam > 60) return (6 + max);
+	if (dam > 45) return (5 + max);
+	if (dam > 30) return (4 + max);
+	if (dam > 18) return (3 + max);
+	if (dam > 11) return (2 + max);
+	return (1 + max);
 }
 
 
@@ -85,8 +82,6 @@ static int monster_critical(int dice, int sides, int dam) {
  * Determine if a monster attack against the player succeeds.
  * Always miss 5% of the time, Always hit 5% of the time.
  * Otherwise, match monster power against player armor.
- *
- * TODO: Add this kind of check for monsters' ranged physical attacks too (aka ARROW_x 'monster spells')!
  */
 static int check_hit(int Ind, int power, int level, bool flag) {
 	player_type *p_ptr = Players[Ind];
@@ -95,10 +90,7 @@ static int check_hit(int Ind, int power, int level, bool flag) {
 	/* Percentile dice */
 	k = rand_int(100);
 	/* Hack -- Always miss or hit */
-	if (k < 10) return(k < 5);
-
-	/* 'Blur' effect - miss more often */
-	if ((i = get_skill_scale(p_ptr, SKILL_OSHADOW, 20)) && no_real_lite(Ind) && rand_int(level + 10) < i) return(FALSE);
+	if (k < 10) return (k < 5);
 
 	/* Calculate the "attack quality" */
 	i = (power + (level * 3));
@@ -106,7 +98,7 @@ static int check_hit(int Ind, int power, int level, bool flag) {
 	ac = (flag ? 0 : p_ptr->ac) + p_ptr->to_a;
 	/* Power and Level compete against Armor */
 #ifndef TO_AC_CAP_30
-	if ((i > 0) && (randint(i) > ((ac * 3) / 4))) return(TRUE);
+	if ((i > 0) && (randint(i) > ((ac * 3) / 4))) return (TRUE);
 #else
 	/* *3/4, *4/5, *5/6 and *6/7 are possible mainly:
 	   3/4 would mean a slight nerf to AC values,
@@ -116,11 +108,11 @@ static int check_hit(int Ind, int power, int level, bool flag) {
 	   However, note that *enchant* scrolls and shop enchantment service is indirectly buffed by TO_AC_CAP_30
 	   and that low-ac players also look a bit better in comparison to higher-ac ones now.
 	   All in all, 3/4 or 4/5 are the recommended values to use. */
-	if ((i > 0) && (randint(i) > ((ac * 4) / 5))) return(TRUE);
+	if ((i > 0) && (randint(i) > ((ac * 4) / 5))) return (TRUE);
 #endif
 
 	/* Assume miss */
-	return(FALSE);
+	return (FALSE);
 }
 
 
@@ -152,7 +144,7 @@ static cptr desc_moan[] =
 	"mumbles something about mushrooms."
 };
 /* for the Great Pumpkin on Halloween - C. Blue >:) */
-cptr desc_moan_halloween[] =
+static cptr desc_moan_halloween[] =
 {
 	"screams: Trick or treat!",
 	"says: Happy Halloween!",
@@ -195,7 +187,7 @@ static bool do_eat_gold(int Ind, int m_idx) {
 #endif	// 0
 	s32b            gold;
 
-	if (safe_area(Ind)) return(TRUE);
+	if (safe_area(Ind)) return TRUE;
 
 	gold = (p_ptr->au / 10) + randint(25);
 	if (gold < 2) gold = 2;
@@ -247,7 +239,7 @@ static bool do_eat_gold(int Ind, int m_idx) {
 	p_ptr->window |= (PW_PLAYER);
 
 	/* Blink away */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -261,16 +253,11 @@ static bool do_eat_item(int Ind, int m_idx) {
 	object_type		*o_ptr;
 	char			o_name[ONAME_LEN];
 	int i, k;
-#ifdef ENABLE_SUBINVEN
-	int j = 0, l = 0; /* Init to kill (non-effective) compiler warning */
-	object_type *os_ptr;
-#endif
 
-	/* Amulet of Immortality */
-	//if (p_ptr->admin_invuln) return(FALSE);
-	if (p_ptr->admin_invinc) return(FALSE);
+        /* Amulet of Immortality */
+        if (p_ptr->admin_invuln) return FALSE;
 
-	if (safe_area(Ind)) return(TRUE);
+	if (safe_area(Ind)) return TRUE;
 
 	/* Find an item */
 	for (k = 0; k < 10; k++) {
@@ -280,35 +267,8 @@ static bool do_eat_item(int Ind, int m_idx) {
 		/* Obtain the item */
 		o_ptr = &p_ptr->inventory[i];
 
-		/* Skip empty slots */
+		/* Accept real items */
 		if (!o_ptr->k_idx) continue;
-
-#ifdef ENABLE_SUBINVEN
-		/* Don't steal subinventories, too annoying probably */
- #if 0
-		if (o_ptr->tval == TV_SUBINVEN) continue;
- #else		/* Steal item from within a subinventory */
-		if (o_ptr->tval == TV_SUBINVEN) {
-			for (l = 0; l < 10; l++) {
-				/* Pick an item */
-				j = rand_int(o_ptr->bpval);
-
-				/* Obtain the item */
-				os_ptr = &p_ptr->subinventory[i][j];
-
-				/* Skip empty slots */
-				if (!os_ptr->k_idx) continue;
-
-				o_ptr = os_ptr;
-				l = i; /* Keep i just for easy access when displaying stealing message */
-				i = (i + 1) * 100 + j; /* Encode index for global inventory (inven+subinvens) */
-				break;
-			}
-			/* Resume trying to steal from normal inventory */
-			if (l == 10) continue;
-		}
- #endif
-#endif
 
 		/* Don't steal artifacts  -CFT */
 		if (artifact_p(o_ptr)) continue;
@@ -320,35 +280,14 @@ static bool do_eat_item(int Ind, int m_idx) {
 		object_desc(Ind, o_name, o_ptr, FALSE, 3);
 
 		/* Message */
-#ifdef ENABLE_SUBINVEN
-		if (i >= 100) {
-			char m_name[MNAME_LEN];
-
-			msg_format(Ind, "\376\377o%sour %s (%c)(%c) was stolen!",
-			    ((o_ptr->number > 1) ? "One of y" : "Y"),
-			    o_name, index_to_label(l), index_to_label(j));
-
-			monster_desc(Ind, m_name, m_idx, 0x1);
-			s_printf("EAT_ITEM: %s from %s : %s (%c)(%c)\n",
-			    m_name, p_ptr->name, o_name, index_to_label(l), index_to_label(j)); //may wrongly use o_name in plural but w/e
-		} else
-#endif
-		{
-			char m_name[MNAME_LEN];
-
-			msg_format(Ind, "\376\377o%sour %s (%c) was stolen!",
-			    ((o_ptr->number > 1) ? "One of y" : "Y"),
-			    o_name, index_to_label(i));
-
-			monster_desc(Ind, m_name, m_idx, 0x1);
-			s_printf("EAT_ITEM: %s from %s : %s (%c)(%c)\n",
-			    m_name, p_ptr->name, o_name, index_to_label(l), index_to_label(j)); //may wrongly use o_name in plural but w/e
-		}
+		msg_format(Ind, "\376\377o%sour %s (%c) was stolen!",
+				((o_ptr->number > 1) ? "One of y" : "Y"),
+				o_name, index_to_label(i));
 
 		/* Option */
 #ifdef MONSTER_INVENTORY
 		if (!o_ptr->questor) { /* questor items cannot be 'dropped', only destroyed! */
-			int o_idx;
+			s16b o_idx;
 
 			/* Make an object */
 			o_idx = o_pop();
@@ -394,28 +333,31 @@ static bool do_eat_item(int Ind, int m_idx) {
 		inven_item_optimize(Ind, i);
 
 		/* Done */
-		return(TRUE);
+		return (TRUE);
 	}
 	return(FALSE);
 }
 
 /* Have fun */
 /* returns 'TRUE' if the partner will blink away. */
-static bool do_seduce(int Ind, int m_idx) {
+static bool do_seduce(int Ind, int m_idx)
+{
 	player_type *p_ptr = Players[Ind];
 	monster_type    *m_ptr = &m_list[m_idx];
 	monster_race    *r_ptr = race_inf(m_ptr);
 	object_type		*o_ptr;
-	char	    m_name[MNAME_LEN];
+	char            m_name[MNAME_LEN];
 	char		o_name[ONAME_LEN];
 	int d, i, j, ty, tx, chance, crowd = 0, piece = 0;
 	bool done = FALSE;
 	u32b f1, f2, f3, f4, f5, f6, esp;
-	cave_type **zcave, *c_ptr;
 
+	cave_type **zcave;
+	cave_type *c_ptr;
 	if (!(zcave = getcave(&p_ptr->wpos))) return(FALSE);
 
-	for (d = 1; d <= 9; d++) {
+	for (d = 1; d <= 9; d++)
+	{
 		if (d == 5) continue;
 
 		tx = p_ptr->px + ddx[d];
@@ -427,9 +369,10 @@ static bool do_seduce(int Ind, int m_idx) {
 		if (c_ptr->m_idx) crowd++;
 	}
 
-	if (crowd > 1) {
+	if (crowd > 1)
+	{
 		msg_print(Ind, "Two of you feel disturbed.");
-		return(TRUE);
+		return (TRUE);
 	}
 
 	/* Get the monster name (or "it") */
@@ -444,12 +387,13 @@ static bool do_seduce(int Ind, int m_idx) {
 		chance *= 8;
 
 	/* Give up */
-	if (chance > 100) return(TRUE);
+	if (chance > 100) return (TRUE);
 
 	/* From what you'll undress? */
 	d = rand_int(6);
 
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 6; i++)
+	{
 		j = INVEN_BODY + ((i + d) % 6);
 
 		/* Get the item to take off */
@@ -460,43 +404,51 @@ static bool do_seduce(int Ind, int m_idx) {
 		object_flags(o_ptr, &f1, &f2, &f3, &f4, &f5, &f6, &esp);
 
 		/* Hack -- cannot take off, not counted */
-		if (cursed_p(o_ptr)) continue;
-		//if (f3 & TR3_PERMA_CURSE) continue;
+		if (f3 & TR3_PERMA_CURSE) continue;
 
-		if (!magik(chance)) {
+		if (!magik(chance))
+		{
 			/* Describe the result */
 			object_desc(Ind, o_name, o_ptr, FALSE, 0);
-			msg_format(Ind, "%^s seduces you and you take off your %s...", m_name, o_name);
-			inven_takeoff(Ind, j, 255, FALSE, TRUE);
+
+			msg_format(Ind, "%^s seduces you and you take off your %s...",
+					m_name, o_name);
+
+			bypass_inscrption = TRUE;
+			inven_takeoff(Ind, j, 255, FALSE);
 			break;
 		}
 
 		piece++;
 	}
 
-	if (piece || magik(chance)) return(FALSE);
-	if (p_ptr->chp < 4) {
+	if (piece || magik(chance)) return (FALSE);
+	if (p_ptr->chp < 4)
+	{
 		msg_print(Ind, "You're too tired..");
-		return(TRUE);
+		return (TRUE);
 	}
 
 	msg_format(Ind, "You yield yourself to %s...", m_name);
 
 	/* let's not make it too abusable.. */
-	while (!done) {
+	while (!done)
+	{
 		d = randint(9);
-		switch (d) {
+		switch (d)
+		{
 			case 1:
-				if (!p_ptr->cmp) continue;
+				if (!p_ptr->csp) continue;
 				msg_print(Ind, "You feel drained of energy!");
-				p_ptr->cmp /= 2;
+				p_ptr->csp /= 2;
 				done = TRUE;
 				p_ptr->redraw |= PR_MANA;
 				break;
 
 			case 2:
-				if (set_diseased(Ind, p_ptr->diseased + rand_int(40) + 40, -m_idx))
-					msg_print(Ind, "Darn, you've caught a disease!");
+				msg_print(Ind, "Darn, you've got a disease!");
+				/* bypass resistance */
+				set_poisoned(Ind, p_ptr->poisoned + rand_int(40) + 40, 0);
 				done = TRUE;
 				break;
 
@@ -550,7 +502,7 @@ static bool do_seduce(int Ind, int m_idx) {
 		}
 	}
 
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -561,36 +513,35 @@ static bool do_seduce(int Ind, int m_idx) {
 bool make_attack_melee(int Ind, int m_idx) {
 	player_type *p_ptr = Players[Ind];
 
-	monster_type *m_ptr = &m_list[m_idx];
-	monster_race *r_ptr = race_inf(m_ptr);
+	monster_type    *m_ptr = &m_list[m_idx];
+        monster_race    *r_ptr = race_inf(m_ptr);
 
-	int	ap_cnt;
-	int	mon_acid = 0, mon_fire = 0, blows_total = 0;
+	int      	ap_cnt;
+	int		mon_acid = 0, mon_fire = 0, blows_total = 0;
 
-	int	i, j, k, tmp, ac, rlev;
+	int             i, j, k, tmp, ac, rlev;
 #ifndef NEW_DODGING /* actually 'chance' is used a lot in this function -> FIXME */
 	int chance;
 #endif
-	int	do_cut, do_stun, factor = 100;// blockchance, parrychance, malus;
-	int	player_aura_dam;
+	int             do_cut, do_stun, factor = 100;// blockchance, parrychance, malus;
+	int 		player_aura_dam;
 
-	object_type *o_ptr;
+	object_type     *o_ptr;
 
-	char	o_name[ONAME_LEN];
-	char	m_name[MNAME_LEN], m_name_gen[MNAME_LEN];
-	char	ddesc[MNAME_LEN];
-	char	dam_msg[MAX_CHARS_WIDE] = { '\0' };
+	char            o_name[ONAME_LEN];
+	char            m_name[MNAME_LEN], m_name_gen[MNAME_LEN];
+	char            ddesc[MNAME_LEN];
+	char		dam_msg[MAX_CHARS_WIDE] = { '\0' };
 
-	bool	blinked, prot = FALSE;
+	bool            blinked, prot = FALSE;
 
 	bool touched = FALSE, fear = FALSE, alive = TRUE;
 	bool explode = FALSE, gone = FALSE;
 
 	bool player_vulnerable = FALSE;
 
-
 	/* Not allowed to attack */
-	if (r_ptr->flags2 & RF2_NEVER_BLOW) return(FALSE);
+	if (r_ptr->flags1 & RF1_NEVER_BLOW) return (FALSE);
 
 	/* Total armor */
 	ac = p_ptr->ac + p_ptr->to_a;
@@ -612,9 +563,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 	else monster_desc(Ind, ddesc, m_idx, 0x0188);
 
 	/* determine how much parrying or blocking would endanger our weapon/shield */
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) { 
 		if (r_ptr->blow[i].effect == RBE_ACID) mon_acid += 12;
-		if (r_ptr->blow[i].effect == RBE_FIRE) mon_fire += 12;
+        	if (r_ptr->blow[i].effect == RBE_FIRE) mon_fire += 12;
 		blows_total++;
 	}
 	if (blows_total) {
@@ -659,7 +610,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 		if (!method) break;
 
 		/* Stop if player is dead or gone */
-		if (p_ptr->suicided || p_ptr->death || p_ptr->new_level_flag) break;
+		if (!p_ptr->alive || p_ptr->death || p_ptr->new_level_flag) break;
 
 
 #ifdef OLD_MONSTER_LORE
@@ -670,47 +621,46 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 		/* Extract the attack "power" */
 		switch (effect) {
-			case RBE_HURT:		power = 60; break;
-			case RBE_POISON:	power =  5; break;
-			case RBE_UN_BONUS:	power = 20; break;
-			case RBE_UN_POWER:	power = 15; break;
-			case RBE_EAT_GOLD:	power =  5; break;
-			case RBE_EAT_ITEM:	power =  5; break;
-			case RBE_EAT_FOOD:	power =  5; break;
-			case RBE_EAT_LITE:	power =  5; break;
-			case RBE_ACID:		power =  0; break;
-			case RBE_ELEC:		power = 10; break;
-			case RBE_FIRE:		power = 10; break;
-			case RBE_COLD:		power = 10; break;
-			case RBE_BLIND:		power =  2; break;
-			case RBE_CONFUSE:	power = 10; break;
-			case RBE_TERRIFY:	power = 10; break;
-			case RBE_PARALYZE:	power =  2; break;
-			case RBE_LOSE_STR:	power =  0; break;
-			case RBE_LOSE_DEX:	power =  0; break;
-			case RBE_LOSE_CON:	power =  0; break;
-			case RBE_LOSE_INT:	power =  0; break;
-			case RBE_LOSE_WIS:	power =  0; break;
-			case RBE_LOSE_CHR:	power =  0; break;
-			case RBE_LOSE_ALL:	power =  2; break;
-			case RBE_SHATTER:	power = 60; break;
-			case RBE_EXP_10:	power =  5; break;
-			case RBE_EXP_20:	power =  5; break;
-			case RBE_EXP_40:	power =  5; break;
-			case RBE_EXP_80:	power =  5; break;
-			case RBE_DISEASE:	power =  5; break;
-			case RBE_TIME:		power =  5; break;
-			case RBE_SANITY:	power = 60; break;
-			case RBE_HALLU:		power = 10; break;
-			case RBE_PARASITE:	power =  5; break;
+			case RBE_HURT:  	power = 60; break;
+			case RBE_POISON:        power =  5; break;
+			case RBE_UN_BONUS:      power = 20; break;
+			case RBE_UN_POWER:      power = 15; break;
+			case RBE_EAT_GOLD:      power =  5; break;
+			case RBE_EAT_ITEM:      power =  5; break;
+			case RBE_EAT_FOOD:      power =  5; break;
+			case RBE_EAT_LITE:      power =  5; break;
+			case RBE_ACID:  	power =  0; break;
+			case RBE_ELEC:  	power = 10; break;
+			case RBE_FIRE:  	power = 10; break;
+			case RBE_COLD:  	power = 10; break;
+			case RBE_BLIND: 	power =  2; break;
+			case RBE_CONFUSE:       power = 10; break;
+			case RBE_TERRIFY:       power = 10; break;
+			case RBE_PARALYZE:      power =  2; break;
+			case RBE_LOSE_STR:      power =  0; break;
+			case RBE_LOSE_DEX:      power =  0; break;
+			case RBE_LOSE_CON:      power =  0; break;
+			case RBE_LOSE_INT:      power =  0; break;
+			case RBE_LOSE_WIS:      power =  0; break;
+			case RBE_LOSE_CHR:      power =  0; break;
+			case RBE_LOSE_ALL:      power =  2; break;
+			case RBE_SHATTER:       power = 60; break;
+			case RBE_EXP_10:        power =  5; break;
+			case RBE_EXP_20:        power =  5; break;
+			case RBE_EXP_40:        power =  5; break;
+			case RBE_EXP_80:        power =  5; break;
+			case RBE_DISEASE:   	power =  5; break;
+			case RBE_TIME:      	power =  5; break;
+                        case RBE_SANITY:    	power = 60; break;
+                        case RBE_HALLU:     	power = 10; break;
+                        case RBE_PARASITE:  	power =  5; break;
 			case RBE_DISARM:	power = 60; break;
 			case RBE_FAMINE:	power = 20; break;
 			case RBE_SEDUCE:	power = 80; break;
-			case RBE_EAT_MANA:	power = 10; break;
 		}
 
 		switch (method) {
-			case RBM_GAZE://too crazy vs the big bosses..  if (p_ptr->blind) continue; /* :-D */
+			case RBM_GAZE: if (p_ptr->blind) continue; /* :-D */
 			case RBM_WAIL:
 			case RBM_BEG:
 			case RBM_INSULT:
@@ -718,14 +668,11 @@ bool make_attack_melee(int Ind, int m_idx) {
 			case RBM_SHOW:
 			case RBM_WHISPER:
 				//bypass_protection = TRUE; /* mystic shield doesn't block light/sound waves */
-				/* Fall through */
 			case RBM_SPORE:
 				bypass_shield = TRUE; /* can't be blocked */
-				/* Fall through */
 			case RBM_EXPLODE:
 				bypass_ac = TRUE; /* means it always hits and can't be dodged or parried either.
 						     Damage can still be reduced though (if RBE_HURT eg). */
-				/* Fall through */
 			case RBM_DROOL:
 				bypass_weapon = TRUE; /* can't be parried */
 				break;
@@ -909,7 +856,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 			/* Roll out the damage in advance, since it might be required in the avoidance-calcs below (Kinetic Shield) */
 			damage = damroll(d_dice, d_side);
-			if (m_ptr->r_idx == RI_MIRROR) damage = (damage * MIRROR_REDUCE_DAM_DEALT_MELEE + 99) / 100;
 			if (invuln_applied) damage = (damage + 1) / 2;
 #ifdef EXPERIMENTAL_MITIGATION
 			damage_org = damage; /* as a special service, we allow the invuln reduction above to factor in first, to prevent getting ko'ed on stairs :-p */
@@ -940,13 +886,13 @@ bool make_attack_melee(int Ind, int m_idx) {
 						cost += clog;
 						//adds +0 (up to 45 damage) ..+3 (70 dam) ..+7 (150 dam) ..+13 (500 dam) ..+17 (1000 dam, hypothetically)
 					}
-					if (p_ptr->cmp >= cost) {
+					if (p_ptr->csp >= cost) {
 						/* test if it repelled the blow */
 						int chance = (p_ptr->lev * ((r_ptr->flags2 & RF2_POWERFUL) ? 67 : 100)) / r_ptr->level, max_chance;
 						// ^= usually 50% chance vs all mobs you'd encounter at your level, 33% vs double-level POWERFUL
 
 						/* drains mana on hit */
-						p_ptr->cmp -= cost;
+						p_ptr->csp -= cost;
 						p_ptr->redraw |= PR_MANA;
 
 						/* spirit shield is usually weaker than kinetic shield */
@@ -1035,7 +981,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 			/* choose whether to attempt to block or to parry (can't do both at once),
 			   50% chance each, except for if weapon is missing (anti-retaliate-inscription
 			   has been left out, since if you want max block, you'll have to take off your weapon!) */
-			if (p_ptr->shield_deflect && !bypass_shield &&
+			if (p_ptr->shield_deflect && !bypass_shield && 
 			    (!p_ptr->inventory[INVEN_WIELD].k_idx || magik(p_ptr->combat_stance == 1 ? 75 : 50))) {
 				if (magik(apply_block_chance(p_ptr, p_ptr->shield_deflect))) {
 					msg_format(Ind, "\377%cYou block %s attack.", COLOUR_BLOCK_GOOD, m_name_gen);
@@ -1057,7 +1003,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 			if (p_ptr->weapon_parry && !bypass_weapon) {
 				if (magik(apply_parry_chance(p_ptr, p_ptr->weapon_parry))) {
 					int slot = INVEN_WIELD;
-
 					if (p_ptr->inventory[INVEN_ARM].k_idx && p_ptr->inventory[INVEN_ARM].tval != TV_SHIELD && magik(50)) /* dual-wield? */
 						slot = INVEN_ARM;
 					msg_format(Ind, "\377%cYou parry %s attack.", COLOUR_PARRY_GOOD, m_name_gen);
@@ -1103,7 +1048,6 @@ bool make_attack_melee(int Ind, int m_idx) {
  #ifdef USE_PARRYING
 			if (attempt_parry && magik(apply_parry_chance(p_ptr, p_ptr->weapon_parry))) {
 				int slot = INVEN_WIELD;
-
 				if (p_ptr->inventory[INVEN_ARM].k_idx && p_ptr->inventory[INVEN_ARM].tval != TV_SHIELD && magik(50)) /* dual-wield? */
 					slot = INVEN_ARM;
 				msg_format(Ind, "\377%cYou parry %s attack.", COLOUR_PARRY_GOOD, m_name_gen);
@@ -1150,7 +1094,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 			 * a sucessful blow. Uniques have a better chance. -LM-
 			 * Nazgul have a 25% chance
 			 */
-/* if (!p_ptr->protundead) {}		// more efficient way :)	*/
+/* if (!p_ptr->protundead){}		// more efficient way :)	*/
 		/* I believe the previous version was wrong - evileye */
 
 			/* If the player uses neither a weapon nor a shield
@@ -1159,18 +1103,22 @@ bool make_attack_melee(int Ind, int m_idx) {
 			if (!p_ptr->inventory[INVEN_WIELD].k_idx &&
 			    !p_ptr->inventory[INVEN_ARM].k_idx) player_vulnerable = TRUE;
 
-			if (!p_ptr->black_breath &&
+			if (
+#ifdef VAMPIRES_BB_IMMUNE
+			    p_ptr->prace != RACE_VAMPIRE &&
+#endif
+			    !p_ptr->black_breath &&
 			    !safe_area(Ind) && /* just for Arena Monster Challenge! */
 			    (!p_ptr->suscep_life || !rand_int(3)) && (
-			     ((r_ptr->flags7 & RF7_NAZGUL) && magik(player_vulnerable ? 10 : 25)) || (
-			     (r_ptr->flags3 & RF3_UNDEAD) && m_ptr->ego != 32 /* not 'Purified' ego */
+			     (r_ptr->flags7 & RF7_NAZGUL && magik(player_vulnerable ? 10 : 25)) || (
+			     (r_ptr->flags3 & (RF3_UNDEAD)) && m_ptr->ego != 32 /* not 'Purified' ego */
 			     && (
 			      (m_ptr->level >= 35 && (r_ptr->flags1 & RF1_UNIQUE) && randint(300 - m_ptr->level) == 1) ||
 			      (m_ptr->level >= 40 && randint(400 - m_ptr->level - (player_vulnerable ? 75 : 0)) == 1)
 			    ))))
 			{
 				/* The Great Pumpkin of Halloween event shouldn't give BB, lol. -C. Blue */
-				if (m_ptr->r_idx != RI_PUMPKIN) {
+				if (((m_ptr->r_idx != RI_PUMPKIN1) && (m_ptr->r_idx != RI_PUMPKIN2) && (m_ptr->r_idx != RI_PUMPKIN3))) {
 					s_printf("EFFECT: BLACK-BREATH - %s was infected by %s\n", p_ptr->name, m_name);
 					set_black_breath(Ind);
 				}
@@ -1179,8 +1127,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 			/* Hack -- assume all attacks are obvious */
 			obvious = TRUE;
-
-			if (touched) melee_hit = TRUE;
 
 			/* Apply appropriate damage */
 			switch (effect) {
@@ -1202,7 +1148,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					break;
 
@@ -1234,16 +1180,16 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take some damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
-					/* Take "poison" effect. Duration range scale: n->3n */
+					/* Take "poison" effect */
 					if (!(p_ptr->resist_pois || p_ptr->oppose_pois || p_ptr->immune_poison)) {
-						if (set_poisoned(Ind, p_ptr->poisoned + 3 + rlev / 4 + damroll(3, rlev / 6), -m_idx))
+						if (set_poisoned(Ind, p_ptr->poisoned + randint(rlev) + 5, 0))
 							obvious = TRUE;
 					}
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_POIS);
+					update_smart_learn(m_idx, DRS_POIS);
 
 					break;
 
@@ -1274,7 +1220,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take some damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Allow complete resist */
 					if (!p_ptr->resist_disen) {
@@ -1283,7 +1229,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_DISEN);
+					update_smart_learn(m_idx, DRS_DISEN);
 
 					break;
 
@@ -1313,7 +1259,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take some damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					if (safe_area(Ind)) break;
 
@@ -1321,7 +1267,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 					/* discharge player's live form he attained from a
 					   ring of polymorphing! (anti-cheeze for Morgoth) */
 					if (!p_ptr->martyr
-					    && p_ptr->tim_mimic && p_ptr->body_monster == p_ptr->tim_mimic_what /* only if you are currently using that form */
  #ifdef ENABLE_HELLKNIGHT
 					    && p_ptr->pclass != CLASS_HELLKNIGHT
   #ifdef ENABLE_CPRIEST
@@ -1333,7 +1278,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 							msg_print(Ind, "\377LThe magical force stabilizing your form fades *rapidly*...");
 							set_mimic(Ind, (p_ptr->tim_mimic * 3) / 4, p_ptr->tim_mimic_what);
 						}
-						else {
+						else if (p_ptr->tim_mimic) {
 							msg_print(Ind, "\377LThe magical force stabilizing your form fades *rapidly*...");
 							set_mimic(Ind, p_ptr->tim_mimic - 200, p_ptr->tim_mimic_what);
 						}
@@ -1415,8 +1360,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 								/* Pfft, this is really sucky... -,- MD should have something to
 								 * do with it, at least... Will change it to 1_in_MDlev chance of
 								 * total draining. Otherwise we will decrement. the_sandman
-								 * - actual idea was to make ELEC IMM worth something btw =-p - C. Blue
-								 ===> Note: MD skill and resist_discharge (from UN_POWER forms) indeed are preventing this now! */
+								 * - actual idea was to make ELEC IMM worth something btw =-p - C. Blue */
 								if (magik(chance)) o_ptr->pval--;
 								else o_ptr->pval = 0;
 							}
@@ -1431,16 +1375,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 							break;
 						}
 					}
-
-#ifdef UNPOWER_DRAINS_MP
-					if (p_ptr->cmp) {
-						p_ptr->cmp -= (p_ptr->mhp * (r_ptr->level + 30)) / 600;
-						if (p_ptr->cmp < 0) p_ptr->cmp = 0;
-						p_ptr->redraw |= PR_MANA;
-						if (!obvious) msg_print(Ind, "Your psychic energy gets drained!");
-					}
-#endif
-
 					break;
 
 				case RBE_EAT_GOLD:
@@ -1470,7 +1404,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take some damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Obvious */
 					obvious = TRUE;
@@ -1485,9 +1419,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 					    (rand_int(100 + UNAWARENESS(p_ptr)) <
 						 (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
 						  get_skill(p_ptr, SKILL_STEALING)
- #ifdef ENABLE_STANCES
+#ifdef ENABLE_STANCES
 						  + (p_ptr->combat_stance == 1 ? 15 + p_ptr->combat_stance_power * 3 : 0)
- #endif
+#endif
 						  )))
 #endif	// 0
 					{
@@ -1497,11 +1431,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 						/* Occasional blink anyway */
 						if (rand_int(3)) blinked = TRUE;
 					}
-#ifndef TOOL_NOTHEFT_COMBO
-					else if (TOOL_EQUIPPED(p_ptr) == SV_TOOL_MONEY_BELT && magik(100)) {
-#else
-					else if (TOOL_EQUIPPED(p_ptr) == SV_TOOL_THEFT_PREVENTION && magik(TOOL_SAFETY_CHANCE)) {
-#endif
+
+					else if (TOOL_EQUIPPED(p_ptr) == SV_TOOL_MONEY_BELT &&
+							magik (70))
+					{
 						/* Saving throw message */
 						msg_print(Ind, "Your money was secured!");
 
@@ -1541,7 +1474,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take some damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Saving throw (unless paralyzed) based on dex and level */
 #if 0
@@ -1553,9 +1486,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 					    (rand_int(100 + UNAWARENESS(p_ptr)) <
 						 (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
 						  get_skill(p_ptr, SKILL_STEALING)
- #ifdef ENABLE_STANCES
+#ifdef ENABLE_STANCES
 						  + (p_ptr->combat_stance == 1 ? 15 + p_ptr->combat_stance_power * 3 : 0)
- #endif
+#endif
 						  )))
 #endif	// 0
 					{
@@ -1572,11 +1505,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 						break;
 					}
 
-#ifndef TOOL_NOTHEFT_COMBO
-					else if (TOOL_EQUIPPED(p_ptr) == SV_TOOL_THEFT_PREVENTION && magik(100)) { //80
-#else
-					else if (TOOL_EQUIPPED(p_ptr) == SV_TOOL_THEFT_PREVENTION && magik(TOOL_SAFETY_CHANCE)) {
-#endif
+					else if (TOOL_EQUIPPED(p_ptr) == SV_TOOL_THEFT_PREVENTION &&
+							magik (80))
+					{
 						/* Saving throw message */
 						msg_print(Ind, "Your backpack was secured!");
 
@@ -1591,6 +1522,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 
 					else blinked = obvious = do_eat_item(Ind, m_idx);
+
 					break;
 
 				case RBE_EAT_FOOD:
@@ -1620,7 +1552,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take some damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					if (safe_area(Ind)) break;
 
@@ -1660,9 +1592,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 					break;
 
 				case RBE_EAT_LITE:
-					/* Access the lite */
-					o_ptr = &p_ptr->inventory[INVEN_LITE];
-
 #ifdef EXPERIMENTAL_MITIGATION
 					/* Special damage -- we assume the 'elemental' part stands for the attack
 					   being sort of a critical hit that doesn't allow AC mitigation! >;-D */
@@ -1683,18 +1612,18 @@ bool make_attack_melee(int Ind, int m_idx) {
  #ifdef ELEMENTAL_AC_MITIGATION
 					damage -= (damage * ((ac < AC_CAP) ? ac : AC_CAP) / (AC_CAP_DIV + 100)); /* + 100: harder to absorb */
  #endif
-					/* Reduce the eat-lite damage part if we don't have (much) light */
-					if (dam_ele > o_ptr->timeout / 250) dam_ele = p_ptr->cmp;
-
 					/* unify elemental and physical damage again: */
 					damage = damage + dam_ele;
 #endif
 
 					/* Take some damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					if (safe_area(Ind)) break;
+
+					/* Access the lite */
+					o_ptr = &p_ptr->inventory[INVEN_LITE];
 
 					/* Drain fuel */
 					//if ((o_ptr->pval > 0) && (o_ptr->sval < SV_LITE_DWARVEN))
@@ -1723,7 +1652,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					msg_print(Ind, "You are covered in acid!");
 
 					/* Special damage */
-					dam_ele = acid_dam(Ind, damage, ddesc, -m_idx); /* suffer strong elemental effects */
+					dam_ele = acid_dam(Ind, damage, ddesc, 0); /* suffer strong elemental effects */
 					switch (method) {
 					case RBM_HIT: case RBM_PUNCH: case RBM_KICK:
 					case RBM_CLAW: case RBM_BITE: case RBM_STING:
@@ -1743,10 +1672,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 					damage = damage + dam_ele;
 
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_ACID);
+					update_smart_learn(m_idx, DRS_ACID);
 
 					break;
 
@@ -1758,7 +1687,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					msg_print(Ind, "You are struck by electricity!");
 
 					/* Special damage */
-					dam_ele = elec_dam(Ind, damage, ddesc, -m_idx); /* suffer strong elemental effects */
+					dam_ele = elec_dam(Ind, damage, ddesc, 0); /* suffer strong elemental effects */
 					switch (method) {
 					case RBM_HIT: case RBM_PUNCH: case RBM_KICK:
 					case RBM_CLAW: case RBM_BITE: case RBM_STING:
@@ -1781,10 +1710,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
 
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_ELEC);
+					update_smart_learn(m_idx, DRS_ELEC);
 
 					break;
 
@@ -1796,7 +1725,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					msg_print(Ind, "You are enveloped in flames!");
 
 					/* Special damage */
-					dam_ele = fire_dam(Ind, damage, ddesc, -m_idx); /* suffer strong elemental effects */
+					dam_ele = fire_dam(Ind, damage, ddesc, 0); /* suffer strong elemental effects */
 					switch (method) {
 					case RBM_HIT: case RBM_PUNCH: case RBM_KICK:
 					case RBM_CLAW: case RBM_BITE: case RBM_STING:
@@ -1816,10 +1745,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 					damage = damage + dam_ele;
 
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_FIRE);
+					update_smart_learn(m_idx, DRS_FIRE);
 
 					break;
 
@@ -1831,7 +1760,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					msg_print(Ind, "You are covered with frost!");
 
 					/* Special damage */
-					dam_ele = cold_dam(Ind, damage, ddesc, -m_idx); /* suffer strong elemental effects */
+					dam_ele = cold_dam(Ind, damage, ddesc, 0); /* suffer strong elemental effects */
 					switch (method) {
 					case RBM_HIT: case RBM_PUNCH: case RBM_KICK:
 					case RBM_CLAW: case RBM_BITE: case RBM_STING:
@@ -1851,10 +1780,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 					damage = damage + dam_ele;
 
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_COLD);
+					update_smart_learn(m_idx, DRS_COLD);
 
 					break;
 
@@ -1885,7 +1814,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Increase "blind" */
 					if (!p_ptr->resist_blind) {
@@ -1894,7 +1823,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_BLIND);
+					update_smart_learn(m_idx, DRS_BLIND);
 
 					break;
 
@@ -1925,7 +1854,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Increase "confused" */
 					if (!p_ptr->resist_conf) {
@@ -1934,7 +1863,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_CONF);
+					update_smart_learn(m_idx, DRS_CONF);
 
 					break;
 
@@ -1965,7 +1894,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Increase "afraid" */
 					if (p_ptr->resist_fear) {
@@ -1980,7 +1909,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_FEAR);
+					update_smart_learn(m_idx, DRS_FEAR);
 
 					break;
 
@@ -2011,7 +1940,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Increase "paralyzed" */
 					if (p_ptr->free_act) {
@@ -2026,7 +1955,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_FREE);
+					update_smart_learn(m_idx, DRS_FREE);
 
 					break;
 
@@ -2056,7 +1985,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Damage (physical) */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Damage (stat) */
 					if (do_dec_stat(Ind, A_STR, STAT_DEC_NORMAL)) obvious = TRUE;
@@ -2089,7 +2018,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Damage (physical) */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Damage (stat) */
 					if (do_dec_stat(Ind, A_INT, STAT_DEC_NORMAL)) obvious = TRUE;
@@ -2122,7 +2051,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Damage (physical) */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Damage (stat) */
 					if (do_dec_stat(Ind, A_WIS, STAT_DEC_NORMAL)) obvious = TRUE;
@@ -2155,7 +2084,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Damage (physical) */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Damage (stat) */
 					if (do_dec_stat(Ind, A_DEX, STAT_DEC_NORMAL)) obvious = TRUE;
@@ -2188,7 +2117,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Damage (physical) */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Damage (stat) */
 					if (do_dec_stat(Ind, A_CON, STAT_DEC_NORMAL)) obvious = TRUE;
@@ -2221,7 +2150,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Damage (physical) */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Damage (stat) */
 					if (do_dec_stat(Ind, A_CHR, STAT_DEC_NORMAL)) obvious = TRUE;
@@ -2254,7 +2183,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Damage (physical) */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Damage (stats) */
 					if (do_dec_stat(Ind, A_STR, STAT_DEC_NORMAL)) obvious = TRUE;
@@ -2275,10 +2204,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Radius 8 earthquake centered at the monster */
-					/* Morgoth overrides LF1_NO_DESTROY. Note: This also works for Hru at these values. */
+					/* Morgoth overrides LF1_NO_DESTROY */
 					if (damage > 23 || (damage && !rand_int(25 - damage))) {
 						if (m_ptr->r_idx == RI_MORGOTH) override_LF1_NO_DESTROY = TRUE;
 						earthquake(&p_ptr->wpos, m_ptr->fy, m_ptr->fx, 8);
@@ -2314,21 +2243,16 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
-					if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
-#ifdef NECROMANCY_HOLDS_LIFE
-					else if (rand_int(100) < get_skill(p_ptr, SKILL_NECROMANCY))
-						msg_print(Ind, "You keep hold of your life force!");
-#endif
-					else if (p_ptr->hold_life && (rand_int(100) < 95))
+					if (p_ptr->hold_life && (rand_int(100) < 95))
 						msg_print(Ind, "You keep hold of your life force!");
 					else {
-						s32b d = damroll(10, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
-
-						if (p_ptr->hold_life) {
+						s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+						if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
+						else if (p_ptr->hold_life) {
 							msg_print(Ind, "You feel your life slipping away!");
-							lose_exp(Ind, d / 10);
+							lose_exp(Ind, d/10);
 						} else {
 							msg_print(Ind, "You feel your life draining away!");
 							lose_exp(Ind, d);
@@ -2365,21 +2289,16 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
-					if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
-#ifdef NECROMANCY_HOLDS_LIFE
-					else if (rand_int(100) < get_skill(p_ptr, SKILL_NECROMANCY))
-						msg_print(Ind, "You keep hold of your life force!");
-#endif
-					else if (p_ptr->hold_life && (rand_int(100) < 90))
+					if (p_ptr->hold_life && (rand_int(100) < 90))
 						msg_print(Ind, "You keep hold of your life force!");
 					else {
-						s32b d = damroll(20, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
-
-						if (p_ptr->hold_life) {
+						s32b d = damroll(20, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+						if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
+						else if (p_ptr->hold_life) {
 							msg_print(Ind, "You feel your life slipping away!");
-							lose_exp(Ind, d / 10);
+							lose_exp(Ind, d/10);
 						} else {
 							msg_print(Ind, "You feel your life draining away!");
 							lose_exp(Ind, d);
@@ -2416,21 +2335,16 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
-					if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
-#ifdef NECROMANCY_HOLDS_LIFE
-					else if (rand_int(100) < get_skill(p_ptr, SKILL_NECROMANCY))
-						msg_print(Ind, "You keep hold of your life force!");
-#endif
-					else if (p_ptr->hold_life && (rand_int(100) < 75))
+					if (p_ptr->hold_life && (rand_int(100) < 75))
 						msg_print(Ind, "You keep hold of your life force!");
 					else {
-						s32b d = damroll(40, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
-
-						if (p_ptr->hold_life) {
+						s32b d = damroll(40, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+						if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
+						else if (p_ptr->hold_life) {
 							msg_print(Ind, "You feel your life slipping away!");
-							lose_exp(Ind, d / 10);
+							lose_exp(Ind, d/10);
 						} else {
 							msg_print(Ind, "You feel your life draining away!");
 							lose_exp(Ind, d);
@@ -2467,21 +2381,16 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
-					if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
-#ifdef NECROMANCY_HOLDS_LIFE
-					else if (rand_int(100) < get_skill(p_ptr, SKILL_NECROMANCY))
-						msg_print(Ind, "You keep hold of your life force!");
-#endif
-					else if (p_ptr->hold_life && (rand_int(100) < 50))
+					if (p_ptr->hold_life && (rand_int(100) < 50))
 						msg_print(Ind, "You keep hold of your life force!");
 					else {
-						s32b d = damroll(80, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
-
-						if (p_ptr->hold_life) {
+						s32b d = damroll(80, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+						if (p_ptr->keep_life) msg_print(Ind, "You are unaffected!");
+						else if (p_ptr->hold_life) {
 							msg_print(Ind, "You feel your life slipping away!");
-							lose_exp(Ind, d / 10);
+							lose_exp(Ind, d/10);
 						} else {
 							msg_print(Ind, "You feel your life draining away!");
 							lose_exp(Ind, d);
@@ -2515,21 +2424,20 @@ bool make_attack_melee(int Ind, int m_idx) {
 #endif
 
 					/* Take some damage */
-					//carried_monster_hit = TRUE;
+					//                                        carried_monster_hit = TRUE;
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
-					/* Duration range scale: n->3n */
-					if (set_diseased(Ind, p_ptr->diseased + 3 + rlev / 4 + damroll(3, rlev / 6), -m_idx)) {
-						msg_print(Ind, "You caught a disease!");
-						obvious = TRUE;
+					/* Take "poison" effect */
+					if (!(p_ptr->resist_pois || p_ptr->oppose_pois || p_ptr->immune_poison)) {
+						if (set_poisoned(Ind, p_ptr->poisoned + randint(rlev) + 5, 0))
+							obvious = TRUE;
 					}
 
 					/* Damage CON (10% chance)*/
 					if (randint(100) < 11) {
 						/* 1% chance for perm. damage (pernA one was buggie? */
 						bool perm = (randint(10) == 1);
-
 						if (dec_stat(Ind, A_CON, randint(10), perm + 1)) obvious = TRUE;
 					}
 
@@ -2568,7 +2476,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Increase "image" */
 					if (!p_ptr->resist_chaos) {
@@ -2611,7 +2519,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 					case 6: case 7: case 8: case 9: {
 						int stat = rand_int(6);
-
 						switch (stat) {
 							case A_STR: act = "strong"; break;
 							case A_INT: act = "bright"; break;
@@ -2638,10 +2545,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 						break;
 					}
 					}
-					//carried_monster_hit = TRUE;
+					//                                        carried_monster_hit = TRUE;
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
-					update_smart_learn(Ind, m_idx, DRS_TIME);
+					take_hit(Ind, damage, ddesc, 0);
 					break;
 
 				case RBE_SANITY:
@@ -2678,7 +2584,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					/* (I left out an additional (totally averaging) '..+r_ptr->dd' to allow
 					   tweaking the limit a bit by choosing appropriate values in r_info.txt */
 
-					take_sanity_hit(Ind, damage, ddesc, -m_idx);
+					take_sanity_hit(Ind, damage, ddesc);
 					break;
 
 				case RBE_DISARM: /* Note: Shields cannot be disarmed, only weapons can */
@@ -2697,18 +2603,20 @@ bool make_attack_melee(int Ind, int m_idx) {
 						secondary = !shield;
 					}
 					if (p_ptr->dual_wield) {
-						if (p_ptr->dual_mode && magik(50)) slot = INVEN_ARM;
-					} else if (secondary) slot = INVEN_ARM;
+						if (magik(50)) slot = INVEN_ARM;
+					} else if (secondary) {
+						slot = INVEN_ARM;
+					}
 					o_ptr = &p_ptr->inventory[slot];
 
 					/* Take damage */
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, -m_idx);
+					take_hit(Ind, damage, ddesc, 0);
 
 					/* Bare-handed? oh.. */
 					if (!o_ptr->k_idx) {
 						msg_format(Ind, "\377o%^s cuts deep in your arms and hands", m_name);
-						(void)set_cut(Ind, p_ptr->cut + 100, -m_idx);
+						(void)set_cut(Ind, p_ptr->cut + 100, 0);
 						break;
 					}
 
@@ -2747,9 +2655,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 							sound(Ind, "disarm_weapon", "", SFX_TYPE_ATTACK, FALSE);
 #endif
 							//msg_format(Ind, "\377r%^s disarms you!", m_name);
+							bypass_inscrption = TRUE;
 							object_desc(0, o_name, o_ptr, FALSE, 3);
 							if (cfg.anti_arts_hoard && true_artifact_p(o_ptr) && magik(98)) {
-								inven_takeoff(Ind, slot, 1, FALSE, TRUE);
+								inven_takeoff(Ind, slot, 1, FALSE);
 								s_printf("%s EFFECT: Disarmed (takeoff) %s: %s.\n", showtime(), p_ptr->name, o_name);
 							} else {
 #ifdef DISARM_SCATTER
@@ -2758,12 +2667,23 @@ bool make_attack_melee(int Ind, int m_idx) {
 #endif
 
 								s_printf("%s EFFECT: Disarmed (drop) %s: %s.\n", showtime(), p_ptr->name, o_name);
-#ifndef DISARM_SCATTER
-								inven_drop(TRUE, Ind, slot, 1, TRUE);
+#if 0
+								/* Drop it (carefully) near the player */
+ #ifdef DISARM_SCATTER
+								o_idx =
+ #endif
+								    drop_near_severe(Ind, &p_ptr->inventory[slot], 0, &p_ptr->wpos, p_ptr->py, p_ptr->px);
+								/* Decrease the item, optimize. */
+								inven_item_increase(Ind, slot, -p_ptr->inventory[slot].number);
+								inven_item_optimize(Ind, slot);
 #else
-								o_idx = inven_drop(FALSE, Ind, slot, 1, TRUE);
-								if (o_idx == -1) s_printf("DISARM: ITEM DESTROYED.\n");
-								else if (o_idx == -2) {
+ #ifdef DISARM_SCATTER
+								o_idx =
+ #endif
+								    inven_drop(Ind, slot, 1);
+#endif
+#ifdef DISARM_SCATTER
+								if (o_idx == -1) {
 									int x1, y1, try = 500;
 									cave_type **zcave;
 
@@ -2775,9 +2695,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 											if (!cave_clean_bold(zcave, y1, x1)) continue;
 											forge.marked2 = ITEM_REMOVAL_DEATH_WILD;
-											o_idx = drop_near(try ? FALSE : TRUE, 0, &forge, 0, &p_ptr->wpos, y1, x1);
+											o_idx = drop_near(0, &forge, 0, &p_ptr->wpos, y1, x1);
 										}
-									s_printf("DISARM: SCATTERING %s.\n", o_idx > 0 ? "succeeded" : "failed");
+									s_printf("SCATTERING %s.\n", o_idx ? "succeeded" : "failed");
 								}
 #endif
 								if (slot == INVEN_ARM) dis_sec = TRUE;
@@ -2794,10 +2714,11 @@ bool make_attack_melee(int Ind, int m_idx) {
 							sound(Ind, "disarm_weapon", "", SFX_TYPE_ATTACK, FALSE);
 #endif
 							//msg_format(Ind, "\377r%^s disarms you!", m_name);
+							bypass_inscrption = TRUE;
 							o_ptr = &p_ptr->inventory[INVEN_WIELD];
 							object_desc(0, o_name, o_ptr, FALSE, 3);
 							if (cfg.anti_arts_hoard && true_artifact_p(o_ptr) && magik(98)) {
-								inven_takeoff(Ind, INVEN_WIELD, 1, FALSE, TRUE);
+								inven_takeoff(Ind, INVEN_WIELD, 1, FALSE);
 								s_printf("%s EFFECT: Disarmed (dual, takeoff) %s: %s.\n", showtime(), p_ptr->name, o_name);
 							} else {
 #ifdef DISARM_SCATTER
@@ -2805,13 +2726,13 @@ bool make_attack_melee(int Ind, int m_idx) {
 								object_type forge = p_ptr->inventory[INVEN_WIELD];
 #endif
 
+#ifdef DISARM_SCATTER
+								o_idx =
+#endif
+								    inven_drop(Ind, INVEN_WIELD, 1);
 								s_printf("%s EFFECT: Disarmed (dual, drop) %s: %s.\n", showtime(), p_ptr->name, o_name);
-#ifndef DISARM_SCATTER
-								inven_drop(TRUE, Ind, INVEN_WIELD, 1, TRUE);
-#else
-								o_idx = inven_drop(FALSE, Ind, INVEN_WIELD, 1, TRUE);
-								if (o_idx == -1) s_printf("DISARM: ITEM DESTROYED.\n");
-								else if (o_idx == -2) {
+#ifdef DISARM_SCATTER
+								if (o_idx == -1) {
 									int x1, y1, try = 500;
 									cave_type **zcave;
 
@@ -2823,9 +2744,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 											if (!cave_clean_bold(zcave, y1, x1)) continue;
 											forge.marked2 = ITEM_REMOVAL_DEATH_WILD;
-											o_idx = drop_near(try ? FALSE : TRUE, 0, &forge, 0, &p_ptr->wpos, y1, x1);
+											o_idx = drop_near(0, &forge, 0, &p_ptr->wpos, y1, x1);
 										}
-									s_printf("SCATTERING %s.\n", o_idx > 0 ? "succeeded" : "failed");
+									s_printf("SCATTERING %s.\n", o_idx ? "succeeded" : "failed");
 								}
 #endif
 							}
@@ -2833,7 +2754,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 							o_ptr = &p_ptr->inventory[INVEN_ARM];
 							object_desc(0, o_name, o_ptr, FALSE, 3);
 							if (cfg.anti_arts_hoard && true_artifact_p(o_ptr) && magik(98)) {
-								inven_takeoff(Ind, INVEN_ARM, 1, FALSE, TRUE);
+								inven_takeoff(Ind, INVEN_ARM, 1, FALSE);
 								s_printf("%s EFFECT: Disarmed (dual, takeoff) %s: %s.\n", showtime(), p_ptr->name, o_name);
 							} else {
 #ifdef DISARM_SCATTER
@@ -2841,13 +2762,13 @@ bool make_attack_melee(int Ind, int m_idx) {
 								object_type forge = p_ptr->inventory[INVEN_ARM];
 #endif
 
+#ifdef DISARM_SCATTER
+								o_idx =
+#endif
+								    inven_drop(Ind, INVEN_ARM, 1);
 								s_printf("%s EFFECT: Disarmed (dual, drop) %s: %s.\n", showtime(), p_ptr->name, o_name);
-#ifndef DISARM_SCATTER
-								inven_drop(TRUE, Ind, slot, 1, TRUE);
-#else
-								o_idx = inven_drop(FALSE, Ind, INVEN_ARM, 1, TRUE);
-								if (o_idx == -1) s_printf("DISARM: ITEM DESTROYED.\n");
-								else if (o_idx == -2) {
+#ifdef DISARM_SCATTER
+								if (o_idx == -1) {
 									int x1, y1, try = 500;
 									cave_type **zcave;
 
@@ -2859,9 +2780,9 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 											if (!cave_clean_bold(zcave, y1, x1)) continue;
 											forge.marked2 = ITEM_REMOVAL_DEATH_WILD;
-											o_idx = drop_near(try ? FALSE : TRUE, 0, &forge, 0, &p_ptr->wpos, y1, x1);
+											o_idx = drop_near(0, &forge, 0, &p_ptr->wpos, y1, x1);
 										}
-									s_printf("SCATTERING %s.\n", o_idx > 0 ? "succeeded" : "failed");
+									s_printf("SCATTERING %s.\n", o_idx ? "succeeded" : "failed");
 								}
 #endif
 							}
@@ -2913,7 +2834,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
 					take_hit(Ind, damage, ddesc, 0);
 
-					if (p_ptr->prace != RACE_VAMPIRE && p_ptr->prace != RACE_ENT && !(p_ptr->prace == RACE_MAIA && p_ptr->lev < 20)) {
+					if (p_ptr->prace != RACE_VAMPIRE) {
 						if (p_ptr->suscep_life) set_food(Ind, (p_ptr->food * 3) / 4);
 						else set_food(Ind, p_ptr->food / 2);
 						msg_print(Ind, "You have a sudden attack of hunger!");
@@ -2958,7 +2879,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 					obvious = TRUE;
 
 					break;
-
 				case RBE_LITE:
 					/* Special damage */
 					dam_ele = damage;
@@ -2993,64 +2913,10 @@ bool make_attack_melee(int Ind, int m_idx) {
 							obvious = TRUE;
 
 					/* Learn about the player */
-					update_smart_learn(Ind, m_idx, DRS_BLIND);
-					update_smart_learn(Ind, m_idx, DRS_LITE);
-					break;
-
-				case RBE_EAT_MANA:
-#ifdef EXPERIMENTAL_MITIGATION
-					/* Special damage -- we assume the 'elemental' part stands for the attack
-					   being sort of a critical hit that doesn't allow AC mitigation! >;-D */
-					dam_ele = damage; //no resistance
-
-					switch (method) {
-					case RBM_HIT: case RBM_PUNCH: case RBM_KICK:
-					case RBM_CLAW: case RBM_BITE: case RBM_STING:
-					case RBM_BUTT: case RBM_CRUSH:
-						/* 50% physical, 50% elemental */
-						dam_ele /= 2;
-						damage /= 2;
-						break;
-					default:
-						/* 100% elemental */
-						damage = 0;
-					}
- #ifdef ELEMENTAL_AC_MITIGATION
-					damage -= (damage * ((ac < AC_CAP) ? ac : AC_CAP) / (AC_CAP_DIV + 100)); /* + 100: harder to absorb */
- #endif
-					/* Reduce the eat-mana damage part if we don't have (much) mana */
-					if (dam_ele > p_ptr->cmp) dam_ele = p_ptr->cmp;
-
-					/* unify elemental and physical damage again: */
-					damage = damage + dam_ele;
-#endif
-
-					/* Take some damage */
-					if (dam_msg[0]) msg_format(Ind, dam_msg, damage);
-					take_hit(Ind, damage, ddesc, 0);
-
-					if (safe_area(Ind)) break;
-
-					/* Drain mana */
-					if (p_ptr->cmp > 0) {
-#if 0
-						p_ptr->cmp -= dam_ele; //drain fixed amount depending on damage
-						p_ptr->cmp -= (p_ptr->mhp * (r_ptr->level + 50)) / 1000; //additionally drain a percentage
-#else
-						p_ptr->cmp -= (p_ptr->mhp * (r_ptr->level + 30)) / 600; //drain a percentage
-#endif
-						if (p_ptr->cmp < 0) p_ptr->cmp = 0;
-						p_ptr->redraw |= PR_MANA;
-						if (!obvious) msg_print(Ind, "Your psychic energy gets drained.");
-						obvious = TRUE;
-
-						update_smart_learn(Ind, m_idx, DRS_LITE);
-					}
+					update_smart_learn(m_idx, DRS_BLIND);
 					break;
 			}
 
-			/* Reset to normal */
-			melee_hit = FALSE;
 
 			/* Hack -- only one of cut or stun */
 			if (do_cut && do_stun) {
@@ -3084,7 +2950,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 				}
 
 				/* Apply the cut */
-				if (k) (void)set_cut(Ind, p_ptr->cut + k, -m_idx);
+				if (k) (void)set_cut(Ind, p_ptr->cut + k, 0);
 			}
 #ifndef SUPPRESS_MONSTER_STUN // HERESY !
 			/* That's overdone; \
@@ -3101,14 +2967,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 				tmp = monster_critical(d_dice, d_side, damage_org);
 #endif
 
-				/* Simulate Martial Arts techniques - unfair advantage though as we're RF3_NO_STUN. */
-#if 0
-				if (m_ptr->r_idx == RI_MIRROR && !tmp && !rand_int(4)) tmp = 1 + rand_int(2);
-#else
-				/* So tone it down to a minimum at least */
-				if (m_ptr->r_idx == RI_MIRROR && !tmp && !rand_int(5)) tmp = 1;
-#endif
-
 				/* Roll for damage */
 				switch (tmp) {
 					case 0: k = 0; break;
@@ -3117,7 +2975,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					case 3: k = randint(15) + 10; break;
 					case 4: k = randint(15) + 20; break;
 					case 5: k = randint(15) + 30; break;
-					case 6: k = randint(15) + 40; break;
+					case 6: k = randint(15) + 40;; break;
 					case 7: k = randint(10) + 55; break;
 					case 8: k = randint(5) + 70; break;
 					default: k = 100; break; /* currently 8 is max, so this cannot happen */
@@ -3139,107 +2997,31 @@ bool make_attack_melee(int Ind, int m_idx) {
 			}
 
 			if (touched) {
-				/* Apply monster-vampirism (2023! just for mirror fight ~_~ - C. Blue) */
-				if ((r_ptr->flags9 & RF9_VAMPIRIC) && m_ptr->hp < m_ptr->maxhp) {
-					/* Heal */
-					m_ptr->hp += damage / 3;
-					if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
-
-					/* Redraw (later) if needed */
-					update_health(m_idx);
-				}
-
 				/* Check if our 'intrinsic' (Blood Magic, not from item/external spell) auras were suppressed by our own antimagic field. */
 				bool aura_ok = !magik((p_ptr->antimagic * 8) / 5);
 				int auras_failed = 0;
 
 				/*
-				 * Apply non-skill auras
+				 * Apply item auras
 				 */
-
-				/* Alternate contradicting auras, same as with brands */
-				if (p_ptr->sh_fire && p_ptr->sh_cold && alive) {
-					/* Immolation / fire aura */
-					if (rand_int(2)) {
-						if (!(r_ptr->flags3 & RF3_IM_FIRE)) {
-							player_aura_dam = damroll(2,6);
-							if (r_ptr->flags9 & RF9_RES_FIRE) player_aura_dam /= 3;
-							if (r_ptr->flags3 & RF3_SUSCEP_FIRE) player_aura_dam *= 2;
-							if (m_ptr->r_idx == RI_MIRROR) player_aura_dam = (player_aura_dam * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
-							msg_format(Ind, "%^s is enveloped in flames for %d damage!", m_name, player_aura_dam);
-							if (mon_take_hit(Ind, m_idx, player_aura_dam, &fear,
-							    " turns into a pile of ashes")) {
-								blinked = FALSE;
-								alive = FALSE;
-							}
+				/* Immolation / fire aura */
+				if (p_ptr->sh_fire && alive) {
+					if (!(r_ptr->flags3 & RF3_IM_FIRE)) {
+						player_aura_dam = damroll(2,6);
+						if (r_ptr->flags9 & RF9_RES_FIRE) player_aura_dam /= 3;
+						if (r_ptr->flags3 & RF3_SUSCEP_FIRE) player_aura_dam *= 2;
+						msg_format(Ind, "%^s is enveloped in flames for %d damage!", m_name, player_aura_dam);
+						if (mon_take_hit(Ind, m_idx, player_aura_dam, &fear,
+						    " turns into a pile of ashes")) {
+							blinked = FALSE;
+							alive = FALSE;
 						}
-#ifdef OLD_MONSTER_LORE
-						else {
-							if (p_ptr->mon_vis[m_idx]) r_ptr->r_flags3 |= RF3_IM_FIRE;
-						}
-#endif
 					}
-					/* Frostweaving / cold aura */
+#ifdef OLD_MONSTER_LORE
 					else {
-						if (!(r_ptr->flags3 & RF3_IM_COLD)) {
-							player_aura_dam = damroll(2,6);
-							if (r_ptr->flags9 & RF9_RES_COLD) player_aura_dam /= 3;
-							if (r_ptr->flags3 & RF3_SUSCEP_COLD) player_aura_dam *= 2;
-							if (m_ptr->r_idx == RI_MIRROR) player_aura_dam = (player_aura_dam * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
-							msg_format(Ind, "%^s freezes for %d damage!", m_name, player_aura_dam);
-							if (mon_take_hit(Ind, m_idx, player_aura_dam, &fear,
-							    " freezes and shatters")) {
-								blinked = FALSE;
-								alive = FALSE;
-							}
-						}
-#ifdef OLD_MONSTER_LORE
-						else {
-							if (p_ptr->mon_vis[m_idx]) r_ptr->r_flags3 |= RF3_IM_COLD;
-						}
-#endif
+						if (p_ptr->mon_vis[m_idx]) r_ptr->r_flags3 |= RF3_IM_FIRE;
 					}
-				} else {
-					/* Immolation / fire aura */
-					if (p_ptr->sh_fire && alive) {
-						if (!(r_ptr->flags3 & RF3_IM_FIRE)) {
-							player_aura_dam = damroll(2,6);
-							if (r_ptr->flags9 & RF9_RES_FIRE) player_aura_dam /= 3;
-							if (r_ptr->flags3 & RF3_SUSCEP_FIRE) player_aura_dam *= 2;
-							if (m_ptr->r_idx == RI_MIRROR) player_aura_dam = (player_aura_dam * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
-							msg_format(Ind, "%^s is enveloped in flames for %d damage!", m_name, player_aura_dam);
-							if (mon_take_hit(Ind, m_idx, player_aura_dam, &fear,
-							    " turns into a pile of ashes")) {
-								blinked = FALSE;
-								alive = FALSE;
-							}
-						}
-#ifdef OLD_MONSTER_LORE
-						else {
-							if (p_ptr->mon_vis[m_idx]) r_ptr->r_flags3 |= RF3_IM_FIRE;
-						}
 #endif
-					}
-					/* Frostweaving / cold aura */
-					if (p_ptr->sh_cold && alive) {
-						if (!(r_ptr->flags3 & RF3_IM_COLD)) {
-							player_aura_dam = damroll(2,6);
-							if (r_ptr->flags9 & RF9_RES_COLD) player_aura_dam /= 3;
-							if (r_ptr->flags3 & RF3_SUSCEP_COLD) player_aura_dam *= 2;
-							if (m_ptr->r_idx == RI_MIRROR) player_aura_dam = (player_aura_dam * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
-							msg_format(Ind, "%^s freezes for %d damage!", m_name, player_aura_dam);
-							if (mon_take_hit(Ind, m_idx, player_aura_dam, &fear,
-							    " freezes and shatters")) {
-								blinked = FALSE;
-								alive = FALSE;
-							}
-						}
-#ifdef OLD_MONSTER_LORE
-						else {
-							if (p_ptr->mon_vis[m_idx]) r_ptr->r_flags3 |= RF3_IM_COLD;
-						}
-#endif
-					}
 				}
 				/* Electricity / lightning aura */
 				if (p_ptr->sh_elec && alive) {
@@ -3247,7 +3029,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 						player_aura_dam = damroll(2,6);
 						if (r_ptr->flags9 & RF9_RES_ELEC) player_aura_dam /= 3;
 						if (r_ptr->flags9 & RF9_SUSCEP_ELEC) player_aura_dam *= 2;
-						if (m_ptr->r_idx == RI_MIRROR) player_aura_dam = (player_aura_dam * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
 						msg_format(Ind, "%^s gets zapped for %d damage!", m_name, player_aura_dam);
 						if (mon_take_hit(Ind, m_idx, player_aura_dam, &fear,
 						    " turns into a pile of cinder")) {
@@ -3260,12 +3041,25 @@ bool make_attack_melee(int Ind, int m_idx) {
 						if (p_ptr->mon_vis[m_idx]) r_ptr->r_flags3 |= RF3_IM_ELEC;
 					}
 #endif
-				}
-
-				/* Nimbus - Kurzel */
-				if (p_ptr->nimbus && alive) {
-					msg_format(Ind, "%^s breaches your aura of power!", m_name);
-					do_nimbus(Ind, m_ptr->fy, m_ptr->fx);
+                                }
+				/* Frostweaving / cold aura */
+				if (p_ptr->sh_cold && alive) {
+					if (!(r_ptr->flags3 & RF3_IM_COLD)) {
+						player_aura_dam = damroll(2,6);
+						if (r_ptr->flags9 & RF9_RES_COLD) player_aura_dam /= 3;
+						if (r_ptr->flags3 & RF3_SUSCEP_COLD) player_aura_dam *= 2;
+						msg_format(Ind, "%^s freezes for %d damage!", m_name, player_aura_dam);
+						if (mon_take_hit(Ind, m_idx, player_aura_dam, &fear,
+						    " freezes and shatters")) {
+							blinked = FALSE;
+							alive = FALSE;
+						}
+					}
+#ifdef OLD_MONSTER_LORE
+					else {
+						if (p_ptr->mon_vis[m_idx]) r_ptr->r_flags3 |= RF3_IM_COLD;
+					}
+#endif
 				}
 
 				/*
@@ -3274,8 +3068,6 @@ bool make_attack_melee(int Ind, int m_idx) {
 				/* force shield */
 				if (p_ptr->shield && (p_ptr->shield_opt & SHIELD_COUNTER) && alive) {
 					int d = damroll(p_ptr->shield_power_opt, p_ptr->shield_power_opt2);
-
-					if (m_ptr->r_idx == RI_MIRROR) d = (d * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
 					msg_format(Ind, "%^s gets bashed by your mystic shield!", m_name);
 					if (mon_take_hit(Ind, m_idx, d, &fear, " is bashed by your mystic shield")) {
 						blinked = FALSE;
@@ -3286,10 +3078,8 @@ bool make_attack_melee(int Ind, int m_idx) {
 				if (p_ptr->shield && (p_ptr->shield_opt & SHIELD_FIRE) && alive) {
 					if (!(r_ptr->flags3 & RF3_IM_FIRE)) {
 						int d = damroll(p_ptr->shield_power_opt, p_ptr->shield_power_opt2);
-
 						if (r_ptr->flags9 & RF9_RES_FIRE) d /= 3;
 						if (r_ptr->flags3 & RF3_SUSCEP_FIRE) d *= 2;
-						if (m_ptr->r_idx == RI_MIRROR) d = (d * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
 						msg_format(Ind, "%^s gets burned by your fiery shield!", m_name);
 						if (mon_take_hit(Ind, m_idx, d, &fear, " turns into a pile of ashes")) {
 							blinked = FALSE;
@@ -3316,10 +3106,8 @@ bool make_attack_melee(int Ind, int m_idx) {
 				if (p_ptr->shield && (p_ptr->shield_opt & SHIELD_ELEC) && alive) {
 					if (!(r_ptr->flags3 & RF3_IM_ELEC)) {
 						int d = damroll(p_ptr->shield_power_opt, p_ptr->shield_power_opt2);
-
 						if (r_ptr->flags9 & RF9_RES_ELEC) d /= 3;
 						if (r_ptr->flags9 & RF9_SUSCEP_ELEC) d *= 2;
-						if (m_ptr->r_idx == RI_MIRROR) d = (d * MIRROR_REDUCE_DAM_TAKEN_AURA + 99) / 100;
 						msg_format(Ind, "%^s gets zapped by your lightning shield!", m_name);
 						if (mon_take_hit(Ind, m_idx, d, &fear, " turns into a pile of cinder")) {
 							blinked = FALSE;
@@ -3350,7 +3138,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 				 * Apply the blood magic auras
 				 */
 				/* Aura of fear is now affected by the monster level too */
-				if (get_skill(p_ptr, SKILL_AURA_FEAR) && p_ptr->aura[AURA_FEAR] &&
+				if (get_skill(p_ptr, SKILL_AURA_FEAR) && p_ptr->aura[0] &&
 				    (!(r_ptr->flags3 & RF3_UNDEAD)) && (!(r_ptr->flags3 & RF3_NONLIVING))
 				    && (!(r_ptr->flags3 & RF3_NO_FEAR))
 				    ) {
@@ -3367,7 +3155,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 				}
 				/* Shivering Aura is affected by the monster level */
-				if (get_skill(p_ptr, SKILL_AURA_SHIVER) && (p_ptr->aura[AURA_SHIVER] || (p_ptr->prace == RACE_VAMPIRE && p_ptr->body_monster == RI_VAMPIRIC_MIST))
+				if (get_skill(p_ptr, SKILL_AURA_SHIVER) && (p_ptr->aura[1] || (p_ptr->prace == RACE_VAMPIRE && p_ptr->body_monster == RI_VAMPIRIC_MIST))
 				    && (!(r_ptr->flags3 & RF3_NO_STUN)) && (!(r_ptr->flags3 & RF3_IM_COLD))
 				    ) {
 					int mod = ((r_ptr->flags1 & RF1_UNIQUE) ? 10 : 0);
@@ -3393,7 +3181,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 					}
 				}
 				/* Aura of death is NOT affected by monster level*/
-				if (get_skill(p_ptr, SKILL_AURA_DEATH) && p_ptr->aura[AURA_DEATH]) {
+				if (get_skill(p_ptr, SKILL_AURA_DEATH) && p_ptr->aura[2]) {
 					int chance = get_skill_scale(p_ptr, SKILL_AURA_DEATH, 50);
 
 					if (magik(chance)) {
@@ -3516,7 +3304,7 @@ bool make_attack_melee(int Ind, int m_idx) {
 
 
 	/* Assume we attacked */
-	return(TRUE);
+	return (TRUE);
 }
 
 /*
@@ -3533,7 +3321,7 @@ static int mon_check_hit(int m_idx, int power, int level) {
 	k = rand_int(100);
 
 	/* Hack -- Always miss or hit */
-	if (k < 10) return(k < 5);
+	if (k < 10) return (k < 5);
 
 	/* Calculate the "attack quality" */
 	i = (power + (level * 3));
@@ -3542,10 +3330,10 @@ static int mon_check_hit(int m_idx, int power, int level) {
 	ac = m_ptr->ac;
 
 	/* Power and Level compete against Armor */
-	if ((i > 0) && (randint(i) > ((ac * 3) / 4))) return(TRUE);
+	if ((i > 0) && (randint(i) > ((ac * 3) / 4))) return (TRUE);
 
 	/* Assume miss */
-	return(FALSE);
+	return (FALSE);
 }
 
 
@@ -3572,7 +3360,7 @@ bool monster_attack_normal(int tm_idx, int m_idx) {
 
 
 	/* Not allowed to attack */
-	if (r_ptr->flags2 & RF2_NEVER_BLOW) return(FALSE);
+	if (r_ptr->flags1 & RF1_NEVER_BLOW) return (FALSE);
 
 	/* Total armor */
 	ac = tm_ptr->ac;
@@ -3675,8 +3463,7 @@ bool monster_attack_normal(int tm_idx, int m_idx) {
 #ifdef RPG_SERVER
 			if (dead && m_ptr->pet) {
 				char monster_name[MNAME_LEN];
-
-				monster_desc(find_player(m_ptr->owner), monster_name, tm_idx, 0x04 | 0x08);
+				monster_desc(find_player(m_ptr->owner), monster_name, tm_idx, 0x04&0x08);
 				msg_format(find_player(m_ptr->owner), "\377yYour pet killed %s.", monster_name);
 				if (!(Players[find_player(m_ptr->owner)]->mode & MODE_PVP))
 					gain_exp(find_player(m_ptr->owner), (unsigned int)(exp_gain));
@@ -3708,10 +3495,10 @@ bool monster_attack_normal(int tm_idx, int m_idx) {
 				case 6: k = 300; break;
 				default: k = 500; break;
 				}
- #if 0//todo:implement
+#if 0//todo:implement
 				/* Apply the cut */
 				if (k) (void)set_cut(Ind, p_ptr->cut + k);
- #endif
+#endif
 			}
 #endif
 #if 0//todo:implement
@@ -3755,5 +3542,5 @@ bool monster_attack_normal(int tm_idx, int m_idx) {
 	}
 
 	/* Assume we attacked */
-	return(TRUE);
+	return (TRUE);
 }

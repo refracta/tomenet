@@ -115,8 +115,6 @@ static void write_buffer() {
  * Write an "item" record
  */
 static void wr_item(object_type *o_ptr) {
-	byte tmp8u = 0;
-
 	wr_s32b(o_ptr->owner);
 	wr_s16b(o_ptr->level);
 	wr_byte(o_ptr->mode);
@@ -165,11 +163,11 @@ static void wr_item(object_type *o_ptr) {
 
 /* DEBUGGING PURPOSES - the_sandman */
 #if 0
-	if (o_ptr->tval == 46)
-	 {
-	  s_printf("TRAP_DEBUG: Trap with s_val:%d,to_h:%d,to_d:%d,to_a:%d written\n",
-				o_ptr->sval, o_ptr->to_h, o_ptr->to_d, o_ptr->to_a);
-	 }
+        if (o_ptr->tval == 46)
+         {
+          s_printf("TRAP_DEBUG: Trap with s_val:%d,to_h:%d,to_d:%d,to_a:%d written\n",
+                                o_ptr->sval, o_ptr->to_h, o_ptr->to_d, o_ptr->to_a);
+         }
 #endif
 	wr_s16b(o_ptr->ac);
 	wr_byte(o_ptr->dd);
@@ -213,34 +211,6 @@ static void wr_item(object_type *o_ptr) {
 
 	wr_s32b((s32b)o_ptr->appraised_value); //HOME_APPRAISAL
 	wr_u16b(o_ptr->housed); //EXPORT_PLAYER_STORE_OFFERS
-
-	tmp8u = 0x0;
-	if (o_ptr->NR_tradable) tmp8u |= 0x1;
-	if (o_ptr->no_soloist) tmp8u |= 0x2;
-	wr_byte(tmp8u);
-
-	wr_s32b(o_ptr->iron_trade);
-	wr_s32b(o_ptr->iron_turn);
-
-	wr_byte(o_ptr->embed);
-
-	wr_s32b(o_ptr->id);
-	wr_s32b(o_ptr->f_id);
-	wr_string(o_ptr->f_name);
-	wr_s32b(o_ptr->f_turn);
-	wr_u32b((u32b)(o_ptr->f_time & 0xFFFFFFFF));
-	if (sizeof(time_t) >= 8) wr_u32b((u32b)(o_ptr->f_time >> 32));
-	else wr_u32b(0);
-	wr_s16b(o_ptr->f_wpos.wx);
-	wr_s16b(o_ptr->f_wpos.wy);
-	wr_s16b(o_ptr->f_wpos.wz);
-	wr_byte((unsigned char)o_ptr->f_dun);
-	wr_byte(o_ptr->f_player);
-	wr_s32b(o_ptr->f_player_turn);
-	wr_u16b(o_ptr->f_ridx);
-	wr_u16b(o_ptr->f_reidx);
-	wr_s16b(o_ptr->f_special);
-	wr_byte((unsigned char)o_ptr->f_reward);
 }
 
 /*
@@ -250,7 +220,7 @@ static void wr_monster_race(monster_race *r_ptr) {
 	int i;
 
 	wr_u16b(r_ptr->name);
-	wr_u32b(r_ptr->text);
+	wr_u16b(r_ptr->text);
 	wr_byte(r_ptr->hdice);
 	wr_byte(r_ptr->hside);
 	wr_s16b(r_ptr->ac);
@@ -332,7 +302,6 @@ static void wr_monster(monster_type *m_ptr) {
 	wr_byte(m_ptr->poisoned);
 	wr_byte(m_ptr->blinded);
 	wr_byte(m_ptr->silenced);
-	wr_s32b(m_ptr->suspended);
 	wr_u16b(m_ptr->hold_o_idx);
 	wr_u16b(m_ptr->clone);
 	wr_s16b(m_ptr->mind);
@@ -437,26 +406,20 @@ static void wr_bbs() {
 
 	wr_s16b(BBS_LINES);
 
-	for (i = 0; i < BBS_LINES; i++) {
+	for (i = 0; i < BBS_LINES; i++)
 		wr_string(bbs_line[i]);
-		wr_string(bbs_line_u[i]);
-	}
 
 	/* also write complete party-BBS and guild-BBS (tripling the server file size oO) - C. Blue */
 
 	wr_s16b(MAX_PARTIES);
 	for (j = 0; j < MAX_PARTIES; j++)
-		for (i = 0; i < BBS_LINES; i++) {
+		for (i = 0; i < BBS_LINES; i++)
 			wr_string(pbbs_line[j][i]);
-			wr_string(pbbs_line_u[j][i]);
-		}
 
 	wr_s16b(MAX_GUILDS);
 	for (j = 0; j < MAX_GUILDS; j++)
-		for (i = 0; i < BBS_LINES; i++) {
+		for (i = 0; i < BBS_LINES; i++)
 			wr_string(gbbs_line[j][i]);
-			wr_string(gbbs_line_u[j][i]);
-		}
 }
 
 static void wr_notes() {
@@ -465,7 +428,6 @@ static void wr_notes() {
 	wr_s16b(MAX_NOTES);
 	for (i = 0; i < MAX_NOTES; i++) {
 		wr_string(priv_note[i]);
-		wr_string(priv_note_u[i]);
 		wr_string(priv_note_sender[i]);
 		wr_string(priv_note_target[i]);
 	}
@@ -473,14 +435,12 @@ static void wr_notes() {
 	wr_s16b(MAX_PARTYNOTES);
 	for (i = 0; i < MAX_PARTYNOTES; i++) {
 		wr_string(party_note[i]);
-		wr_string(party_note_u[i]);
 		wr_string(party_note_target[i]);
 	}
 
 	wr_s16b(MAX_GUILDNOTES);
 	for (i = 0; i < MAX_GUILDNOTES; i++) {
 		wr_string(guild_note[i]);
-		wr_string(guild_note_u[i]);
 		wr_string(guild_note_target[i]);
 	}
 	//omitted (use custom.lua instead): admin_note[MAX_ADMINNOTES]
@@ -585,7 +545,7 @@ static void wr_guilds() {
 	wr_u16b(tmp16u);
 
 	/* Dump the guilds */
-	for (i = 0; i < tmp16u; i++) {
+	for (i = 0; i < tmp16u; i++){
 		wr_u32b(guilds[i].dna);
 		wr_string(guilds[i].name);
 		wr_s32b(guilds[i].master);
@@ -616,14 +576,9 @@ static void wr_party(party_type *party_ptr) {
 	/* Save the creator's character mode */
 	wr_byte(party_ptr->cmode);
 
-	/* Iron Team max exp */
-	wr_s32b(party_ptr->experience);
-
 	/* New - party flags, maybe */
 	wr_u32b(party_ptr->flags);
 
-	/* Iron Team / IDDC trading restrictions */
-	wr_s32b(party_ptr->iron_trade);
 }
 
 static void wr_wild(wilderness_type *w_ptr) {
@@ -663,7 +618,7 @@ static void wr_house(house_type *house) {
 	wr_s16b(house->wpos.wy);
 	wr_s16b(house->wpos.wz);
 
-	if (house->flags & HF_RECT) {
+	if (house->flags & HF_RECT){
 		wr_byte(house->coords.rect.width);
 		wr_byte(house->coords.rect.height);
 	} else {
@@ -671,13 +626,12 @@ static void wr_house(house_type *house) {
 		do {
 			i += 2;
 			wr_byte(house->coords.poly[i]);
-			wr_byte(house->coords.poly[i + 1]);
-		} while (house->coords.poly[i] || house->coords.poly[i + 1]);
+			wr_byte(house->coords.poly[i+1]);
+		} while (house->coords.poly[i] || house->coords.poly[i+1]);
 	}
 
 	wr_byte(house->colour);
 	wr_byte(house->xtra);
-	wr_string(house->tag);
 
 #ifndef USE_MANG_HOUSE_ONLY
 	wr_s16b(house->stock_num);
@@ -695,7 +649,6 @@ static void wr_extra(int Ind) {
 	player_type *p_ptr = Players[Ind];
 
 	int i, j;
-	int k;
 	u16b tmp16u = 0;
 	byte tmp8u = 0;
 
@@ -716,11 +669,6 @@ static void wr_extra(int Ind) {
 	/* Race/Class/Gender/Party */
 	wr_byte(p_ptr->prace);
 	wr_byte(p_ptr->pclass);
-#ifdef ENABLE_SUBCLASS
-	wr_byte(p_ptr->sclass);
-#else
-	wr_byte(0);
-#endif
 	wr_byte(p_ptr->ptrait);
 	wr_byte(p_ptr->male);
 	wr_u16b(p_ptr->party); /* changed to u16b to allow more parties - mikaelh */
@@ -784,37 +732,8 @@ static void wr_extra(int Ind) {
 	wr_s32b(p_ptr->turns_idle);
 	wr_s32b(p_ptr->turns_active);
 
-	tmp8u = 0x0;
-	tmp8u |= (p_ptr->insta_res ? 0x1 : 0x0);
-	tmp8u |= (p_ptr->fluent_artifact_reset ? 0x2 : 0x0);
-	tmp8u |= (p_ptr->death ? 0x4 : 0x0);
-	tmp8u |= (p_ptr->black_breath ? 0x8 : 0x0);
-	tmp8u |= (p_ptr->event_participated ? 0x10 : 0x0);
-	tmp8u |= (p_ptr->IDDC_found_rndtown ? 0x20 : 0x0); //superfluous?
-	tmp8u |= (p_ptr->IDDC_logscum ? 0x40 : 0x0); //superfluous?
-	/* Save if we're currently in an IDDC refuge */
-	if (in_irondeepdive(&p_ptr->wpos)) {
-		cave_type **zcave = getcave(&p_ptr->wpos);
-
-		if (zcave) {
-			cave_type *c_ptr = &zcave[p_ptr->py][p_ptr->px];
-
-			if (c_ptr->info & CAVE_REFUGE) tmp8u |= 0x80;
-		}
-	}
-	wr_byte(tmp8u);
-	wr_u16b(p_ptr->event_participated_flags);
-	wr_u16b(p_ptr->event_won_flags);
-	wr_byte(p_ptr->lifetime_flags);
-
-	wr_byte(p_ptr->autoret_base);
-
-	wr_byte(p_ptr->suppress_ingredients);
-
-	wr_u16b(p_ptr->house_num);
-	wr_s16b(p_ptr->mutedtemp);
-	wr_s32b(p_ptr->iron_trade);
-	wr_s32b(p_ptr->iron_turn);
+	/* Ignore the transient stats */
+	for (i = 0; i < 10; ++i) wr_s16b(0);
 
 	wr_u32b(p_ptr->au);
 
@@ -831,9 +750,9 @@ static void wr_extra(int Ind) {
 	wr_s16b(p_ptr->cst);
 	wr_s16b(p_ptr->cst_frac);
 
-	wr_s16b(p_ptr->mmp);
-	wr_s16b(p_ptr->cmp);
-	wr_u16b(p_ptr->cmp_frac);
+	wr_s16b(p_ptr->msp);
+	wr_s16b(p_ptr->csp);
+	wr_u16b(p_ptr->csp_frac);
 
 	/* Max Player and Dungeon Levels */
 	wr_s16b(p_ptr->max_plv);
@@ -879,10 +798,9 @@ static void wr_extra(int Ind) {
 	wr_byte(p_ptr->lives);		/* old "rest" */
 	wr_byte(p_ptr->houses_owned);
 
-	wr_byte(p_ptr->breath_element);
+	wr_byte(0);			/* unused */
 	wr_s16b(p_ptr->blind);
 	wr_s16b(p_ptr->paralyzed);
-	wr_s32b(p_ptr->suspended);
 	wr_s16b(p_ptr->confused);
 	wr_s16b(p_ptr->food);
 	wr_s32b(p_ptr->go_turn);
@@ -915,7 +833,7 @@ static void wr_extra(int Ind) {
 	wr_s16b(p_ptr->blessed);
 	wr_s16b(p_ptr->tim_invis);
 	wr_byte(p_ptr->go_level_top);//ENABLE_GO_GAME
-	wr_byte(p_ptr->tim_extra);
+	wr_byte(0x0);				//hole
 	wr_s16b(p_ptr->see_infra);
 	wr_s16b(p_ptr->tim_infra);
 	wr_s16b(p_ptr->oppose_fire);
@@ -966,13 +884,13 @@ static void wr_extra(int Ind) {
 	}
 
 	wr_u32b(p_ptr->gold_picked_up);
+	wr_byte(p_ptr->insta_res);
 	wr_byte(p_ptr->castles_owned);
-#if 1 /* To make this option, which isn't part of the current client, persistent before next client release */
-	wr_s16b(p_ptr->flash_self2);
-#else
-	//wr_u16b(0x0);
-#endif
-	wr_byte(p_ptr->sanity_bar | (p_ptr->health_bar ? 0x04 : 0x00) | (p_ptr->mana_bar ? 0x08 : 0x00) | (p_ptr->stamina_bar ? 0x10 : 0x00));
+	wr_s16b(p_ptr->flash_self);
+	wr_byte(p_ptr->fluent_artifact_reset); /* for automatic artifact resets */
+	wr_byte(p_ptr->sanity_bar);
+	wr_byte(p_ptr->IDDC_found_rndtown);
+	wr_byte(p_ptr->IDDC_logscum);
 	wr_byte(p_ptr->IDDC_flags);
 
 	wr_s16b(p_ptr->word_recall);
@@ -980,9 +898,8 @@ static void wr_extra(int Ind) {
 	wr_s16b(p_ptr->recall_pos.wy);
 	wr_s16b(p_ptr->recall_pos.wz);
 
-	wr_s16b(p_ptr->diseased);
-	wr_s16b(p_ptr->shrouded);
-	wr_s16b(p_ptr->shroud_power);
+	/* Future use */
+	for (i = 0; i < 6; i++) wr_byte(0);
 
 #ifdef SOLO_REKING
 	wr_s32b(p_ptr->solo_reking);
@@ -1020,7 +937,7 @@ static void wr_extra(int Ind) {
 	/*wr_u32b(seed_town);*/
 	wr_s32b(p_ptr->mimic_seed);
 	wr_byte(p_ptr->mimic_immunity);
-	wr_u16b(p_ptr->autoret_mu);
+	wr_u16b(p_ptr->autoret);
 	wr_s16b(p_ptr->martyr_timeout);
 
 	/* Special stuff */
@@ -1039,6 +956,11 @@ static void wr_extra(int Ind) {
 
 	wr_u16b(p_ptr->retire_timer);
 	wr_u16b(p_ptr->noscore);
+
+	/* Write death */
+	wr_byte(p_ptr->death);
+
+	wr_byte(p_ptr->black_breath);
 
 	wr_s16b(p_ptr->msane);
 	wr_s16b(p_ptr->csane);
@@ -1073,9 +995,9 @@ static void wr_extra(int Ind) {
 	wr_s16b(p_ptr->kills_equal);
 	wr_s16b(p_ptr->free_mimic);
 
-	if (p_ptr->aura[AURA_FEAR]) tmp8u |= 0x1;
-	if (p_ptr->aura[AURA_SHIVER]) tmp8u |= 0x2;
-	if (p_ptr->aura[AURA_DEATH]) tmp8u |= 0x4;
+	if (p_ptr->aura[0]) tmp8u |= 0x1;
+	if (p_ptr->aura[1]) tmp8u |= 0x2;
+	if (p_ptr->aura[2]) tmp8u |= 0x4;
 	wr_byte(tmp8u); /* aura states (on/off) */
 
 	wr_u16b(p_ptr->deaths);
@@ -1086,10 +1008,6 @@ static void wr_extra(int Ind) {
 	if (p_ptr->warning_technique_melee == 1) tmp16u |= 0x01;
 	if (p_ptr->warning_technique_ranged == 1) tmp16u |= 0x02;
 	if (p_ptr->warning_drained == 1) tmp16u |= 0x04;
-	if (p_ptr->warning_blastcharge == 1) tmp16u |= 0x08;
-	/* and also save warnings that we just don't want to repeat, as they overlap with actual non-warning feedback messages anyway
-	   - or because the player has to act carefully on his own responsibility */
-	if (p_ptr->warning_sanity == 1) tmp16u |= 0x10;
 	wr_u16b(tmp16u);
 
 	wr_string(p_ptr->info_msg);
@@ -1110,35 +1028,6 @@ static void wr_extra(int Ind) {
 	wr_u16b(p_ptr->cards_hearts);
 	wr_u16b(p_ptr->cards_spades);
 	wr_u16b(p_ptr->cards_clubs);
-
-	/* Subinventory (ENABLE_SUBINVEN) */
-#ifdef ENABLE_SUBINVEN
-	/* Write number of stored subinventories */
-	j = 0;
-	for (i = 0; i <= INVEN_PACK; i++)
-		if (p_ptr->inventory[i].tval == TV_SUBINVEN) j++;
-	tmp8u = (byte)j;
-	wr_byte(tmp8u);
-	/* Iterate through subinventories */
-	for (i = 0; i <= INVEN_PACK; i++) {
-		if (p_ptr->inventory[i].tval != TV_SUBINVEN) continue;
-
-		/* Write subinventory slot */
-		tmp8u = (byte)i;
-		wr_byte(tmp8u);
-
-		/* Write subinventory size */
-		tmp8u = (byte)(p_ptr->inventory[i].bpval);
-		wr_byte(tmp8u);
-
-		/* Write the items */
-		for (k = 0; k < tmp8u; k++)
-			wr_item(&p_ptr->subinventory[i][k]);
-	}
-#else
-	(void)k; /* discard */
-	wr_byte(0);
-#endif
 }
 
 /*
@@ -1200,8 +1089,9 @@ static void wr_floor(struct worldpos *wpos) {
 	u32b prev_info = 0xffffffff;
 	unsigned char runlength;
 	struct c_special *cs_ptr;
-	cave_type *c_ptr, **zcave;
 
+	cave_type *c_ptr;
+	cave_type **zcave;
 	if (!(zcave = getcave(wpos))) return;
 #if DEBUG_LEVEL > 1
 //#if 1 > 0
@@ -1240,9 +1130,6 @@ static void wr_floor(struct worldpos *wpos) {
 			wr_u32b(l_ptr->flags2);
 			wr_byte(l_ptr->hgt);
 			wr_byte(l_ptr->wid);
-			/* IDDC_REFUGES */
-			wr_byte(l_ptr->refuge_x);
-			wr_byte(l_ptr->refuge_y);
 		}
 	}
 
@@ -1313,11 +1200,11 @@ static void wr_floor(struct worldpos *wpos) {
 				i = cs_ptr->type;
 
 				/* nothing special */
-				if (i != CS_NONE) {
+				if (i != CS_NONE){
 
 					/* TODO: implement CS_DNADOOR and CS_KEYDOOR saving
-					* currently, their x,y,i is saved in vain.	- Jir -
-					*/
+			 		* currently, their x,y,i is saved in vain.	- Jir -
+			 		*/
 					wr_byte(x);
 					wr_byte(y);
 					wr_byte(i);
@@ -1601,10 +1488,10 @@ static bool wr_savefile_new(int Ind) {
 	write_buffer();
 
 	/* Error in save */
-	if (ferror(fff) || (fflush(fff) == EOF)) return(FALSE);
+	if (ferror(fff) || (fflush(fff) == EOF)) return FALSE;
 
 	/* Successful save */
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -1660,13 +1547,13 @@ static bool save_player_aux(int Ind, char *name) {
 
 
 	/* Failure */
-	if (!ok) return(FALSE);
+	if (!ok) return (FALSE);
 
 	/* Successful save */
 	/*server_saved = TRUE;*/
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -1763,7 +1650,7 @@ bool save_player(int Ind) {
 
 
 	/* Return the result */
-	return(result);
+	return (result);
 }
 
 
@@ -1773,9 +1660,9 @@ static bool file_exist(char *buf) {
 	fd = fd_open(buf, O_RDONLY);
 	if (fd >= 0) {
 		fd_close(fd);
-		return(TRUE);
+		return (TRUE);
 	}
-	else return(FALSE);
+	else return (FALSE);
 }
 
 
@@ -1804,8 +1691,11 @@ static bool file_exist(char *buf) {
  */
 bool load_player(int Ind) {
 	player_type *p_ptr = Players[Ind];
+
 	int		fd = -1;
+
 	errr	err = 0;
+
 	byte	vvv[4];
 
 #ifdef VERIFY_TIMESTAMP
@@ -1829,7 +1719,7 @@ bool load_player(int Ind) {
 			what = "Server is closed for login now";
 			err = 1;
 		}
-		else return(TRUE);
+		else return (TRUE);
 	}
 
 
@@ -1855,7 +1745,7 @@ bool load_player(int Ind) {
 			what = "Server is closed for login now";
 			err = 1;
 		}
-		else return(TRUE);
+		else return (TRUE);
 	}
 
 
@@ -1874,7 +1764,8 @@ bool load_player(int Ind) {
 		fkk = my_fopen(temp, "rb");
 
 		/* Oops, lock exists */
-		if (fkk) {
+		if (fkk)
+		{
 			/* Close the file */
 			my_fclose(fkk);
 
@@ -1883,7 +1774,7 @@ bool load_player(int Ind) {
 			msg_print(Ind, NULL);
 
 			/* Oops */
-			return(FALSE);
+			return (FALSE);
 		}
 
 		/* Create a lock file */
@@ -1942,25 +1833,13 @@ bool load_player(int Ind) {
 		/*
 		   if (err) {
 		   what = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-		   (void)sprintf (what, "Cannot parse savefile error %d",err);
+		   (void)sprintf (what,"Cannot parse savefile error %d",err);
 		   };
 		   */
 		if (err) what = "Cannot parse savefile error";
-		switch (err) {
-		case 35:
-			what = edit ? "Server is closed for login now" : "Incorrect password";
-			break;
-		case 1:
-			what = "Name already in use";
-			break;
-#ifdef SERVER_PORTALS
- #if 0 //wip
-		case x:
-			what = "Character currently locked to another server via portal.";
-			break;
- #endif
-#endif
-		}
+		if (err == 35) what = edit ? "Server is closed for login now" :
+			"Incorrect password";
+		if (err == 1) what = "Name already in use";
 	}
 
 	/* Paranoia */
@@ -2008,7 +1887,7 @@ bool load_player(int Ind) {
 			sf_lives++;
 
 			/* Done */
-			return(TRUE);
+			return (TRUE);
 		}
 
 		/* A character was loaded */
@@ -2018,15 +1897,12 @@ bool load_player(int Ind) {
 		if (p_ptr->chp >= 0) {
 			/* Reset cause of death */
 			(void)strcpy(p_ptr->died_from, "(alive and well)");
-			p_ptr->died_from_ridx = 0;
 		}
 
 		p_ptr->body_changed = TRUE;
 
-		update_sanity_bars(p_ptr);
-
 		/* Success */
-		return(TRUE);
+		return (TRUE);
 	}
 
 
@@ -2052,7 +1928,7 @@ bool load_player(int Ind) {
 				what, sf_major, sf_minor, sf_patch));
 
 	/* Oops */
-	return(FALSE);
+	return (FALSE);
 }
 
 /*
@@ -2085,7 +1961,6 @@ static void wr_player_names(void) {
 			wr_byte(ptr->class);
 			wr_byte(ptr->mode);
 			wr_byte(ptr->level);
-			wr_byte(ptr->max_plv);
 			wr_u16b(ptr->party); /* changed to u16b to allow more parties */
 			wr_byte(ptr->guild);
 			wr_u32b(ptr->guild_flags);
@@ -2098,7 +1973,6 @@ static void wr_player_names(void) {
 			wr_string(ptr->name);
 			wr_byte(ptr->houses);
 			wr_byte(ptr->winner);
-			wr_byte(ptr->order);
 		}
 	}
 
@@ -2207,13 +2081,10 @@ static bool wr_server_savefile() {
 	wr_s16b(updated_server);
 	/* save artifact-reset state (lua) */
 	wr_s16b(artifact_reset);
-	/* server 'runtime' counter */
-	wr_byte(runtime_server);
 
-	/* Space (7 bytes) */
+	/* Space */
 	wr_u32b(0L);
-	wr_u16b(0);
-	wr_byte(0);
+	wr_u32b(0L);
 
 	/* Dump the monster (unique) race information */
 	tmp16u = MAX_R_IDX;
@@ -2262,15 +2133,17 @@ static bool wr_server_savefile() {
 	for (i = 0; i < tmp16u; i++) wr_item(&o_list[i]);
 
 	tmp32u = 0L;
-	for (i = 0; i < num_houses; i++)
-		if (!(houses[i].flags & HF_DELETED)) tmp32u++;
+	for(i = 0; i < num_houses; i++)
+		if (!(houses[i].flags&HF_DELETED)) tmp32u++;
 
 	/* Note the number of houses */
 	wr_s32b(tmp32u);
 
 	/* Dump the houses */
-	for (i = 0; i < num_houses; i++)
-		if (!(houses[i].flags & HF_DELETED)) wr_house(&houses[i]);
+	for (i = 0; i < num_houses; i++){
+		if (!(houses[i].flags&HF_DELETED))
+			wr_house(&houses[i]);
+	}
 
 	/* Write the player name database */
 	wr_player_names();
@@ -2311,10 +2184,10 @@ static bool wr_server_savefile() {
 	write_buffer();
 
 	/* Error in save */
-	if (ferror(fff) || (fflush(fff) == EOF)) return(FALSE);
+	if (ferror(fff) || (fflush(fff) == EOF)) return FALSE;
 
 	/* Successful save */
-	return(TRUE);
+	return TRUE;
 }
 
 /* write the wilderness and dungeon structure */
@@ -2342,7 +2215,7 @@ static void new_wr_wild() {
 				wr_u32b(w_ptr->dungeon->flags2);
 				wr_u32b(w_ptr->dungeon->flags3);
 				wr_byte(w_ptr->dungeon->maxdepth);
-				for (i = 0; i < 10; i++) {
+				for(i = 0; i < 10; i++) {
 #if 0	/* unused - mikaelh */
 					wr_byte(w_ptr->dungeon->r_char[i]);
 					wr_byte(w_ptr->dungeon->nr_char[i]);
@@ -2376,7 +2249,7 @@ static void new_wr_wild() {
 				wr_u32b(w_ptr->tower->flags2);
 				wr_u32b(w_ptr->tower->flags3);
 				wr_byte(w_ptr->tower->maxdepth);
-				for (i = 0; i < 10; i++) {
+				for (i = 0; i < 10; i++){
 #if 0	/* unused - mikaelh */
 					wr_byte(w_ptr->tower->r_char[i]);
 					wr_byte(w_ptr->tower->nr_char[i]);
@@ -2408,11 +2281,10 @@ static void new_wr_floors() {
 	struct worldpos cwpos;
 	wilderness_type *w_ptr;
 	int x, y, z;
-
 	cwpos.wz = 0;
-	for (y = 0; y < MAX_WILD_Y; y++) {
+	for(y = 0; y < MAX_WILD_Y; y++) {
 		cwpos.wy = y;
-		for (x = 0; x < MAX_WILD_X; x++) {
+		for(x = 0; x < MAX_WILD_X; x++) {
 			cwpos.wx = x;
 			w_ptr = &wild_info[y][x];
 			save_guildhalls(&cwpos);
@@ -2424,7 +2296,6 @@ static void new_wr_floors() {
 			if (getcave(&cwpos) && players_on_depth(&cwpos)) wr_floor(&cwpos);
 			if (w_ptr->flags & WILD_F_DOWN) {
 				struct dungeon_type *d_ptr = w_ptr->dungeon;
-
 				for (z = 1; z <= d_ptr->maxdepth; z++) {
 					cwpos.wz = -z;
 					if (d_ptr->level[z - 1].ondepth && d_ptr->level[z - 1].cave)
@@ -2433,7 +2304,6 @@ static void new_wr_floors() {
 			}
 			if (w_ptr->flags & WILD_F_UP) {
 				struct dungeon_type *d_ptr = w_ptr->tower;
-
 				for (z = 1; z <= d_ptr->maxdepth; z++) {
 					cwpos.wz = z;
 					if (d_ptr->level[z - 1].ondepth && d_ptr->level[z - 1].cave)
@@ -2493,13 +2363,13 @@ static bool save_server_aux(char *name) {
 
 
 	/* Failure */
-	if (!ok) return(FALSE);
+	if (!ok) return (FALSE);
 
 	/* Successful save */
 	/*server_saved = TRUE;*/
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -2521,7 +2391,7 @@ static bool load_server_info_classic(void) {
 		s_printf("Server savefile does not exist\n");
 
 		/* Allow this */
-		return(TRUE);
+		return (TRUE);
 	}
 
 	/* Okay */
@@ -2568,7 +2438,7 @@ static bool load_server_info_classic(void) {
 		/*
 		   if (err) {
 		   what = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx";
-		   (void)sprintf (what, "Cannot parse savefile error %d",err);
+		   (void)sprintf (what,"Cannot parse savefile error %d",err);
 		   };
 		   */
 		if (err) what ="Cannot parse server savefile error %d";
@@ -2589,13 +2459,13 @@ static bool load_server_info_classic(void) {
 		server_state_loaded = TRUE;
 
 		/* Success */
-		return(TRUE);
+		return (TRUE);
 	}
 
 	/* Message */
 	s_printf("Error (%s) reading a %d.%d.%d server savefile.\n", what, sf_major, sf_minor, sf_patch);
 
-	return(FALSE);
+	return (FALSE);
 }
 
 /* Load the complete server info, either
@@ -2624,7 +2494,7 @@ bool load_server_info(void) {
 	s_printf("Server savefile does not exist\n");
 
 	/* Allow this */
-	return(TRUE);
+	return (TRUE);
 }
 
 /*
@@ -2671,13 +2541,13 @@ bool save_server_info() {
 	}
 
 	/* Return the result */
-	return(result);
+	return (result);
 }
 
 void wr_towns() {
 	int i, j;
 	wr_u16b(numtowns);
-	for (i = 0; i < numtowns; i++) {
+	for (i = 0; i < numtowns; i++){
 		wr_u16b(town[i].x);
 		wr_u16b(town[i].y);
 		wr_u16b(town[i].baselevel);
@@ -2686,7 +2556,7 @@ void wr_towns() {
 		wr_u16b(town[i].type);
 
 		/* Dump the stores */
-		for (j = 0; j < town[i].num_stores; j++) {
+		for (j = 0; j < town[i].num_stores; j++){
 			wr_store(&town[i].townstore[j]);
 		}
 	}
@@ -2800,7 +2670,7 @@ static bool save_quests_file(void) {
 			wr_s16b(q_questor->current_x);
 			wr_s16b(q_questor->current_y);
 
-			wr_u16b(q_questor->mo_idx);
+			wr_s16b(q_questor->mo_idx);
 			wr_s16b(q_questor->talk_focus);//not needed
 
 			wr_byte(q_questor->tainted);
@@ -2839,9 +2709,9 @@ static bool save_quests_file(void) {
 	/* Write the remaining contents of the buffer */
 	write_buffer();
 	/* Error in save */
-	if (ferror(fff) || (fflush(fff) == EOF)) return(FALSE);
+	if (ferror(fff) || (fflush(fff) == EOF)) return FALSE;
 	/* Successful save */
-	return(TRUE);
+	return TRUE;
 }
 static bool save_quests_aux(char *name) {
 	bool	ok = FALSE;
@@ -2863,8 +2733,8 @@ static bool save_quests_aux(char *name) {
 		}
 		if (!ok) (void)fd_kill(name);
 	}
-	if (!ok) return(FALSE);
-	return(TRUE);
+	if (!ok) return FALSE;
+	return TRUE;
 }
 void save_quests(void) {
 	//int result = FALSE;

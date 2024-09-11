@@ -1,13 +1,12 @@
 -- handle the udun school
 
 function get_disebolt_dam()
-	return 20 + get_level(Ind, DISEBOLT, 47), 15 + get_level(Ind, DISEBOLT, 50)
+	return 20 + get_level(Ind, DISEBOLT, 47), 9 + get_level(Ind, DISEBOLT, 50)
 end
 
 --[[
 DRAIN = add_spell {
 	["name"] = 	"Drain",
-	["name2"] = 	"Drain",
 	["school"] = 	{SCHOOL_UDUN},
 	["level"] = 	1,
 	["mana"] = 	0,
@@ -60,12 +59,11 @@ DRAIN = add_spell {
 ]]
 GENOCIDE_I = add_spell {
 	["name"] = 	"Genocide",
-	["name2"] = 	"Geno",
 	["school"] = 	{SCHOOL_UDUN},
-	["level"] = 	30,
+	["level"] = 	25,
 	["mana"] = 	50,
 	["mana_max"] = 	50,
-	["fail"] = 	-10,
+	["fail"] = 	0,
 	["stat"] = 	A_WIS,
 	["spell"] = 	function()
 			genocide(Ind)
@@ -77,7 +75,6 @@ GENOCIDE_I = add_spell {
 }
 GENOCIDE_II = add_spell {
 	["name"] = 	"Obliteration",
-	["name2"] = 	"Oblit",
 	["school"] = 	{SCHOOL_UDUN},
 	["level"] = 	40,
 	["mana"] = 	50,
@@ -95,12 +92,11 @@ GENOCIDE_II = add_spell {
 
 WRAITHFORM = add_spell {
 	["name"] = 	"Wraithform",
-	["name2"] = 	"Wraith",
 	["school"] = 	{SCHOOL_UDUN},
-	["level"] = 	43,
+	["level"] = 	35,
 	["mana"] = 	40,
 	["mana_max"] = 	40,
-	["fail"] = 	-40,
+	["fail"] = 	20,
 	["spell"] = 	function()
 			local dur = randint(30) + 20 + get_level(Ind, WRAITHFORM, 40)
 			set_tim_wraith(Ind, dur)
@@ -108,12 +104,31 @@ WRAITHFORM = add_spell {
 	["info"] = 	function()
 			return "dur "..(20 + get_level(Ind, WRAITHFORM, 40)).."+d30"
 	end,
-	["desc"] = 	{ "Turns you into an immaterial being.", }
+	["desc"] = 	{
+			"Turns you into an immaterial being.",
+			"***Automatically projecting***",
+	}
 }
+--[[
+FLAMEOFUDUN = add_spell {
+	["name"] = 	"Flame of Udun",
+	["school"] = 	{SCHOOL_UDUN},
+	["level"] = 	35,
+	["mana"] = 	70,
+	["mana_max"] = 	100,
+	["fail"] = 	20,
+	["spell"] = 	function()
+			set_mimic(randint(15) + 5 + get_level(FLAMEOFUDUN, 30), MIMIC_BALROG)
+	end,
+	["info"] = 	function()
+			return "dur "..(5 + get_level(FLAMEOFUDUN, 30)).."+d15"
+	end,
+	["desc"] = 	{ "Turns you into a powerful balrog", }
+}
+]]
 
 DISEBOLT = add_spell {
 	["name"] = 	"Disenchantment Ray",
-	["name2"] = 	"DisRay",
 	["school"] = 	{SCHOOL_UDUN},
 	["level"] = 	40,
 	["mana"] = 	50,
@@ -138,7 +153,6 @@ DISEBOLT = add_spell {
 
 HELLFIRE_I = add_spell {
 	["name"] = 	"Hellfire I",
-	["name2"] = 	"HFire I",
 	["school"] = 	{SCHOOL_UDUN},
 	["level"] = 	20,
 	["mana"] = 	15,
@@ -147,7 +161,7 @@ HELLFIRE_I = add_spell {
 	["direction"] = TRUE,
 	["ftk"] = 	2,
 	["spell"] = 	function(args)
-			fire_ball(Ind, GF_HELLFIRE, args.dir, 20 + get_level(Ind, HELLFIRE_I, 250), 2 + get_level(Ind, HELLFIRE_I, 2), " casts a ball of hellfire for")
+			fire_ball(Ind, GF_HELL_FIRE, args.dir, 20 + get_level(Ind, HELLFIRE_I, 250), 2 + get_level(Ind, HELLFIRE_I, 2), " casts a ball of hellfire for")
 		end,
 	["info"] = 	function()
 			return "dam "..(20 + get_level(Ind, HELLFIRE_I, 250)).." rad "..(2 + get_level(Ind, HELLFIRE_I, 2))
@@ -156,7 +170,6 @@ HELLFIRE_I = add_spell {
 }
 HELLFIRE_II = add_spell {
 	["name"] = 	"Hellfire II",
-	["name2"] = 	"HFire II",
 	["school"] = 	{SCHOOL_UDUN},
 	["level"] = 	40,
 	["mana"] = 	40,
@@ -165,7 +178,7 @@ HELLFIRE_II = add_spell {
 	["direction"] = TRUE,
 	["ftk"] = 	2,
 	["spell"] = 	function(args)
-			fire_ball(Ind, GF_HELLFIRE, args.dir, 20 + 250 + get_level(Ind, HELLFIRE_II, 250), 2 + get_level(Ind, HELLFIRE_I, 2), " casts a ball of hellfire for")
+			fire_ball(Ind, GF_HELL_FIRE, args.dir, 20 + 250 + get_level(Ind, HELLFIRE_II, 250), 2 + get_level(Ind, HELLFIRE_I, 2), " casts a ball of hellfire for")
 		end,
 	["info"] = 	function()
 			return "dam "..(20 + 250 + get_level(Ind, HELLFIRE_II, 250)).." rad "..(2 + get_level(Ind, HELLFIRE_I, 2))
@@ -175,9 +188,8 @@ HELLFIRE_II = add_spell {
 
 STOPWRAITH = add_spell {
 	["name"] = 	"Stop Wraithform",
-	["name2"] = 	"SWraith",
 	["school"] = 	{SCHOOL_UDUN},
-	["level"] = 	43,
+	["level"] = 	20,
 	["mana"] = 	0,
 	["mana_max"] = 	0,
 	["fail"] = 	101,
@@ -191,77 +203,4 @@ STOPWRAITH = add_spell {
 			"Immediately returns you to material form.",
 			"***Automatically projecting***",
 	}
-}
-
-CONFUSE_I = add_spell {
-	["name"] = 	"Confusion I",
-	["name2"] = 	"Conf I",
-	["school"] = 	{SCHOOL_UDUN},
-	["level"] = 	5,
-	["mana"] = 	5,
-	["mana_max"] = 	5,
-	["fail"] = 	10,
-	["am"] = 	75,
-	["direction"] = TRUE,
-	["spell"] = 	function(args)
-		fire_bolt(Ind, GF_OLD_CONF, args.dir, 5 + get_level(Ind, CONFUSE_I, 100), "focusses on your mind")
-	end,
-	["info"] = 	function()
-		return "power "..(5 + get_level(Ind, CONFUSE_I, 100))
-	end,
-	["desc"] = 	{ "Tries to manipulate the mind of a monster to confuse it.", }
-}
-CONFUSE_II = add_spell {
-	["name"] = 	"Confusion II",
-	["name2"] = 	"Conf II",
-	["school"] = 	{SCHOOL_UDUN},
-	["level"] = 	20,
-	["mana"] = 	15,
-	["mana_max"] = 	15,
-	["fail"] = 	-15,
-	["am"] = 	75,
-	["direction"] = TRUE,
-	["spell"] = 	function(args)
-		fire_ball(Ind, GF_OLD_CONF, args.dir, 5 + get_level(Ind, CONFUSE_I, 100), 2, "focusses on your mind")
-	end,
-	["info"] = 	function()
-		return "power "..(5 + get_level(Ind, CONFUSE_I, 100)).." rad 2"
-	end,
-	["desc"] = 	{ "Tries to manipulate the mind of all monsters in a small area to confuse them.", }
-}
-STUN_I = add_spell {
-	["name"] = 	"Stun I",
-	["name2"] = 	"Stun I",
-	["school"] = 	{SCHOOL_UDUN},
-	["level"] = 	15,
-	["mana"] = 	20,
-	["mana_max"] = 	20,
-	["fail"] = 	0,
-	["am"] = 	75,
-	["direction"] = TRUE,
-	["spell"] = 	function(args)
-		fire_bolt(Ind, GF_STUN, args.dir, 10 + get_level(Ind, STUN_I, 50), "")
-	end,
-	["info"] = 	function()
-		return ""
-	end,
-	["desc"] = 	{ "Tries to manipulate the mind of a monster to stun it.", }
-}
-STUN_II = add_spell {
-	["name"] = 	"Stun II",
-	["name2"] = 	"Stun II",
-	["school"] = 	{SCHOOL_UDUN},
-	["level"] = 	40,
-	["mana"] = 	60,
-	["mana_max"] = 	60,
-	["fail"] = 	-65,
-	["am"] = 	75,
-	["direction"] = TRUE,
-	["spell"] = 	function(args)
-		fire_ball(Ind, GF_STUN, args.dir, 10 + get_level(Ind, STUN_I, 50), 2, "")
-	end,
-	["info"] = 	function()
-		return ""
-	end,
-	["desc"] = 	{ "Tries to manipulate the minds of all monsters in a small area to stun them.", }
 }

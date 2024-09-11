@@ -8,7 +8,7 @@
 -- Sound FX
 audio_sfx = {
     --[player/alert]
-    "bell", --0
+    "bell",
     "page",
     "greeting",
     "warning",
@@ -20,7 +20,7 @@ audio_sfx = {
     "rain_soft",
     "rain_storm",
     "snow_soft", --nothing really
-    "snow_storm", --10
+    "snow_storm",
 
     "thunder",
 
@@ -34,7 +34,7 @@ audio_sfx = {
     "browse",
     "browse_book",
     "cast",
-    "cloak", --20
+    "cloak",
     "close_door",
     "disarm",
     "eat",
@@ -44,7 +44,7 @@ audio_sfx = {
     "open_door_stuck",
     "open_pick",
     "quaff_potion",
-    "read_scroll", --30
+    "read_scroll",
     "staircase",
     "staircase_fly",
     "staircase_pad",
@@ -54,9 +54,8 @@ audio_sfx = {
     "use_staff",
     "throw",
     "tunnel_rock",
-    "tunnel_rubble", --40
+    "tunnel_rubble",
     "tunnel_tree",
-    "hit_floor",
     "zap_rod",
 
     "drop_gold",
@@ -66,7 +65,7 @@ audio_sfx = {
     "cough_male",
     "cough_female",
     "shout",
-    "shout_male", --50
+    "shout_male",
     "shout_female",
     "scream",
     "scream_male",
@@ -77,7 +76,7 @@ audio_sfx = {
     "flash_bomb",
     "spin",
     "berserk_male",
-    "berserk_female", --60
+    "berserk_female",
     "shadow_run",
 
     "flare_missile",
@@ -90,7 +89,7 @@ audio_sfx = {
     "applaud",
 
     "knock",
-    "knock_castle", --70
+    "knock_castle",
 
     --game
     "playing_cards",
@@ -104,11 +103,9 @@ audio_sfx = {
 
     --misc
     "grow_trees",
-    "insanity", --80
-    "inventory",
+    "insanity",
     "levelup",
-    "jailed",
-    "receive_xo",
+    "am_field",
 
     "death", --everyone's favourite DOOM scream....
     "death_male",
@@ -117,7 +114,7 @@ audio_sfx = {
     --[combat]
     "hit",
     "hit_weapon",
-    "hit_sword", --90
+    "hit_sword",
     "hit_blunt",
     "hit_whip",
     "hit_axe",
@@ -128,7 +125,7 @@ audio_sfx = {
     "miss_projectile",
     "parry",
     "parry_weapon",
-    "block_shield", --100
+    "block_shield",
     "block_shield_projectile",
     "disarm_weapon",
 
@@ -141,7 +138,7 @@ audio_sfx = {
 
     --[magic]
     "breath",
-    "cast_ball", --110
+    "cast_ball",
     "cast_bolt",
     "cast_beam",
     "cast_cloud",
@@ -151,7 +148,6 @@ audio_sfx = {
     "phase_door",
     "puff",
     "teleport",
-    "recall", --120
     "curse",
     "heal",
     "summon",
@@ -163,7 +159,7 @@ audio_sfx = {
     "death_monster_animal_small", --hiss
     "death_monster_animal_large", --roar
     "death_monster_animal_aquatic", --bubbling
-    "death_monster_CZ", --howl --130
+    "death_monster_CZ", --howl
     "death_monster_humanoid", --scream/ugh/silence/whatever
     "death_monster_oOTP", --roar/scream
     "death_monster_A", --probably nothing, really
@@ -173,7 +169,7 @@ audio_sfx = {
     "death_monster_demon_high", --scream
     "death_monster_undead_low", --pulverize
     "death_monster_undead_high", --ghostly dissolve
-    "death_monster_nonliving", --breakdown (construct) --140
+    "death_monster_nonliving", --breakdown (construct)
     "death_monster_Ev", --swushsh (elementals and vortices dissolve)
 
     "monster_beg",
@@ -184,7 +180,7 @@ audio_sfx = {
     "monster_crawl",
     "monster_crush",
     "monster_drool",
-    "monster_engulf", --150
+    "monster_engulf",
     "monster_explode",
     "monster_gaze",
     "monster_insult",
@@ -194,21 +190,10 @@ audio_sfx = {
     "monster_show",
     "monster_spit",
     "monster_spore",
-    "monster_sting", --160
+    "monster_sting",
     "monster_touch",
     "monster_wail",
     "monster_whisper",
-
-    "monster_stirring",
-    "monster_roar",
-    -- 'notice' sfx by priority, from lowest to highest:
-    "monster_notice_animal_small", --hiss
-    "monster_notice_animal_large", --growl
-    "monster_notice_humanoid", --speech-like
-    "monster_notice_grunt", --orcs, trolls, ogres, giants, hybrids maybe
-    "monster_notice_undead", --170
-    "monster_notice_demon",
-    "monster_notice_dragon",
 
     --[misc]
     "shriek",
@@ -218,41 +203,20 @@ audio_sfx = {
     "trap_setoff",
     "hollow_noise",
     "stirring",
-    "stone_wall", --180
+    "stone_wall",
     "shatter_potion",
-    "am_field",
+    "store_doorbell_enter",
+    "store_doorbell_leave",
+    "jailed",
     "fireworks_big",
     "fireworks_norm",
     "fireworks_small",
     "fireworks_launch",
 
-    --[store]
-    "casino_inbetween",
-    "casino_craps",
-    "casino_wheel",
-    "casino_slots", --190
-    "casino_rules",
-    "home_extend",
-    "store_doorbell_enter",
-    "store_doorbell_leave",
-    "store_paperwork",
-    "store_cancel",
-    "store_repair",
-    "store_food_and_drink",
-    "store_redeem",
-    "store_rest", --200
-    "store_listen",
-    "store_prayer",
-    "store_enchant",
-    "store_recharge",
-    "store_id",
-    "store_curing",
-    "store_recall",
-
     --[item]
     "item_food",
     "item_weapon",
-    "item_sword", --210
+    "item_sword",
     "item_blunt",
     "item_whip",
     "item_axe",
@@ -262,7 +226,7 @@ audio_sfx = {
     "item_bow",
     "item_shot",
     "item_arrow",
-    "item_bolt", --220
+    "item_bolt",
     "item_ring",
     "item_amulet",
     "item_lightsource",
@@ -273,7 +237,7 @@ audio_sfx = {
 
     "item_book",
     "item_scroll",
-    "item_bottle", --230
+    "item_bottle",
     "item_potion",
     "item_rune",
     "item_skeleton",
@@ -283,7 +247,7 @@ audio_sfx = {
     "item_junk",
     "item_trapkit",
     "item_staff",
-    "item_wand", --240
+    "item_wand",
     "item_rod",
     "item_key",
     "item_golem_wood",
@@ -295,28 +259,13 @@ audio_sfx = {
     "ambient_fireplace",
     "ambient_shore",
     "ambient_lake",
-    "ambient_fire", --250
-
-    "ambient_store_general",
-    "ambient_store_armour",
-    "ambient_store_weapon",
-    "ambient_store_temple",
-    "ambient_store_alchemy",
-    "ambient_store_magic",
-    "ambient_store_black",
-    "ambient_store_book",
-    "ambient_store_rune",
-    "ambient_store_merchants", --260
-    "ambient_store_official",
-    "ambient_store_casino",
-    "ambient_store_misc",
+    "ambient_fire",
 
     "animal_bird",
     "animal_owl",
     "animal_seagull",
     "animal_toad",
     "animal_wolf",
-    "animal_birdofprey", --269
 }
 function get_sound_name(idx)
     if audio_sfx[idx + 1] == nil then return "" end
@@ -440,104 +389,6 @@ audio_bgm = {
     "sickbay",
     "jail",
     "winner",
-    "ghost",
-    "dungeonboss_slain",--90
-    "Sauron_slain",
-    "ZuAon_slain",
-
-    "store_town",
-    "store_blackmarket",
-    "store_dungeon",
-    "store_casino",
-    "store_service",
-    "extra",
-    "misc",
-
-    "specialunique_slain",--100
-    "Nazgul_slain",
-    "all_Nazgul_slain",
-    "tomb_insanity",
-    "wilderness_spring_day",
-    "wilderness_spring_night",
-    "wilderness_summer_day",
-    "wilderness_summer_night",
-    "wilderness_autumn_day",
-    "wilderness_autumn_night",
-    "wilderness_winter_day",--110
-    "wilderness_winter_night",
-
-    "wilderness_grass_day",
-    "wilderness_grass_night",
-    "wilderness_forest_day",
-    "wilderness_forest_night",
-    "wilderness_mountain_day",
-    "wilderness_mountain_night",
-    "wilderness_ocean_day",
-    "wilderness_ocean_night",
-    "wilderness_lake_day",--120
-    "wilderness_lake_night",
-    "wilderness_swamp_day",
-    "wilderness_swamp_night",
-    "wilderness_waste_day",
-    "wilderness_waste_night",
-    "wilderness_desert_day",
-    "wilderness_desert_night",
-    "wilderness_icywaste_day",
-    "wilderness_icywaste_night",
-
-    "town_generic_spring_day",--130
-    "town_generic_spring_night",
-    "Bree_spring_day",
-    "Bree_spring_night",
-    "Gondolin_spring_day",
-    "Gondolin_spring_night",
-    "MinasAnor_spring_day",
-    "MinasAnor_spring_night",
-    "Lothlorien_spring_day",
-    "Lothlorien_spring_night",
-    "Khazaddum_spring_day",--140
-    "Khazaddum_spring_night",
-
-    "town_generic_summer_day",
-    "town_generic_summer_night",
-    "Bree_summer_day",
-    "Bree_summer_night",
-    "Gondolin_summer_day",
-    "Gondolin_summer_night",
-    "MinasAnor_summer_day",
-    "MinasAnor_summer_night",
-    "Lothlorien_summer_day",--150
-    "Lothlorien_summer_night",
-    "Khazaddum_summer_day",
-    "Khazaddum_summer_night",
-
-    "town_generic_autumn_day",
-    "town_generic_autumn_night",
-    "Bree_autumn_day",
-    "Bree_autumn_night",
-    "Gondolin_autumn_day",
-    "Gondolin_autumn_night",
-    "MinasAnor_autumn_day",--160
-    "MinasAnor_autumn_night",
-    "Lothlorien_autumn_day",
-    "Lothlorien_autumn_night",
-    "Khazaddum_autumn_day",
-    "Khazaddum_autumn_night",
-
-    "town_generic_winter_day",
-    "town_generic_winter_night",
-    "Bree_winter_day",
-    "Bree_winter_night",
-    "Gondolin_winter_day",--170
-    "Gondolin_winter_night",
-    "MinasAnor_winter_day",
-    "MinasAnor_winter_night",
-    "Lothlorien_winter_day",
-    "Lothlorien_winter_night",
-    "Khazaddum_winter_day",
-    "Khazaddum_winter_night",--(177)
-
-    "Jail_dungeon",
 }
 function get_music_name(idx)
     if audio_bgm[idx + 1] == nil then return "" end

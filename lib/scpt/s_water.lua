@@ -1,16 +1,16 @@
 -- handle the water school
 
 function get_frostbolt_dam(Ind, limit_lev)
+	--return 4 + get_level(Ind, FROSTBOLT, 25), 6 + get_level(Ind, FROSTBOLT, 25) + 0
 	local lev
 
 	lev = get_level(Ind, FROSTBOLT_I, 50)
 	if limit_lev ~= 0 and lev > limit_lev then lev = limit_lev + (lev - limit_lev) / 3 end
 
-	return 4 + ((lev * 3) / 5), 6 + ((lev * 5) / 7) + 0
+	return 4 + ((lev * 3) / 5), 6 + (lev / 2) + 0
 end
 FROSTBOLT_I = add_spell {
 	["name"] = 	"Frost Bolt I",
-	["name2"] = 	"FrBolt I",
 	["school"] = 	SCHOOL_WATER,
 	["level"] = 	8,
 	["mana"] = 	2,
@@ -31,7 +31,6 @@ FROSTBOLT_I = add_spell {
 }
 FROSTBOLT_II = add_spell {
 	["name"] = 	"Frost Bolt II",
-	["name2"] = 	"FrBolt II",
 	["school"] = 	SCHOOL_WATER,
 	["level"] = 	22,
 	["mana"] = 	5,
@@ -52,7 +51,6 @@ FROSTBOLT_II = add_spell {
 }
 FROSTBOLT_III = add_spell {
 	["name"] = 	"Frost Bolt III",
-	["name2"] = 	"FrBolt III",
 	["school"] = 	SCHOOL_WATER,
 	["level"] = 	40,
 	["mana"] = 	10,
@@ -73,16 +71,16 @@ FROSTBOLT_III = add_spell {
 }
 
 function get_waterbolt_dam(Ind, limit_lev)
+	--return 4 + get_level(Ind, WATERBOLT, 25), 6 + get_level(Ind, WATERBOLT, 25) + 0
 	local lev
 
 	lev = get_level(Ind, WATERBOLT_I, 50)
 	if limit_lev ~= 0 and lev > limit_lev then lev = limit_lev + (lev - limit_lev) / 3 end
 
-	return 4 + ((lev * 3) / 5), 6 + ((lev * 5) / 7) + 0
+	return 4 + ((lev * 3) / 5), 6 + (lev / 2) + 0
 end
 WATERBOLT_I = add_spell {
 	["name"] = 	"Water Bolt I",
-	["name2"] = 	"WBolt I",
 	["school"] = 	SCHOOL_WATER,
 	["level"] = 	14,
 	["mana"] = 	4,
@@ -103,7 +101,6 @@ WATERBOLT_I = add_spell {
 }
 WATERBOLT_II = add_spell {
 	["name"] = 	"Water Bolt II",
-	["name2"] = 	"WBolt II",
 	["school"] = 	SCHOOL_WATER,
 	["level"] = 	24,
 	["mana"] = 	8,
@@ -124,11 +121,10 @@ WATERBOLT_II = add_spell {
 }
 WATERBOLT_III = add_spell {
 	["name"] = 	"Water Bolt III",
-	["name2"] = 	"WBolt III",
 	["school"] = 	SCHOOL_WATER,
 	["level"] = 	40,
-	["mana"] = 	16,
-	["mana_max"] = 	16,
+	["mana"] = 	17,
+	["mana_max"] = 	17,
 	["fail"] = 	-75,
 	["direction"] = TRUE,
 	["ftk"] = 	1,
@@ -146,7 +142,6 @@ WATERBOLT_III = add_spell {
 
 TIDALWAVE_I = add_spell {
 	["name"] = 	"Tidal Wave I",
-	["name2"] = 	"Wave I",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	16,
 	["mana"] = 	20,
@@ -165,7 +160,6 @@ TIDALWAVE_I = add_spell {
 }
 TIDALWAVE_II = add_spell {
 	["name"] = 	"Tidal Wave II",
-	["name2"] = 	"Wave II",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	36,
 	["mana"] = 	50,
@@ -185,40 +179,37 @@ TIDALWAVE_II = add_spell {
 
 ICESTORM_I = add_spell {
 	["name"] = 	"Frost Barrier I",
-	["name2"] = 	"Barrier I",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	22,
 	["mana"] = 	30,
 	["mana_max"] = 	30,
 	["fail"] = 	20,
 	["spell"] = 	function()
-			fire_wave(Ind, GF_COLD, 0, 34 + get_level(Ind, ICESTORM_I, 200), 1, 20 + get_level(Ind, ICESTORM_I, 27), 8, EFF_STORM, " summons an ice storm for")
+			fire_wave(Ind, GF_COLD, 0, 80 + get_level(Ind, ICESTORM_I, 200), 1, 20 + get_level(Ind, ICESTORM_I, 47), 9, EFF_STORM, " summons an ice storm for")
 	end,
 	["info"] = 	function()
-			return "dam "..(34 + get_level(Ind, ICESTORM_I, 200)).." rad 1 dur "..(20 + get_level(Ind, ICESTORM_I, 27))
+			return "dam "..(80 + get_level(Ind, ICESTORM_I, 200)).." rad 1 dur "..(20 + get_level(Ind, ICESTORM_I, 47))
 	end,
 	["desc"] = 	{ "Engulfs you in a whirl of roaring cold that strikes all foes at close range.", }
 }
 ICESTORM_II = add_spell {
 	["name"] = 	"Frost Barrier II",
-	["name2"] = 	"Barrier II",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	37,
 	["mana"] = 	60,
 	["mana_max"] = 	60,
 	["fail"] = 	-50,
 	["spell"] = 	function()
-			fire_wave(Ind, GF_ICE, 0, 34 + get_level(Ind, ICESTORM_I, 200), 1, 20 + get_level(Ind, ICESTORM_I, 27), 8, EFF_STORM, " summons an ice storm for")
+			fire_wave(Ind, GF_ICE, 0, 80 + get_level(Ind, ICESTORM_I, 200), 1, 20 + get_level(Ind, ICESTORM_I, 47), 9, EFF_STORM, " summons an ice storm for")
 	end,
 	["info"] = 	function()
-			return "dam "..(34 + get_level(Ind, ICESTORM_I, 200)).." rad 1 dur "..(20 + get_level(Ind, ICESTORM_I, 27))
+			return "dam "..(80 + get_level(Ind, ICESTORM_I, 200)).." rad 1 dur "..(20 + get_level(Ind, ICESTORM_I, 47))
 	end,
 	["desc"] = 	{ "Engulfs you in a whirl of sparkling ice that strikes all foes at close range.", }
 }
 
 ENTPOTION = add_spell {
 	["name"] = 	"Ent's Potion",
-	["name2"] = 	"Potion",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	6,
 	["mana"] = 	10,
@@ -257,11 +248,10 @@ ENTPOTION = add_spell {
 
 VAPOR_I = add_spell {
 	["name"] = 	"Vapor I",
-	["name2"] = 	"Vapor I",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	2,
 	["mana"] = 	2,
-	["mana_max"] = 	2,
+	["mana_max"] = 	12,
 	["fail"] = 	20,
 	["spell"] = 	function()
 			fire_cloud(Ind, GF_VAPOUR, 0, 3 + get_level(Ind, VAPOR_I, 20), 3 + get_level(Ind, VAPOR_I, 4, 0), 5, 8, " fires a cloud of vapor for")
@@ -273,7 +263,6 @@ VAPOR_I = add_spell {
 }
 VAPOR_II = add_spell {
 	["name"] = 	"Vapor II",
-	["name2"] = 	"Vapor II",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	20,
 	["mana"] = 	5,
@@ -289,7 +278,6 @@ VAPOR_II = add_spell {
 }
 VAPOR_III = add_spell {
 	["name"] = 	"Vapor III",
-	["name2"] = 	"Vapor III",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	40,
 	["mana"] = 	12,
@@ -306,7 +294,6 @@ VAPOR_III = add_spell {
 
 FROSTBALL_I = add_spell {
 	["name"] = 	"Frost Ball I",
-	["name2"] = 	"FrBall I",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	22,
 	["mana"] = 	9,
@@ -324,7 +311,6 @@ FROSTBALL_I = add_spell {
 }
 FROSTBALL_II = add_spell {
 	["name"] = 	"Frost Ball II",
-	["name2"] = 	"FrBall II",
 	["school"] = 	{SCHOOL_WATER},
 	["level"] = 	40,
 	["mana"] = 	23,

@@ -76,8 +76,9 @@ function setexp(name, modif)
 --	players(p).exp = 0
 --	players(p).max_exp = 0
 --    else
---        players(p).exp = player_exp[players(p).lev - 2] * players(p).expfact / 100 - modif
-	players(p).exp = lua_player_exp(players(p).lev, players(p).expfact)
+--        players(p).exp = player_exp[players(p).lev - 1] * players(p).expfact / 100 - modif
+--	players(p).exp = lua_player_exp(players(p).lev, players(p).expfact)
+	players(p).exp = lua_player_exp(players(p).lev, 100)
         players(p).max_exp = players(p).exp
 --    end
 end
@@ -94,6 +95,7 @@ function setlev(name, l)
 	players(p).exp = 0
 	players(p).max_exp = 0
     else
+--        players(p).exp = player_exp[l - 1] * players(p).expfact / 100
 	players(p).exp = lua_player_exp(l, players(p).expfact)
         players(p).max_exp = players(p).exp
     end
@@ -142,7 +144,7 @@ function allmons(name)
     if (p == -1) then return -1 end
 --    p = Ind
     for i = 1, MAX_R_IDX do
-	players(p).r_killed[i] = 1
+	players(p).r_killed[i] = 666
     end
 end
 
@@ -232,12 +234,8 @@ function status(name)
     end
 
     msg_print(Ind, "\255UStatus for "..players(p).name.." (Ind "..p..", id "..players(p).id..", party "..players(p).party..", \255"..cmode.."\255U)")
-    if (players(p).go_level == nil) then
-    msg_print(Ind, "Race: "..race_info[players(p).prace + 1].title.." ("..players(p).prace..")  Class: "..class_info[players(p).pclass + 1].title.." ("..players(p).pclass..")  Trait: "..trait_info[players(p).ptrait + 1].title.." ("..players(p).ptrait..")")
-    else
     msg_print(Ind, "Race: "..race_info[players(p).prace + 1].title.." ("..players(p).prace..")  Class: "..class_info[players(p).pclass + 1].title.." ("..players(p).pclass..")  Trait: "..trait_info[players(p).ptrait + 1].title.." ("..players(p).ptrait..")  Go: "..players(p).go_level)
-    end
-    msg_print(Ind, "HP: "..players(p).chp.."/"..players(p).mhp.."  MP: "..players(p).cmp.."/"..players(p).mmp.."  SN: "..players(p).csane.."/"..players(p).msane.."  St: "..players(p).cst.."/"..players(p).mst.."  Crt: "..players(p).xtra_crit.."  Lu: "..players(p).luck..ks)
+    msg_print(Ind, "HP: "..players(p).chp.."/"..players(p).mhp.."  MP: "..players(p).csp.."/"..players(p).msp.."  SN: "..players(p).csane.."/"..players(p).msane.."  St: "..players(p).cst.."/"..players(p).mst.."  Crt: "..players(p).xtra_crit.."  Lu: "..players(p).luck..ks)
 
     line1 = "Base Spd: "..bspeed.."   Spd: "..players(p).pspeed.."  MDLev: "..players(p).max_dlv
     linetab = ""
@@ -856,7 +854,7 @@ end
 
 --refills own spell points
 function fsp()
-    player.cmp = player.mmp
+    player.csp = player.msp
 end
 
 --display number of kills of a certain monster
@@ -1040,7 +1038,6 @@ function fskc(name)
     p = ind(name)
     if (p == -1) then return -1 end
     respec_skills(p, 1)
-    shape_Maia_skills(p, 1)
 end
 
 --mhh
@@ -1365,11 +1362,4 @@ function fix_spellbooks2(name, sold, snew, swap)
 			end
 		end
 	end
-end
-
-function swear_list(lv)
-	lua_swear_list(Ind, lv)
-end
-function nonswear_list()
-	lua_nonswear_list(Ind)
 end

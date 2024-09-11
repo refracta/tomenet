@@ -50,7 +50,7 @@ extern void rd_string(char *str, int max);
 
 #define CS_LOAD(xxx) void xxx(c_special *cs_ptr)
 #define CS_SAVE(xxx) void xxx(c_special *cs_ptr)
-#define CS_SEE(xxx) void xxx(c_special *cs_ptr, char32_t *c, byte *a, int Ind)
+#define CS_SEE(xxx) void xxx(c_special *cs_ptr, char *c, byte *a, int Ind)
 #define CS_HIT(xxx) int xxx(c_special *cs_ptr, int y, int x, int Ind)
 
 CS_LOAD(defload);
@@ -86,21 +86,21 @@ CS_SAVE(s32bsave);
 CS_LOAD(runeload);
 CS_SAVE(runesave);
 
-void defload(c_special *cs_ptr) {
+void defload(c_special *cs_ptr){
 }
-void defsave(c_special *cs_ptr) {
+void defsave(c_special *cs_ptr){
 }
-void defsee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
+void defsee(c_special *cs_ptr, char *c, byte *a, int Ind){
 	/* really do nothing */
 }
-int defhit(c_special *cs_ptr, int y, int x, int Ind) {
+int defhit(c_special *cs_ptr, int y, int x, int Ind){
 	/* return implied permission */
 	return(TRUE);
 }
 
-void dnaload(c_special *cs_ptr) {
+void dnaload(c_special *cs_ptr){
 }
-void dnasave(c_special *cs_ptr) {
+void dnasave(c_special *cs_ptr){
 }
 int dnahit(c_special *cs_ptr, int y, int x, int Ind) {
 	/* we have to know from where we are called! */
@@ -109,8 +109,8 @@ int dnahit(c_special *cs_ptr, int y, int x, int Ind) {
 	if (!dna) {
 		if (admin_p(Ind)) {
 			msg_print(Ind, "\377D(Corrupt house dna on this grid)");
-			return(TRUE);
-		} else return(FALSE);
+			return TRUE;
+		} else return FALSE;
 	}
 	if (access_door(Ind, dna, TRUE) || admin_p(Ind)) {
 		if (admin_p(Ind))
@@ -120,23 +120,21 @@ int dnahit(c_special *cs_ptr, int y, int x, int Ind) {
 	return(FALSE);
 }
 
-void dnasee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
+void dnasee(c_special *cs_ptr, char *c, byte *a, int Ind){
 }
 
-void keyload(c_special *cs_ptr) {
+void keyload(c_special *cs_ptr){
 	struct key_type *key;
-
 	MAKE(key, struct key_type);
 	rd_u16b(&key->id);
 	cs_ptr->sc.ptr = key;
 }
-void keysave(c_special *cs_ptr) {
+void keysave(c_special *cs_ptr){
 	struct key_type *key;
-
 	key = cs_ptr->sc.ptr;
 	wr_u16b(key->id);
 }
-int keyhit(c_special *cs_ptr, int y, int x, int Ind) {
+int keyhit(c_special *cs_ptr, int y, int x, int Ind){
 	struct player_type *p_ptr;
 	int j;
 	struct cave_type **zcave, *c_ptr;
@@ -151,7 +149,6 @@ int keyhit(c_special *cs_ptr, int y, int x, int Ind) {
 	if (p_ptr == (struct player_type*)NULL) return(FALSE);
 	for (j = 0; j < INVEN_PACK; j++) {
 		object_type *o_ptr = &p_ptr->inventory[j];
-
 		if (o_ptr->tval == TV_KEY && o_ptr->sval == SV_HOUSE_KEY && o_ptr->pval == key->id) {
 			c_ptr->feat = FEAT_HOME_OPEN;
 			p_ptr->energy -= level_speed(&p_ptr->wpos) / 2;
@@ -167,19 +164,18 @@ int keyhit(c_special *cs_ptr, int y, int x, int Ind) {
 
 /* EXPERIMENTAL SEE CODE - I AM NOT INSISTING THAT WE SEE
    KEY DOORS ANY DIFFERENTLY - DO NOT DELETE !!! */
-void keysee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
+void keysee(c_special *cs_ptr, char *c, byte *a, int Ind){
 	struct player_type *p_ptr;
 	int j;
 	struct key_type *key = cs_ptr->sc.ptr;
 
 	p_ptr = Players[Ind];
 
-	if (*c == FEAT_HOME_OPEN) return;	/* dont bother */
-	if (p_ptr == (struct player_type*)NULL) return;
-	for (j = 0; j < INVEN_PACK; j++) {
+	if(*c == FEAT_HOME_OPEN) return;	/* dont bother */
+	if(p_ptr == (struct player_type*)NULL) return;
+	for(j = 0; j < INVEN_PACK; j++){
 		object_type *o_ptr = &p_ptr->inventory[j];
-
-		if (o_ptr->tval == TV_KEY && o_ptr->sval == SV_HOUSE_KEY && o_ptr->pval == key->id) {
+		if(o_ptr->tval == TV_KEY && o_ptr->sval == SV_HOUSE_KEY && o_ptr->pval == key->id){
 			/* colours are only test colours! */
 			*c = '*';
 			*a = TERM_L_DARK;
@@ -192,26 +188,24 @@ void keysee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
  * Traps
  */
 /* *ptr is not used, but is still needed. */
-void tload(c_special *cs_ptr) {
+void tload(c_special *cs_ptr)
+{
 	byte tmp8u;
-
 	rd_byte(&cs_ptr->sc.trap.t_idx);
 	rd_byte(&tmp8u);
 	cs_ptr->sc.trap.found = tmp8u;
-	if (s_older_than(4, 9, 3)) return;
-	rd_byte(&cs_ptr->sc.trap.clone);
 }
 
-void tsave(c_special *cs_ptr) {
+void tsave(c_special *cs_ptr)
+{
 	wr_byte(cs_ptr->sc.trap.t_idx);
 	wr_byte(cs_ptr->sc.trap.found);
-	wr_byte(cs_ptr->sc.trap.clone);
 }
-void tsee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
+void tsee(c_special *cs_ptr, char *c, byte *a, int Ind){
 //	printf("tsee %d\n", Ind);
 }
 
-int thit(c_special *cs_ptr, int y, int x, int Ind) {
+int thit(c_special *cs_ptr, int y, int x, int Ind){
 #if 0	/* temporary while csfunc->activate() is changed */
 	if ((cs_ptr = GetCS(c_ptr, CS_TRAPS)) && !p_ptr->ghost) {
 		bool hit = TRUE;
@@ -243,7 +237,7 @@ int thit(c_special *cs_ptr, int y, int x, int Ind) {
 	return(TRUE);	/* temp... */
 }
 
-void insc_load(c_special *cs_ptr) {
+void insc_load(c_special *cs_ptr){
 	struct floor_insc *insc;
 	MAKE(insc, struct floor_insc);
 	cs_ptr->sc.ptr = insc;
@@ -251,13 +245,13 @@ void insc_load(c_special *cs_ptr) {
 	rd_u16b(&insc->found);
 }
 
-void insc_save(c_special *cs_ptr) {
+void insc_save(c_special *cs_ptr){
 	struct floor_insc *insc = cs_ptr->sc.ptr;
 	wr_string(insc->text);
 	wr_u16b(insc->found);
 }
 
-int insc_hit(c_special *cs_ptr, int y, int x, int Ind) {
+int insc_hit(c_special *cs_ptr, int y, int x, int Ind){
 	struct floor_insc *sptr = cs_ptr->sc.ptr;
 	char sign_text[MAX_CHARS], *s = sign_text, *p = NULL;
 	strcpy(s, sptr->text);
@@ -282,36 +276,39 @@ int insc_hit(c_special *cs_ptr, int y, int x, int Ind) {
 /*
  * Between gates (inner-floor version)
  */
-void betweenload(c_special *cs_ptr) {
+void betweenload(c_special *cs_ptr)
+{
 	rd_byte(&cs_ptr->sc.between.fy);
 	rd_byte(&cs_ptr->sc.between.fx);
 }
-void betweensave(c_special *cs_ptr) {
+void betweensave(c_special *cs_ptr)
+{
 	wr_byte(cs_ptr->sc.between.fy);
 	wr_byte(cs_ptr->sc.between.fx);
 }
-void betweensee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
+void betweensee(c_special *cs_ptr, char *c, byte *a, int Ind){
 //	printf("tsee %d\n", Ind);
 }
-int betweenhit(c_special *cs_ptr, int y, int x, int Ind) {
+int betweenhit(c_special *cs_ptr, int y, int x, int Ind){
 //	printf("bhit: %d\n", Ind);
 	return(TRUE);
 }
 
-void fountload(c_special *cs_ptr) {
+void fountload(c_special *cs_ptr)
+{
 	byte tmp8u;
-
 	rd_byte(&cs_ptr->sc.fountain.type);
 	rd_byte(&cs_ptr->sc.fountain.rest);
 	rd_byte(&tmp8u);
 	cs_ptr->sc.fountain.known = tmp8u;
 }
-void fountsave(c_special *cs_ptr) {
+void fountsave(c_special *cs_ptr)
+{
 	wr_byte(cs_ptr->sc.fountain.type);
 	wr_byte(cs_ptr->sc.fountain.rest);
 	wr_byte(cs_ptr->sc.fountain.known);
 }
-void fountsee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
+void fountsee(c_special *cs_ptr, char *c, byte *a, int Ind){
 	/* TODO: tell what kind if 'known' */
 //	printf("fountsee %d\n", Ind);
 }
@@ -319,50 +316,45 @@ void fountsee(c_special *cs_ptr, char32_t *c, byte *a, int Ind) {
 /*
  * Monster_traps (inner-floor version)
  */
-void montrapload(c_special *cs_ptr) {
-	byte tmp8u;
-
+void montrapload(c_special *cs_ptr)
+{
 	rd_u16b(&cs_ptr->sc.montrap.trap_kit);
 	rd_byte(&cs_ptr->sc.montrap.difficulty);
 	rd_byte(&cs_ptr->sc.montrap.feat);
-	if (s_older_than(4, 7, 12)) return;
-	rd_byte(&tmp8u);
-	cs_ptr->sc.montrap.found = (tmp8u != 0);
 }
 
-void montrapsave(c_special *cs_ptr) {
+void montrapsave(c_special *cs_ptr)
+{
 	wr_u16b(cs_ptr->sc.montrap.trap_kit);
 	wr_byte(cs_ptr->sc.montrap.difficulty);
 	wr_byte(cs_ptr->sc.montrap.feat);
-	wr_byte(cs_ptr->sc.montrap.found);
 }
 
-void runeload(c_special *cs_ptr) {
-	byte tmp8u;
-
-	rd_s32b(&cs_ptr->sc.rune.id);
-	rd_s16b(&cs_ptr->sc.rune.dam);
-	rd_byte(&cs_ptr->sc.rune.rad);
+void runeload(c_special *cs_ptr)
+{
 	rd_byte(&cs_ptr->sc.rune.typ);
+	rd_byte(&cs_ptr->sc.rune.mod);
+	rd_byte(&cs_ptr->sc.rune.lev);
 	rd_byte(&cs_ptr->sc.rune.feat);
-	if (s_older_than(4, 7, 12)) return;
-	rd_byte(&tmp8u);
-	cs_ptr->sc.rune.found = (tmp8u != 0);
+	rd_s32b(&cs_ptr->sc.rune.id);
 }
 
-void runesave(c_special *cs_ptr) {
-	wr_s32b(cs_ptr->sc.rune.id);
-	wr_s16b(cs_ptr->sc.rune.dam);
-	wr_byte(cs_ptr->sc.rune.rad);
+void runesave(c_special *cs_ptr)
+{
 	wr_byte(cs_ptr->sc.rune.typ);
+	wr_byte(cs_ptr->sc.rune.mod);
+	wr_byte(cs_ptr->sc.rune.lev);
 	wr_byte(cs_ptr->sc.rune.feat);
-	wr_byte(cs_ptr->sc.rune.found);
+	wr_s32b(cs_ptr->sc.rune.id);
 }
 
-void s32bload(c_special *cs_ptr) {
+
+void s32bload(c_special *cs_ptr)
+{
 	rd_s32b(&cs_ptr->sc.omni);
 }
-void s32bsave(c_special *cs_ptr) {
+void s32bsave(c_special *cs_ptr)
+{
 	wr_s32b(cs_ptr->sc.omni);
 }
 

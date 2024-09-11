@@ -24,7 +24,6 @@ end
 
 MBASH = add_spell {
 	["name"] = 	"Psychic Hammer",
-	["name2"] = 	"PsyHammer",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -44,7 +43,6 @@ MBASH = add_spell {
 
 MBLINK = add_spell {
 	["name"] = 	"Autokinesis I",
-	["name2"] = 	"AK I",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -64,7 +62,6 @@ MBLINK = add_spell {
 
 MTELEPORT = add_spell {
 	["name"] = 	"Autokinesis II",
-	["name2"] = 	"AK II",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -84,7 +81,6 @@ MTELEPORT = add_spell {
 
 MTELETOWARDS = add_spell {
 	["name"] = 	"Autokinesis III",
-	["name2"] = 	"AK III",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -103,7 +99,6 @@ MTELETOWARDS = add_spell {
 
 MTELEAWAY = add_spell {
 	["name"] = 	"Psychic Warp",
-	["name2"] = 	"PsyWarp",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -123,7 +118,6 @@ MTELEAWAY = add_spell {
 
 MDISARM = add_spell {
 	["name"] = 	"Psychokinesis",
-	["name2"] = 	"Psychok",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -145,9 +139,32 @@ MDISARM = add_spell {
 	}
 }
 
+--[[ --moved to mintrusion, to make room for ff/lev spells here..
+MPSISTORM = add_spell {
+	["name"] = 	"Psi Storm",
+	["school"] = 	{SCHOOL_PPOWER},
+	["am"] = 	50,
+	["spell_power"] = 0,
+	["level"] = 	18,
+	["mana"] = 	15,
+	["mana_max"] = 	40,
+	["fail"] = 	25,
+	["direction"] = TRUE,
+	["spell"] = 	function(args)
+--	["spell"] = 	function()
+			fire_cloud(Ind, GF_PSI, args.dir, (1 + get_level(Ind, MPSISTORM, 76)), 2 + get_level(Ind, MPSISTORM, 2), 5 + get_level(Ind, MPSISTORM, 5), 14, " releases a psi storm for")
+--			fire_cloud(Ind, GF_PSI, 0, (1 + get_level(Ind, MPSISTORM, 76)), 2 + get_level(Ind, MPSISTORM, 4), 5 + get_level(Ind, MPSISTORM, 5), 14, " releases a psi storm for")
+--			fire_wave(Ind, GF_PSI, 0, (1 + get_level(Ind, MPSISTORM, 76)), 2 + get_level(Ind, MPSISTORM, 4), 5 + get_level(Ind, MPSISTORM, 5), 14, EFF_STORM, " releases a psi storm for")
+			end,
+	["info"] = 	function()
+			return "dam "..(1 + get_level(Ind, MPSISTORM, 76)).." rad "..(2 + get_level(Ind, MPSISTORM, 2)).." dur "..(5 + get_level(Ind, MPSISTORM, 5))
+			end,
+	["desc"] = 	{ "A psionic storm that damages and disturbs all minds within an area", }
+}
+]]
+
 MFEEDBACK = add_spell {
 	["name"] = 	"Feedback",
-	["name2"] = 	"Fback",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -165,14 +182,14 @@ MFEEDBACK = add_spell {
 		return "dur "..(5 + get_level(Ind, MFEEDBACK, 15)).."+d5"
 	end,
 	["desc"] = {
-		"Uses psycho-kinetic force for propulsion, making you fall gently like a feather.",
+		"Uses psycho-kinetic force for propulsion, making you fall",
+		"gently like a feather.",
 		"At level 15 it becomes sufficient for levitation."
 	}
 }
 
 MPYROKINESIS_I = add_spell {
 	["name"] = 	"Pyrokinesis I",
-	["name2"] = 	"Pyro I",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -195,7 +212,6 @@ MPYROKINESIS_I = add_spell {
 }
 MPYROKINESIS_II = add_spell {
 	["name"] = 	"Pyrokinesis II",
-	["name2"] = 	"Pyro II",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -219,7 +235,6 @@ MPYROKINESIS_II = add_spell {
 
 MCRYOKINESIS_I = add_spell {
 	["name"] = 	"Cryokinesis I",
-	["name2"] = 	"Cryo I",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -243,7 +258,6 @@ MCRYOKINESIS_I = add_spell {
 }
 MCRYOKINESIS_II = add_spell {
 	["name"] = 	"Cryokinesis II",
-	["name2"] = 	"Cryo II",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
@@ -268,13 +282,13 @@ MCRYOKINESIS_II = add_spell {
 
 MSHIELD = add_spell {
 	["name"] = 	"Kinetic Shield",
-	["name2"] = 	"KShield",
 	["school"] = 	{SCHOOL_PPOWER},
 	["am"] = 	50,
 	["spell_power"] = 0,
 	["level"] = 	40,
 	["mana"] = 	30,
 	["mana_max"] = 	30,
+--	["fail"] = 	158,
 	["fail"] = 	-50,
 	["direction"] = FALSE,
 	["spell"] = 	function()
@@ -288,3 +302,30 @@ MSHIELD = add_spell {
 			"half of all incoming melee attacks and physical projectiles.",
 	}
 }
+
+if (def_hack("TEST_SERVER", nil)) then
+MFUSION = add_spell {
+	["name"] = 	"Mental Fusion",
+--	["name"] = 	"Corporeal Fusion",
+--	["school"] = 	{SCHOOL_TCONTACT, SCHOOL_PPOWER, SCHOOL_MINTRUSION},
+	["school"] = 	{SCHOOL_TCONTACT, SCHOOL_PPOWER},
+	["am"] = 	50,
+	["spell_power"] = 0,
+	["level"] = 	40,
+	["mana"] = 	200,
+	["mana_max"] = 	200,
+	["fail"] = 	20,
+	["spell"] = 	function()
+			do_cmd_fusion(Ind)
+			end,
+	["info"] = 	function()
+			return ""
+			end,
+	["desc"] = 	{
+			"Fuses your mind with a friendly target with open mind nearby,",
+			"allowing you spell-casting but giving up control over your body.",
+--			"Fuses your mind and body with a friendly target with open mind nearby,",
+--			"allowing you spell-casting but giving up control over the body.",
+	}
+}
+end

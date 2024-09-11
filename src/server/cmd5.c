@@ -27,32 +27,35 @@
 /*
  * Return the skill associated with the realm
  */
-static int find_realm_skill(int realm) {
-	switch (realm) {
-	case REALM_MAGERY:
-		return(SKILL_MAGERY);
-	case REALM_PRAYER:
-		return(SKILL_PRAY);
-	case REALM_SORCERY:
-		return(SKILL_SORCERY);
-	case REALM_SHADOW:
-		return(SKILL_SHADOW);
-	case REALM_HUNT:
-//		return(SKILL_ARCHERY);
-		return(SKILL_HUNTING);
-	case REALM_FIGHTING:
-//		return(SKILL_MASTERY);
-		return(SKILL_TECHNIQUE);
-//	case REALM_PSI:
-//		return(SKILL_);
-	};
-	return(0);
+static int find_realm_skill(int realm)
+{
+        switch (realm)
+        {
+        case REALM_MAGERY:
+                return SKILL_MAGERY;
+        case REALM_PRAYER:
+                return SKILL_PRAY;
+        case REALM_SORCERY:
+                return SKILL_SORCERY;
+        case REALM_SHADOW:
+                return SKILL_SHADOW;
+        case REALM_HUNT:
+//                return SKILL_ARCHERY;
+                return SKILL_HUNTING;
+        case REALM_FIGHTING:
+//                return SKILL_MASTERY;
+                return SKILL_TECHNIQUE;
+//        case REALM_PSI:
+//                return SKILL_;
+        };
+        return 0;
 }
 
 /*
  * Returns spell chance of failure for spell		-RAK-
  */
-static s16b spell_chance(int Ind, int realm, magic_type *s_ptr) {
+static s16b spell_chance(int Ind, int realm, magic_type *s_ptr)
+{
 	player_type *p_ptr = Players[Ind];
 
 	int chance, minfail, minminfail;
@@ -68,11 +71,11 @@ static s16b spell_chance(int Ind, int realm, magic_type *s_ptr) {
 	//chance -= adj_mag_stat[p_ptr->stat_ind[magic_info[realm].spell_stat]] - 3;
 
 	/* Not enough mana to cast */
-	if (s_ptr->smana > p_ptr->cmp)
+	if (s_ptr->smana > p_ptr->csp)
 	{
 		/* Hack -- Since at the moment casting spells without enough mana*/
 		/* is impossible, I'm taking this out, as it confuses people. */
-		/* chance += 5 * (s_ptr->smana - p_ptr->cmp); */
+		/* chance += 5 * (s_ptr->smana - p_ptr->csp); */
 	}
 
 	/* Extract the minimum failure rate */
@@ -109,7 +112,7 @@ static s16b spell_chance(int Ind, int realm, magic_type *s_ptr) {
 	if (chance > 95) chance = 95;
 
 	/* Return the chance */
-	return(chance);
+	return (chance);
 }
 #endif
 
@@ -148,13 +151,13 @@ bool check_antimagic(int Ind, int percentage) {
 
 		/* Reduction for party */
 		if ((i != Ind) && player_in_party(p_ptr->party, i))
-			antichance = (antichance * (100 - AM_PARTY_REDUCTION)) / 100;
+			antichance >>= 2;	/* was >>= 1 */
 
 		/* Got disrupted ? */
 		if (magik((antichance * percentage) / 100)) {
 			if (i == Ind) {
 #ifdef USE_SOUND_2010
-				sound(Ind, "am_field", NULL, SFX_TYPE_MISC, FALSE);
+				if (p_ptr->sfx_am) sound(Ind, "am_field", NULL, SFX_TYPE_MISC, FALSE);
 #endif
 				msg_format(Ind, "\377%cYour own anti-magic field disrupts your attempts.", COLOUR_AM_OWN);
 			} else {
@@ -176,7 +179,7 @@ bool check_antimagic(int Ind, int percentage) {
 					msg_format(i, "\377%cYour anti-magic field disrupts %s's attempts.", COLOUR_AM_PLY, p_ptr->name);
 				}
 			}
-			return(TRUE);
+			return TRUE;
 		}
 	}
 
@@ -189,7 +192,7 @@ bool check_antimagic(int Ind, int percentage) {
 		x = x2 + tdx[i];
 
 		/* Ignore "illegal" locations */
-		if (!in_bounds(y, x)) continue;
+		if (!in_bounds2(wpos, y, x)) continue;
 
 		if ((m_idx = zcave[y][x].m_idx) <= 0) continue;
 
@@ -227,12 +230,12 @@ bool check_antimagic(int Ind, int percentage) {
 #ifdef USE_SOUND_2010
 			sound(Ind, "am_field", NULL, SFX_TYPE_MON_MISC, FALSE);
 #endif
-			return(TRUE);
+			return TRUE;
 		}
 	}
 
 	/* Assume no antimagic */
-	return(FALSE);
+	return FALSE;
 }
 
 #if 0 /* not used? - mikaelh */
@@ -266,7 +269,7 @@ static void brand_weapon(int Ind) {
 
 		msg_format(Ind, "Your %s %s", o_name, act);
 
-		enchant(Ind, o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM | ENCH_EQUIP);
+		enchant(Ind, o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
 
 		/* Hack -- you don't sell the wep blessed by your god, do you? :) */
 		o_ptr->discount = 100;
@@ -316,7 +319,7 @@ void do_cmd_ghost_power(int Ind, int ability) {
 	un_afk_idle(Ind);
 
 	/* Spell effects */
-	switch (i) {
+	switch(i) {
 	case 0:
 		teleport_player(Ind, 10, TRUE);
 		break;
@@ -349,7 +352,7 @@ void do_cmd_ghost_power(int Ind, int ability) {
 	p_ptr->energy -= level_speed(&p_ptr->wpos);
 
 	take_xp_hit(Ind, s_ptr->slevel * s_ptr->smana,
-	    "the strain of ghostly powers", TRUE, TRUE, TRUE, 0);
+	    "the strain of ghostly powers", TRUE, TRUE, TRUE);
 }
 
 
@@ -359,7 +362,7 @@ void do_cmd_ghost_power(int Ind, int ability) {
 void do_cmd_ghost_power_aux(int Ind, int dir) {
 	player_type *p_ptr = Players[Ind];
 	magic_type *s_ptr;
-
+	
 	/* Verify spell number */
 	if (p_ptr->current_spell < 0)
 		return;
@@ -399,7 +402,7 @@ void do_cmd_ghost_power_aux(int Ind, int dir) {
 	p_ptr->energy -= level_speed(&p_ptr->wpos);
 
 	take_xp_hit(Ind, s_ptr->slevel * s_ptr->smana,
-	    "the strain of ghostly powers", TRUE, TRUE, TRUE, 0);
+	    "the strain of ghostly powers", TRUE, TRUE, TRUE);
 }
 
 /* old spinning, now unused. Added spin_attack() to replace it - C. Blue */
@@ -418,40 +421,6 @@ void do_spin(int Ind) {
 	}
 }
 
-bool mimic_power_hindered(int Ind) {
-	player_type *p_ptr = Players[Ind];
-
-	/* No magic */
-	if (p_ptr->anti_magic) {
-		msg_format(Ind, "\377%cYour anti-magic shell disrupts your attempt.", COLOUR_AM_OWN);
-		Send_confirm(Ind, PKT_ACTIVATE_SKILL);
-		return(TRUE);
-	}
-	if (p_ptr->antimagic) {
-#ifdef USE_SOUND_2010
-		sound(Ind, "am_field", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-		msg_format(Ind, "\377%cYour anti-magic field disrupts your attempt.", COLOUR_AM_OWN);
-		Send_confirm(Ind, PKT_ACTIVATE_SKILL);
-		return(TRUE);
-	}
-
-	/* Not when confused */
-	if (p_ptr->confused) {
-		/* Paranoia? Cease fire-till-kill! */
-		p_ptr->shooting_till_kill = FALSE;
-		p_ptr->shooty_till_kill = FALSE;
-		p_ptr->shoot_till_kill_mimic = 0;
-
-		msg_print(Ind, "You are too confused!");
-		Send_confirm(Ind, PKT_ACTIVATE_SKILL);
-		return(TRUE);
-	}
-
-	/* power successfully used */
-	return(FALSE);
-}
-
 static void do_mimic_power(int Ind, int power, int dir) {
 	player_type *p_ptr = Players[Ind];
 	monster_race *r_ptr = &r_info[p_ptr->body_monster];
@@ -463,7 +432,29 @@ static void do_mimic_power(int Ind, int power, int dir) {
 
 	p_ptr->energy -= level_speed(&p_ptr->wpos);
 
-	if (mimic_power_hindered(Ind)) return;
+	/* No magic */
+	if (p_ptr->anti_magic) {
+		msg_format(Ind, "\377%cYour anti-magic shell disrupts your attempt.", COLOUR_AM_OWN);
+		return;
+	}
+	if (p_ptr->antimagic) {
+#ifdef USE_SOUND_2010
+		sound(Ind, "am_field", NULL, SFX_TYPE_MISC, FALSE);
+#endif
+		msg_format(Ind, "\377%cYour anti-magic field disrupts your attempt.", COLOUR_AM_OWN);
+		return;
+	}
+
+	/* Not when confused */
+	if (p_ptr->confused) {
+		msg_print(Ind, "You are too confused!");
+
+		/* Paranoia? Cease fire-till-kill! */
+		p_ptr->shooting_till_kill = FALSE;
+		p_ptr->shooty_till_kill = FALSE;
+		p_ptr->shoot_till_kill_mimic = 0;
+		return;
+	}
 
 	j = power / 32;
 
@@ -486,7 +477,7 @@ static void do_mimic_power(int Ind, int power, int dir) {
 	j = power;
 
 	/* Check mana */
-	if (s_ptr->smana > p_ptr->cmp) {
+	if (s_ptr->smana > p_ptr->csp) {
 		msg_print(Ind, "You do not have enough mana to use this power.");
 		//msg_format(Ind, "You need %d mana to use this power.", s_ptr->smana);
 
@@ -529,21 +520,28 @@ static void do_mimic_power(int Ind, int power, int dir) {
 		p_ptr->current_realm = REALM_MIMIC;
 
   /* 0-31 = RF4, 32-63 = RF5, 64-95 = RF6 */
-  switch (j) {
+  switch(j) {
 
 
 /* RF_4 ------------------------------------------------------------------------------------------------- */
 
-//#define RF4_SHRIEK		      0x00000001      /* Shriek for help */
+//#define RF4_SHRIEK                      0x00000001      /* Shriek for help */ 
     case 0:
-	shriek(Ind);
+	msg_print(Ind, "You emit a high-pitched humming noise.");
+	msg_format_near(Ind, "%s emits a high-pitched humming noise.", p_ptr->name);
+#ifdef USE_SOUND_2010 
+	/* allow us to annoy others ;) */
+	sound_near(Ind, "shriek", NULL, SFX_TYPE_MON_SPELL);
+#endif
+	aggravate_monsters(Ind, -1);
 	break;
-//#define RF4_UNMAGIC		     0x00000002      /* Cancel player's timed spell */
+//#define RF4_UNMAGIC                     0x00000002      /* Cancel player's timed spell */ 
     case 1:
-//#define RF4_TRAPS			0x00002000	/* Create Traps */
-    case 2:
       break;
-//#define RF4_ROCKET		      0x00000008  /* TY: Rocket */
+//#define RF4_S_ANIMAL                    0x00000004  /* Summon animals */ 
+    case 2:
+	break;
+//#define RF4_ROCKET                      0x00000008  /* TY: Rocket */
     case 3:
 //#define RF4_ARROW_1			0x00000010	/* Fire an arrow (light) */
     case 4:
@@ -593,25 +591,15 @@ static void do_mimic_power(int Ind, int power, int dir) {
     case 26:
 //#define RF4_BR_MANA			0x08000000	/* Breathe Mana */
     case 27:
-//#define RF4_BR_DISI		     0x10000000  /* Breathe Disintegration */
+//#define RF4_BR_DISI                     0x10000000  /* Breathe Disintegration */ 
     case 28:
-//#define RF4_BR_NUKE		     0x20000000  /* TY: Toxic Breath */
+//#define RF4_BR_NUKE                     0x20000000  /* TY: Toxic Breath */ 
     case 29:
 	p_ptr->current_spell = j;
 	get_aim_dir(Ind);
 	return;
-//#define RF4_MOAN			0x40000000      /* For Halloween event :) -C. Blue */
+//#define RF4_MOAN                        0x40000000      /* For Halloween event :) -C. Blue */ 
     case 30:
-#if 0
-	msg_print(Ind, "You moan.");
-	msg_format_near(Ind, "%s moans.", p_ptr->name);
- #ifdef USE_SOUND_2010
-	/* Actually just use curse sfx for now, as monster_moin is not yet added to today's sfx pack version */
-	/* allow us to annoy others ;) */
-	//sound_near(Ind, "monster_moan", "curse", SFX_TYPE_MON_SPELL);
-	sound(Ind, "monster_moan", "curse", SFX_TYPE_MON_SPELL, TRUE);
- #endif
-#endif
 	break;
 // #define RF4_BOULDER			0x80000000
     case 31:
@@ -647,7 +635,7 @@ static void do_mimic_power(int Ind, int power, int dir) {
     case 42:
 // RF5_BRAIN_SMASH		0x00000800	/* Smash Brain */
     case 43:
-//#define RF5_CURSE		       0x00001000      /* Cause Wound */
+//#define RF5_CURSE                       0x00001000      /* Cause Wound */
     case 44:
 	p_ptr->current_spell = j;
 	get_aim_dir(Ind);
@@ -655,9 +643,9 @@ static void do_mimic_power(int Ind, int power, int dir) {
 //UNUSED
     case 45:
 	break;
-//#define RF5_BA_NUKE		     0x00004000  /* TY: Nuke Ball */
+//#define RF5_BA_NUKE                     0x00004000  /* TY: Nuke Ball */
     case 46:
-//#define RF5_BA_CHAO		     0x00008000  /* Chaos Ball */
+//#define RF5_BA_CHAO                     0x00008000  /* Chaos Ball */
     case 47:
 // RF5_BO_ACID			0x00010000	/* Acid Bolt */
     case 48:
@@ -700,8 +688,7 @@ static void do_mimic_power(int Ind, int power, int dir) {
 
 // RF6_HASTE			0x00000001	/* Speed self */
     case 64:
-	if (!p_ptr->fast || p_ptr->fast_mod <= 10)
-		set_fast(Ind, 3 + rlev / 6 + randint(2 + rlev / 4), 10);
+	if(!p_ptr->fast) set_fast(Ind, 3 + rlev / 6 + randint(2 + rlev / 4), 10);
 	break;
 // RF6_HAND_DOOM		0x00000002	/* Should we...? */ /* YES! */
     case 65:
@@ -710,11 +697,11 @@ static void do_mimic_power(int Ind, int power, int dir) {
 	return;
 // RF6_HEAL			0x00000004	/* Heal self */
     case 66:
-	if (p_ptr->lev >= 40) hp_player(Ind, ((rlev + 100) * (rlev + 100)) / 100, FALSE, FALSE);//225..400 (335 as eg avg)
-	else hp_player(Ind, ((rlev + 5) * (rlev + 30)) / 14, FALSE, FALSE);
-	//hp_player(Ind, rlev * 2, FALSE, FALSE);
+	if (p_ptr->lev >= 40) hp_player(Ind, ((rlev + 100) * (rlev + 100)) / 100);//225..400 (335 as eg avg)
+	else hp_player(Ind, ((rlev + 5) * (rlev + 30)) / 14);
+	//hp_player(Ind, rlev * 2);
 	break;
-//#define RF6_S_ANIMALS		   0x00000008      /* Summon animals */
+//#define RF6_S_ANIMALS                   0x00000008      /* Summon animals */ 
     case 67:
 	break;
 // RF6_BLINK			0x00000010	/* Teleport Short */
@@ -725,13 +712,13 @@ static void do_mimic_power(int Ind, int power, int dir) {
     case 69:
 	teleport_player(Ind, 200, FALSE);
 	break;
-//#define RF6_RAISE_DEAD		  0x00000040      /* Raise Dead */
+//#define RF6_RAISE_DEAD                  0x00000040      /* Raise Dead */ 
     case 70:
 	break;
-//#define RF6_S_BUG		       0x00000080      /* Summon Software bug */
+//#define RF6_S_BUG                       0x00000080      /* Summon Software bug */ 
     case 71:
 	break;
-//#define RF6_TELE_TO		     0x00000100      /* Move player to monster */
+//#define RF6_TELE_TO                     0x00000100      /* Move player to monster */ 
     case 72:
 // RF6_TELE_AWAY		0x00000200	/* Move player far away */
     case 73:
@@ -742,17 +729,15 @@ static void do_mimic_power(int Ind, int power, int dir) {
     case 74:
     //Disabled to sync with scrolls.      teleport_player_level(Ind, FALSE);	/* wrong way, but useful */
 	break;
-//#define RF6_S_RNG		       0x00000800      /* Summon RNG */
+//#define RF6_S_RNG                       0x00000800      /* Summon RNG */
     case 75:
 	break;
 // RF6_DARKNESS		0x00001000	/* Create Darkness */
     case 76:
-	//unlite_room(Ind, &p_ptr->wpos, p_ptr->py, p_ptr->px); --not really useful, instead let's buff it:
-	unlite_area(Ind, TRUE, 10, 3); //causes darkness damage around the player!
+	unlite_area(Ind, 10, 3);
       break;
-// RF6_S_ANIMAL		    0x00000004  /* Summon animals */
+// RF6_TRAPS			0x00002000	/* Create Traps */
     case 77:
-	break;
 // RF6_FORGET			0x00004000	/* Cause amnesia */
     case 78:
 	p_ptr->current_spell = j;
@@ -761,22 +746,6 @@ static void do_mimic_power(int Ind, int power, int dir) {
 //      msg_print(Ind, "Haha, you wish ... :)");
 	break;
 
-
-/* RF_0 ------------------------------------------------------------------------------------------------- */
-
-//#define RF0_BO_DISE
-    case 96 + 3:
-//#define RF0_BA_DISE
-    case 96 + 4:
-//#define RF0_BR_ICE
-    case 96 + 24:
-//#define RF0_BR_WATER
-    case 96 + 25:
-	p_ptr->current_spell = j;
-	get_aim_dir(Ind);
-	return;
-
-
 //following flags are just RF6_S_... summoning spells */
     default:
 	msg_format(Ind, "Bad innate power %d.", power);
@@ -784,17 +753,17 @@ static void do_mimic_power(int Ind, int power, int dir) {
     }
 	}
 
-	if (s_ptr->smana <= p_ptr->cmp) {
+	if (s_ptr->smana <= p_ptr->csp) {
 		/* Use some mana */
-		p_ptr->cmp -= s_ptr->smana;
+		p_ptr->csp -= s_ptr->smana;
 	}
 	/* Over-exert the player */
 	else {
-		int oops = s_ptr->smana - p_ptr->cmp;
+		int oops = s_ptr->smana - p_ptr->csp;
 
 		/* No mana left */
-		p_ptr->cmp = 0;
-		p_ptr->cmp_frac = 0;
+		p_ptr->csp = 0;
+		p_ptr->csp_frac = 0;
 
 		/* Message */
 		msg_print(Ind, "You faint from the effort!");
@@ -819,17 +788,13 @@ static void do_mimic_power(int Ind, int power, int dir) {
 		p_ptr->shoot_till_kill_mimic = 0;
 	}
 
-	/* Display the mana points */
+	/* Display the spellpoints */
 	p_ptr->redraw |= (PR_MANA);
 }
 
 /*
  * Finish casting a spell that required a direction --KLJ--
  */
-/* (Toned down) versions of the hitpoints/x modifiers to determine breath damage as used for monster spells. */
-#define MIMIC_DIV2 20
-#define MIMIC_DIV3 25
-#define MIMIC_DIV4 30
 void do_mimic_power_aux(int Ind, int dir) {
 	player_type *p_ptr = Players[Ind];
 	monster_race *r_ptr = &r_info[p_ptr->body_monster];
@@ -846,9 +811,6 @@ void do_mimic_power_aux(int Ind, int dir) {
 		if (dir == 5) p_ptr->shooty_till_kill = TRUE; /* so for now we are just ATTEMPTING to shoot till kill (assumed we have a monster for target) */
 	}
 #endif
-
-	/* We need to check again here, in case we're called from handle_direction(), even though it's slightly paranoiish */
-	if (mimic_power_hindered(Ind)) return;
 
 	if (rlev > 50) rlev = 50;
 	rlev_bonus = (rlev * rlev) / 10; /* polynomially growing summand for bolt and ball spells */
@@ -868,22 +830,14 @@ void do_mimic_power_aux(int Ind, int dir) {
 //s_printf("dmpa dir,current_spell=%d,%d\n", dir, p_ptr->current_spell);
 
 	/* We assume that the spell can be cast, and so forth */
-	switch (p_ptr->current_spell) {
+	switch(p_ptr->current_spell) {
 //#define RF4_ARROW_1			0x00000010	/* Fire arrow(s) (light) */
 		/* XXX: ARROW_1 gives extra-shot to the player; we'd better
 		 * remove this 'innate' power? (see calc_body_bonus) */
-// RF4_TRAPS			0x00002000	/* Create Traps */
-    case 2:
-	sprintf(p_ptr->attacker, " cackles evilly");
-#if 0 /* Note: These traps would be exploitable for xp badly. */
-	//msg_print(Ind, "You cackle evilly.");
-	fire_ball(Ind, GF_MAKE_TRAP, dir, 1, 1 + rlev / 30, p_ptr->attacker);
-#endif
-	break;
     case 3:
 	sprintf(p_ptr->attacker, " fires a rocket for");
 	msg_print(Ind, "You fire a rocket.");
-	fire_ball(Ind, GF_ROCKET, dir, (((p_ptr->mhp * 10) / MIMIC_DIV2) > 600) ? 600 : ((p_ptr->mhp * 10) / MIMIC_DIV2), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_ROCKET, dir, ((p_ptr->mhp / 2) > 600) ? 600 : (p_ptr->mhp / 2), rad, p_ptr->attacker);
 	break;
     case 4:
 	{
@@ -900,13 +854,13 @@ void do_mimic_power_aux(int Ind, int dir) {
     case 5:
 	sprintf(p_ptr->attacker, " fires a shot for");
 	msg_print(Ind, "You fire a shot.");
-	fire_bolt(Ind, GF_SHOT, dir, damroll(3 + rlev / 15, 6), p_ptr->attacker);
+	fire_bolt(Ind, GF_ARROW, dir, damroll(3 + rlev / 15, 6), p_ptr->attacker);
 	break;
 //#define RF4_ARROW_3			0x00000040	/* Fire bolt (heavy) */
     case 6:
 	sprintf(p_ptr->attacker, " fires a bolt for");
 	msg_print(Ind, "You fire a bolt.");
-	fire_bolt(Ind, GF_BOLT, dir, damroll(3 + rlev / 15, 6), p_ptr->attacker);
+	fire_bolt(Ind, GF_ARROW, dir, damroll(3 + rlev / 15, 6), p_ptr->attacker);
 	break;
 //#define RF4_ARROW_4			0x00000080	/* Fire generic missile (heavy) */
     case 7:
@@ -918,141 +872,141 @@ void do_mimic_power_aux(int Ind, int dir) {
     case 8:
 	sprintf(p_ptr->attacker, " breathes acid for");
 	msg_print(Ind, "You breathe acid.");
-	fire_ball(Ind, GF_ACID, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 500) ? 500 : ((p_ptr->chp * 10) / MIMIC_DIV3), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_ACID, dir, ((p_ptr->chp / 3) > 500) ? 500 : (p_ptr->chp / 3), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_ELEC			0x00000200	/* Breathe Elec */
     case 9:
 	sprintf(p_ptr->attacker, " breathes lightning for");
 	msg_print(Ind, "You breathe lightning.");
-	fire_ball(Ind, GF_ELEC, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 500) ? 500 : ((p_ptr->chp * 10) / MIMIC_DIV3), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_ELEC, dir, ((p_ptr->chp / 3) > 500) ? 500 : (p_ptr->chp / 3), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_FIRE			0x00000400	/* Breathe Fire */
     case 10:
 	sprintf(p_ptr->attacker, " breathes fire for");
 	msg_print(Ind, "You breathe fire.");
-	fire_ball(Ind, GF_FIRE, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 500) ? 500 : ((p_ptr->chp * 10) / MIMIC_DIV3), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_FIRE, dir, ((p_ptr->chp / 3) > 500) ? 500 : (p_ptr->chp / 3), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_COLD			0x00000800	/* Breathe Cold */
     case 11:
 	sprintf(p_ptr->attacker, " breathes frost for");
 	msg_print(Ind, "You breathe frost.");
-	fire_ball(Ind, GF_COLD, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 500) ? 500 : ((p_ptr->chp * 10) / MIMIC_DIV3), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_COLD, dir, ((p_ptr->chp / 3) > 500) ? 500 : (p_ptr->chp / 3), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_POIS			0x00001000	/* Breathe Poison */
     case 12:
 	sprintf(p_ptr->attacker, " breathes gas for");
 	msg_print(Ind, "You breathe gas.");
-	fire_ball(Ind, GF_POIS, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 450) ? 450 : ((p_ptr->chp * 10) / MIMIC_DIV3), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_POIS, dir, ((p_ptr->chp / 3) > 450) ? 450 : (p_ptr->chp / 3), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_NETH			0x00002000	/* Breathe Nether */
     case 13:
 	sprintf(p_ptr->attacker, " breathes nether for");
 	msg_print(Ind, "You breathe nether.");
-	fire_ball(Ind, GF_NETHER, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 450) ? 450 : ((p_ptr->chp * 10) / MIMIC_DIV4), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_NETHER, dir, ((p_ptr->chp / 4) > 450) ? 450 : (p_ptr->chp / 4), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_LITE			0x00004000	/* Breathe Lite */
     case 14:
 	sprintf(p_ptr->attacker, " breathes light for");
 	msg_print(Ind, "You breathe light.");
-	fire_ball(Ind, GF_LITE, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 400) ? 400 : ((p_ptr->chp * 10) / MIMIC_DIV4), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_LITE, dir, ((p_ptr->chp / 4) > 400) ? 400 : (p_ptr->chp / 4), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_DARK			0x00008000	/* Breathe Dark */
     case 15:
 	sprintf(p_ptr->attacker, " breathes darkness for");
 	msg_print(Ind, "You breathe darkness.");
-	fire_ball(Ind, GF_DARK, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 400) ? 400 : ((p_ptr->chp * 10) / MIMIC_DIV4) , rad, p_ptr->attacker);
+	fire_ball(Ind, GF_DARK, dir, ((p_ptr->chp / 4) > 400) ? 400 : (p_ptr->chp / 4) , rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_CONF			0x00010000	/* Breathe Confusion */
     case 16:
 	sprintf(p_ptr->attacker, " breathes confusion for");
 	msg_print(Ind, "You breathe confusion.");
-	fire_ball(Ind, GF_CONFUSION, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 350) ? 350 : ((p_ptr->chp * 10) / MIMIC_DIV4), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_CONFUSION, dir, ((p_ptr->chp / 4) > 350) ? 350 : (p_ptr->chp / 4), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_SOUN			0x00020000	/* Breathe Sound */
     case 17:
 	sprintf(p_ptr->attacker, " breathes sound for");
 	msg_print(Ind, "You breathe sound.");
-	fire_ball(Ind, GF_SOUND, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 350) ? 350 : ((p_ptr->chp * 10) / MIMIC_DIV4), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_SOUND, dir, ((p_ptr->chp / 4) > 350) ? 350 : (p_ptr->chp / 4), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_CHAO			0x00040000	/* Breathe Chaos */
     case 18:
 	sprintf(p_ptr->attacker, " breathes chaos for");
 	msg_print(Ind, "You breathe chaos.");
-	fire_ball(Ind, GF_CHAOS, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 450) ? 450 : ((p_ptr->chp * 10) / MIMIC_DIV4), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_CHAOS, dir, ((p_ptr->chp / 4) > 450) ? 450 : (p_ptr->chp / 4), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_DISE			0x00080000	/* Breathe Disenchant */
     case 19:
 	sprintf(p_ptr->attacker, " breathes disenchantment for");
 	msg_print(Ind, "You breathe disenchantment.");
-	fire_ball(Ind, GF_DISENCHANT, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 400) ? 400 : ((p_ptr->chp * 10) / MIMIC_DIV4), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_DISENCHANT, dir, ((p_ptr->chp / 4) > 400) ? 400 : (p_ptr->chp / 4), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_NEXU			0x00100000	/* Breathe Nexus */
     case 20:
 	sprintf(p_ptr->attacker, " breathes nexus for");
 	msg_print(Ind, "You breathe nexus.");
-	fire_ball(Ind, GF_NEXUS, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 250) ? 250 : ((p_ptr->chp * 10) / MIMIC_DIV3), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_NEXUS, dir, ((p_ptr->chp / 3) > 250) ? 250 : (p_ptr->chp / 3), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_TIME			0x00200000	/* Breathe Time */
     case 21:
 	sprintf(p_ptr->attacker, " breathes time for");
 	msg_print(Ind, "You breathe time.");
-	fire_ball(Ind, GF_TIME, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 200) ? 200 : ((p_ptr->chp * 10) / MIMIC_DIV3), rad, p_ptr->attacker);
+	fire_ball(Ind, GF_TIME, dir, ((p_ptr->chp / 3) > 200) ? 200 : (p_ptr->chp / 3), rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_INER			0x00400000	/* Breathe Inertia */
     case 22:
 	sprintf(p_ptr->attacker, " breathes inertia for");
 	msg_print(Ind, "You breathe inertia.");
-	fire_ball(Ind, GF_INERTIA, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 200) ? 200 : ((p_ptr->chp * 10) / MIMIC_DIV4) , rad, p_ptr->attacker);
+	fire_ball(Ind, GF_INERTIA, dir, ((p_ptr->chp / 4) > 200) ? 200 : (p_ptr->chp / 4) , rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_GRAV			0x00800000	/* Breathe Gravity */
     case 23:
 	sprintf(p_ptr->attacker, " breathes gravity for");
 	msg_print(Ind, "You breathe gravity.");
-	fire_ball(Ind, GF_GRAVITY, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 200) ? 200 : ((p_ptr->chp * 10) / MIMIC_DIV3) , rad, p_ptr->attacker);
+	fire_ball(Ind, GF_GRAVITY, dir, ((p_ptr->chp / 3) > 200) ? 200 : (p_ptr->chp / 3) , rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_SHAR			0x01000000	/* Breathe Shards */
     case 24:
 	sprintf(p_ptr->attacker, " breathes shards for");
 	msg_print(Ind, "You breathe shards.");
-	fire_ball(Ind, GF_SHARDS, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 350) ? 350 : ((p_ptr->chp * 10) / MIMIC_DIV4) , rad, p_ptr->attacker);
+	fire_ball(Ind, GF_SHARDS, dir, ((p_ptr->chp / 4) > 350) ? 350 : (p_ptr->chp / 4) , rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_PLAS			0x02000000	/* Breathe Plasma */
     case 25:
 	sprintf(p_ptr->attacker, " breathes plasma for");
 	msg_print(Ind, "You breathe plasma.");
-	fire_ball(Ind, GF_PLASMA, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 150) ? 150 : ((p_ptr->chp * 10) / MIMIC_DIV4) , rad, p_ptr->attacker);
+	fire_ball(Ind, GF_PLASMA, dir, ((p_ptr->chp / 4) > 150) ? 150 : (p_ptr->chp / 4) , rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_WALL			0x04000000	/* Breathe Force */
     case 26:
 	sprintf(p_ptr->attacker, " breathes force for");
 	msg_print(Ind, "You breathe force.");
-	fire_ball(Ind, GF_FORCE, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 200) ? 200 : ((p_ptr->chp * 10) / MIMIC_DIV4) , rad, p_ptr->attacker);
+	fire_ball(Ind, GF_FORCE, dir, ((p_ptr->chp / 4) > 200) ? 200 : (p_ptr->chp / 4) , rad, p_ptr->attacker);
 	break;
 //#define RF4_BR_MANA			0x08000000	/* Breathe Mana */
     case 27:
 	sprintf(p_ptr->attacker, " breathes mana for");
 	msg_print(Ind, "You breathe mana.");
-	fire_ball(Ind, GF_MANA, dir, (((p_ptr->chp * 10) / MIMIC_DIV3) > 250) ? 250 : ((p_ptr->chp * 10) / MIMIC_DIV3) , rad, p_ptr->attacker);
+	fire_ball(Ind, GF_MANA, dir, ((p_ptr->chp / 3) > 250) ? 250 : (p_ptr->chp / 3) , rad, p_ptr->attacker);
 	break;
 /* RF4_BR_DISI */
     case 28:
 	sprintf(p_ptr->attacker, " breathes disintegration for");
 	msg_print(Ind, "You breathe disintegration.");
 	fire_ball(Ind, GF_DISINTEGRATE, dir,
-	    (((p_ptr->chp * 10) / MIMIC_DIV3) > 300 ? 300 : ((p_ptr->chp * 10) / MIMIC_DIV3)), rad, p_ptr->attacker);
+	    ((p_ptr->chp / 3) > 300 ? 300 : (p_ptr->chp / 3)), rad, p_ptr->attacker);
 	break;
 /* RF4_BR_NUKE */
     case 29:
 	sprintf(p_ptr->attacker, " breathes toxic waste for");
 	msg_print(Ind, "You breathe toxic waste.");
 	fire_ball(Ind, GF_NUKE, dir,
-	    (((p_ptr->chp * 10) / MIMIC_DIV3) > 450 ? 450 : ((p_ptr->chp * 10) / MIMIC_DIV3)), rad, p_ptr->attacker);
+	    ((p_ptr->chp / 3) > 450 ? 450 : (p_ptr->chp / 3)), rad, p_ptr->attacker);
 	break;
 /* RF4_BOULDER */
     case 31:
 	sprintf(p_ptr->attacker, " hurls a boulder at you for");
 	msg_print(Ind, "You hurl a boulder.");
-	fire_bolt(Ind, GF_BOULDER, dir, damroll(1 + rlev / 7, 12), p_ptr->attacker);
+	fire_bolt(Ind, GF_ARROW, dir, damroll(1 + rlev / 7, 12), p_ptr->attacker);
 	break;
 
 /* RF5 */
@@ -1147,13 +1101,13 @@ void do_mimic_power_aux(int Ind, int dir) {
     case 45:
 	break;
 /* RF5_BA_NUKE */
-    case 32 + 14:
+    case 32+14:
 	sprintf(p_ptr->attacker, " invokes radiation for");
 	msg_print(Ind, "You invoke radiation.");
 	fire_ball(Ind, GF_NUKE, dir, (rlev + damroll(10, 6)) + rlev_bonus, 2, p_ptr->attacker);
 	break;
 /* RF5_BA_CHAO */
-    case 32 + 15:
+    case 32+15:
 	sprintf(p_ptr->attacker, " invokes raw chaos for");
 	msg_print(Ind, "You invoke raw chaos.");
 	fire_ball(Ind, GF_CHAOS, dir, (rlev * 2) + damroll(10, 10) + rlev_bonus, 4, p_ptr->attacker);
@@ -1168,13 +1122,13 @@ void do_mimic_power_aux(int Ind, int dir) {
     case 49:
 	sprintf(p_ptr->attacker, " casts a lightning bolt for");
 	msg_print(Ind, "You cast a lightning bolt.");
-	fire_bolt(Ind, GF_ELEC, dir, damroll(5, 8) + (rlev / 3) + rlev_bonus / 3, p_ptr->attacker);
+	fire_bolt(Ind, GF_ELEC, dir, damroll(4, 8) + (rlev / 3) + rlev_bonus / 3, p_ptr->attacker);
 	break;
 // RF5_BO_FIRE			0x00040000	/* Fire Bolt */
     case 50:
 	sprintf(p_ptr->attacker, " casts a fire bolt for");
 	msg_print(Ind, "You cast a fire bolt.");
-	fire_bolt(Ind, GF_FIRE, dir, damroll(8, 8) + (rlev / 3) + rlev_bonus / 3, p_ptr->attacker);
+	fire_bolt(Ind, GF_FIRE, dir, damroll(9, 8) + (rlev / 3) + rlev_bonus / 3, p_ptr->attacker);
 	break;
 // RF5_BO_COLD			0x00080000	/* Cold Bolt */
     case 51:
@@ -1186,7 +1140,7 @@ void do_mimic_power_aux(int Ind, int dir) {
     case 52:
 	sprintf(p_ptr->attacker, " casts a poison bolt for");
 	msg_print(Ind, "You cast a poison bolt.");
-	fire_bolt(Ind, GF_POIS, dir, damroll(6, 8) + (rlev / 3) + rlev_bonus / 3, p_ptr->attacker);
+	fire_bolt(Ind, GF_POIS, dir, damroll(3, 8) + (rlev / 3) + rlev_bonus / 3, p_ptr->attacker);
 	break;
 // RF5_BO_NETH			0x00200000	/* Nether Bolt */
     case 53:
@@ -1265,38 +1219,18 @@ void do_mimic_power_aux(int Ind, int dir) {
 	sprintf(p_ptr->attacker, " invokes a teleportation spell");
 	(void)fire_beam(Ind, GF_AWAY_ALL, dir, rlev, p_ptr->attacker);
 	break;
+// RF6_TRAPS			0x00002000	/* Create Traps */
+    case 77:
+	sprintf(p_ptr->attacker, " cackles evilly");
+#if 0 /* Note: These traps would be exploitable for xp badly. */
+	//msg_print(Ind, "You cackle evilly.");
+	fire_ball(Ind, GF_MAKE_TRAP, dir, 1, 1 + rlev / 30, p_ptr->attacker);
+#endif
+	break;
 // RF6_FORGET
     case 78:
 	sprintf(p_ptr->attacker, " tries to blank your mind");
 	fire_grid_bolt(Ind, GF_CONFUSION, dir, damroll(4, 6) + (rlev / 2), p_ptr->attacker);
-	break;
-
-//TODO: implement 96+ mimic spells, aka RF0_, aka innate_spells[3]
-/* RF0_BO_DISE */
-    case 96 + 3:
-	sprintf(p_ptr->attacker, " casts a disenchantment bolt for");
-	msg_print(Ind, "You cast a disenchantment bolt.");
-	//fire_bolt(Ind, GF_DISENCHANT, dir, damroll(7, 8) + (rlev / 3) + rlev_bonus / 3, p_ptr->attacker);
-	fire_bolt(Ind, GF_DISENCHANT, dir, 25 + damroll(4, 5) + (rlev * 3) / 2 + rlev_bonus / 3, p_ptr->attacker);
-	break;
-// RF0_BA_DISE			0x00010000	/* Acid Bolt */
-    case 96 + 4:
-	sprintf(p_ptr->attacker, " casts a disenchantment ball");
-	msg_print(Ind, "You cast a  disenchantment ball.");
-	//fire_ball(Ind, GF_DISENCHANT, dir, (rlev * 2) + damroll(10, 10) + rlev_bonus, 4, p_ptr->attacker);
-	fire_ball(Ind, GF_DISENCHANT, dir, 60 + damroll(10, 10) + rlev + rlev_bonus, rad, p_ptr->attacker);
-	break;
-// RF0_BR_ICE
-    case 96 + 24:
-	sprintf(p_ptr->attacker, " breathes ice for");
-	msg_print(Ind, "You breathe ice.");
-	fire_ball(Ind, GF_ICE, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 350) ? 350 : ((p_ptr->chp * 10) / MIMIC_DIV4) , rad, p_ptr->attacker);
-	break;
-// RF5_BR_WATER
-    case 96 + 25:
-	sprintf(p_ptr->attacker, " breathes water for");
-	msg_print(Ind, "You breathe water.");
-	fire_ball(Ind, GF_WATER, dir, (((p_ptr->chp * 10) / MIMIC_DIV4) > 300) ? 300 : ((p_ptr->chp * 10) / MIMIC_DIV4) , rad, p_ptr->attacker);
 	break;
 
 	default: /* For some reason we got called for a spell that
@@ -1308,18 +1242,18 @@ void do_mimic_power_aux(int Ind, int dir) {
 
 	//p_ptr->energy -= level_speed(&p_ptr->wpos);
 
-	if (s_ptr->smana <= p_ptr->cmp) {
+	if (s_ptr->smana <= p_ptr->csp) {
 		/* Use some mana */
-		p_ptr->cmp -= s_ptr->smana;
+		p_ptr->csp -= s_ptr->smana;
 	}
 
 	/* Over-exert the player */
 	else {
-		int oops = s_ptr->smana - p_ptr->cmp;
+		int oops = s_ptr->smana - p_ptr->csp;
 
 		/* No mana left */
-		p_ptr->cmp = 0;
-		p_ptr->cmp_frac = 0;
+		p_ptr->csp = 0;
+		p_ptr->csp_frac = 0;
 
 		/* Message */
 		msg_print(Ind, "You faint from the effort!");
@@ -1409,7 +1343,27 @@ void do_mimic_change(int Ind, int r_idx, bool force) {
 		return;
 	}
 
-	if (!force && mimic_power_hindered(Ind)) return;
+	/* No magic */
+	if (p_ptr->anti_magic && !force) {
+		msg_format(Ind, "\377%cYour anti-magic shell disrupts your attempt.", COLOUR_AM_OWN);
+		Send_confirm(Ind, PKT_ACTIVATE_SKILL);
+		return;
+	}
+	/* Antimagic */
+	if (p_ptr->antimagic && !force) {
+#ifdef USE_SOUND_2010
+		sound(Ind, "am_field", NULL, SFX_TYPE_MISC, FALSE);
+#endif
+		msg_format(Ind, "\377%cYour anti-magic field disrupts your attempt.", COLOUR_AM_OWN);
+		Send_confirm(Ind, PKT_ACTIVATE_SKILL);
+		return;
+	}
+	/* Not when confused */
+	if (p_ptr->confused && !force) {
+		msg_print(Ind, "You are too confused!");
+		Send_confirm(Ind, PKT_ACTIVATE_SKILL);
+		return;
+	}
 
 #if 1
 	/* Corrupted Priest: Reverse all heavy-cursed boni for true demon form - the only time during which they too get flipped item boni. */
@@ -1455,20 +1409,20 @@ void do_mimic_change(int Ind, int r_idx, bool force) {
 	stop_shooting_till_kill(Ind);
 
 	note_spot(Ind, p_ptr->py, p_ptr->px);
-	everyone_lite_spot_move(Ind, &p_ptr->wpos, p_ptr->py, p_ptr->px);
+	everyone_lite_spot(&p_ptr->wpos, p_ptr->py, p_ptr->px);
 
 	/* Piece together a 32-bit random seed */
 	p_ptr->mimic_seed = (u32b)rand_int(0xFFFF) << 16;
 	p_ptr->mimic_seed += rand_int(0xFFFF);
 
 	/* Penalise form-switching just for using a spell */
-	//p_ptr->cmp /= 2;
+	//p_ptr->csp /= 2;
 
 	/* Recalculate mana */
 	p_ptr->update |= (PU_MANA | PU_HP | PU_BONUS | PU_VIEW);
 
 	/* Tell the client */
-	p_ptr->redraw |= PR_VARIOUS | PR_MANA;//PR_MANA was for when p_ptr->cmp was reduced as form-switch penalty
+	p_ptr->redraw |= PR_VARIOUS | PR_MANA;//PR_MANA was for when p_ptr->csp was reduced as form-switch penalty
 
 	/* Window stuff */
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
@@ -1488,7 +1442,6 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 	bool using_free_mimic = FALSE;
 	bool admin = is_admin(p_ptr);
 	int skill_mimic = get_skill_scale(p_ptr, SKILL_MIMIC, 100);
-	monster_race *r_ptr = NULL;
 
 	/* should it..? */
 	//dun_level *l_ptr = getfloor(&p_ptr->wpos);
@@ -1522,8 +1475,6 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 
 			if (j >= MAX_R_IDX - 1) j = 0;
 
-			r_ptr = &r_info[j];
-
 			if (p_ptr->pclass == CLASS_DRUID) {
 				if (mimic_druid(j, p_ptr->lev) || (j == 0)) {
 					/* (S)he is no longer afk */
@@ -1543,43 +1494,43 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 				} else continue;
 			}
 
-			if (r_ptr->level > skill_mimic) continue;
-			if (r_ptr->flags1 & RF1_UNIQUE) continue;
-			if (r_ptr->flags8 & RF8_PSEUDO_UNIQUE) continue;
-			if (p_ptr->r_mimicry[j] < r_ptr->level) continue;
+			if (r_info[j].level > skill_mimic) continue;
+			if (r_info[j].flags1 & RF1_UNIQUE) continue;
+			if (r_info[j].flags8 & RF8_PSEUDO_UNIQUE) continue;
+			if (p_ptr->r_mimicry[j] < r_info[j].level) continue;
 			if (p_ptr->r_mimicry[j] < 1 && j) continue;
-			if (strlen(r_ptr->name + r_name) <= 1) continue;
-			//if (!r_ptr->level && !mon_allowed(&r_info[j])) continue;
+			if (strlen(r_info[j].name + r_name) <= 1) continue;
+			//if (!r_info[j].level && !mon_allowed(&r_info[j])) continue;
 			if (!mon_allowed_chance(&r_info[j])) continue;
 			if ((j != 0) && ((p_ptr->pclass == CLASS_SHAMAN) && !mimic_shaman(j))) continue;
 
 			/* Don't accidentally poly into a form that suppresses polymorphing,
 			   to do so you need to use 'Polymorph into...' */
-			if (r_ptr->flags7 & RF7_DISBELIEVE) continue;
+			if (r_info[j].flags7 & RF7_DISBELIEVE) continue;
 
 			if (spell == 1) { /* check for extremities matching? */
 				if ((p_ptr->inventory[INVEN_HEAD].tval || p_ptr->inventory[INVEN_NECK].tval)
-				    && !r_ptr->body_parts[BODY_HEAD]) continue;
+				    && !r_info[j].body_parts[BODY_HEAD]) continue;
 				if (p_ptr->inventory[INVEN_ARM].tval
-				    && !r_ptr->body_parts[BODY_ARMS]) continue;
+				    && !r_info[j].body_parts[BODY_ARMS]) continue;
 				if (p_ptr->inventory[INVEN_HANDS].tval
-				    && !(r_ptr->body_parts[BODY_ARMS] && r_ptr->body_parts[BODY_FINGER])) continue;
+				    && !(r_info[j].body_parts[BODY_ARMS] && r_info[j].body_parts[BODY_FINGER])) continue;
 				if ((p_ptr->inventory[INVEN_WIELD].tval || p_ptr->inventory[INVEN_BOW].tval)
-				    && !r_ptr->body_parts[BODY_WEAPON]) continue;
+				    && !r_info[j].body_parts[BODY_WEAPON]) continue;
 				if (p_ptr->inventory[INVEN_RIGHT].tval
-				    && !r_ptr->body_parts[BODY_FINGER]) continue;
+				    && !r_info[j].body_parts[BODY_FINGER]) continue;
 				if (p_ptr->inventory[INVEN_LEFT].tval
-				    && r_ptr->body_parts[BODY_FINGER] < 2) continue;
+				    && r_info[j].body_parts[BODY_FINGER] < 2) continue;
 				if ((p_ptr->inventory[INVEN_BODY].tval || p_ptr->inventory[INVEN_OUTER].tval || p_ptr->inventory[INVEN_AMMO].tval)
-				    && !r_ptr->body_parts[BODY_TORSO]) continue;
+				    && !r_info[j].body_parts[BODY_TORSO]) continue;
 				if (p_ptr->inventory[INVEN_FEET].tval
-				    && !r_ptr->body_parts[BODY_LEGS]) continue;
+				    && !r_info[j].body_parts[BODY_LEGS]) continue;
 				/* combined stuff */
 				if (p_ptr->inventory[INVEN_TOOL].tval && !(
-				    r_ptr->body_parts[BODY_ARMS] || r_ptr->body_parts[BODY_WEAPON])) continue;
+				    r_info[j].body_parts[BODY_ARMS] || r_info[j].body_parts[BODY_WEAPON])) continue;
 				if (p_ptr->inventory[INVEN_LITE].tval && !(
-				    r_ptr->body_parts[BODY_ARMS] || r_ptr->body_parts[BODY_WEAPON] ||
-				    r_ptr->body_parts[BODY_FINGER] || r_ptr->body_parts[BODY_HEAD])) continue;
+				    r_info[j].body_parts[BODY_ARMS] || r_info[j].body_parts[BODY_WEAPON] ||
+				    r_info[j].body_parts[BODY_FINGER] || r_info[j].body_parts[BODY_HEAD])) continue;
 			}
 
 			/* Ok we found */
@@ -1597,8 +1548,6 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 
 		if (spell == 32767) j = p_ptr->body_monster_prev; /* hack: 32767 marks 'poly into previous' */
 		else j = spell - 20000;
-
-		r_ptr = &r_info[j];
 
 		if (p_ptr->pclass == CLASS_DRUID) { /* SPecial ^^ */
 			if (mimic_druid(j, p_ptr->lev) || (j == 0)) {
@@ -1631,14 +1580,11 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 				msg_print(Ind, "You are already using that form!");
 				Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 				return;
-			} else if (r_ptr->flags1 & RF1_UNIQUE) {
+			} else if (r_info[j].flags1 & RF1_UNIQUE) {
 				msg_print(Ind, "That form is unique!");
 				Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 				return;
-			} else if ((r_ptr->flags8 & RF8_PSEUDO_UNIQUE) ||
-			    /* For free_mimic, prevent forms that are not normally accessible either: */
-			    (r_ptr->flags9 & RF9_NO_CREDIT) ||
-			    (r_ptr->flags7 & RF7_NO_DEATH)) {
+			} else if (r_info[j].flags8 & RF8_PSEUDO_UNIQUE) {
 				msg_print(Ind, "That form is unlearnable!");
 				Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 				return;
@@ -1650,7 +1596,7 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 					Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 					return;
 				} else using_free_mimic = TRUE;
-			} else if (p_ptr->r_mimicry[j] < r_ptr->level
+			} else if (p_ptr->r_mimicry[j] < r_info[j].level
 			    && !(p_ptr->tim_mimic && p_ptr->tim_mimic_what == j)
 			    && !admin) {
 				if (!p_ptr->free_mimic) {
@@ -1660,12 +1606,13 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 				} else using_free_mimic = TRUE;
 			}
 
-			if (strlen(r_ptr->name + r_name) <= 1) {	/* <- ??? */
+			if (strlen(r_info[j].name + r_name) <= 1) {	/* <- ??? */
 				msg_print(Ind, "You cannot use that form!");
 				Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 				return;
 			}
-			else if (!mon_allowed_chance(&r_info[j])) {
+			//if (!r_info[j].level && !mon_allowed(&r_info[j])){	/* <- ? */
+			else if (!mon_allowed_chance(&r_info[j])) {	/* ! - C. Blue */
 				msg_print(Ind, "You cannot use that form!");
 				Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 				return;
@@ -1673,21 +1620,17 @@ void do_cmd_mimic(int Ind, int spell, int dir) {
 				msg_print(Ind, "You cannot use that form!");
 				Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 				return;
-			} else if (r_ptr->level > skill_mimic) {
+			} else if (r_info[j].level > skill_mimic) {
 				msg_print(Ind, "You are not powerful enough to change into that form!");
 				Send_confirm(Ind, PKT_ACTIVATE_SKILL);
 				return;
 			}
 
 			/* using up PvP-mode free mimic transformation? */
-			if (j && using_free_mimic) {
-				p_ptr->free_mimic--;
-				/* ..and actually learn the form, in case we get polymorphed so it isn't lost: */
-				p_ptr->r_mimicry[j] = r_ptr->level;
-			}
+			if (j && using_free_mimic) p_ptr->free_mimic--;
 
 			/* Activation tax */
-			else if (j && p_ptr->r_mimicry[j] < r_ptr->level
+			else if (j && p_ptr->r_mimicry[j] < r_info[j].level
 			    && p_ptr->tim_mimic_what == j && p_ptr->tim_mimic > 10)
 				p_ptr->tim_mimic -= 10;
 
@@ -1733,12 +1676,6 @@ void cast_school_spell(int Ind, int book, int spell, int dir, int item, int aux)
 	}
 
 	if (!can_use_verbose(Ind, o_ptr)) return;
-
-	if (p_ptr->no_house_magic && inside_house(&p_ptr->wpos, p_ptr->px, p_ptr->py)) {
-		msg_print(Ind, "You decide to better not cast a spell inside a house.");
-		p_ptr->energy -= level_speed(&p_ptr->wpos) / 2;
-		return;
-	}
 
 	if (o_ptr->tval != TV_BOOK) {
 		/* log for debugging */
@@ -1795,12 +1732,6 @@ void cast_school_spell(int Ind, int book, int spell, int dir, int item, int aux)
 	if (p_ptr->anti_magic) {
 		p_ptr->energy -= level_speed(&p_ptr->wpos); //full turn lost
 		msg_format(Ind, "\377%cYour anti-magic shell disrupts any magic attempts.", COLOUR_AM_OWN);
-#ifdef ENABLE_XID_SPELL
- #ifndef XID_REPEAT
-		p_ptr->current_item = -1;
-		XID_paranoia(p_ptr);
- #endif
-#endif
 		return;
 	}
 	if (p_ptr->antimagic) {
@@ -1809,24 +1740,12 @@ void cast_school_spell(int Ind, int book, int spell, int dir, int item, int aux)
 #endif
 		p_ptr->energy -= level_speed(&p_ptr->wpos); //full turn lost
 		msg_format(Ind, "\377%cYour anti-magic field disrupts any magic attempts.", COLOUR_AM_OWN);
-#ifdef ENABLE_XID_SPELL
- #ifndef XID_REPEAT
-		p_ptr->current_item = -1;
-		XID_paranoia(p_ptr);
- #endif
-#endif
 		return;
 	}
 
 	/* Disruption shield prevents interfering! */
 	if (!p_ptr->tim_manashield && interfere(Ind, cfg.spell_interfere)) {
 		p_ptr->energy -= level_speed(&p_ptr->wpos); //full turn lost
-#ifdef ENABLE_XID_SPELL
- #ifndef XID_REPEAT
-		p_ptr->current_item = -1;
-		XID_paranoia(p_ptr);
- #endif
-#endif
 		return; /* school spell casting interference chance */
 	}
 
@@ -1865,9 +1784,6 @@ void cast_school_spell(int Ind, int book, int spell, int dir, int item, int aux)
 			p_ptr->current_item = -1;
 			XID_paranoia(p_ptr);
 		}
- #else
-		p_ptr->current_item = -1;
-		XID_paranoia(p_ptr);
  #endif
 #endif
 
@@ -1909,76 +1825,4 @@ void cast_school_spell(int Ind, int book, int spell, int dir, int item, int aux)
 #ifdef LIMIT_SPELLS
 	else p_ptr->limit_spells = aux; //paranoia?
 #endif
-}
-
-bool cast_rune_spell(int Ind, u16b lo, u16b hi, int dir) {
-	player_type *p_ptr = Players[Ind];
-	int ftk_maybe, ftk_type;
-
-	/* FTK */
-	if (p_ptr->shooting_till_kill) {
-		p_ptr->shooting_till_kill = FALSE;
-		if (dir == 5) p_ptr->shooty_till_kill = TRUE;
-	}
-	if (dir == 11) {
-		get_aim_dir(Ind);
-		p_ptr->current_rcraft = 1;
-		p_ptr->current_rcraft_e_flags = lo;
-		p_ptr->current_rcraft_m_flags = hi;
-		return(FALSE);
-	}
-
-	if (p_ptr->no_house_magic && inside_house(&p_ptr->wpos, p_ptr->px, p_ptr->py)) {
-		msg_print(Ind, "You decide to better not cast a spell inside a house.");
-		p_ptr->energy -= level_speed(&p_ptr->wpos) / 2;
-		return(FALSE);
-	}
-
-	/* Paranoia */
-	break_cloaking(Ind, 5);
-	break_shadow_running(Ind);
-	stop_precision(Ind);
-	stop_shooting_till_kill(Ind);
-	un_afk_idle(Ind);
-
-	/* Cast the spell, handle FTK */
-	u32b u = ((u32b)lo) | ((u32b)hi << 16);
-	if (u) {
-		ftk_maybe = exec_lua(Ind, format("return cast_rune_spell(%d, %d, %d)", Ind, dir, u));
-		ftk_type = exec_lua(Ind, format("return rcraft_ftk(%d)", u));
-		if (p_ptr->shooty_till_kill && ftk_maybe) {
-			if (ftk_type == 0) return(FALSE);
-#ifndef PY_PROJ_WALL
-			if (ftk_type == 1 && !projectable_real(Ind, p_ptr->py, p_ptr->px, p_ptr->target_row, p_ptr->target_col, MAX_RANGE)) return(FALSE);
-#else
-			if (ftk_type == 1 && !projectable_wall_real(Ind, p_ptr->py, p_ptr->px, p_ptr->target_row, p_ptr->target_col, MAX_RANGE)) return(FALSE);
-#endif
-			if (dir != 5 || !target_okay(Ind)) return(FALSE);
-			p_ptr->shooting_till_kill = TRUE;
-			p_ptr->shoot_till_kill_rcraft = TRUE;
-			p_ptr->FTK_e_flags = lo;
-			p_ptr->FTK_m_flags = hi;
-			p_ptr->FTK_energy = exec_lua(Ind, format("return rspell_energy(%d, %d)", Ind, u));
-			p_ptr->shoot_till_kill_spell = FALSE;
-			p_ptr->shoot_till_kill_mimic = FALSE;
-			p_ptr->shoot_till_kill_wand = FALSE;
-			p_ptr->shoot_till_kill_rod = FALSE;
-		}
-		return(ftk_maybe); // True if an attempt was made, for auto-retaliation
-	}
-	return(FALSE);
-}
-
-/* Mimic powers, moved to their own functions - C. Blue */
-void shriek(int Ind) {
-	player_type *p_ptr = Players[Ind];
-
-	msg_print(Ind, "You emit a high-pitched humming noise.");
-	msg_format_near(Ind, "%s emits a high-pitched humming noise.", p_ptr->name);
-#ifdef USE_SOUND_2010
-	/* allow us to annoy others ;) */
-	//sound_near(Ind, "shriek", NULL, SFX_TYPE_MON_SPELL);
-	sound(Ind, "shriek", NULL, SFX_TYPE_MON_SPELL, TRUE);
-#endif
-	aggravate_monsters(Ind, -1);
 }

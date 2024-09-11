@@ -19,7 +19,7 @@ $#include "angband.h"
 
 typedef char* cptr;
 typedef int errr;
-typedef unsigned char bool; /* TODO: Comment this out, to enable C99 _Bool */
+typedef unsigned char bool;
 typedef unsigned char byte;
 typedef signed short s16b;
 typedef unsigned short u16b;
@@ -43,8 +43,6 @@ struct hash_entry
 
 	time_t laston;			/* Last on time */
 	struct hash_entry *next;	/* Next entry in the chain */
-
-	/* ..and more that has been added..*/
 };
 
 extern struct hash_entry *lookup_player(int id);
@@ -55,18 +53,18 @@ extern int lookup_player_id_messy(cptr name);
 struct server_opts
 {
 	s16b runlevel;		/* Glorified shutdown mode */
-	time_t runtime;	 /* Server start time */
+        time_t runtime;         /* Server start time */
 	time_t closetime;	/* Server closedown time */
 	char * meta_address;
-	s16b meta_port;
+        s16b meta_port;
 
 	char * bind_name;
 	char * console_password;
 	char * admin_wizard;
 	char * dungeon_master;
-	char * wserver;
+        char * wserver;
 
-	char * pass;
+        char * pass;
 	s32b preserve_death_level;
 	s32b unique_respawn_time;
 	s32b unique_max_respawn_time;
@@ -76,13 +74,12 @@ struct server_opts
 	s32b retire_timer;
 	s32b game_port;
 	s32b console_port;
-	s32b gw_port;
+        s32b gw_port;
 
 	s32b spell_interfere;
 	s32b spell_stack_limit;
 	s16b fps;
 	bool players_never_expire;
-	bool admins_never_expire;
 	s16b newbies_cannot_drop;
 	s16b running_speed;
 
@@ -92,6 +89,8 @@ struct server_opts
 	s16b town_y;
 	s16b town_base;
 
+	s16b dun_base;
+	s16b dun_max;
 	s16b store_turns;
 	s16b dun_store_turns;
 	char resting_rate;
@@ -168,7 +167,6 @@ struct server_opts
 	bool worldd_plist;
 /*	bool worldd_ircchat; */
 	bool worldd_events;
-	byte leak_info;
 };
 
 extern s32b turn;
@@ -204,7 +202,7 @@ extern s32b intShiftr @ bshr(s32b a, s32b b);
 extern s32b intBitNot @ bnot(s32b b);
 
 extern bool pern_dofile(int Ind, char *file);
-extern int exec_lua(int Ind, char *file);
+extern bool exec_lua(int Ind, char *file);
 extern void cat_script(int Ind, char *name);
 
 extern void msg_print(int Ind, cptr msg);
@@ -226,14 +224,13 @@ extern hooks_chain* add_hook(int h_idx, cptr script, cptr name);
 extern s32b dungeon_store_timer;	/* Keeps track of its generation */
 extern s32b dungeon_store2_timer;	/* Keeps track of its generation */
 extern s32b great_pumpkin_timer;	/* Keeps track of its generation (timeout), for HALLOWEEN */
-extern char great_pumpkin_killer1[NAME_LEN];
-extern char great_pumpkin_killer2[NAME_LEN];
+//extern s32b great_pumpkin_killer;
+extern char great_pumpkin_killer[NAME_LEN];
 extern s32b great_pumpkin_duration;
 extern s32b santa_claus_timer;
 extern bool night_surface;		/* Is it night outside? */
 extern u16b max_s_idx;
 extern u16b max_r_idx;
-extern u16b max_rur_idx;
 extern u16b max_re_idx;
 extern u16b max_k_idx;
 extern u16b max_v_idx;
@@ -265,7 +262,6 @@ extern char *sST;
 extern bool watch_morgoth;
 extern bool watch_cp;
 extern bool watch_nr;
-extern bool watch_df;
 extern int regen_boost_stamina;
 
 /* default 'updated_savegame' value for newly created chars [0]
@@ -275,41 +271,39 @@ extern int updated_savegame_birth;
    usually modified by lua (server_startup()) instead of here. */
 extern int updated_server;
 
-extern unsigned char runtime_server;
-
 /* for lua-controlled/automatically scheduled artifact resets */
 extern int artifact_reset;
 struct artifact_type
 {
-	u16b name;		/* Name (offset) */
-	u16b text;		/* Text (offset) */
-	byte tval;		/* Artifact type */
-	byte sval;		/* Artifact sub type */
-	s16b pval;		/* Artifact extra info */
-	s16b to_h;		/* Bonus to hit */
-	s16b to_d;		/* Bonus to damage */
-	s16b to_a;		/* Bonus to armor */
-	s16b ac;			/* Base armor */
-	byte dd;
-	byte ds;	/* Damage when hits */
-	s16b weight;	/* Weight */
-	s32b cost;		/* Artifact "cost" */
-	u32b flags1;	/* Artifact Flags, set 1 */
-	u32b flags2;	/* Artifact Flags, set 2 */
-	u32b flags3;	/* Artifact Flags, set 3 */
-	u32b flags4;	    /* Artifact Flags, set 4 */
-	u32b flags5;	    /* Artifact Flags, set 5 */
-	u32b flags6;	    /* Artifact Flags, set 6 */
-	byte level;		/* Artifact level */
-	byte rarity;	/* Artifact rarity */
-	byte cur_num;	/* Number created (0 or 1) */
-	byte max_num;	/* Unused (should be "1") */
-	u32b esp;		       /* ESP flags */
-	bool known;		/* Is this artifact already IDed? */
-	s32b carrier;
-	s32b timeout;
-	byte iddc;
-	byte winner;
+        u16b name;                /* Name (offset) */
+        u16b text;                /* Text (offset) */
+        byte tval;                /* Artifact type */
+        byte sval;                /* Artifact sub type */
+        s16b pval;                /* Artifact extra info */
+        s16b to_h;                /* Bonus to hit */
+        s16b to_d;                /* Bonus to damage */
+        s16b to_a;                /* Bonus to armor */
+        s16b ac;                        /* Base armor */
+        byte dd;
+        byte ds;        /* Damage when hits */
+        s16b weight;        /* Weight */
+        s32b cost;                /* Artifact "cost" */
+        u32b flags1;        /* Artifact Flags, set 1 */
+        u32b flags2;        /* Artifact Flags, set 2 */
+        u32b flags3;        /* Artifact Flags, set 3 */
+	u32b flags4;            /* Artifact Flags, set 4 */
+	u32b flags5;            /* Artifact Flags, set 5 */
+	u32b flags6;            /* Artifact Flags, set 6 */
+        byte level;                /* Artifact level */
+        byte rarity;        /* Artifact rarity */
+        byte cur_num;        /* Number created (0 or 1) */
+        byte max_num;        /* Unused (should be "1") */
+	u32b esp;                       /* ESP flags */
+        bool known;                /* Is this artifact already IDed? */
+        s32b carrier;
+        s32b timeout;
+        byte iddc;
+        byte winner;
 };
 artifact_type a_info[MAX_A_IDX];
 
@@ -327,11 +321,10 @@ struct party_type
 	char owner[NAME_LEN];	/* Owner's name */
 	s32b members;		/* Number of people in the party */
 	s32b created;		/* Creation (or disband-tion) time */
-	byte cmode;	     /* Guild creator's character mode */
+        byte cmode;             /* Guild creator's character mode */
 	byte mode;		/* 'Iron Team' or normal party? (C. Blue) */
 	s32b experience;	/* For 'Iron Teams': Max experienc of members. */
 	u32b flags;		/* Party rules flags */
-	s32b iron_trade;	/* For IDDC_IRON_COOP || IRON_IRON_TEAM : */
 };
 party_type parties[MAX_PARTIES];
 struct guild_type
@@ -339,7 +332,7 @@ struct guild_type
 	const char *name; /* [MAX_CHARS]; */
 	s32b master;		/* Guildmaster unique player ID */
 	s32b members;		/* Number of guild members */
-	byte cmode;	     /* Guild creator's character mode */
+        byte cmode;             /* Guild creator's character mode */
 	u32b flags;		/* Guild rules flags */
 	s16b minlev;		/* minimum level to join */
 };
@@ -364,9 +357,7 @@ extern int max_clouds_seasonal;
 extern int season_halloween;
 extern int season_xmas;
 extern int season_newyearseve;
-#ifdef USE_SOUND_2010
 extern void handle_seasonal_music(void);
-#endif
 
 /* for controlling fireworks on NEW_YEARS_EVE */
 extern int fireworks;
@@ -381,7 +372,6 @@ extern cptr *ANGBAND_DIR;
 /* timers for special events */
 extern int timer_pvparena1;
 extern int timer_pvparena2;
-extern int timer_falling_star;
 
 /* for fun with client-side weather */
 extern int Send_weather(int ind, int weather_type, int weather_wind, int weather_gen_speed, int weather_intensity, int weather_speed, bool update_clouds, bool revoke_clouds);
@@ -400,7 +390,7 @@ extern void go_challenge_cancel(void);	/* Aborts currently running game, if any 
 #endif
 
 extern u16b numtowns;
-extern s32b quark__num;
+extern s16b quark__num;
 
 extern void swear_add(char *word, int level);
 extern char *swear_get_word(int i);
@@ -409,9 +399,6 @@ extern void nonswear_add(char *word, int affix);
 extern char *nonswear_get(int i);
 extern int nonswear_affix_get(int i);
 extern void init_swearing(void);
-extern void lua_swear_list(int Ind, int level);
-extern void lua_nonswear_list(int Ind);
-
 #ifdef IRONDEEPDIVE_MIXED_TYPES
 extern int scan_iddc(void);
 #endif
@@ -423,6 +410,8 @@ extern int dungeon_bonus[128];
 extern int dungeon_id_max;
 #endif
 
+bool censor_swearing;
+bool censor_swearing_identity;
 bool jails_enabled;
 bool allow_requesting_estate;
 int netherrealm_wpos_x;
@@ -440,15 +429,3 @@ extern int __audio_sfx_max;
 extern int __audio_mus_max;
 
 extern bool allow_similar_names;
-
-extern bool pvp_disabled;
-
-/* For debugging/verifying of available object memory */
-extern s32b o_nxt;
-extern s32b o_max;
-extern s32b o_top;
-extern s32b m_nxt;
-extern s32b m_max;
-extern s32b m_top;
-
-extern void verify_expfact(int Ind, int p);

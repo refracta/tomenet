@@ -7,21 +7,15 @@
 #include <sys/time.h>
 
 #define ENABLE_SUBWINDOW_MENU /* allow =f menu function for setting fonts/visibility of term windows */
-//#ifdef ENABLE_SUBWINDOW_MENU
- #include <dirent.h> /* we now need it for scanning for audio packs too */
-//#endif
-
-/* For extract_url(): able to utilize regexps? */
-#define REGEX_URL
-
-#if defined(REGEX_SEARCH) || defined(REGEX_URL)
- #include <regex.h>
- #define REGEX_ARRAY_SIZE 1
+#ifdef ENABLE_SUBWINDOW_MENU
+ #include <dirent.h>
 #endif
 
 #define MACRO_USE_CMD	0x01
 #define MACRO_USE_STD	0x02
 #define MACRO_USE_HYB	0x04
+
+#define NR_OPTIONS_SHOWN	8 /* apparently # of term windows (old comment: was 32 when there were 32 window_flag_desc[]) */
 
 /* Have the Macro Wizard generate target code in
    the form *tXXX- instead of XXX*t? - C. Blue */
@@ -30,8 +24,6 @@
 /* This should be extended onto all top-line clearing/message prompting during macro execution,
    to avoid erasing %:bla lines coming from the macro, by overwriting them with useless prompts: */
 //#define DONT_CLEAR_TOPLINE_IF_AVOIDABLE -- turned into an option instead: c_cfg.keep_topline
-
-#define RAINY_TOMB /* Display rainy weather for the mood? +_+ - C. Blue */
 
 
 
@@ -67,11 +59,11 @@ int usleep(huge microSeconds) {
 	/* Wait for it */
 	if (select(nfds, no_fds, no_fds, no_fds, &Timer) < 0) {
 		/* Hack -- ignore interrupts */
-		if (errno != EINTR) return(-1);
+		if (errno != EINTR) return -1;
 	}
 
 	/* Success */
-	return(0);
+	return 0;
 }
 # endif /* HAS_USLEEP */
 #endif /* SET_UID */
@@ -86,8 +78,6 @@ int usleep(long microSeconds) {
 
 
 static int MACRO_WAIT = 96; //hack: ASCII 96 ("`") is unused in the game's key layout
-static int MACRO_XWAIT = 30; //hack: ASCII 30 (RS/Record Separator) which is practically unused, as it represents CTRL+^ is now abused for new client-side wait function that is indepdendant of the server, allows for long waits, and can be cancelled by keypress.
-//Note that inkey() actually treats ASCII 30 special, as control-caret, but this usage seems deprecated so we don't have any collision here with MACRO_XWAIT.
 
 static void ascii_to_text(char *buf, cptr str);
 
@@ -108,11 +98,11 @@ static bool was_all_buffer = FALSE;
 static bool was_important_scrollback = FALSE;
 
 static char octify(uint i) {
-	return(hexsym[i % 8]);
+	return (hexsym[i%8]);
 }
 
 static char hexify(uint i) {
-	return(hexsym[i % 16]);
+	return (hexsym[i%16]);
 }
 
 void move_cursor(int row, int col) {
@@ -129,7 +119,8 @@ void flush_now(void) {
 
 	/* Cancel "macro" info */
 //#ifdef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
-	if (c_cfg.keep_topline) restore_prompt();
+if (c_cfg.keep_topline)
+	restore_prompt();
 //#endif
 	parse_macro = after_macro = FALSE;
 
@@ -175,19 +166,19 @@ static int macro_maybe(cptr buf, int n) {
 	/* Scan the macros */
 	for (i = n; i < macro__num; i++) {
 		/* Skip inactive macros */
-		if (macro__hyb[i] && ((shopping && !c_cfg.macros_in_stores) || inkey_msg)) continue;
-		if (macro__cmd[i] && ((shopping && !c_cfg.macros_in_stores) || !inkey_flag || inkey_msg)) continue;
+		if (macro__hyb[i] && (shopping || inkey_msg)) continue;
+		if (macro__cmd[i] && (shopping || !inkey_flag || inkey_msg)) continue;
 
 		/* Check for "prefix" */
 		if (prefix(macro__pat[i], buf))
 		{
 			/* Ignore complete macros */
-			if (!streq(macro__pat[i], buf)) return(i);
+			if (!streq(macro__pat[i], buf)) return (i);
 		}
 	}
 
 	/* No matches */
-	return(-1);
+	return (-1);
 }
 
 
@@ -200,8 +191,8 @@ static int macro_ready(cptr buf) {
 	/* Scan the macros */
 	for (i = 0; i < macro__num; i++) {
 		/* Skip inactive macros */
-		if (macro__cmd[i] && ((shopping && !c_cfg.macros_in_stores) || inkey_msg || !inkey_flag)) continue;
-		if (macro__hyb[i] && ((shopping && !c_cfg.macros_in_stores) || inkey_msg)) continue;
+		if (macro__cmd[i] && (shopping || inkey_msg || !inkey_flag)) continue;
+		if (macro__hyb[i] && (shopping || inkey_msg)) continue;
 
 		/* Check for "prefix" */
 		if (!prefix(buf, macro__pat[i])) continue;
@@ -218,7 +209,7 @@ static int macro_ready(cptr buf) {
 	}
 
 	/* Return the result */
-	return(n);
+	return (n);
 }
 
 
@@ -228,59 +219,62 @@ static int macro_ready(cptr buf) {
  * If "cmd_flag" is set then this macro is only active when
  * the user is being asked for a command (see below).
  */
-void macro_add(cptr pat, cptr act, bool cmd_flag, bool hyb_flag) {
-	int n;
+void macro_add(cptr pat, cptr act, bool cmd_flag, bool hyb_flag)
+{
+        int n;
 
-	/* Paranoia -- require data */
-	if (!pat || !act) return;
+        /* Paranoia -- require data */
+        if (!pat || !act) return;
 
 
-	/* Look for a re-usable slot */
-	for (n = 0; n < macro__num; n++) {
-		/* Notice macro redefinition */
-		if (streq(macro__pat[n], pat)) {
-			/* Free the old macro action */
-			string_free(macro__act[n]);
+        /* Look for a re-usable slot */
+        for (n = 0; n < macro__num; n++)
+        {
+                /* Notice macro redefinition */
+                if (streq(macro__pat[n], pat))
+                {
+                        /* Free the old macro action */
+                        string_free(macro__act[n]);
 
-			/* Save the macro action */
-			macro__act[n] = string_make(act);
+                        /* Save the macro action */
+                        macro__act[n] = string_make(act);
 
-			/* Save the "cmd_flag" */
-			macro__cmd[n] = cmd_flag;
+                        /* Save the "cmd_flag" */
+                        macro__cmd[n] = cmd_flag;
 
-			/* Save the hybrid flag */
-			macro__hyb[n] = hyb_flag;
+                        /* Save the hybrid flag */
+                        macro__hyb[n] = hyb_flag;
 
 			/* Update the "trigger" char - mikaelh */
 			if (hyb_flag) macro__use[(byte)(pat[0])] |= MACRO_USE_HYB;
 			else if (cmd_flag) macro__use[(byte)(pat[0])] |= MACRO_USE_CMD;
 			else macro__use[(byte)(pat[0])] |= MACRO_USE_STD;
 
-			/* All done */
-			return;
-		}
-	}
+                        /* All done */
+                        return;
+                }
+        }
 
 
-	/* Save the pattern */
-	macro__pat[macro__num] = string_make(pat);
+        /* Save the pattern */
+        macro__pat[macro__num] = string_make(pat);
 
-	/* Save the macro action */
-	macro__act[macro__num] = string_make(act);
+        /* Save the macro action */
+        macro__act[macro__num] = string_make(act);
 
-	/* Save the "cmd_flag" */
-	macro__cmd[macro__num] = cmd_flag;
+        /* Save the "cmd_flag" */
+        macro__cmd[macro__num] = cmd_flag;
 
-	/* Save the "hybrid flag" */
-	macro__hyb[macro__num] = hyb_flag;
+        /* Save the "hybrid flag" */
+        macro__hyb[macro__num] = hyb_flag;
 
-	/* One more macro */
-	macro__num++;
+        /* One more macro */
+        macro__num++;
 
 
-	/* Hack -- Note the "trigger" char */
-	if (hyb_flag) macro__use[(byte)(pat[0])] |= MACRO_USE_HYB;
-	else if (cmd_flag) macro__use[(byte)(pat[0])] |= MACRO_USE_CMD;
+        /* Hack -- Note the "trigger" char */
+        if (hyb_flag) macro__use[(byte)(pat[0])] |= MACRO_USE_HYB;
+        else if (cmd_flag) macro__use[(byte)(pat[0])] |= MACRO_USE_CMD;
 	macro__use[(byte)(pat[0])] |= MACRO_USE_STD;
 
 }
@@ -299,7 +293,7 @@ bool macro_del(cptr pat) {
 		}
 	}
 
-	if (num == -1) return(FALSE);
+	if (num == -1) return FALSE;
 
 	/* Free it */
 	string_free(macro__pat[num]);
@@ -321,7 +315,7 @@ bool macro_del(cptr pat) {
 
 	macro__num--;
 
-	return(TRUE);
+	return TRUE;
 }
 
 /* Returns the difference between two timevals in milliseconds */
@@ -331,7 +325,7 @@ static int diff_ms(struct timeval *begin, struct timeval *end) {
 	diff = (end->tv_sec - begin->tv_sec) * 1000;
 	diff += (end->tv_usec - begin->tv_usec) / 1000;
 
-	return(diff);
+	return diff;
 }
 
 /* ACCEPT_KEYS should be disabled or it'd cause the part labelled
@@ -367,8 +361,10 @@ void sync_sleep(int milliseconds) {
 #ifdef ACCEPT_KEYS
 	/* HACK - Create a new key queue so we can receive fresh key presses */
 	Term->keys_old = Term->keys;
+
 	MAKE(Term->keys, key_queue);
 	C_MAKE(Term->keys->queue, Term->key_size_orig, char);
+
 	Term->keys->size = Term->key_size_orig;
 #endif
 
@@ -451,161 +447,6 @@ void sync_sleep(int milliseconds) {
 			/* Erase the spinner */
 			Term_erase(Term->wid - 1, 0, 1);
 			inkey_sleep = FALSE;
-			/* For chained macros: Need to reset the semaphore, as we could meet another \w directive later on in the same macro we're still processing */
-			inkey_sleep_semaphore = FALSE;
-			return;
-		}
-
-		/* Do a little animation in the upper right corner */
-		Term_putch(Term->wid - 1, 0, TERM_WHITE, animation[time_spent / 100 % 4]);
-
-		/* Flush output - maintain flickering/multi-hued characters */
-		do_flicker();
-
-		/* Update our timer and if neccecary send a keepalive packet
-		 */
-		update_ticks();
-		if (!c_quit) {
-			do_keepalive();
-			do_ping();
-		}
-
-		/* Flush the network output buffer */
-		Net_flush();
-
-		/* Wait for .001 sec, or until there is net input */
-		SetTimeout(0, 1000);
-
-		/* Update the screen */
-		Term_fresh();
-
-		if (c_quit) {
-			usleep(1000);
-			continue;
-		}
-
-		/* Parse net input if we got any */
-		if (SocketReadable(net_fd)) {
-			if ((result = Net_input()) == -1) quit("Net_input failed.");
-		}
-
-		/* Redraw windows if necessary */
-		window_stuff();
-	}
-}
-void sync_xsleep(int milliseconds) {
-	static char animation[4] = { '-', '\\', '|', '/' };
-	int result, net_fd;
-	struct timeval begin, now;
-	int time_spent;
-	char ch;
-
-	command_confirmed = -1;
-	inkey_sleep = TRUE;
-
-#ifdef WINDOWS
-	/* Use the multimedia timer function */
-	DWORD systime_ms = timeGetTime();
-	begin.tv_sec = systime_ms / 1000;
-	begin.tv_usec = (systime_ms % 1000) * 1000;
-#else
-	gettimeofday(&begin, NULL);
-#endif
-	net_fd = Net_fd();
-
-	/* HACK - Create a new key queue so we can receive fresh key presses */
-	Term->keys_old = Term->keys;
-
-	MAKE(Term->keys, key_queue);
-	C_MAKE(Term->keys->queue, Term->key_size_orig, char);
-
-	Term->keys->size = Term->key_size_orig;
-
-	while (TRUE) {
-		/* Check for fresh key presses */
-		while (Term_inkey(&ch, FALSE, TRUE) == 0) {
-			if (ch == ESCAPE) {
-				/* Forget key presses */
-				Term->keys->head = 0;
-				Term->keys->tail = 0;
-				Term->keys->length = 0;
-
-				if (Term->keys_old) {
-					/* Destroy the old queue */
-					C_KILL(Term->keys_old->queue, Term->keys_old->size, char);
-					KILL(Term->keys_old, key_queue);
-				}
-
-				/* Erase the spinner */
-				Term_erase(Term->wid - 1, 0, 1);
-
-				/* Abort */
-				inkey_sleep = FALSE;
-				return;
-			} else if (ch == ' ') {
-				if (Term->keys_old) {
-					/* Destroy the temporary key queue */
-					C_KILL(Term->keys->queue, Term->keys->size, char);
-					KILL(Term->keys, key_queue);
-
-					/* Restore the old queue */
-					Term->keys = Term->keys_old;
-					Term->keys_old = NULL;
-				}
-
-				/* Erase the spinner */
-				Term_erase(Term->wid - 1, 0, 1);
-				inkey_sleep = FALSE;
-
-				/* Cancel sleep and resume */
-				return;
-			} else {
-				if (Term->keys_old) {
-					/* Add it to the old queue */
-					Term_keypress_aux(Term->keys_old, ch);
-				}
-			}
-		}
-
-#ifdef WINDOWS
-		/* Use the multimedia timer function */
-		DWORD systime_ms = timeGetTime();
-		now.tv_sec = systime_ms / 1000;
-		now.tv_usec = (systime_ms % 1000) * 1000;
-#else
-		gettimeofday(&now, NULL);
-#endif
-
-		/* Check if we have waited long enough */
-		time_spent = diff_ms(&begin, &now);
-		if (time_spent >= milliseconds
-		    /* hack: Net_input() might've caused command-processing that in turn calls inkey(),
-		       then we'd already be continuing processing the part of the macro that comes after
-		       a \wXX directive that we're still waiting for to complete here,
-		       causing a inkey->sync_sleep->Net_input->inkey.. recursion from macros.
-		       So in that case if a server-reply came in before we're done waiting, we can just
-		       stop waiting now, because usually the purpose of \wXX is to actually wait for an
-		       (item) input request from the server. - C. Blue */
-		    || inkey_sleep_semaphore
-		    /* hack: For commands where the server doesn't conveniently sends us another input
-		       request as described above, starting at 4.6.2 the server might send us a special
-		       PKT_CONFIRM though to signal that we can stop sleeping now. */
-		    || command_confirmed != -1) {
-			if (Term->keys_old) {
-				/* Destroy the temporary key queue */
-				C_KILL(Term->keys->queue, Term->keys->size, char);
-				KILL(Term->keys, key_queue);
-
-				/* Restore the old queue */
-				Term->keys = Term->keys_old;
-				Term->keys_old = NULL;
-			}
-
-			/* Erase the spinner */
-			Term_erase(Term->wid - 1, 0, 1);
-			inkey_sleep = FALSE;
-			/* For chained macros: Need to reset the semaphore, as we could meet another \w directive later on in the same macro we're still processing */
-			inkey_sleep_semaphore = FALSE;
 			return;
 		}
 
@@ -675,7 +516,7 @@ static char inkey_aux(void) {
 	char	ch = 0;
 	cptr	pat, act;
 	char	buf[1024];
-	char	buf_atoi[5];
+	char	buf_atoi[3];
 	bool	inkey_max_line_set;
 	int net_fd;
 
@@ -690,7 +531,7 @@ static char inkey_aux(void) {
 		/* Wait for a keypress */
 		(void)(Term_inkey(&ch, TRUE, TRUE));
 
-		if (parse_macro && ch == MACRO_WAIT) {
+		if (parse_macro && (ch == MACRO_WAIT)) {
 			buf_atoi[0] = '0';
 			buf_atoi[1] = '0';
 			buf_atoi[2] = '\0';
@@ -705,37 +546,13 @@ static char inkey_aux(void) {
 
 			/* continue with the next 'real' key */
 			(void)(Term_inkey(&ch, TRUE, TRUE));
-		} else if (parse_macro && ch == MACRO_XWAIT) {
-			buf_atoi[0] = '0';
-			buf_atoi[1] = '0';
-			buf_atoi[2] = '0';
-			buf_atoi[3] = '0';
-			buf_atoi[4] = '\0';
-			(void)(Term_inkey(&ch, TRUE, TRUE));
-			if (ch) buf_atoi[0] = ch;
-			(void)(Term_inkey(&ch, TRUE, TRUE));
-			if (ch) buf_atoi[1] = ch;
-			(void)(Term_inkey(&ch, TRUE, TRUE));
-			if (ch) buf_atoi[2] = ch;
-			(void)(Term_inkey(&ch, TRUE, TRUE));
-			if (ch) buf_atoi[3] = ch;
-			w = atoi(buf_atoi);
-			sync_xsleep(w * 100L); /* w/10 seconds */
-			ch = 0;
-			w = 0;
-
-			/* continue with the next 'real' key */
-			(void)(Term_inkey(&ch, TRUE, TRUE));
 		}
 #else
 		do {
 			do_flicker();
 			(void)(Term_inkey(&ch, FALSE, TRUE));
 			if (ch) break;
-			update_ticks();		// <-(x)!! in -c (terminal) mode, this is actually _the_ (only) update_ticks() that is called during meta server display and that is able to visibly redraw meta server list every 9s! (META_DISPLAYPINGS_LATER)
- #ifdef RAINY_TOMB
-			do_weather(FALSE);
- #endif
+			update_ticks();
 
 			/* Don't consume 100% cpu, wait according to client fps. */
  #if 0
@@ -760,19 +577,12 @@ static char inkey_aux(void) {
 					Term_draw(minimap_posx, minimap_posy, TERM_WHITE, '@');
 				else
 					Term_draw(minimap_posx, minimap_posy, minimap_attr, minimap_char);
-				/* New: Grid selection possible, to verify coordinates */
-				if (minimap_selx != -1) {
-					if ((ticks % 6) < 3)
-						Term_draw(minimap_selx, minimap_sely, TERM_ORANGE, 'X');
-					else
-						Term_draw(minimap_selx, minimap_sely, minimap_selattr, minimap_selchar);
-				}
 			}
 
 			/* Look for a keypress */
 			(void)(Term_inkey(&ch, FALSE, TRUE));
 
-			if (parse_macro && ch == MACRO_WAIT) {
+			if (parse_macro && (ch == MACRO_WAIT)) {
 				buf_atoi[0] = '0';
 				buf_atoi[1] = '0';
 				buf_atoi[2] = '\0';
@@ -787,34 +597,6 @@ static char inkey_aux(void) {
 
 				/* continue with the next 'real' key */
 				continue;
-			} else if (parse_macro && ch == MACRO_XWAIT) {
-				buf_atoi[0] = '0';
-				buf_atoi[1] = '0';
-				buf_atoi[2] = '0';
-				buf_atoi[3] = '0';
-				buf_atoi[4] = '\0';
-				(void)(Term_inkey(&ch, TRUE, TRUE));
-				if (ch) buf_atoi[0] = ch;
-				(void)(Term_inkey(&ch, TRUE, TRUE));
-				if (ch) buf_atoi[1] = ch;
-				(void)(Term_inkey(&ch, TRUE, TRUE));
-				if (ch) buf_atoi[2] = ch;
-				(void)(Term_inkey(&ch, TRUE, TRUE));
-				if (ch) buf_atoi[3] = ch;
-				w = atoi(buf_atoi);
-				sync_xsleep(w * 100L); /* w/10 seconds */
-				ch = 0;
-				w = 0;
-
-				/* continue with the next 'real' key */
-				continue;
-			}
-
-			/* Hack for auto-pressing spacebar while in player-list */
-			if (within_cmd_player && ticks - within_cmd_player_ticks >= 50) {
-				within_cmd_player_ticks = ticks;
-				ch = 1; //refresh our current player list view
-				break;
 			}
 
 			/* If we got a key, break */
@@ -831,7 +613,7 @@ static char inkey_aux(void) {
 			/* Update our timer and if neccecary send a keepalive packet
 			 */
 			update_ticks();
-			if (!c_quit) {
+			if(!c_quit) {
 				do_keepalive();
 				do_ping();
 			}
@@ -840,7 +622,7 @@ static char inkey_aux(void) {
 			Net_flush();
 
 			/* Wait for .001 sec, or until there is net input */
-			//SetTimeout(0, 1000);
+//			SetTimeout(0, 1000);
 
 			/* Wait according to fps - mikaelh */
 			SetTimeout(0, next_frame());
@@ -859,13 +641,13 @@ static char inkey_aux(void) {
 			}
 
 			/* Hack - Leave a store */
-			if (shopping && leave_store) return(ESCAPE);
+			if (shopping && leave_store) return ESCAPE;
 
 			/* Are we supposed to abort a 'special input request'?
 			   (Ie outside game situation has changed, eg left store.) */
 			if (request_pending && request_abort) {
 				request_abort = FALSE;
-				return(ESCAPE);
+				return ESCAPE;
 			}
 
 			/* Redraw windows if necessary */
@@ -876,18 +658,19 @@ static char inkey_aux(void) {
 	/* End of internal macro */
 	if (ch == 29) {
 //#ifdef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
-		if (c_cfg.keep_topline) restore_prompt();
+if (c_cfg.keep_topline)
+		restore_prompt();
 //#endif
 		parse_macro = FALSE;
 	}
 
 
 	/* Do not check "ascii 28" */
-	if (ch == 28) return(ch);
+	if (ch == 28) return (ch);
 
 
 	/* Do not check "ascii 29" */
-	if (ch == 29) return(ch);
+	if (ch == 29) return (ch);
 
 	/* Do not check macro actions */
 	if (parse_macro) {
@@ -921,29 +704,31 @@ static char inkey_aux(void) {
 		}
 
 		/* return next macro character */
-		return(ch);
+		return (ch);
 	}
 
 	/* Do not check "control-underscore" sequences */
-	if (parse_under) return(ch);
+	if (parse_under) return (ch);
 
 	/* Do not check "control-backslash" sequences */
-	if (parse_slash) return(ch);
+	if (parse_slash) return (ch);
 
 
 	/* Efficiency -- Ignore impossible macros */
-	if (!macro__use[(byte)(ch)]) return(ch);
+	if (!macro__use[(byte)(ch)]) return (ch);
 
 	/* Efficiency -- Ignore inactive macros */
-	if ((((shopping && !c_cfg.macros_in_stores) || !inkey_flag || inkey_msg) && (macro__use[(byte)(ch)] == MACRO_USE_CMD)) || inkey_interact_macros) return(ch);
-	if ((((shopping && !c_cfg.macros_in_stores) || inkey_msg) && (macro__use[(byte)(ch)] == MACRO_USE_HYB)) || inkey_interact_macros) return(ch);
+	if (((shopping || !inkey_flag || inkey_msg) && (macro__use[(byte)(ch)] == MACRO_USE_CMD)) || inkey_interact_macros) return (ch);
+	if (((shopping || inkey_msg) && (macro__use[(byte)(ch)] == MACRO_USE_HYB)) || inkey_interact_macros) return (ch);
+
 
 	/* Save the first key, advance */
 	buf[p++] = ch;
 	buf[p] = '\0';
 
 	/* Wait for a macro, or a timeout */
-	while (TRUE) {
+	while (TRUE)
+	{
 		/* Check for possible macros */
 		k = macro_maybe(buf, k);
 
@@ -951,7 +736,8 @@ static char inkey_aux(void) {
 		if (k < 0) break;
 
 		/* Check for (and remove) a pending key */
-		if (0 == Term_inkey(&ch, FALSE, TRUE)) {
+		if (0 == Term_inkey(&ch, FALSE, TRUE))
+		{
 			/* Append the key */
 			buf[p++] = ch;
 			buf[p] = '\0';
@@ -961,8 +747,10 @@ static char inkey_aux(void) {
 		}
 
 		/* No key ready */
-		else {
-			if (multi_key_macros) {
+		else
+		{
+			if (multi_key_macros)
+			{
 				/* Increase "wait" */
 				w += 10;
 
@@ -971,7 +759,9 @@ static char inkey_aux(void) {
 
 				/* Delay */
 				Term_xtra(TERM_XTRA_DELAY, w);
-			} else {
+			}
+			else
+			{
 				/* No waiting */
 				break;
 			}
@@ -982,18 +772,20 @@ static char inkey_aux(void) {
 	k = macro_ready(buf);
 
 	/* No macro available */
-	if (k < 0) {
+	if (k < 0)
+	{
 		/* Push all the keys back on the queue */
-		while (p > 0) {
+		while (p > 0)
+		{
 			/* Push the key, notice over-flow */
-			if (Term_key_push(buf[--p])) return(0);
+			if (Term_key_push(buf[--p])) return (0);
 		}
 
 		/* Wait for (and remove) a pending key */
 		(void)Term_inkey(&ch, TRUE, TRUE);
 
 		/* Return the key */
-		return(ch);
+		return (ch);
 	}
 
 
@@ -1005,8 +797,9 @@ static char inkey_aux(void) {
 
 
 	/* Push the "extra" keys back on the queue */
-	while (p > n) {
-		if (Term_key_push(buf[--p])) return(0);
+	while (p > n)
+	{
+		if (Term_key_push(buf[--p])) return (0);
 	}
 
 	/* We are now inside a macro */
@@ -1014,11 +807,9 @@ static char inkey_aux(void) {
 	inkey_sleep_semaphore = FALSE; //init semaphore for macros containing \wXX
 	/* Assume that the macro has no problems with possibly missing items so far */
 	macro_missing_item = 0;
-	/* Paranoia: Make sure that the macro won't instantly fail because something failed before */
-	abort_prompt = FALSE;
 
 	/* Push the "macro complete" key */
-	if (Term_key_push(29)) return(0);
+	if (Term_key_push(29)) return (0);
 
 
 	/* Access the macro action */
@@ -1029,9 +820,10 @@ static char inkey_aux(void) {
 
 #if 0
 	/* Push the macro "action" onto the key queue */
-	while (n > 0) {
+	while (n > 0)
+	{
 		/* Push the key, notice over-flow */
-		if (Term_key_push(act[--n])) return(0);
+		if (Term_key_push(act[--n])) return (0);
 	}
 #else
 	/* Push all at once */
@@ -1039,7 +831,7 @@ static char inkey_aux(void) {
 #endif
 
 	/* Force "inkey()" to call us again */
-	return(0);
+	return (0);
 }
 
 
@@ -1116,6 +908,7 @@ char inkey(void) {
 	int w = 0;
 	int skipping = FALSE;
 
+
 	/* Hack -- handle delayed "flush()" */
 	if (flush_later) {
 		/* Done */
@@ -1123,7 +916,8 @@ char inkey(void) {
 
 		/* Cancel "macro" info */
 //#ifdef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
-		if (c_cfg.keep_topline) restore_prompt();
+if (c_cfg.keep_topline)
+		restore_prompt();
 //#endif
 		parse_macro = after_macro = FALSE;
 
@@ -1147,6 +941,7 @@ char inkey(void) {
 		(void)Term_set_cursor(1);
 	}
 
+
 	/* Hack -- Activate the screen */
 	Term_activate(term_screen);
 
@@ -1160,7 +955,7 @@ char inkey(void) {
 		if (!inkey_base && inkey_scan && (0 != Term_inkey(&ch, FALSE, FALSE))) break;
 
 		/* Hack -- flush the output once no key is ready */
-		if (!done && (0 != Term_inkey(&ch, FALSE, FALSE))) {		// <-(1)!! in -c (terminal) mode, this causes metaserver-display to blank out (META_DISPLAYPINGS_LATER)
+		if (!done && (0 != Term_inkey(&ch, FALSE, FALSE))) {
 			/* Hack -- activate proper term */
 			Term_activate(old);
 
@@ -1177,6 +972,7 @@ char inkey(void) {
 		/* Hack */
 		if (inkey_base) {
 			char xh;
+
 #if 0 /* don't block.. */
 			/* Check for keypress, optional wait */
 			(void)Term_inkey(&xh, !inkey_scan, TRUE);
@@ -1237,7 +1033,7 @@ char inkey(void) {
 				/* Hack - Leave a store */
 				if (shopping && leave_store) {
 					if (inkey_sleep) inkey_sleep_semaphore = TRUE;
-					return(ESCAPE);
+					return ESCAPE;
 				}
  #endif
 
@@ -1286,7 +1082,7 @@ char inkey(void) {
 		}
 
 		/* Get a key (see above) */
-		kk = ch = inkey_aux();//		<-(y)!! in -c (terminal) mode, this waits for keypress (META_DISPLAYPINGS_LATER)
+		kk = ch = inkey_aux();
 
 		/* Finished a "control-underscore" sequence */
 		if (parse_under && (ch <= 32)) {
@@ -1316,42 +1112,61 @@ char inkey(void) {
 
 		/* Handle some special keys */
 		switch (ch) {
-		/* Hack -- convert back-quote into escape */
-		case '`':
+			/* Hack -- convert back-quote into escape */
+			case '`':
+
 			/* Convert to "Escape" */
 			ch = ESCAPE;
+
+			/* Done */
 			break;
 
-		/* Hack -- strip "control-backslash" special-fallback-strings */
-		case 28:
+			/* Hack -- strip "control-right-bracket" end-of-macro-action */
+			case 29:
+
 			/* Strip this key */
 			ch = 0;
-			/* Inside a "control-backslash" sequence */
-			parse_slash = TRUE;
-			/* Strip chars (sometimes) */
-			strip_chars = after_macro;
+
+			/* Done */
 			break;
 
-		/* Hack -- strip "control-right-bracket" end-of-macro-action */
-		case 29:
+			/* Hack -- strip "control-caret" special-keypad-indicator */
+			case 30:
+
 			/* Strip this key */
 			ch = 0;
+
+			/* Done */
 			break;
 
-		/* Hack -- strip "control-caret" special-keypad-indicator -- only used in deprecated main-xxx.c files now? otherwise it could collide with MACRO_XWAIT */
-		case 30:
-			/* Strip this key */
-			ch = 0;
-			break;
+			/* Hack -- strip "control-underscore" special-macro-triggers */
+			case 31:
 
-		/* Hack -- strip "control-underscore" special-macro-triggers */
-		case 31:
 			/* Strip this key */
 			ch = 0;
+
 			/* Inside a "underscore" sequence */
 			parse_under = TRUE;
+
 			/* Strip chars (always) */
 			strip_chars = TRUE;
+
+			/* Done */
+			break;
+
+			/* Hack -- strip "control-backslash" special-fallback-strings */
+			case 28:
+
+			/* Strip this key */
+			ch = 0;
+
+			/* Inside a "control-backslash" sequence */
+			parse_slash = TRUE;
+
+			/* Strip chars (sometimes) */
+			strip_chars = after_macro;
+
+			/* Done */
 			break;
 		}
 
@@ -1376,7 +1191,7 @@ char inkey(void) {
 
 	/* Return the keypress */
 	if (inkey_sleep) inkey_sleep_semaphore = TRUE;
-	return(ch);
+	return (ch);
 }
 
 static int hack_dir = 0;
@@ -1387,113 +1202,113 @@ static int hack_dir = 0;
  *
  * Note that many "Rogue" keypresses encode a direction.
  */
-char roguelike_commands(char command) {
+static char roguelike_commands(char command) {
 	/* Process the command */
 	switch (command) {
 
 	/* Movement (rogue keys) */
-	case 'b': hack_dir = 1; return(';');
-	case 'j': hack_dir = 2; return(';');
-	case 'n': hack_dir = 3; return(';');
-	case 'h': hack_dir = 4; return(';');
-	case 'l': hack_dir = 6; return(';');
-	case 'y': hack_dir = 7; return(';');
-	case 'k': hack_dir = 8; return(';');
-	case 'u': hack_dir = 9; return(';');
+	case 'b': hack_dir = 1; return (';');
+	case 'j': hack_dir = 2; return (';');
+	case 'n': hack_dir = 3; return (';');
+	case 'h': hack_dir = 4; return (';');
+	case 'l': hack_dir = 6; return (';');
+	case 'y': hack_dir = 7; return (';');
+	case 'k': hack_dir = 8; return (';');
+	case 'u': hack_dir = 9; return (';');
 
 	/* Running (shift + rogue keys) */
-	case 'B': hack_dir = 1; return('.');
-	case 'J': hack_dir = 2; return('.');
-	case 'N': hack_dir = 3; return('.');
-	case 'H': hack_dir = 4; return('.');
-	case 'L': hack_dir = 6; return('.');
-	case 'Y': hack_dir = 7; return('.');
-	case 'K': hack_dir = 8; return('.');
-	case 'U': hack_dir = 9; return('.');
+	case 'B': hack_dir = 1; return ('.');
+	case 'J': hack_dir = 2; return ('.');
+	case 'N': hack_dir = 3; return ('.');
+	case 'H': hack_dir = 4; return ('.');
+	case 'L': hack_dir = 6; return ('.');
+	case 'Y': hack_dir = 7; return ('.');
+	case 'K': hack_dir = 8; return ('.');
+	case 'U': hack_dir = 9; return ('.');
 
 	/* Tunnelling (control + rogue keys) */
-	case KTRL('B'): hack_dir = 1; return('+');
-	case KTRL('J'): hack_dir = 2; return('+');
-	case KTRL('N'): hack_dir = 3; return('+');
-	case KTRL('H'): hack_dir = 4; return('+');
-	case KTRL('L'): hack_dir = 6; return('+');
-	case KTRL('Y'): hack_dir = 7; return('+');
-	case KTRL('K'): hack_dir = 8; return('+');
-	case KTRL('U'): hack_dir = 9; return('+');
+	case KTRL('B'): hack_dir = 1; return ('+');
+	case KTRL('J'): hack_dir = 2; return ('+');
+	case KTRL('N'): hack_dir = 3; return ('+');
+	case KTRL('H'): hack_dir = 4; return ('+');
+	case KTRL('L'): hack_dir = 6; return ('+');
+	case KTRL('Y'): hack_dir = 7; return ('+');
+	case KTRL('K'): hack_dir = 8; return ('+');
+	case KTRL('U'): hack_dir = 9; return ('+');
 
 	/* Oops, audio mixer */
-	case KTRL('F'): return(KTRL('U'));
-	case KTRL('V'): return(KTRL('N'));
-	case KTRL('X'): return(KTRL('C'));
+	case KTRL('F'): return (KTRL('U'));
+	case KTRL('V'): return (KTRL('N'));
+	case KTRL('X'): return (KTRL('C'));
 
 	/* Hack -- Commit suicide */
 	/* ..instead display fps */
-	//case KTRL('C'): return('Q');
+	//case KTRL('C'): return ('Q');
 	/* Force-stack items */
-	case KTRL('C'): return('K');
+	case KTRL('C'): return ('K');
 
 	/* Hack -- White-space */
-	case KTRL('M'): return('\r');
+	case KTRL('M'): return ('\r');
 
 	/* Allow use of the "destroy" command */
-	case KTRL('D'): return('k');
+	case KTRL('D'): return ('k');
 
 	/* Locate player on map */
-	case KTRL('W'): return('L');
+	case 'W': return ('L');
 	/* Browse a book (Peruse) */
-	case 'P': return('b');
+	case 'P': return ('b');
 	/* Steal */
-	case KTRL('A'): return('j');
+	case 'S': return ('j');
 	/* Toggle search mode */
-	case '#': return('S');
+	case '#': return ('S');
 	/* Use a staff (Zap) */
-	case 'Z': return('u');
+	case 'Z': return ('u');
 	/* Take off equipment */
-	case 'T': return('t');
+	case 'T': return ('t');
 	/* Fire an item */
-	case 't': return('f');
+	case 't': return ('f');
 	/* Bash a door (Force) */
-	case 'f': return('B');
+	case 'f': return ('B');
 	/* Look around (examine) */
-	case 'x': return('l');
+	case 'x': return ('l');
 	/* Aim a wand (Zap) */
-	case 'z': return('a');
+	case 'z': return ('a');
 	/* Zap a rod (Activate) */
-	case 'a': return('z');
+	case 'a': return ('z');
 	/* Party mode */
-	case 'O': return('P');
+	case 'O': return ('P');
 
 	/* Secondary 'wear/wield' */
-	//case 'W': return('W');
+	case KTRL('W'): return ('W');
 	/* Swap item */
-	case 'S': return('x');
+	case KTRL('A'): return ('x');
 	/* House commands */
-	case KTRL('E'): return('h');
+	case KTRL('E'): return ('h');
 	/* Reapply auto-inscriptions */
-	case KTRL('G'): return('H');
+	case KTRL('G'): return ('H');
 	/* Pick up exactly one item from a stack of same type of items (ie from piles, containing up to 99 <number> of this item) */
-	case KTRL('Z'): return(KTRL('G'));
+	case KTRL('Z'): return (KTRL('G'));
 
 	/* Run */
-	case ',': return('.');
+	case ',': return ('.');
 	/* Stay still (fake direction) */
-	case '.': hack_dir = 5; return(',');
+	case '.': hack_dir = 5; return (',');
 	/* Stay still (fake direction) */
-	case '5': hack_dir = 5; return(',');
+	case '5': hack_dir = 5; return (',');
 
 	/* Standard walking */
-	case '1': hack_dir = 1; return(';');
-	case '2': hack_dir = 2; return(';');
-	case '3': hack_dir = 3; return(';');
-	case '4': hack_dir = 4; return(';');
-	case '6': hack_dir = 6; return(';');
-	case '7': hack_dir = 7; return(';');
-	case '8': hack_dir = 8; return(';');
-	case '9': hack_dir = 9; return(';');
+	case '1': hack_dir = 1; return (';');
+	case '2': hack_dir = 2; return (';');
+	case '3': hack_dir = 3; return (';');
+	case '4': hack_dir = 4; return (';');
+	case '6': hack_dir = 6; return (';');
+	case '7': hack_dir = 7; return (';');
+	case '8': hack_dir = 8; return (';');
+	case '9': hack_dir = 9; return (';');
 	}
 
 	/* Default */
-	return(command);
+	return (command);
 }
 
 
@@ -1504,43 +1319,43 @@ char roguelike_commands(char command) {
  *
  * Note that "Original" and "Angband" are very similar.
  */
-char original_commands(char command) {
+static char original_commands(char command) {
 	/* Process the command */
-	switch (command) {
+	switch(command) {
 
 	/* Hack -- White space */
-	case KTRL('J'): return('\r');
-	case KTRL('M'): return('\r');
+	case KTRL('J'): return ('\r');
+	case KTRL('M'): return ('\r');
 
 	/* Tunnel */
-	case 'T': return('+');
+	case 'T': return ('+');
 
 	/* Run */
-	case '.': return('.');
+	case '.': return ('.');
 
 	/* Stay still (fake direction) */
-	case ',': hack_dir = 5; return(',');
+	case ',': hack_dir = 5; return (',');
 
 	/* Stay still (fake direction) */
-	case '5': hack_dir = 5; return(',');
+	case '5': hack_dir = 5; return (',');
 
 	/* Standard walking */
-	case '1': hack_dir = 1; return(';');
-	case '2': hack_dir = 2; return(';');
-	case '3': hack_dir = 3; return(';');
-	case '4': hack_dir = 4; return(';');
-	case '6': hack_dir = 6; return(';');
-	case '7': hack_dir = 7; return(';');
-	case '8': hack_dir = 8; return(';');
-	case '9': hack_dir = 9; return(';');
+	case '1': hack_dir = 1; return (';');
+	case '2': hack_dir = 2; return (';');
+	case '3': hack_dir = 3; return (';');
+	case '4': hack_dir = 4; return (';');
+	case '6': hack_dir = 6; return (';');
+	case '7': hack_dir = 7; return (';');
+	case '8': hack_dir = 8; return (';');
+	case '9': hack_dir = 9; return (';');
 
-	//(display fps) case KTRL('C'): return('Q');
+	//(display fps) case KTRL('C'): return ('Q');
 	/* Hack -- Commit suicide */
-	case KTRL('K'): return('Q');
+	case KTRL('K'): return ('Q');
 	}
 
 	/* Default */
-	return(command);
+	return (command);
 }
 
 
@@ -1603,33 +1418,14 @@ void bell(void) {
 		    )
 #endif
 #endif
-		if (!c_cfg.quiet_os) Term_xtra(TERM_XTRA_NOISE, 0);
+		Term_xtra(TERM_XTRA_NOISE, 0);
 	}
 
 	/* Flush the input (later!) */
 	flush();
 
-	/* hack for safe_macros item prompts
-	   (Bugfix: Only set abort_prompt to TRUE if we're actually parsing a macro,
-	   otherwise we end up with a lingering rogue 'abort_prompt' that will cause
-	   any next macro to abort in undefined ways even if the macro was fine,
-	   possibly causing the @ menu to pop up if the macro contained an '@' (eg for call-by-name).) */
-	if (parse_macro) abort_prompt = TRUE;
-}
-/* Same as bell() except it doesn't make a sound :D */
-void bell_silent(void) {
-	/* Mega-Hack -- Flush the output */
-	Term_fresh();
-
-	/* Flush the input (later!) */
-	flush();
-
-	/* hack for safe_macros item prompts
-	   (Bugfix: Only set abort_prompt to TRUE if we're actually parsing a macro,
-	   otherwise we end up with a lingering rogue 'abort_prompt' that will cause
-	   any next macro to abort in undefined ways even if the macro was fine,
-	   possibly causing the @ menu to pop up if the macro contained an '@' (eg for call-by-name).) */
-	if (parse_macro) abort_prompt = TRUE;
+	/* hack for safe_macros item prompts */
+	abort_prompt = TRUE;
 }
 
 /* Generate a page sfx (beep) */
@@ -1637,33 +1433,33 @@ int page(void) {
 #ifdef USE_SOUND_2010
 #ifdef SOUND_SDL
 	/* Try to beep via page sfx of the SDL audio system first */
-	if (c_cfg.audio_paging && sound_page()) return(1);
+	if (c_cfg.audio_paging && sound_page()) return 1;
 #endif
 #endif
 
 	/* Fall back on system-specific default beeps */
 	//Term_fresh();
-	if (!c_cfg.quiet_os) Term_xtra(TERM_XTRA_NOISE, 0);
+	Term_xtra(TERM_XTRA_NOISE, 0);
 	//flush();
 
-	return(1);
+	return 1;
 }
 /* Generate a warning sfx (beep) or if it's missing then a page sfx */
 int warning_page(void) {
 #ifdef USE_SOUND_2010
 #ifdef SOUND_SDL
 	/* Try to beep via warning sfx of the SDL audio system first */
-	if (sound_warning()) return(1);
-	//if (c_cfg.audio_paging && sound_page()) return(1);
+	if (sound_warning()) return 1;
+	//if (c_cfg.audio_paging && sound_page()) return 1;
 #endif
 #endif
 
 	/* Fall back on system-specific default beeps */
 	//Term_fresh();
-	if (!c_cfg.quiet_os) Term_xtra(TERM_XTRA_NOISE, 0);
+	Term_xtra(TERM_XTRA_NOISE, 0);
 	//flush();
 
-	return(1);
+	return 1;
 }
 
 
@@ -1712,396 +1508,7 @@ static void c_prt_n(byte attr, char *str, int y, int x, int n) {
 	Term_putstr(x, y, -1, attr, tmp);
 }
 
-/* Helper function for copy_to_clipboard */
-static void extract_url(char *buf_esc, char *buf_prev, int end_of_name) {
-	char *c, *c2, *be = NULL;
 
-#if 0
-c_msg_format("%c/%c/%c/%c - %c/%c/%c/%c - %c/%c/%c/%c - %c/%c/%c/%c",
-    buf_esc[0], buf_esc[1], buf_esc[2], buf_esc[3], buf_esc[4], buf_esc[5], buf_esc[6], buf_esc[7],
-    buf_esc[8], buf_esc[9], buf_esc[10], buf_esc[11], buf_esc[12], buf_esc[13], buf_esc[14], buf_esc[15]);
-#endif
-
-	/* Catch chat messages (the usual case) because the player's name might have sort of "url form" :-p
-	   Problem: /me messages don't have a closing ']' after the name, so we use a hack by marking the end of the name with a '{-' neutral colour code,
-	   however, this hack is currently disabled as it's a bit annoying that we cannot separate forged messages from real '/me' messages anyway.
-	   So let's just go with "extract_url() doesn't work for /me messages" for now.. -_- */
-	if (end_of_name) be = buf_esc + end_of_name; // <- ^ disabled atm
-	else {
-		if (buf_esc[0] == '[') be = strchr(buf_esc, ']');
-		if (be == buf_esc + strlen(buf_esc) - 1) be = NULL; //catch '/me' messages where the ']' is at the very end of the message
-		if (!be) be = buf_esc; else be++;
-	}
-
-	/* Hack: Double-tapping 'copy2clipboard' tries to extract an URL */
-	if (!be[0] || strcmp(buf_prev, buf_esc)) return;
-
-	/* First try a simple method for easy to recognize ULRs */
-	if ((c = strstr(be, "http")) || (c2 = strstr(be, "www."))) {
-		if (!c || (c[4] != ':' && c[5] != ':')) c = NULL; else c2 = NULL;
-		if (!c) c = c2;
-		if (c) {
-			if (prefix(c, "https://")) c2 = c + 8;
-			else if (prefix(c, "http://")) c2 = c + 7; //silyl compiler warning
-			else if (prefix(c, "www.")) c2 = c + 4;
-			else c2 = NULL; //kill compiler warning
-
-			if (c2 && strcspn(c2, ".") < strcspn(c2, " ,/\\?*:;+}{][()!\"$%&'~|<>=")) { /* only hyphen is allowed in domain names */
-				int pos;
-
-				pos = strcspn(c2, " "); /* not allowed in any part of the URL, thereby terminating it */
-				strcpy(buf_prev, c); //swap strings so we don't do overlapping copying..
-				buf_prev[pos + (c2 - c)] = 0; //wrong compiler warning (c2 uninitialized)
-				strcpy(buf_esc, buf_prev);
-
-				/* Trim trailing dot, if any - in case someone wrote an URL and 'terminated' his line grammatically with a dot, like a normal sentence. */
-				if (buf_esc[strlen(buf_esc) - 1] == '.') buf_esc[strlen(buf_esc) - 1] = 0;
-
-				/* 'Reset' double-tapping */
-				buf_prev[0] = 0;
-				return;
-			}
-		}
-	}
-#ifdef REGEX_URL
-	/* Also try to catch less clear URLs */
-	else {
-		regmatch_t pmatch[REGEX_ARRAY_SIZE + 1]; /* take out the heavy calibre (´ `) */
-		regex_t re;
-		int status = -999;
-
-		status = regcomp(&re, "[a-z0-9][a-z0-9]*\\.[a-z0-9][.a-z0-9]*(/[^ ]*)?", REG_EXTENDED|REG_ICASE);
-		if (status != 0) return; //error
-
-		status = regexec(&re, be, REGEX_ARRAY_SIZE, pmatch, 0);
-		if (status) {
-			regfree(&re);
-			return; //not found
-		}
-		if (pmatch[0].rm_so == -1) {
-			regfree(&re);
-			return; //paranoia
-		}
-
-		/* Just take the first match of the line.. */
-		strcpy(buf_prev, be); //swap strings so we don't do overlapping copying..
-		strcpy(buf_esc, buf_prev + pmatch[0].rm_so);
-		buf_esc[pmatch[0].rm_eo - pmatch[0].rm_so] = 0;
-
-		/* Trim trailing dot, if any - in case someone wrote an URL and 'terminated' his line grammatically with a dot, like a normal sentence. */
-		if (buf_esc[strlen(buf_esc) - 1] == '.') buf_esc[strlen(buf_esc) - 1] = 0;
-
-		/* 'Reset' double-tapping */
-		buf_prev[0] = 0;
-
-		regfree(&re);
-		return;
-	}
-#endif
-}
-
-/* copy a line of text to clipboard - C. Blue */
-void copy_to_clipboard(char *buf) {
-#ifdef WINDOWS
-	size_t len;
-	int pos = 0, end_of_name = 0;
-	char *c, *c2, buf_esc[MSG_LEN + 10];
-	static char buf_prev[MSG_LEN + 10];
-
-	/* escape all ' (up to 10 before overflow) */
-	c = buf;
-	c2 = buf_esc;
-	while (*c) {
-		switch (*c) {
-		case ':':
-			if (pos != 0 && pos <= NAME_LEN) {
-				if (*(c + 1) == ':') c++;
-			}
-			/* Catch URLs pasted with double :: too */
-			else if (pos != 0) {
-				if (*(c + 1) == ':') c++;
-			}
-			break;
-		case '{':
-			switch (*(c + 1)) {
-			case '{':
-				c++;
-				break;
-			case 0: /* broken colour code (paranoia) */
-				c++;
-				continue;
-			default: /* assume colour code and discard */
-				c += 2;
-				continue;
-			}
-			break;
-		/* skip special markers */
-		case '\376':
-		case '\375':
-		case '\374':
-			c++;
-			continue;
-		/* strip colour codes */
-		case '\377':
-			switch (*(c + 1)) {
-#if 0 /* disabled for now, as we need to check whether a message is '/me' style but those could be forged anyway, so it's all not really clean -_- */
-			case '-': /* hack: '/me' marker for end-of-name, in case the name is url-like so we know to skip it */
-				end_of_name = c - buf;
-				c++;
-				continue;
-#endif
-			case 0: /* broken colour code (paranoia) */
-				c++;
-				continue;
-			default: /* assume colour code and discard */
-				c += 2;
-				continue;
-			}
-			break;
-		}
-		*c2 = *c;
-		c++;
-		c2++;
-		pos++;
-	}
-	*c2 = 0;
-
-	extract_url(buf_esc, buf_prev, end_of_name);
-
-	len = strlen(buf_esc) + 1;
-	HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, len);
-	memcpy(GlobalLock(hMem), buf_esc, len);
-	GlobalUnlock(hMem);
-	OpenClipboard(0);
-	EmptyClipboard();
-	SetClipboardData(CF_TEXT, hMem);
-	CloseClipboard();
-	strcpy(buf_prev, buf_esc);
-#endif
-
-#ifdef USE_X11 /* relies on xclip being installed! */
-	int r, pos = 0, end_of_name = 0;
-	char *c, *c2, buf_esc[MSG_LEN + 10];
-	static char buf_prev[MSG_LEN + 10];
-
-	/* escape all ' (up to 10 before overflow) */
-	c = buf;
-	c2 = buf_esc;
-	while (*c) {
-		switch (*c) {
-		case '\'':
-			*c2 = '\\';
-			c2++;
-			break;
-		case ':':
-			if (pos != 0 && pos <= NAME_LEN) {
-				if (*(c + 1) == ':') c++;
-			}
-			/* Catch URLs pasted with double :: too */
-			else if (pos != 0) {
-				if (*(c + 1) == ':') c++;
-			}
-			break;
-		case '{':
-			switch (*(c + 1)) {
-			case '{':
-				c++;
-				break;
-			case 0: /* broken colour code (paranoia) */
-				c++;
-				continue;
-			default: /* assume colour code and discard */
-				c += 2;
-				continue;
-			}
-			break;
-		/* skip special markers */
-		case '\376':
-		case '\375':
-		case '\374':
-			c++;
-			continue;
-		/* strip colour codes */
-		case '\377':
-			switch (*(c + 1)) {
-#if 0 /* disabled for now, as we need to check whether a message is '/me' style but those could be forged anyway, so it's all not really clean -_- */
-			case '-': /* hack: '/me' marker for end-of-name, in case the name is url-like so we know to skip it */
-				end_of_name = c - buf;
-				c++;
-				continue;
-#endif
-			case 0: /* broken colour code (paranoia) */
-				c++;
-				continue;
-			default: /* assume colour code and discard */
-				c += 2;
-				continue;
-			}
-			break;
-		}
-		*c2 = *c;
-		c++;
-		c2++;
-		pos++;
-	}
-	*c2 = 0;
-
-	extract_url(buf_esc, buf_prev, end_of_name);
-
-	r = system(format("echo -n $'%s' | xclip -sel clip", buf_esc));
-	if (r) c_message_add("Copy failed, make sure xclip is installed.");
-	else strcpy(buf_prev, buf_esc);
-#endif
-}
-/* paste current clipboard into active chat input */
-bool paste_from_clipboard(char *buf, bool global) {
-#ifdef WINDOWS
-	char *c, *c2, buf_esc[MSG_LEN + 15];
-	int pos = 0;
-
-	if (OpenClipboard(NULL)) {
-		HANDLE hClipboardData = GetClipboardData(CF_TEXT);
-		if (hClipboardData) {
-			CHAR *pchData = (CHAR*) GlobalLock(hClipboardData);
-
-			if (pchData) {
-				strncpy(buf_esc, pchData, MSG_LEN - NAME_LEN - 13); //just accomodate for some colour codes and spacing, not really calculated it
-				buf_esc[MSG_LEN - NAME_LEN - 13] = 0;
-
-				/* treat { and : and also strip away all control chars (like 0x0A aka RETURN) */
-				c = buf_esc;
-				c2 = buf;
-				while (*c) {
-					if (*c < 32) {
-						c++;
-						continue;
-					}
-
-					switch (*c) {
-					case ':':
-						if (pos != 0 && pos <= NAME_LEN && global) {
-							*c2 = ':';
-							c2++;
-						}
-						break;
-					case '{':
-						*c2 = '{';
-						c2++;
-						break;
-					}
-					*c2 = *c;
-					c++;
-					c2++;
-					pos++;
-				}
-				*c2 = 0;
-
-				GlobalUnlock(hClipboardData);
-			} else return(FALSE);
-		} else return(FALSE);
-		CloseClipboard();
-	} else return(FALSE);
-	return(TRUE);
-#endif
-
-#ifdef USE_X11 /* relies on xclip being installed! */
-	FILE *fp;
-	int r, pos = 0;
-	char *c, *c2, buf_esc[MSG_LEN + 15], buf_line[MSG_LEN];
-	bool max_length_reached = FALSE;
-
-	r = system("xclip -sel clip -o > __clipboard__");
-	if (r) {
-		c_message_add("Paste failed, make sure xclip is installed.");
-		return(FALSE);
-	}
-	if (!(fp = fopen("__clipboard__", "r"))) {
-		c_message_add("Paste failed, make sure xclip is installed.");
-		return(FALSE);
-	}
-
-	/* combine multi-line text into one line, replacing the RETURNs by spaces if needed */
-	buf_esc[0] = 0;
-	while (!max_length_reached && fgets(buf_line, MSG_LEN - NAME_LEN - 13, fp)) { //just accomodate for some colour codes and spacing, not really calculated it
-		/* limit total length of message */
-		if (strlen(buf_esc) + strlen(buf_line) > MSG_LEN - 1) {
-			buf_line[MSG_LEN - 1 - strlen(buf_esc)] = 0;
-			max_length_reached = TRUE;
-		}
-
-		if (buf_esc[0] && buf_esc[strlen(buf_esc) - 1] != ' ') strcat(buf_esc, " ");
-		strcat(buf_esc, buf_line);
-	}
-	//else buf_esc[strlen(buf_esc) - 1] = 0; //remove trailing newline -- there is no trailing newline!
-
-	/* treat { and : and also strip away all control chars (like 0x0A aka RETURN) */
-	c = buf_esc;
-	c2 = buf;
-	while (*c) {
-		if (*c < 32) {
-			c++;
-			continue;
-		}
-
-		switch (*c) {
-		case ':':
-			if (pos != 0 && pos <= NAME_LEN && global) {
-				*c2 = ':';
-				c2++;
-			}
-			break;
-		case '{':
-			*c2 = '{';
-			c2++;
-			break;
-		}
-		*c2 = *c;
-		c++;
-		c2++;
-		pos++;
-	}
-	*c2 = 0;
-
-	fclose(fp);
-	return(TRUE);
-#endif
-
-	return(FALSE);
-}
-
-#define SEARCH_NOCASE /* CTRL+C chat history search: Case-insensitive? */
-/* Helper function for message-history search done inside askfor_aux(),
-   supporting wildcards '*'. - C. Blue */
-static bool search_history_aux(const char *msg, const char *buf) {
-	static char tmpbuf[MSG_LEN], *tmpc, *tmpc2;
-	static const char *msgc, *msgc_tmp;
-
-	/* Handle wildcard segments (or final term) on a working copy */
-	strcpy(tmpbuf, buf);
-	tmpc = tmpbuf;
-	msgc = msg;
-	while (*tmpc) {
-		strcpy(tmpbuf, tmpc);
-		if ((tmpc2 = strchr(tmpbuf, '*'))) {
-			*tmpc2 = 0;
-			tmpc = tmpc2 + 1;
-		} else tmpc = tmpbuf + strlen(tmpbuf);
-#ifdef SEARCH_NOCASE
-		if (!(msgc_tmp = my_strcasestr(msgc, tmpbuf))) {
-			tmpc = NULL;
-			break;
-		}
-		msgc = msgc_tmp + strlen(tmpbuf);
-#else
-		if (!(msgc_tmp = strstr(msgc, tmpbuf))) {
-			tmpc = NULL;
-			break;
-		}
-		msgc = msgc_tmp + strlen(tmpbuf);
-#endif
-	}
-	return(tmpc != NULL);
-}
 /*
  * Get some input at the cursor location.
  * Assume the buffer is initialized to a default string.
@@ -2119,25 +1526,30 @@ static bool search_history_aux(const char *msg, const char *buf) {
  * Jir -- added history.
  * TODO: cursor editing (fix past terminal width extending text)
  */
-typedef char msg_hist_var[MSG_HISTORY_MAX][MSG_LEN];
+
+#ifdef DKPARK
+void __fastcall SetEngMode2(void) 
+{ 
+	HIMC himc = ImmGetContext(g_hwnd);
+	ImmSetConversionStatus(himc, IME_CMODE_ALPHANUMERIC, IME_SMODE_NONE);
+} 
+//#define ishangul(x) ((((int)(x) & 0xff) >= 0xa1 && ((int)(x) & 0xff) <= 0xfe) || ((int)(x) & 0xff) == 0x8e)  
+#define ishangul(x) ((((int)(x) & 0xff) >= 0x81 && ((int)(x) & 0xff) <= 0xfe) || ((int)(x) & 0xff) == 0x8e)  
+#endif 
+
 bool askfor_aux(char *buf, int len, char mode) {
+#ifdef DKPARK
+	int	k_flag[128];
+#endif 
 	int y, x;
 	int i = 0;
 	int k = 0; /* Is the end of line */
 	int l = 0; /* Is the cursor location on line */
-	int j, j2; /* Loop iterator */
-
-	bool search = FALSE, search_changed;
-	int sp_iter = 0, sp_size = 0, sp_end = 0;
-	msg_hist_var *sp_msg = NULL;
+	int j = 0; /* Loop iterator */
 
 	bool tail = FALSE;
 	int l_old = l;
 	bool modify_ok = TRUE;
-
-	/* For clipboard pasting */
-	char tmpbuf[MSG_LEN], *tmpc;
-	int tmpl;
 
 	/* Terminal width */
 	int wid = 80;
@@ -2151,8 +1563,11 @@ bool askfor_aux(char *buf, int len, char mode) {
 	bool nohist = (mode & ASKFOR_PRIVATE) || len < 20;
 	int cur_hist;
 
-	if (mode & ASKFOR_CHATTING) cur_hist = hist_chat_end;
-	else cur_hist = hist_end;
+	if (mode & ASKFOR_CHATTING) {
+		cur_hist = hist_chat_end;
+	} else {
+		cur_hist = hist_end;
+	}
 
 	/* Handle wrapping */
 	if (cur_hist >= MSG_HISTORY_MAX) cur_hist = 0;
@@ -2193,8 +1608,6 @@ bool askfor_aux(char *buf, int len, char mode) {
 
 	/* Process input */
 	while (!done) {
-		search_changed = FALSE;
-
 		/* Place cursor */
 		if (strlen(buf) > vis_len) {
 			if (l > strlen(buf) - vis_len)
@@ -2206,26 +1619,22 @@ bool askfor_aux(char *buf, int len, char mode) {
 
 		/* Get a key */
 		i = inkey();
-
+#ifdef DKPARK
+		if(i=='/' && k==0){
+			SetEngMode2();
+		}
+#endif 
 		/* Analyze the key */
 		switch (i) {
 		case ESCAPE:
 		//case KTRL('Q'):
-			/* Catch searching mode */
-#if 0 /* Clear current search, but stay in searching mode */
-			if (search && buf[0]) {
-#else /* Clear current search and leave searching mode */
-			if (search) {
-				search = FALSE;
-#endif
-				Term_erase(x, y, strlen(buf));
-				buf[0] = '\0';
-				k = l = 0;
-				break;
-			}
-
-			/* Leave */
 			k = 0;
+			done = TRUE;
+			break;
+
+		case '\n':
+		case '\r':
+			k = strlen(buf);
 			done = TRUE;
 			break;
 
@@ -2236,27 +1645,30 @@ bool askfor_aux(char *buf, int len, char mode) {
 #endif
 		case KTRL('D'):
 			if (k > l) {
-				/* Move the rest of the line one back */
-				for (j = l + 1; j < k; j++) buf[j - 1] = buf[j];
-				k--;
-				if (search) search_changed = TRUE; /* Search term was changed */
+			  /* Move the rest of the line one back */
+			  for (j = l + 1; j < k; j++) buf[j - 1] = buf[j];
+			  k--;
 			}
 			break;
 
 		case 0x7F: /* well...not DEL but Backspace too it seems =P */
 		case '\010': /* Backspace removes char before cursor */
 			if (k == l && k > 0) {
+			  k--;
+			  l--;
+#ifdef DKPARK
+			  if (k_flag[k] != 0){
 				k--;
 				l--;
-				if (search) search_changed = TRUE; /* Search term was changed */
+			  }
+#endif
 			}
 			if (k > l && l > 0) {
 			  /* Move the rest of the line one back, including
 			     char under cursor and cursor) */
-				for (j = l; j < k; j++) buf[j - 1] = buf[j];
-				l--;
-				k--;
-				if (search) search_changed = TRUE; /* Search term was changed */
+			  for (j = l; j < k; j++) buf[j - 1] = buf[j];
+			  l--;
+			  k--;
 			}
 			break;
 
@@ -2308,40 +1720,38 @@ bool askfor_aux(char *buf, int len, char mode) {
 			if (mode & ASKFOR_CHATTING) {
 				/* Change chatting mode - mikaelh */
 				chat_mode++;
-				if (chat_mode == CHAT_MODE_PARTY && !party_info_name[0]) chat_mode++; /* chat mode index order matters: party < guild */
-				if (chat_mode == CHAT_MODE_GUILD && !guild_info_name[0]) chat_mode++;
-				if (chat_mode > CHAT_MODE_GUILD) chat_mode = CHAT_MODE_NORMAL;
+				if (chat_mode > CHAT_MODE_GUILD)
+					chat_mode = CHAT_MODE_NORMAL;
 
 				/* HACK - Change the prompt */
 				switch (chat_mode) {
-				case CHAT_MODE_PARTY:
-					c_prt(C_COLOUR_CHAT_PARTY, "Party: ", 0, 0);
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Party: ");
-					break;
-				case CHAT_MODE_LEVEL:
-					c_prt(C_COLOUR_CHAT_LEVEL, "Floor: ", 0, 0);
+					case CHAT_MODE_PARTY:
+						c_prt(C_COLOUR_CHAT_PARTY, "Party: ", 0, 0);
 
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Floor: ");
-					break;
-				case CHAT_MODE_GUILD:
-					c_prt(C_COLOUR_CHAT_GUILD, "Guild: ", 0, 0);
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Party: ");
+						break;
+					case CHAT_MODE_LEVEL:
+						c_prt(C_COLOUR_CHAT_LEVEL, "Floor: ", 0, 0);
 
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Guild: ");
-					break;
-				default:
-					prt("Message: ", 0, 0);
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Floor: ");
+						break;
+					case CHAT_MODE_GUILD:
+						c_prt(C_COLOUR_CHAT_GUILD, "Guild: ", 0, 0);
 
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Message: ");
-					break;
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Guild: ");
+						break;
+					default:
+						prt("Message: ", 0, 0);
+
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Message: ");
+						break;
 				}
 
 				Term_locate(&x, &y);
-
-				if (search) search_changed = TRUE; /* Redraw search term as it was visually erased */
 			}
 			break;
 
@@ -2349,41 +1759,38 @@ bool askfor_aux(char *buf, int len, char mode) {
 			if (mode & ASKFOR_CHATTING) {
 				/* Reverse change chatting mode */
 				chat_mode--;
-				if (chat_mode == CHAT_MODE_GUILD && !guild_info_name[0]) chat_mode--; /* chat mode index order matters: guild > party */
-				if (chat_mode == CHAT_MODE_PARTY && !party_info_name[0]) chat_mode--;
-				if (chat_mode < CHAT_MODE_NORMAL) chat_mode = CHAT_MODE_GUILD;
+				if (chat_mode < CHAT_MODE_NORMAL)
+					chat_mode = CHAT_MODE_GUILD;
 
 				/* HACK - Change the prompt */
 				switch (chat_mode) {
-				case CHAT_MODE_PARTY:
-					c_prt(C_COLOUR_CHAT_PARTY, "Party: ", 0, 0);
+					case CHAT_MODE_PARTY:
+						c_prt(C_COLOUR_CHAT_PARTY, "Party: ", 0, 0);
 
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Party: ");
-					break;
-				case CHAT_MODE_LEVEL:
-					c_prt(C_COLOUR_CHAT_LEVEL, "Floor: ", 0, 0);
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Party: ");
+						break;
+					case CHAT_MODE_LEVEL:
+						c_prt(C_COLOUR_CHAT_LEVEL, "Floor: ", 0, 0);
 
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Floor: ");
-					break;
-				case CHAT_MODE_GUILD:
-					c_prt(C_COLOUR_CHAT_GUILD, "Guild: ", 0, 0);
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Floor: ");
+						break;
+					case CHAT_MODE_GUILD:
+						c_prt(C_COLOUR_CHAT_GUILD, "Guild: ", 0, 0);
 
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Guild: ");
-					break;
-				default:
-					prt("Message: ", 0, 0);
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Guild: ");
+						break;
+					default:
+						prt("Message: ", 0, 0);
 
-					/* Recalculate visible length */
-					vis_len = wid - 1 - sizeof("Message: ");
-					break;
+						/* Recalculate visible length */
+						vis_len = wid - 1 - sizeof("Message: ");
+						break;
 				}
 
 				Term_locate(&x, &y);
-
-				if (search) search_changed = TRUE; /* Redraw search term as it was visually erased */
 			}
 			break;
 
@@ -2396,8 +1803,6 @@ bool askfor_aux(char *buf, int len, char mode) {
 				vis_len = wid - 1 - sizeof("Message: ");
 
 				Term_locate(&x, &y);
-
-				if (search) search_changed = TRUE; /* Redraw search term as it was visually erased */
 			}
 			break;
 
@@ -2410,34 +1815,10 @@ bool askfor_aux(char *buf, int len, char mode) {
 				vis_len = wid - 1 - sizeof("Party: ");
 
 				Term_locate(&x, &y);
-
-				if (search) search_changed = TRUE; /* Redraw search term as it was visually erased */
 			}
 			break;
 
 		case KTRL('F'): /* Floor/Depth/Level */
-			/* Alternative behaviour while in 'searching' mode:
-			   Searching for text in a previously entered chat message: Get previous match. */
-			if (search && !nohist) { /* We are in 'message history searching' mode (and a message history does actually exist - paranoia) */
-				if (!buf[0]) continue; /* Nothing typed in yet */
-				if (sp_iter == sp_size) continue; /* No match exists at all */
-
-				/* Go reverse: Look for previous match.. */
-				for (j = sp_iter - 1; j > -sp_end; j--) {
-					j2 = (sp_end - j + MSG_HISTORY_MAX * 2) % MSG_HISTORY_MAX; /* Reverse direction */
-
-					if (!search_history_aux((*sp_msg)[j2], buf)) continue;
-
-					/* Display the result message, overwriting the real 'buf' only visually, while keeping 'buf' unchanged */
-					c_prt(TERM_YELLOW, format("%s: ", buf), y, x);
-					c_prt(TERM_L_BLUE, format("%s", (*sp_msg)[j2]), y, x + 2 + strlen(buf));
-					sp_iter = j;
-					break;
-				}
-				break;
-			}
-
-			/* Normal behaviour outside of search-mode: Switch to 'floor' chat mode. */
 			if (mode & ASKFOR_CHATTING) {
 				chat_mode = CHAT_MODE_LEVEL;
 				c_prt(C_COLOUR_CHAT_LEVEL, "Floor: ", 0, 0);
@@ -2446,8 +1827,6 @@ bool askfor_aux(char *buf, int len, char mode) {
 				vis_len = wid - 1 - sizeof("Floor: ");
 
 				Term_locate(&x, &y);
-
-				//cannot happen, as CTRL+F has other behaviour (above) while searching--   if (search) search_changed = TRUE; /* Redraw search term as it was visually erased */
 			}
 			break;
 
@@ -2460,12 +1839,10 @@ bool askfor_aux(char *buf, int len, char mode) {
 				vis_len = wid - 1 - sizeof("Guild: ");
 
 				Term_locate(&x, &y);
-
-				if (search) search_changed = TRUE; /* Redraw search term as it was visually erased */
 			}
 			break;
 
-#if 0 /* was: erase line. Can just hit ESC though, so if 0'ed as it's now used to cycle chat modes instead */
+#if 0 /* was: erase line. Can just hit ESC though, so if 0'ed. */
 		case KTRL('U'):
 			k = 0;
 			break;
@@ -2474,41 +1851,45 @@ bool askfor_aux(char *buf, int len, char mode) {
 		case KTRL('N'):
 			if (nohist) break;
 			cur_hist++;
+
 			if (mode & ASKFOR_CHATTING) {
-				if ((!hist_chat_looped && cur_hist >= hist_chat_end) ||
-				    (hist_chat_looped && cur_hist >= MSG_HISTORY_MAX))
+				if ((!hist_chat_looped && hist_chat_end < cur_hist) ||
+					(hist_chat_looped && cur_hist >= MSG_HISTORY_MAX)) {
 					cur_hist = 0;
+				}
 				strncpy(buf, message_history_chat[cur_hist], len);
 				buf[len] = '\0';
 			} else {
-				if ((!hist_looped && cur_hist >= hist_end) ||
-				    (hist_looped && cur_hist >= MSG_HISTORY_MAX))
+				if ((!hist_looped && hist_end < cur_hist) ||
+					(hist_looped && cur_hist >= MSG_HISTORY_MAX)) {
 					cur_hist = 0;
+				}
 				strncpy(buf, message_history[cur_hist], len);
 				buf[len] = '\0';
 			}
 
 			k = l = strlen(buf);
-
-			if (search) search_changed = TRUE; /* Search term was changed */
 			break;
+
 		case KTRL('P'):
 			if (nohist) break;
 			if (mode & ASKFOR_CHATTING) {
 				if (cur_hist) cur_hist--;
-				else cur_hist = hist_chat_looped ? MSG_HISTORY_MAX - 1 : hist_chat_end - 1;
+				else {
+					cur_hist = hist_chat_looped ? MSG_HISTORY_MAX - 1 : hist_chat_end;
+				}
 				strncpy(buf, message_history_chat[cur_hist], len);
 				buf[len] = '\0';
 			} else {
 				if (cur_hist) cur_hist--;
-				else cur_hist = hist_looped ? MSG_HISTORY_MAX - 1 : hist_end - 1;
+				else {
+					cur_hist = hist_looped ? MSG_HISTORY_MAX - 1 : hist_end;
+				}
 				strncpy(buf, message_history[cur_hist], len);
 				buf[len] = '\0';
 			}
 
 			k = l = strlen(buf);
-
-			if (search) search_changed = TRUE; /* Search term was changed */
 			break;
 
 		/* word-size backspace */
@@ -2531,153 +1912,14 @@ bool askfor_aux(char *buf, int len, char mode) {
 			for (j = 0; j < strlen(buf) - l_old; j++) buf[l + j] = buf[l_old + j];
 			k -= l_old - l;
 			if (k < 0) k = l = 0;
-
-			if (search) search_changed = TRUE; /* Search term was changed */
 			break;
 			}
 
 		case KTRL('T'): /* Take a screenshot */
-			xhtml_screenshot("screenshot????", FALSE);
-			break;
-
-		case '\n':
-		case '\r':
-			/* Catch searching mode */
-			if (search) {
-				/* We didn't find any match? */
-				if (sp_iter == sp_size) {
-#if 0
-					continue;
-#else /* Actually switch to normal text input instead of just having to discard the unmatched search string: */
-					search = FALSE;
-					buf[len] = '\0';
-					k = l = strlen(buf);
-					c_prt(TERM_WHITE, buf, y, x);
-					/* Note: For some reason the cursor becomes invisible here */
- #if 0 /* This code works randomly. Sometimes it does NOT restore cursor visibility. */
-					Term_set_cursor(1);
-					Term_xtra(TERM_XTRA_SHAPE, 1);
- #endif
-					continue;
-#endif
-				}
-
-				/* Replace our search string by the actual match and go with that */
-				//strncpy(buf, (*sp_msg)[(sp_end - sp_iter) % MSG_HISTORY_MAX], len);
-				strcpy(buf, (*sp_msg)[(sp_end - sp_iter + MSG_HISTORY_MAX * 2) % MSG_HISTORY_MAX]);
-				search = FALSE;
-				k = l = strlen(buf);
-				c_prt(TERM_WHITE, buf, y, x);
-				continue;
-			}
-			/* Proceed normally */
-			buf[len] = '\0';
-			k = l = strlen(buf);
-			done = TRUE;
-			break;
-
-		case KTRL('C'): /* Allow searching for text in a previously entered chat message */
-			if (nohist) break;
-			if (!search) {
-				/* Reverse search, starting with newest entries */
-				if (mode & ASKFOR_CHATTING) {
-					sp_size = hist_chat_looped ? MSG_HISTORY_MAX : hist_chat_end;
-					sp_end = hist_chat_looped ? (hist_chat_end - 1 + MSG_HISTORY_MAX) % MSG_HISTORY_MAX : hist_chat_end - 1;
-					sp_msg = &message_history_chat;
-				} else {
-					sp_size = hist_looped ? MSG_HISTORY_MAX : hist_end;
-					sp_end = hist_looped ? (hist_end - 1 + MSG_HISTORY_MAX) % MSG_HISTORY_MAX : hist_end - 1;
-					sp_msg = &message_history;
-				}
-				/* No history recorded yet? */
-				if (sp_end < 0) break;
-				/* Begin searching mode */
-				sp_iter = -1;
-				search = TRUE;
-				//break; - don't break, start searching right away, as we might already have entered something into this chat prompt
-			}
-			if (!buf[0]) continue; /* Nothing typed in yet */
-
-			/* Continue search by looking for next match */
-			if (sp_iter == sp_size) continue; /* No match exists at all */
-			/* Look for another match.. */
-			for (j = sp_iter + 1; j < sp_size; j++) {
-				j2 = (sp_end - j + MSG_HISTORY_MAX * 2) % MSG_HISTORY_MAX; /* Reverse direction */
-
-				if (!search_history_aux((*sp_msg)[j2], buf)) continue;
-
-				/* Display the result message, overwriting the real 'buf' only visually, while keeping 'buf' unchanged */
-				c_prt(TERM_YELLOW, format("%s: ", buf), y, x);
-				c_prt(TERM_L_BLUE, format("%s", (*sp_msg)[j2]), y, x + 2 + strlen(buf));
-				sp_iter = j;
-				break;
-			}
-			/* No further match found, but we did find at least one match? */
-			if (j == sp_size && sp_iter != -1) {
-				/* Cycle through search results: Start from the beginning again and search up to the final match again */
-				for (j = 0; j <= sp_iter; j++) {
-					j2 = (sp_end - j + MSG_HISTORY_MAX * 2) % MSG_HISTORY_MAX; /* Reverse direction */
-
-					if (!search_history_aux((*sp_msg)[j2], buf)) continue;
-
-					/* Display the result message, overwriting the real 'buf' only visually, while keeping 'buf' unchanged */
-					c_prt(TERM_YELLOW, format("%s: ", buf), y, x);
-					c_prt(TERM_L_BLUE, format("%s", (*sp_msg)[j2]), y, x + 2 + strlen(buf));
-					sp_iter = j;
-					break;
-				}
-			}
-			/* Absolutely no match found? Need different search term to continue. */
-			else if (j > sp_iter) sp_iter = sp_size;
-			continue;
-
-		case KTRL('K'): /* copy current chat line to clipboard */
-			copy_to_clipboard(buf);
-			break;
-		case KTRL('L'): /* paste current clipboard to chat */
-			if (!paste_from_clipboard(tmpbuf, chat_mode == CHAT_MODE_NORMAL && !((tmpc = strchr(buf, ':')) && tmpc - buf < l))) { //emulate strnstr()
-				bell();
-				break;
-			}
-
-			/* Ensure line length isn't exceeded */
-			if (strlen(buf) >= MSG_LEN - 1) {
-				bell();
-				break;
-			}
-			tmpl = strlen(tmpbuf);
-			if (strlen(buf) + tmpl >= MSG_LEN) {
-				bell(); //still warn, as stuff got cut off..
-				tmpbuf[MSG_LEN - strlen(buf)] = 0;
-			}
-
-			/* Paste at end of line and increment k and l */
-			if (k == l) {
-				if (k < len) {
-					strcat(buf, tmpbuf);
-					k += tmpl;
-					l += tmpl;
-					if (search) search_changed = TRUE; /* Search term was changed */
-				}
-			}
-			/* Paste at current cursor position after moving
-			   the rest of the line forward */
-			else if (k > l) {
-				if (k < len) {
-					for (j = k; j >= l; j--) buf[j + tmpl] = buf[j];
-					strncpy(&buf[l], tmpbuf, tmpl); //exclude terminating 0
-					l += tmpl; //maybe keep cursor position instead of moving forward? but this seems better for now
-					k += tmpl;
-					if (search) search_changed = TRUE; /* Search term was changed */
-				}
-			}
+			xhtml_screenshot("screenshot????");
 			break;
 
 		default:
-			/* We entered a normal character */
-
-			if (search) search_changed = TRUE; /* Search term was changed */
-
 			/* inkey_letter_all hack for c_get_quantity() */
 			//if (inkey_letter_all && !k && ((i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z'))) { i = 'a';
 			if (inkey_letter_all && !k && (i == 'a' || i == 'A' || i == ' ')) { /* allow spacebar too */
@@ -2686,22 +1928,52 @@ bool askfor_aux(char *buf, int len, char mode) {
 				break;
 			}
 			/* Place character at end of line and increment k and l */
-			if (k == l) {
-				if ((k < len) && (isprint(i))) {
-					buf[k++] = i;
-					l++;
+#ifdef DKPARK
+			{
+				int next;
+				if (ishangul (i)) {
+					inkey_base = TRUE;
+					next = inkey ();
+					if (k+1 < len) {
+						buf[k++] = i;
+						l++;
+						buf[k] = next;
+						k_flag[k++] = 1;
+						l++;
+					} else
+						bell();
+				} else {
+#ifdef SJIS
+//				if(k<len && (isprint(i) || (0xa0<=i && i<=0xdf))){
+					if(k<len && (isprint(i) || (0x81<=i && i<=0xfd))){
+#else
+					if(k<len && isprint(i)){
+#endif
+						buf[k] = i;
+						l++;
+						k_flag[k++] = 0;
+					} else
+					bell();
 				}
 			}
-			/* Place character at current cursor position after moving
+#else
+			if (k == l){
+			  if ((k < len) && (isprint(i))) {
+			    buf[k++] = i;
+			    l++;
+			  }
+			}
+			/* Place character at currect cursor position after moving
 			   the rest of the line one step forward */
-			else if (k > l) {
-				if ((k < len) && (isprint(i))) {
-					for (j = k; j >= l; j--) buf[j + 1] = buf[j];
-					buf[l++] = i;
-					k++;
-				}
+			else if (k > l){
+			  if ((k < len) && (isprint(i))) {
+			    for (j = k;j>=l;j--) buf[j+1] = buf[j];
+			    buf[l++] = i;
+			    k++;
+			  }
 			}
-			else bell(); //paranoia? line length should never be < cursor position
+			else bell();
+#endif
 			break;
 		}
 
@@ -2710,39 +1982,6 @@ bool askfor_aux(char *buf, int len, char mode) {
 
 		/* Terminate */
 		buf[k] = '\0';
-
-		/* Are we in message-history-searching mode? */
-		if (search) {
-			/* We didn't enter a normal character that changes our search string? Nothing to do then. */
-			if (!search_changed) continue;
-
-			/* empty search string initially */
-			if (!buf[0]) {
-				/* just skip.. */
-				Term_erase(x, y, vis_len);
-				sp_iter = sp_size;
-				continue;
-			}
-			/* Search term changed: Reset search and look for first match.. */
-			sp_iter = -1;
-			for (j = 0; j < sp_size; j++) {
-				j2 = (sp_end - j + MSG_HISTORY_MAX * 2) % MSG_HISTORY_MAX; /* Reverse direction */
-
-				if (!search_history_aux((*sp_msg)[j2], buf)) continue;
-
-				/* Display the result message, overwriting the real 'buf' only visually, while keeping 'buf' unchanged */
-				c_prt(TERM_YELLOW, format("%s: ", buf), y, x);
-				c_prt(TERM_L_BLUE, format("%s", (*sp_msg)[j2]), y, x + 2 + strlen(buf));
-				sp_iter = j;
-				break;
-			}
-			/* No match found at all */
-			if (j == sp_size) {
-				c_prt(TERM_ORANGE, buf, y, x);
-				sp_iter = sp_size;
-			}
-			continue;
-		}
 
 		/* Update the entry */
 		if (!(mode & ASKFOR_PRIVATE)) {
@@ -2753,11 +1992,7 @@ bool askfor_aux(char *buf, int len, char mode) {
 				else
 					c_prt_n(TERM_WHITE, buf + l, y, x, vis_len);
 			} else
-#if 0 /* This erases the entire line, instead of just vis_len (done above at Term_erase()) */
 				c_prt(TERM_WHITE, buf, y, x);
-#else /* This just prints without extra erasing */
-				Term_putstr(x, y, -1, TERM_WHITE, buf);
-#endif
 		} else {
 			if (len > k) Term_erase(x + k, y, len - k);
 			if (k) Term_putch(x + k - 1, y, TERM_WHITE, 'x');
@@ -2769,78 +2004,27 @@ bool askfor_aux(char *buf, int len, char mode) {
 
 	/* The top line is OK now */
 	topline_icky = FALSE;
-	if (!c_quit) Flush_queue();
+	if(!c_quit)
+		Flush_queue();
 
 	/* Aborted */
-	if (i == ESCAPE) return(FALSE);
+	if (i == ESCAPE) return (FALSE);
 
 	/* Success */
-	if (nohist) return(TRUE);
+	if (nohist) return (TRUE);
 
-	/* Add this to the (chat) history.
-	   Update (chat) history whenever we repeat an old message, removing it from its old position and adding it on top.
-	   This is especially useful for the search-function, as it won't give duplicate hits over time. */
+	/* Add this to the history */
 	if (mode & ASKFOR_CHATTING) {
-		int i, j;
-
-		/* Scan history for duplicate of this new message */
-		if (!hist_chat_looped) {
-			for (i = 0; i < hist_chat_end; i++) {
-				if (!strcmp(message_history_chat[i], buf)) {
-					/* Found an old duplicate. Excise it. */
-					for (j = i; j < hist_chat_end - 1; j++) strcpy(message_history_chat[j], message_history_chat[j + 1]);
-					/* Go back one step accordingly */
-					hist_chat_end--;
-					break;
-				}
-			}
-		} else {
-			for (i = hist_chat_end; i < hist_chat_end + MSG_HISTORY_MAX; i++) {
-				if (!strcmp(message_history_chat[i % MSG_HISTORY_MAX], buf)) {
-					/* Found an old duplicate. Excise it. */
-					for (j = i; j < hist_chat_end + MSG_HISTORY_MAX - 1; j++) strcpy(message_history_chat[j % MSG_HISTORY_MAX], message_history_chat[(j + 1) % MSG_HISTORY_MAX]);
-					/* Go back one step accordingly */
-					if (hist_chat_end) hist_chat_end--;
-					else hist_chat_end = MSG_HISTORY_MAX - 1;
-					break;
-				}
-			}
-		}
-		/* Append our message to history */
-		strcpy(message_history_chat[hist_chat_end], buf);
+		strncpy(message_history_chat[hist_chat_end], buf, sizeof(*message_history_chat) - 1);
+		message_history_chat[hist_chat_end][sizeof(*message_history_chat) - 1] = '\0';
 		hist_chat_end++;
 		if (hist_chat_end >= MSG_HISTORY_MAX) {
 			hist_chat_end = 0;
 			hist_chat_looped = TRUE;
 		}
 	} else {
-		int i, j;
-
-		/* Scan history for duplicate of this new message */
-		if (!hist_looped) {
-			for (i = 0; i < hist_end; i++) {
-				if (!strcmp(message_history[i], buf)) {
-					/* Found an old duplicate. Excise it. */
-					for (j = i; j < hist_end; j++) strcpy(message_history[j], message_history[j + 1]);
-					/* Go back one step accordingly */
-					hist_end--;
-					break;
-				}
-			}
-		} else {
-			for (i = hist_end; i < hist_end + MSG_HISTORY_MAX; i++) {
-				if (!strcmp(message_history[i % MSG_HISTORY_MAX], buf)) {
-					/* Found an old duplicate. Excise it. */
-					for (j = i; j < hist_end + MSG_HISTORY_MAX - 1; j++) strcpy(message_history[j % MSG_HISTORY_MAX], message_history[(j + 1) % MSG_HISTORY_MAX]);
-					/* Go back one step accordingly */
-					if (hist_end) hist_end--;
-					else hist_end = MSG_HISTORY_MAX - 1;
-					break;
-				}
-			}
-		}
-		/* Append our message to history */
-		strcpy(message_history[hist_end], buf);
+		strncpy(message_history[hist_end], buf, sizeof(*message_history) - 1);
+		message_history[hist_end][sizeof(*message_history) - 1] = '\0';
 		hist_end++;
 		if (hist_end >= MSG_HISTORY_MAX) {
 			hist_end = 0;
@@ -2861,17 +2045,21 @@ bool askfor_aux(char *buf, int len, char mode) {
 		for (i = k; i >= 0; i--)
 			buf[i + 2] = buf[i];
 
-		if (chat_mode == CHAT_MODE_PARTY) buf[0] = '!';
-		else if (chat_mode == CHAT_MODE_LEVEL) buf[0] = '#';
-		else if (chat_mode == CHAT_MODE_GUILD) buf[0] = '$';
-		else buf[0] = '\0';
+		if (chat_mode == CHAT_MODE_PARTY)
+			buf[0] = '!';
+		else if (chat_mode == CHAT_MODE_LEVEL)
+			buf[0] = '#';
+		else if (chat_mode == CHAT_MODE_GUILD)
+			buf[0] = '$';
+		else
+			buf[0] = '\0';
 		buf[1] = ':';
 		k += 2;
 		buf[k] = '\0';
 	}
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -2885,7 +2073,8 @@ bool askfor_aux(char *buf, int len, char mode) {
  *
  * We clear the input, and return FALSE, on "ESCAPE".
  */
-bool get_string(cptr prompt, char *buf, int len) {
+bool get_string(cptr prompt, char *buf, int len)
+{
 	bool res;
 	char askfor_mode = 0x00;
 
@@ -2902,15 +2091,15 @@ bool get_string(cptr prompt, char *buf, int len) {
 
 		/* HACK - Change the prompt according to current chat mode */
 		switch (chat_mode) {
-		case CHAT_MODE_PARTY:
-			c_prt(C_COLOUR_CHAT_PARTY, "Party: ", 0, 0);
-			break;
-		case CHAT_MODE_LEVEL:
-			c_prt(C_COLOUR_CHAT_LEVEL, "Floor: ", 0, 0);
-			break;
-		case CHAT_MODE_GUILD:
-			c_prt(C_COLOUR_CHAT_GUILD, "Guild: ", 0, 0);
-			break;
+			case CHAT_MODE_PARTY:
+				c_prt(C_COLOUR_CHAT_PARTY, "Party: ", 0, 0);
+				break;
+			case CHAT_MODE_LEVEL:
+				c_prt(C_COLOUR_CHAT_LEVEL, "Floor: ", 0, 0);
+				break;
+			case CHAT_MODE_GUILD:
+				c_prt(C_COLOUR_CHAT_GUILD, "Guild: ", 0, 0);
+				break;
 		}
 	}
 
@@ -2926,7 +2115,7 @@ bool get_string(cptr prompt, char *buf, int len) {
 	inkey_msg = inkey_msg_old;
 
 	/* Result */
-	return(res);
+	return (res);
 }
 
 
@@ -2937,7 +2126,8 @@ bool get_string(cptr prompt, char *buf, int len) {
  *
  * Returns TRUE unless the character is "Escape"
  */
-bool get_com(cptr prompt, char *command) {
+bool get_com(cptr prompt, char *command)
+{
 	/* The top line is "icky" */
 	topline_icky = TRUE;
 
@@ -2957,10 +2147,10 @@ bool get_com(cptr prompt, char *command) {
 	Flush_queue();
 
 	/* Handle "cancel" */
-	if (*command == ESCAPE) return(FALSE);
+	if (*command == ESCAPE) return (FALSE);
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -3002,15 +2192,17 @@ void request_command() {
 	clear_topline();
 
 //#ifndef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
+if (!c_cfg.keep_topline)
 	/* Clear top line */
-	if (!c_cfg.keep_topline) clear_topline();
+	clear_topline();
 //#endif
 
 	/* Bypass "keymap" */
 	if (cmd == '\\') {
 //#ifdef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
+if (c_cfg.keep_topline)
 		/* Clear top line */
-		if (c_cfg.keep_topline) clear_topline();
+		clear_topline();
 //#endif
 
 		/* Get a char to use without casting */
@@ -3026,8 +2218,9 @@ void request_command() {
 		}
 
 //#ifdef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
+if (c_cfg.keep_topline)
 		/* Clear top line */
-		if (c_cfg.keep_topline) clear_topline();
+		clear_topline();
 //#endif
 
 		/* Use the key directly */
@@ -3036,8 +2229,9 @@ void request_command() {
 		/* Hack -- allow "control chars" to be entered */
 		if (cmd == '^') {
 //#ifdef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
+if (c_cfg.keep_topline)
 			/* Clear top line */
-			if (c_cfg.keep_topline) clear_topline();
+			clear_topline();
 //#endif
 
 			/* Get a char to "cast" into a control char */
@@ -3047,8 +2241,9 @@ void request_command() {
 			cmd = KTRL(cmd);
 
 //#ifdef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
+if (c_cfg.keep_topline)
 			/* Clear top line */
-			if (c_cfg.keep_topline) clear_topline();
+			clear_topline();
 //#endif
 		}
 
@@ -3061,8 +2256,9 @@ void request_command() {
 	if (!command_cmd) command_cmd = ESCAPE;
 
 //#ifndef DONT_CLEAR_TOPLINE_IF_AVOIDABLE
+if (!c_cfg.keep_topline)
 	/* Hack -- erase the message line. */
-	if (!c_cfg.keep_topline) clear_topline();
+	clear_topline();
 //#endif
 }
 
@@ -3097,8 +2293,8 @@ bool get_dir(int *dp) {
 
 	*dp = dir;
 
-	if (!dir) return(FALSE);
-	return(TRUE);
+	if (!dir) return (FALSE);
+	return (TRUE);
 }
 
 
@@ -3111,35 +2307,6 @@ bool get_dir(int *dp) {
 void c_put_str(byte attr, cptr str, int row, int col) {
 	/* Position cursor, Dump the attr/text */
 	Term_putstr(col, row, -1, attr, (char*)str);
-}
-/* Version of c_put_str() specifically for Chh sheet in horizontal mode. */
-//#define VERT_ALT_Y /* alternate y a bit for readability? */
-//#define VERT_ADD_COLON /* add a colon ':' at the end? */
-void c_put_str_vert(byte attr, cptr str, int row, int col) {
-#if 0 /* Print it normally, from left to right, and with vertical cascading */
-	Term_putstr(col, row, -1, attr, (char*)str);
-#else /* Print it vertically! */
-	row = 0;
-	while (str[row]) {
- #ifdef VERT_ALT_Y
-  #ifdef VERT_ADD_COLON
-		Term_putch(col, 0 + col % 2 + row, attr, str[row]);
-  #else
-		Term_putch(col, 1 + col % 2 + row, attr, str[row]);
-  #endif
- #else
-  #ifdef VERT_ADD_COLON
-		Term_putch(col, 1 + row, attr, str[row]);
-  #else
-		Term_putch(col, 2 + row, attr, str[row]);
-  #endif
- #endif
-		row++;
-	}
- #ifdef VERT_ADD_COLON
-	Term_putch(col, 1 + row, attr, ':');
- #endif
-#endif
 }
 
 
@@ -3156,7 +2323,6 @@ void put_str(cptr str, int row, int col) {
  *
  * The "prompt" should take the form "Query? "
  *
- * Pressing ESC will accept the default_yes value.
  * Note that "[y/n]" is appended to the prompt.
  */
 bool get_check2(cptr prompt, bool default_yes) {
@@ -3194,22 +2360,22 @@ bool get_check2(cptr prompt, bool default_yes) {
 	topline_icky = FALSE;
 
 	/* Flush any events that came in while we were icky */
-	if (!c_quit) Flush_queue();
+	if (!c_quit)
+		Flush_queue();
 
 	/* More normal */
 	if (default_yes) {
-		if (i == 'n' || i == 'N') return(FALSE);
-		return(TRUE);
+		if (i == 'n' || i == 'N' || i == '\e') return FALSE;
+		return TRUE;
 	}
 
-	if ((i == 'Y') || (i == 'y')) return(TRUE);
-	return(FALSE);
+	if ((i == 'Y') || (i == 'y')) return (TRUE);
+	return (FALSE);
 }
 /* default_choice:
    0 = no preference, only accept y/Y/n/N for input
    1 = default is yes, any key besides n/N will count as yes
-   2 = default is yes, any key besides y/Y will count as no
-   Pressing ESC only works if default_choice isn't 0, and will accept the default_choice then. */
+   2 = default is yes, any key besides y/Y will count as no */
 bool get_check3(cptr prompt, char default_choice) {
 	int i;
 	char buf[80];
@@ -3244,12 +2410,12 @@ bool get_check3(cptr prompt, char default_choice) {
 
 	/* More normal */
 	if (default_choice == 1) {
-		if (i == 'n' || i == 'N') return(FALSE);
-		return(TRUE);
+		if (i == 'n' || i == 'N' || i == '\e') return FALSE;
+		return TRUE;
 	}
 
-	if ((i == 'Y') || (i == 'y')) return(TRUE);
-	return(FALSE);
+	if ((i == 'Y') || (i == 'y')) return (TRUE);
+	return (FALSE);
 }
 
 byte get_3way(cptr prompt, bool default_no) {
@@ -3289,92 +2455,96 @@ byte get_3way(cptr prompt, bool default_no) {
 	/* The top line is OK again */
 	topline_icky = FALSE;
 
-	return(res);
+	return res;
 }
 
 
 /*
  * Recall the "text" of a saved message
  */
-cptr message_str(s32b age) {
-	s32b x;
-	s32b o;
-	cptr s;
+cptr message_str(s32b age)
+{
+        s32b x;
+        s32b o;
+        cptr s;
 
-	/* Forgotten messages have no text */
-	if ((age < 0) || (age >= message_num())) return("");
+        /* Forgotten messages have no text */
+        if ((age < 0) || (age >= message_num())) return ("");
 
-	/* Acquire the "logical" index */
-	x = (message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
+        /* Acquire the "logical" index */
+        x = (message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
 
-	/* Get the "offset" for the message */
-	o = message__ptr[x];
+        /* Get the "offset" for the message */
+        o = message__ptr[x];
 
-	/* Access the message text */
-	s = &message__buf[o];
+        /* Access the message text */
+        s = &message__buf[o];
 
-	/* Return the message text */
-	return(s);
+        /* Return the message text */
+        return (s);
 }
-cptr message_str_chat(s32b age) {
-	s32b x;
-	s32b o;
-	cptr s;
+cptr message_str_chat(s32b age)
+{
+        s32b x;
+        s32b o;
+        cptr s;
 
-	/* Forgotten messages have no text */
-	if ((age < 0) || (age >= message_num_chat())) return("");
+        /* Forgotten messages have no text */
+        if ((age < 0) || (age >= message_num_chat())) return ("");
 
-	/* Acquire the "logical" index */
-	x = (message__next_chat + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
+        /* Acquire the "logical" index */
+        x = (message__next_chat + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
 
-	/* Get the "offset" for the message */
-	o = message__ptr_chat[x];
+        /* Get the "offset" for the message */
+        o = message__ptr_chat[x];
 
-	/* Access the message text */
-	s = &message__buf_chat[o];
+        /* Access the message text */
+        s = &message__buf_chat[o];
 
-	/* Return the message text */
-	return(s);
+        /* Return the message text */
+        return (s);
 }
-cptr message_str_msgnochat(s32b age) {
-	s32b x;
-	s32b o;
-	cptr s;
+cptr message_str_msgnochat(s32b age)
+{
+        s32b x;
+        s32b o;
+        cptr s;
 
-	/* Forgotten messages have no text */
-	if ((age < 0) || (age >= message_num_msgnochat())) return("");
+        /* Forgotten messages have no text */
+        if ((age < 0) || (age >= message_num_msgnochat())) return ("");
 
-	/* Acquire the "logical" index */
-	x = (message__next_msgnochat + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
+        /* Acquire the "logical" index */
+        x = (message__next_msgnochat + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
 
-	/* Get the "offset" for the message */
-	o = message__ptr_msgnochat[x];
+        /* Get the "offset" for the message */
+        o = message__ptr_msgnochat[x];
 
-	/* Access the message text */
-	s = &message__buf_msgnochat[o];
+        /* Access the message text */
+        s = &message__buf_msgnochat[o];
 
-	/* Return the message text */
-	return(s);
+        /* Return the message text */
+        return (s);
 }
-cptr message_str_impscroll(s32b age) {
-	s32b x;
-	s32b o;
-	cptr s;
+cptr message_str_impscroll(s32b age)
+{
+        s32b x;
+        s32b o;
+        cptr s;
 
-	/* Forgotten messages have no text */
-	if ((age < 0) || (age >= message_num_impscroll())) return("");
+        /* Forgotten messages have no text */
+        if ((age < 0) || (age >= message_num_impscroll())) return ("");
 
-	/* Acquire the "logical" index */
-	x = (message__next_impscroll + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
+        /* Acquire the "logical" index */
+        x = (message__next_impscroll + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
 
-	/* Get the "offset" for the message */
-	o = message__ptr_impscroll[x];
+        /* Get the "offset" for the message */
+        o = message__ptr_impscroll[x];
 
-	/* Access the message text */
-	s = &message__buf_impscroll[o];
+        /* Access the message text */
+        s = &message__buf_impscroll[o];
 
-	/* Return the message text */
-	return(s);
+        /* Return the message text */
+        return (s);
 }
 
 
@@ -3382,74 +2552,77 @@ cptr message_str_impscroll(s32b age) {
  * How many messages are "available"?
  */
 s32b message_num(void) {
-	int last, next, n;
+        int last, next, n;
 
 #ifdef RETRY_LOGIN
 	/* Don't prompt to 'save chat messages?' when quitting the game from within the character screen,
 	   if we have previousl been in-game and therefore messages have had been added. */
-	if (!in_game) return(0);
+	if (!in_game) return 0;
 #endif
 
-	/* Extract the indexes */
-	last = message__last;
-	next = message__next;
+        /* Extract the indexes */
+        last = message__last;
+        next = message__next;
 
-	/* Handle "wrap" */
-	if (next < last) next += MESSAGE_MAX;
+        /* Handle "wrap" */
+        if (next < last) next += MESSAGE_MAX;
 
-	/* Extract the space */
-	n = (next - last);
+        /* Extract the space */
+        n = (next - last);
 
-	/* Return the result */
-	return(n);
+        /* Return the result */
+        return (n);
 }
-s32b message_num_chat(void) {
-	int last, next, n;
+s32b message_num_chat(void)
+{
+        int last, next, n;
 
-	/* Extract the indexes */
-	last = message__last_chat;
-	next = message__next_chat;
+        /* Extract the indexes */
+        last = message__last_chat;
+        next = message__next_chat;
 
-	/* Handle "wrap" */
-	if (next < last) next += MESSAGE_MAX;
+        /* Handle "wrap" */
+        if (next < last) next += MESSAGE_MAX;
 
-	/* Extract the space */
-	n = (next - last);
+        /* Extract the space */
+        n = (next - last);
 
-	/* Return the result */
-	return(n);
+        /* Return the result */
+        return (n);
 }
-s32b message_num_msgnochat(void) {
-	int last, next, n;
+s32b message_num_msgnochat(void)
+{
+        int last, next, n;
 
-	/* Extract the indexes */
-	last = message__last_msgnochat;
-	next = message__next_msgnochat;
+        /* Extract the indexes */
+        last = message__last_msgnochat;
+        next = message__next_msgnochat;
 
-	/* Handle "wrap" */
-	if (next < last) next += MESSAGE_MAX;
+        /* Handle "wrap" */
+        if (next < last) next += MESSAGE_MAX;
 
-	/* Extract the space */
-	n = (next - last);
+        /* Extract the space */
+        n = (next - last);
 
-	/* Return the result */
-	return(n);
+        /* Return the result */
+        return (n);
 }
-s32b message_num_impscroll(void) {
-	int last, next, n;
+s32b message_num_impscroll(void)
+{
+        int last, next, n;
 
-	/* Extract the indexes */
-	last = message__last_impscroll;
-	next = message__next_impscroll;
+        /* Extract the indexes */
+        last = message__last_impscroll;
+        next = message__next_impscroll;
 
-	/* Handle "wrap" */
-	if (next < last) next += MESSAGE_MAX;
+        /* Handle "wrap" */
+        if (next < last) next += MESSAGE_MAX;
 
-	/* Extract the space */
-	n = (next - last);
+        /* Extract the space */
+        n = (next - last);
 
-	/* Return the result */
-	return(n);
+        /* Return the result */
+        return (n);
 }
 
 
@@ -3457,675 +2630,712 @@ s32b message_num_impscroll(void) {
  * Add a new message, with great efficiency
  */
 void c_message_add(cptr str) {
-	int i, k, x, n;
+        int i, k, x, n;
 
 
-	/*** Step 1 -- Analyze the message ***/
+        /*** Step 1 -- Analyze the message ***/
 
-	/* Hack -- Ignore "non-messages" */
-	if (!str) return;
+        /* Hack -- Ignore "non-messages" */
+        if (!str) return;
 
-	/* Message length */
-	n = strlen(str);
+        /* Message length */
+        n = strlen(str);
 
-	/* Important Hack -- Ignore "long" messages */
-	if (n >= MESSAGE_BUF / 4) return;
+        /* Important Hack -- Ignore "long" messages */
+        if (n >= MESSAGE_BUF / 4) return;
 
 
-	/*** Step 2 -- Attempt to optimize ***/
+        /*** Step 2 -- Attempt to optimize ***/
 
-	/* Limit number of messages to check */
-	k = message_num() / 4;
+        /* Limit number of messages to check */
+        k = message_num() / 4;
 
-	/* Limit number of messages to check */
-	if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
+        /* Limit number of messages to check */
+        if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
 
-	/* Check the last few messages (if any to count) */
-	for (i = message__next; k; k--) {
-		u32b q;
-		cptr old;
+        /* Check the last few messages (if any to count) */
+        for (i = message__next; k; k--)
+        {
+                u32b q;
 
-		/* Back up and wrap if needed */
-		if (i-- == 0) i = MESSAGE_MAX - 1;
+                cptr old;
 
-		/* Stop before oldest message */
-		if (i == message__last) break;
+                /* Back up and wrap if needed */
+                if (i-- == 0) i = MESSAGE_MAX - 1;
 
-		/* Extract "distance" from "head" */
-		q = (message__head + MESSAGE_BUF - message__ptr[i]) % MESSAGE_BUF;
+                /* Stop before oldest message */
+                if (i == message__last) break;
 
-		/* Do not optimize over large distance */
-		if (q > MESSAGE_BUF / 2) continue;
+                /* Extract "distance" from "head" */
+                q = (message__head + MESSAGE_BUF - message__ptr[i]) % MESSAGE_BUF;
 
-		/* Access the old string */
-		old = &message__buf[message__ptr[i]];
+                /* Do not optimize over large distance */
+                if (q > MESSAGE_BUF / 2) continue;
 
-		/* Compare */
-		if (!streq(old, str)) continue;
+                /* Access the old string */
+                old = &message__buf[message__ptr[i]];
 
-		/* Get the next message index, advance */
-		x = message__next++;
+                /* Compare */
+                if (!streq(old, str)) continue;
 
-		/* Handle wrap */
-		if (message__next == MESSAGE_MAX) message__next = 0;
+                /* Get the next message index, advance */
+                x = message__next++;
 
-		/* Kill last message if needed */
-		if (message__next == message__last) message__last++;
+                /* Handle wrap */
+                if (message__next == MESSAGE_MAX) message__next = 0;
 
-		/* Handle wrap */
-		if (message__last == MESSAGE_MAX) message__last = 0;
+                /* Kill last message if needed */
+                if (message__next == message__last) message__last++;
 
-		/* Assign the starting address */
-		message__ptr[x] = message__ptr[i];
+                /* Handle wrap */
+                if (message__last == MESSAGE_MAX) message__last = 0;
+
+                /* Assign the starting address */
+                message__ptr[x] = message__ptr[i];
 
 		/* Redraw - assume that all chat messages start with '[' */
 #if 0
 		if (str[0] == '[')
-			p_ptr->window |= (PW_MESSAGE | PW_CHAT);
-		else
-			p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
+	                p_ptr->window |= (PW_MESSAGE | PW_CHAT);
+                else
+		        p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
 #endif
 		p_ptr->window |= (PW_MESSAGE);
 
-		/* Success */
-		return;
-	}
+                /* Success */
+                return;
+        }
 
 
-	/*** Step 3 -- Ensure space before end of buffer ***/
+        /*** Step 3 -- Ensure space before end of buffer ***/
 
-	/* Kill messages and Wrap if needed */
-	if (message__head + n + 1 >= MESSAGE_BUF) {
-		/* Kill all "dead" messages */
-		for (i = message__last; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
+        /* Kill messages and Wrap if needed */
+        if (message__head + n + 1 >= MESSAGE_BUF)
+        {
+                /* Kill all "dead" messages */
+                for (i = message__last; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-			/* Stop before the new message */
-			if (i == message__next) break;
+                        /* Stop before the new message */
+                        if (i == message__next) break;
 
-			/* Kill "dead" messages */
-			if (message__ptr[i] >= message__head)
-			{
-				/* Track oldest message */
-				message__last = i + 1;
-			}
-		}
+                        /* Kill "dead" messages */
+                        if (message__ptr[i] >= message__head)
+                        {
+                                /* Track oldest message */
+                                message__last = i + 1;
+                        }
+                }
 
-		/* Wrap "tail" if needed */
-		if (message__tail >= message__head) message__tail = 0;
+                /* Wrap "tail" if needed */
+                if (message__tail >= message__head) message__tail = 0;
 
-		/* Start over */
-		message__head = 0;
-	}
-
-
-	/*** Step 4 -- Ensure space before next message ***/
-
-	/* Kill messages if needed */
-	if (message__head + n + 1 > message__tail) {
-		/* Grab new "tail" */
-		message__tail = message__head + n + 1;
-
-		/* Advance tail while possible past first "nul" */
-		while (message__buf[message__tail - 1]) message__tail++;
-
-		/* Kill all "dead" messages */
-		for (i = message__last; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
-
-			/* Stop before the new message */
-			if (i == message__next) break;
-
-			/* Kill "dead" messages */
-			if ((message__ptr[i] >= message__head) &&
-			    (message__ptr[i] < message__tail))
-			{
-				/* Track oldest message */
-				message__last = i + 1;
-			}
-		}
-	}
+                /* Start over */
+                message__head = 0;
+        }
 
 
-	/*** Step 5 -- Grab a new message index ***/
+        /*** Step 4 -- Ensure space before next message ***/
 
-	/* Get the next message index, advance */
-	x = message__next++;
+        /* Kill messages if needed */
+        if (message__head + n + 1 > message__tail)
+        {
+                /* Grab new "tail" */
+                message__tail = message__head + n + 1;
 
-	/* Handle wrap */
-	if (message__next == MESSAGE_MAX) message__next = 0;
+                /* Advance tail while possible past first "nul" */
+                while (message__buf[message__tail-1]) message__tail++;
 
-	/* Kill last message if needed */
-	if (message__next == message__last) message__last++;
+                /* Kill all "dead" messages */
+                for (i = message__last; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-	/* Handle wrap */
-	if (message__last == MESSAGE_MAX) message__last = 0;
+                        /* Stop before the new message */
+                        if (i == message__next) break;
+
+                        /* Kill "dead" messages */
+                        if ((message__ptr[i] >= message__head) &&
+                            (message__ptr[i] < message__tail))
+                        {
+                                /* Track oldest message */
+                                message__last = i + 1;
+                        }
+                }
+        }
+
+
+        /*** Step 5 -- Grab a new message index ***/
+
+        /* Get the next message index, advance */
+        x = message__next++;
+
+        /* Handle wrap */
+        if (message__next == MESSAGE_MAX) message__next = 0;
+
+        /* Kill last message if needed */
+        if (message__next == message__last) message__last++;
+
+        /* Handle wrap */
+        if (message__last == MESSAGE_MAX) message__last = 0;
 
 
 
-	/*** Step 6 -- Insert the message text ***/
+        /*** Step 6 -- Insert the message text ***/
 
-	/* Assign the starting address */
-	message__ptr[x] = message__head;
+        /* Assign the starting address */
+        message__ptr[x] = message__head;
 
-	/* Append the new part of the message */
-	for (i = 0; i < n; i++)
-		/* Copy the message */
-		message__buf[message__head + i] = str[i];
+        /* Append the new part of the message */
+        for (i = 0; i < n; i++)
+        {
+                /* Copy the message */
+                message__buf[message__head + i] = str[i];
+        }
 
-	/* Terminate */
-	message__buf[message__head + i] = '\0';
+        /* Terminate */
+        message__buf[message__head + i] = '\0';
 
-	/* Advance the "head" pointer */
-	message__head += n + 1;
+        /* Advance the "head" pointer */
+        message__head += n + 1;
 
 #if 0
 //deprecated?:
 	/* Window stuff - assume that all chat messages start with '[' */
-	if (str[0] == '[')
-		p_ptr->window |= (PW_MESSAGE | PW_CHAT);
-	else
-		p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
+        if (str[0] == '[')
+	        p_ptr->window |= (PW_MESSAGE | PW_CHAT);
+        else
+	        p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
 //      	p_ptr->window |= PW_MESSAGE;
 #else
 	p_ptr->window |= PW_MESSAGE;
 #endif
 }
 void c_message_add_chat(cptr str) {
-	int i, k, x, n;
+        int i, k, x, n;
 
 
-	/*** Step 1 -- Analyze the message ***/
+        /*** Step 1 -- Analyze the message ***/
 
-	/* Hack -- Ignore "non-messages" */
-	if (!str) return;
+        /* Hack -- Ignore "non-messages" */
+        if (!str) return;
 
-	/* Message length */
-	n = strlen(str);
+        /* Message length */
+        n = strlen(str);
 
-	/* Important Hack -- Ignore "long" messages */
-	if (n >= MESSAGE_BUF / 4) return;
+        /* Important Hack -- Ignore "long" messages */
+        if (n >= MESSAGE_BUF / 4) return;
 
 
-	/*** Step 2 -- Attempt to optimize ***/
+        /*** Step 2 -- Attempt to optimize ***/
 
-	/* Limit number of messages to check */
-	k = message_num_chat() / 4;
+        /* Limit number of messages to check */
+        k = message_num_chat() / 4;
 
-	/* Limit number of messages to check */
-	if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
+        /* Limit number of messages to check */
+        if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
 
-	/* Check the last few messages (if any to count) */
-	for (i = message__next_chat; k; k--) {
-		u32b q;
-		cptr old;
+        /* Check the last few messages (if any to count) */
+        for (i = message__next_chat; k; k--)
+        {
+                u32b q;
 
-		/* Back up and wrap if needed */
-		if (i-- == 0) i = MESSAGE_MAX - 1;
+                cptr old;
 
-		/* Stop before oldest message */
-		if (i == message__last_chat) break;
+                /* Back up and wrap if needed */
+                if (i-- == 0) i = MESSAGE_MAX - 1;
 
-		/* Extract "distance" from "head" */
-		q = (message__head_chat + MESSAGE_BUF - message__ptr_chat[i]) % MESSAGE_BUF;
+                /* Stop before oldest message */
+                if (i == message__last_chat) break;
 
-		/* Do not optimize over large distance */
-		if (q > MESSAGE_BUF / 2) continue;
+                /* Extract "distance" from "head" */
+                q = (message__head_chat + MESSAGE_BUF - message__ptr_chat[i]) % MESSAGE_BUF;
 
-		/* Access the old string */
-		old = &message__buf_chat[message__ptr_chat[i]];
+                /* Do not optimize over large distance */
+                if (q > MESSAGE_BUF / 2) continue;
 
-		/* Compare */
-		if (!streq(old, str)) continue;
+                /* Access the old string */
+                old = &message__buf_chat[message__ptr_chat[i]];
 
-		/* Get the next message index, advance */
-		x = message__next_chat++;
+                /* Compare */
+                if (!streq(old, str)) continue;
 
-		/* Handle wrap */
-		if (message__next_chat == MESSAGE_MAX) message__next_chat = 0;
+                /* Get the next message index, advance */
+                x = message__next_chat++;
 
-		/* Kill last message if needed */
-		if (message__next_chat == message__last_chat) message__last_chat++;
+                /* Handle wrap */
+                if (message__next_chat == MESSAGE_MAX) message__next_chat = 0;
 
-		/* Handle wrap */
-		if (message__last_chat == MESSAGE_MAX) message__last_chat = 0;
+                /* Kill last message if needed */
+                if (message__next_chat == message__last_chat) message__last_chat++;
 
-		/* Assign the starting address */
-		message__ptr_chat[x] = message__ptr_chat[i];
+                /* Handle wrap */
+                if (message__last_chat == MESSAGE_MAX) message__last_chat = 0;
+
+                /* Assign the starting address */
+                message__ptr_chat[x] = message__ptr_chat[i];
 
 		/* Redraw - assume that all chat messages start with '[' */
-		p_ptr->window |= (PW_CHAT);
+                p_ptr->window |= (PW_CHAT);
 
-		/* Success */
-		return;
-	}
-
-
-	/*** Step 3 -- Ensure space before end of buffer ***/
-
-	/* Kill messages and Wrap if needed */
-	if (message__head_chat + n + 1 >= MESSAGE_BUF) {
-		/* Kill all "dead" messages */
-		for (i = message__last_chat; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
-
-			/* Stop before the new message */
-			if (i == message__next_chat) break;
-
-			/* Kill "dead" messages */
-			if (message__ptr_chat[i] >= message__head_chat)
-				/* Track oldest message */
-				message__last_chat = i + 1;
-		}
-
-		/* Wrap "tail" if needed */
-		if (message__tail_chat >= message__head_chat) message__tail_chat = 0;
-
-		/* Start over */
-		message__head_chat = 0;
-	}
+                /* Success */
+                return;
+        }
 
 
-	/*** Step 4 -- Ensure space before next message ***/
+        /*** Step 3 -- Ensure space before end of buffer ***/
 
-	/* Kill messages if needed */
-	if (message__head_chat + n + 1 > message__tail_chat) {
-		/* Grab new "tail" */
-		message__tail_chat = message__head_chat + n + 1;
+        /* Kill messages and Wrap if needed */
+        if (message__head_chat + n + 1 >= MESSAGE_BUF)
+        {
+                /* Kill all "dead" messages */
+                for (i = message__last_chat; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-		/* Advance tail while possible past first "nul" */
-		while (message__buf_chat[message__tail_chat - 1]) message__tail_chat++;
+                        /* Stop before the new message */
+                        if (i == message__next_chat) break;
 
-		/* Kill all "dead" messages */
-		for (i = message__last_chat; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
+                        /* Kill "dead" messages */
+                        if (message__ptr_chat[i] >= message__head_chat)
+                        {
+                                /* Track oldest message */
+                                message__last_chat = i + 1;
+                        }
+                }
 
-			/* Stop before the new message */
-			if (i == message__next_chat) break;
+                /* Wrap "tail" if needed */
+                if (message__tail_chat >= message__head_chat) message__tail_chat = 0;
 
-			/* Kill "dead" messages */
-			if ((message__ptr_chat[i] >= message__head_chat) &&
-			    (message__ptr_chat[i] < message__tail_chat)) {
-				/* Track oldest message */
-				message__last_chat = i + 1;
-			}
-		}
-	}
-
-
-	/*** Step 5 -- Grab a new message index ***/
-
-	/* Get the next message index, advance */
-	x = message__next_chat++;
-
-	/* Handle wrap */
-	if (message__next_chat == MESSAGE_MAX) message__next_chat = 0;
-
-	/* Kill last message if needed */
-	if (message__next_chat == message__last_chat) message__last_chat++;
-
-	/* Handle wrap */
-	if (message__last_chat == MESSAGE_MAX) message__last_chat = 0;
+                /* Start over */
+                message__head_chat = 0;
+        }
 
 
+        /*** Step 4 -- Ensure space before next message ***/
 
-	/*** Step 6 -- Insert the message text ***/
+        /* Kill messages if needed */
+        if (message__head_chat + n + 1 > message__tail_chat)
+        {
+                /* Grab new "tail" */
+                message__tail_chat = message__head_chat + n + 1;
 
-	/* Assign the starting address */
-	message__ptr_chat[x] = message__head_chat;
+                /* Advance tail while possible past first "nul" */
+                while (message__buf_chat[message__tail_chat-1]) message__tail_chat++;
 
-	/* Append the new part of the message */
-	for (i = 0; i < n; i++)
-		/* Copy the message */
-		message__buf_chat[message__head_chat + i] = str[i];
+                /* Kill all "dead" messages */
+                for (i = message__last_chat; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-	/* Terminate */
-	message__buf_chat[message__head_chat + i] = '\0';
+                        /* Stop before the new message */
+                        if (i == message__next_chat) break;
 
-	/* Advance the "head" pointer */
-	message__head_chat += n + 1;
+                        /* Kill "dead" messages */
+                        if ((message__ptr_chat[i] >= message__head_chat) &&
+                            (message__ptr_chat[i] < message__tail_chat))
+                        {
+                                /* Track oldest message */
+                                message__last_chat = i + 1;
+                        }
+                }
+        }
+
+
+        /*** Step 5 -- Grab a new message index ***/
+
+        /* Get the next message index, advance */
+        x = message__next_chat++;
+
+        /* Handle wrap */
+        if (message__next_chat == MESSAGE_MAX) message__next_chat = 0;
+
+        /* Kill last message if needed */
+        if (message__next_chat == message__last_chat) message__last_chat++;
+
+        /* Handle wrap */
+        if (message__last_chat == MESSAGE_MAX) message__last_chat = 0;
+
+
+
+        /*** Step 6 -- Insert the message text ***/
+
+        /* Assign the starting address */
+        message__ptr_chat[x] = message__head_chat;
+
+        /* Append the new part of the message */
+        for (i = 0; i < n; i++)
+        {
+                /* Copy the message */
+                message__buf_chat[message__head_chat + i] = str[i];
+        }
+
+        /* Terminate */
+        message__buf_chat[message__head_chat + i] = '\0';
+
+        /* Advance the "head" pointer */
+        message__head_chat += n + 1;
 
 	/* Window stuff - assume that all chat messages start with '[' */
-	p_ptr->window |= (PW_CHAT);
+        p_ptr->window |= (PW_CHAT);
 
 }
 void c_message_add_msgnochat(cptr str) {
-	int i, k, x, n;
+        int i, k, x, n;
 
 
-	/*** Step 1 -- Analyze the message ***/
+        /*** Step 1 -- Analyze the message ***/
 
-	/* Hack -- Ignore "non-messages" */
-	if (!str) return;
+        /* Hack -- Ignore "non-messages" */
+        if (!str) return;
 
-	/* Message length */
-	n = strlen(str);
+        /* Message length */
+        n = strlen(str);
 
-	/* Important Hack -- Ignore "long" messages */
-	if (n >= MESSAGE_BUF / 4) return;
+        /* Important Hack -- Ignore "long" messages */
+        if (n >= MESSAGE_BUF / 4) return;
 
 
-	/*** Step 2 -- Attempt to optimize ***/
+        /*** Step 2 -- Attempt to optimize ***/
 
-	/* Limit number of messages to check */
-	k = message_num_msgnochat() / 4;
+        /* Limit number of messages to check */
+        k = message_num_msgnochat() / 4;
 
-	/* Limit number of messages to check */
-	if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
+        /* Limit number of messages to check */
+        if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
 
-	/* Check the last few _msgnochatmessages (if any to count) */
-	for (i = message__next_msgnochat; k; k--) {
-		u32b q;
-		cptr old;
+        /* Check the last few _msgnochatmessages (if any to count) */
+        for (i = message__next_msgnochat; k; k--)
+        {
+                u32b q;
 
-		/* Back up and wrap if needed */
-		if (i-- == 0) i = MESSAGE_MAX - 1;
+                cptr old;
 
-		/* Stop before oldest message */
-		if (i == message__last_msgnochat) break;
+                /* Back up and wrap if needed */
+                if (i-- == 0) i = MESSAGE_MAX - 1;
 
-		/* Extract "distance" from "head" */
-		q = (message__head_msgnochat + MESSAGE_BUF - message__ptr_msgnochat[i]) % MESSAGE_BUF;
+                /* Stop before oldest message */
+                if (i == message__last_msgnochat) break;
 
-		/* Do not optimize over large distance */
-		if (q > MESSAGE_BUF / 2) continue;
+                /* Extract "distance" from "head" */
+                q = (message__head_msgnochat + MESSAGE_BUF - message__ptr_msgnochat[i]) % MESSAGE_BUF;
 
-		/* Access the old string */
-		old = &message__buf_msgnochat[message__ptr_msgnochat[i]];
+                /* Do not optimize over large distance */
+                if (q > MESSAGE_BUF / 2) continue;
 
-		/* Compare */
-		if (!streq(old, str)) continue;
+                /* Access the old string */
+                old = &message__buf_msgnochat[message__ptr_msgnochat[i]];
 
-		/* Get the next message index, advance */
-		x = message__next_msgnochat++;
+                /* Compare */
+                if (!streq(old, str)) continue;
 
-		/* Handle wrap */
-		if (message__next_msgnochat == MESSAGE_MAX) message__next_msgnochat = 0;
+                /* Get the next message index, advance */
+                x = message__next_msgnochat++;
 
-		/* Kill last message if needed */
-		if (message__next_msgnochat == message__last_msgnochat) message__last_msgnochat++;
+                /* Handle wrap */
+                if (message__next_msgnochat == MESSAGE_MAX) message__next_msgnochat = 0;
 
-		/* Handle wrap */
-		if (message__last_msgnochat == MESSAGE_MAX) message__last_msgnochat = 0;
+                /* Kill last message if needed */
+                if (message__next_msgnochat == message__last_msgnochat) message__last_msgnochat++;
 
-		/* Assign the starting address */
-		message__ptr_msgnochat[x] = message__ptr_msgnochat[i];
+                /* Handle wrap */
+                if (message__last_msgnochat == MESSAGE_MAX) message__last_msgnochat = 0;
+
+                /* Assign the starting address */
+                message__ptr_msgnochat[x] = message__ptr_msgnochat[i];
 
 		/* Redraw - assume that all chat messages start with '[' */
-		p_ptr->window |= (PW_MSGNOCHAT);
+                p_ptr->window |= (PW_MSGNOCHAT);
 
-		/* Success */
-		return;
-	}
-
-
-	/*** Step 3 -- Ensure space before end of buffer ***/
-
-	/* Kill messages and Wrap if needed */
-	if (message__head_msgnochat + n + 1 >= MESSAGE_BUF) {
-		/* Kill all "dead" messages */
-		for (i = message__last_msgnochat; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
-
-			/* Stop before the new message */
-			if (i == message__next_msgnochat) break;
-
-			/* Kill "dead" messages */
-			if (message__ptr_msgnochat[i] >= message__head_msgnochat)
-			{
-				/* Track oldest message */
-				message__last_msgnochat = i + 1;
-			}
-		}
-
-		/* Wrap "tail" if needed */
-		if (message__tail_msgnochat >= message__head_msgnochat) message__tail_msgnochat = 0;
-
-		/* Start over */
-		message__head_msgnochat = 0;
-	}
+                /* Success */
+                return;
+        }
 
 
-	/*** Step 4 -- Ensure space before next message ***/
+        /*** Step 3 -- Ensure space before end of buffer ***/
 
-	/* Kill messages if needed */
-	if (message__head_msgnochat + n + 1 > message__tail_msgnochat) {
-		/* Grab new "tail" */
-		message__tail_msgnochat = message__head_msgnochat + n + 1;
+        /* Kill messages and Wrap if needed */
+        if (message__head_msgnochat + n + 1 >= MESSAGE_BUF)
+        {
+                /* Kill all "dead" messages */
+                for (i = message__last_msgnochat; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-		/* Advance tail while possible past first "nul" */
-		while (message__buf_msgnochat[message__tail_msgnochat - 1]) message__tail_msgnochat++;
+                        /* Stop before the new message */
+                        if (i == message__next_msgnochat) break;
 
-		/* Kill all "dead" messages */
-		for (i = message__last_msgnochat; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
+                        /* Kill "dead" messages */
+                        if (message__ptr_msgnochat[i] >= message__head_msgnochat)
+                        {
+                                /* Track oldest message */
+                                message__last_msgnochat = i + 1;
+                        }
+                }
 
-			/* Stop before the new message */
-			if (i == message__next_msgnochat) break;
+                /* Wrap "tail" if needed */
+                if (message__tail_msgnochat >= message__head_msgnochat) message__tail_msgnochat = 0;
 
-			/* Kill "dead" messages */
-			if ((message__ptr_msgnochat[i] >= message__head_msgnochat) &&
-			    (message__ptr_msgnochat[i] < message__tail_msgnochat)) {
-				/* Track oldest message */
-				message__last_msgnochat = i + 1;
-			}
-		}
-	}
-
-
-	/*** Step 5 -- Grab a new message index ***/
-
-	/* Get the next message index, advance */
-	x = message__next_msgnochat++;
-
-	/* Handle wrap */
-	if (message__next_msgnochat == MESSAGE_MAX) message__next_msgnochat = 0;
-
-	/* Kill last message if needed */
-	if (message__next_msgnochat == message__last_msgnochat) message__last_msgnochat++;
-
-	/* Handle wrap */
-	if (message__last_msgnochat == MESSAGE_MAX) message__last_msgnochat = 0;
+                /* Start over */
+                message__head_msgnochat = 0;
+        }
 
 
+        /*** Step 4 -- Ensure space before next message ***/
 
-	/*** Step 6 -- Insert the message text ***/
+        /* Kill messages if needed */
+        if (message__head_msgnochat + n + 1 > message__tail_msgnochat)
+        {
+                /* Grab new "tail" */
+                message__tail_msgnochat = message__head_msgnochat + n + 1;
 
-	/* Assign the starting address */
-	message__ptr_msgnochat[x] = message__head_msgnochat;
+                /* Advance tail while possible past first "nul" */
+                while (message__buf_msgnochat[message__tail_msgnochat-1]) message__tail_msgnochat++;
 
-	/* Append the new part of the message */
-	for (i = 0; i < n; i++)
-		/* Copy the message */
-		message__buf_msgnochat[message__head_msgnochat + i] = str[i];
+                /* Kill all "dead" messages */
+                for (i = message__last_msgnochat; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-	/* Terminate */
-	message__buf_msgnochat[message__head_msgnochat + i] = '\0';
+                        /* Stop before the new message */
+                        if (i == message__next_msgnochat) break;
 
-	/* Advance the "head" pointer */
-	message__head_msgnochat += n + 1;
+                        /* Kill "dead" messages */
+                        if ((message__ptr_msgnochat[i] >= message__head_msgnochat) &&
+                            (message__ptr_msgnochat[i] < message__tail_msgnochat))
+                        {
+                                /* Track oldest message */
+                                message__last_msgnochat = i + 1;
+                        }
+                }
+        }
+
+
+        /*** Step 5 -- Grab a new message index ***/
+
+        /* Get the next message index, advance */
+        x = message__next_msgnochat++;
+
+        /* Handle wrap */
+        if (message__next_msgnochat == MESSAGE_MAX) message__next_msgnochat = 0;
+
+        /* Kill last message if needed */
+        if (message__next_msgnochat == message__last_msgnochat) message__last_msgnochat++;
+
+        /* Handle wrap */
+        if (message__last_msgnochat == MESSAGE_MAX) message__last_msgnochat = 0;
+
+
+
+        /*** Step 6 -- Insert the message text ***/
+
+        /* Assign the starting address */
+        message__ptr_msgnochat[x] = message__head_msgnochat;
+
+        /* Append the new part of the message */
+        for (i = 0; i < n; i++)
+        {
+                /* Copy the message */
+                message__buf_msgnochat[message__head_msgnochat + i] = str[i];
+        }
+
+        /* Terminate */
+        message__buf_msgnochat[message__head_msgnochat + i] = '\0';
+
+        /* Advance the "head" pointer */
+        message__head_msgnochat += n + 1;
 
 	/* Window stuff - assume that all chat messages start with '[' */
-	p_ptr->window |= (PW_MSGNOCHAT);
+        p_ptr->window |= (PW_MSGNOCHAT);
 }
 void c_message_add_impscroll(cptr str) {
-	int i, k, x, n;
+        int i, k, x, n;
 
 
-	/*** Step 1 -- Analyze the message ***/
+        /*** Step 1 -- Analyze the message ***/
 
-	/* Hack -- Ignore "non-messages" */
-	if (!str) return;
+        /* Hack -- Ignore "non-messages" */
+        if (!str) return;
 
-	/* Message length */
-	n = strlen(str);
+        /* Message length */
+        n = strlen(str);
 
-	/* Important Hack -- Ignore "long" messages */
-	if (n >= MESSAGE_BUF / 4) return;
+        /* Important Hack -- Ignore "long" messages */
+        if (n >= MESSAGE_BUF / 4) return;
 
 
-	/*** Step 2 -- Attempt to optimize ***/
+        /*** Step 2 -- Attempt to optimize ***/
 
-	/* Limit number of messages to check */
-	k = message_num_impscroll() / 4;
+        /* Limit number of messages to check */
+        k = message_num_impscroll() / 4;
 
-	/* Limit number of messages to check */
-	if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
+        /* Limit number of messages to check */
+        if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
 
-	/* Check the last few messages (if any to count) */
-	for (i = message__next_impscroll; k; k--) {
-		u32b q;
-		cptr old;
+        /* Check the last few messages (if any to count) */
+        for (i = message__next_impscroll; k; k--)
+        {
+                u32b q;
 
-		/* Back up and wrap if needed */
-		if (i-- == 0) i = MESSAGE_MAX - 1;
+                cptr old;
 
-		/* Stop before oldest message */
-		if (i == message__last_impscroll) break;
+                /* Back up and wrap if needed */
+                if (i-- == 0) i = MESSAGE_MAX - 1;
 
-		/* Extract "distance" from "head" */
-		q = (message__head_impscroll + MESSAGE_BUF - message__ptr_impscroll[i]) % MESSAGE_BUF;
+                /* Stop before oldest message */
+                if (i == message__last_impscroll) break;
 
-		/* Do not optimize over large distance */
-		if (q > MESSAGE_BUF / 2) continue;
+                /* Extract "distance" from "head" */
+                q = (message__head_impscroll + MESSAGE_BUF - message__ptr_impscroll[i]) % MESSAGE_BUF;
 
-		/* Access the old string */
-		old = &message__buf_impscroll[message__ptr_impscroll[i]];
+                /* Do not optimize over large distance */
+                if (q > MESSAGE_BUF / 2) continue;
 
-		/* Compare */
-		if (!streq(old, str)) continue;
+                /* Access the old string */
+                old = &message__buf_impscroll[message__ptr_impscroll[i]];
 
-		/* Get the next message index, advance */
-		x = message__next_impscroll++;
+                /* Compare */
+                if (!streq(old, str)) continue;
 
-		/* Handle wrap */
-		if (message__next_impscroll == MESSAGE_MAX) message__next_impscroll = 0;
+                /* Get the next message index, advance */
+                x = message__next_impscroll++;
 
-		/* Kill last message if needed */
-		if (message__next_impscroll == message__last_impscroll) message__last_impscroll++;
+                /* Handle wrap */
+                if (message__next_impscroll == MESSAGE_MAX) message__next_impscroll = 0;
 
-		/* Handle wrap */
-		if (message__last_impscroll == MESSAGE_MAX) message__last_impscroll = 0;
+                /* Kill last message if needed */
+                if (message__next_impscroll == message__last_impscroll) message__last_impscroll++;
 
-		/* Assign the starting address */
-		message__ptr_impscroll[x] = message__ptr_impscroll[i];
+                /* Handle wrap */
+                if (message__last_impscroll == MESSAGE_MAX) message__last_impscroll = 0;
+
+                /* Assign the starting address */
+                message__ptr_impscroll[x] = message__ptr_impscroll[i];
 
 		/* Redraw - assume that all chat messages start with '[' */
 #if 0
 		if (str[0] == '[')
-			p_ptr->window |= (PW_MESSAGE | PW_CHAT);
-		else
-			p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
+	                p_ptr->window |= (PW_MESSAGE | PW_CHAT);
+                else
+		        p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
 #endif
 		p_ptr->window |= (PW_MESSAGE);
 
-		/* Success */
-		return;
-	}
+                /* Success */
+                return;
+        }
 
 
-	/*** Step 3 -- Ensure space before end of buffer ***/
+        /*** Step 3 -- Ensure space before end of buffer ***/
 
-	/* Kill messages and Wrap if needed */
-	if (message__head_impscroll + n + 1 >= MESSAGE_BUF) {
-		/* Kill all "dead" messages */
-		for (i = message__last_impscroll; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
+        /* Kill messages and Wrap if needed */
+        if (message__head_impscroll + n + 1 >= MESSAGE_BUF)
+        {
+                /* Kill all "dead" messages */
+                for (i = message__last_impscroll; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-			/* Stop before the new message */
-			if (i == message__next_impscroll) break;
+                        /* Stop before the new message */
+                        if (i == message__next_impscroll) break;
 
-			/* Kill "dead" messages */
-			if (message__ptr_impscroll[i] >= message__head_impscroll)
-			{
-				/* Track oldest message */
-				message__last_impscroll = i + 1;
-			}
-		}
+                        /* Kill "dead" messages */
+                        if (message__ptr_impscroll[i] >= message__head_impscroll)
+                        {
+                                /* Track oldest message */
+                                message__last_impscroll = i + 1;
+                        }
+                }
 
-		/* Wrap "tail" if needed */
-		if (message__tail_impscroll >= message__head_impscroll) message__tail_impscroll = 0;
+                /* Wrap "tail" if needed */
+                if (message__tail_impscroll >= message__head_impscroll) message__tail_impscroll = 0;
 
-		/* Start over */
-		message__head_impscroll = 0;
-	}
-
-
-	/*** Step 4 -- Ensure space before next message ***/
-
-	/* Kill messages if needed */
-	if (message__head_impscroll + n + 1 > message__tail_impscroll) {
-		/* Grab new "tail" */
-		message__tail_impscroll = message__head_impscroll + n + 1;
-
-		/* Advance tail while possible past first "nul" */
-		while (message__buf_impscroll[message__tail_impscroll - 1]) message__tail_impscroll++;
-
-		/* Kill all "dead" messages */
-		for (i = message__last_impscroll; TRUE; i++) {
-			/* Wrap if needed */
-			if (i == MESSAGE_MAX) i = 0;
-
-			/* Stop before the new message */
-			if (i == message__next_impscroll) break;
-
-			/* Kill "dead" messages */
-			if ((message__ptr_impscroll[i] >= message__head_impscroll) &&
-			    (message__ptr_impscroll[i] < message__tail_impscroll)) {
-				/* Track oldest message */
-				message__last_impscroll = i + 1;
-			}
-		}
-	}
+                /* Start over */
+                message__head_impscroll = 0;
+        }
 
 
-	/*** Step 5 -- Grab a new message index ***/
+        /*** Step 4 -- Ensure space before next message ***/
 
-	/* Get the next message index, advance */
-	x = message__next_impscroll++;
+        /* Kill messages if needed */
+        if (message__head_impscroll + n + 1 > message__tail_impscroll)
+        {
+                /* Grab new "tail" */
+                message__tail_impscroll = message__head_impscroll + n + 1;
 
-	/* Handle wrap */
-	if (message__next_impscroll == MESSAGE_MAX) message__next_impscroll = 0;
+                /* Advance tail while possible past first "nul" */
+                while (message__buf_impscroll[message__tail_impscroll-1]) message__tail_impscroll++;
 
-	/* Kill last message if needed */
-	if (message__next_impscroll == message__last_impscroll) message__last_impscroll++;
+                /* Kill all "dead" messages */
+                for (i = message__last_impscroll; TRUE; i++)
+                {
+                        /* Wrap if needed */
+                        if (i == MESSAGE_MAX) i = 0;
 
-	/* Handle wrap */
-	if (message__last_impscroll == MESSAGE_MAX) message__last_impscroll = 0;
+                        /* Stop before the new message */
+                        if (i == message__next_impscroll) break;
+
+                        /* Kill "dead" messages */
+                        if ((message__ptr_impscroll[i] >= message__head_impscroll) &&
+                            (message__ptr_impscroll[i] < message__tail_impscroll))
+                        {
+                                /* Track oldest message */
+                                message__last_impscroll = i + 1;
+                        }
+                }
+        }
+
+
+        /*** Step 5 -- Grab a new message index ***/
+
+        /* Get the next message index, advance */
+        x = message__next_impscroll++;
+
+        /* Handle wrap */
+        if (message__next_impscroll == MESSAGE_MAX) message__next_impscroll = 0;
+
+        /* Kill last message if needed */
+        if (message__next_impscroll == message__last_impscroll) message__last_impscroll++;
+
+        /* Handle wrap */
+        if (message__last_impscroll == MESSAGE_MAX) message__last_impscroll = 0;
 
 
 
-	/*** Step 6 -- Insert the message text ***/
+        /*** Step 6 -- Insert the message text ***/
 
-	/* Assign the starting address */
-	message__ptr_impscroll[x] = message__head_impscroll;
+        /* Assign the starting address */
+        message__ptr_impscroll[x] = message__head_impscroll;
 
-	/* Append the new part of the message */
-	for (i = 0; i < n; i++)
-		/* Copy the message */
-		message__buf_impscroll[message__head_impscroll + i] = str[i];
+        /* Append the new part of the message */
+        for (i = 0; i < n; i++)
+        {
+                /* Copy the message */
+                message__buf_impscroll[message__head_impscroll + i] = str[i];
+        }
 
-	/* Terminate */
-	message__buf_impscroll[message__head_impscroll + i] = '\0';
+        /* Terminate */
+        message__buf_impscroll[message__head_impscroll + i] = '\0';
 
-	/* Advance the "head" pointer */
-	message__head_impscroll += n + 1;
+        /* Advance the "head" pointer */
+        message__head_impscroll += n + 1;
 
 #if 0
 //deprecated?:
 	/* Window stuff - assume that all chat messages start with '[' */
-	if (str[0] == '[')
-		p_ptr->window |= (PW_MESSAGE | PW_CHAT);
-	else
-		p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
-//		p_ptr->window |= PW_MESSAGE;
+        if (str[0] == '[')
+	        p_ptr->window |= (PW_MESSAGE | PW_CHAT);
+        else
+	        p_ptr->window |= (PW_MESSAGE | PW_MSGNOCHAT);
+//      	p_ptr->window |= PW_MESSAGE;
 #else
 	p_ptr->window |= PW_MESSAGE;
 #endif
@@ -4156,6 +3366,28 @@ void c_message_add_impscroll(cptr str) {
  * XXX XXX XXX Note that "msg_print(NULL)" will clear the top line
  * even if no messages are pending.  This is probably a hack.
  */
+
+#ifdef DKPARK
+void remove255code(char* in, char* out)
+{
+	int len;
+	while(*in)
+	{
+		if(*in==-1)
+		{
+			in+=2;
+		}
+		else
+		{
+			*out = *in;
+			in++;
+			out++;
+		}
+	}
+	*out  = 0;
+}
+#endif
+
 void c_msg_print(cptr msg) {
 	int n, x, y;
 	char buf[1024];
@@ -4166,15 +3398,7 @@ void c_msg_print(cptr msg) {
 		if (!topline_icky) clear_topline();
 
 	/* No message */
-	if (!msg) {
-		/* An empty msg was and is a hack to just clear the topline, done above.
-		   However, now it has a second purpose (4.7.3): On relog, cause the client to call fix_message() once per relog,
-		   to restore all previous messages in the message windows across logins.
-		   This is important in case the server motd (admin-notes) aren't sent and no other message (party/guild/player notes) is sent either,
-		   in which case the message windows would all stay blank until the client receives the first message. */
-		p_ptr->window |= PW_MESSAGE | PW_CHAT | PW_MSGNOCHAT;
-		return;
-	}
+	if (!msg) return;
 
 	/* Copy it */
 	strcpy(buf, msg);
@@ -4237,78 +3461,15 @@ void c_msg_print(cptr msg) {
 
 	/* Remember the message */
 	msg_flag = TRUE;
-
-	/* Dump messages to stdout? */
-	if (c_cfg.clone_to_stdout) {
-		char buf2[MSG_LEN], *c = t, *c2 = buf2;
-
-		while (*c) {
-			switch (*c) {
-			/* strip colour codes */
-			case '\377':
-				switch (*(c + 1)) {
-				case 0: /* broken colour code (paranoia) */
-					c++;
-					continue;
-				default: /* assume colour code and discard */
-					c += 2;
-					continue;
-				}
-				break;
-			}
-			*c2 = *c;
-			c++;
-			c2++;
-		}
-		*c2 = 0;
-		printf("%s\n", buf2);
-		fflush(stdout);
-		/* Instead of flushing everytime we could also set stdout to unbuffered with either of these:
-		setbuf(stdout, NULL);
-		setvbuf(stdout, (char*)NULL, _IONBF, 0); //more flexible than setbuf()
-		*/
-	}
-	if (c_cfg.clone_to_file) {
-		char buf2[MSG_LEN], *c = t, *c2 = buf2;
-		FILE *fp;
-		char path[1024];
-
-		/* Build the filename */
-		path_build(path, 1024, ANGBAND_DIR_USER, "stdout.txt");
-
-		fp = my_fopen(path, "a");
-		/* success */
-		if (fp) {
-			while (*c) {
-				switch (*c) {
-				/* strip colour codes */
-				case '\377':
-					switch (*(c + 1)) {
-					case 0: /* broken colour code (paranoia) */
-						c++;
-						continue;
-					default: /* assume colour code and discard */
-						c += 2;
-						continue;
-					}
-					break;
-				}
-				*c2 = *c;
-				c++;
-				c2++;
-			}
-			*c2 = 0;
-			fprintf(fp, "%s\n", buf2);
-			my_fclose(fp);
-		}
-	}
 }
 
 /*
  * Display a formatted message, using "vstrnfmt()" and "c_msg_print()".
  */
-void c_msg_format(cptr fmt, ...) {
+void c_msg_format(cptr fmt, ...)
+{
 	va_list vp;
+
 	char buf[1024];
 
 	/* Begin the Varargs Stuff */
@@ -4338,7 +3499,7 @@ s32b c_get_quantity(cptr prompt, s32b max) {
 	char tmp[80];
 	char buf[80];
 
-	char bi1[80], bi2[9 + 1];
+	char bi1[80], bi2[6 + 1];
 	int n = 0, i = 0, j = 0;
 	s32b i1 = 0, i2 = 0, mul = 1;
 
@@ -4363,19 +3524,19 @@ s32b c_get_quantity(cptr prompt, s32b max) {
 	}
 
 	/* Ask for a quantity */
-	if (!get_string(prompt, buf, QUANTITY_WIDTH)) return(0);
+	if (!get_string(prompt, buf, QUANTITY_WIDTH)) return (0);
 
 #if 1
-	/* special hack to enable old 'any letter = all' hack without interfering with 'k'/'M'/'G'/ for kilo/mega/giga: */
-	if ((buf[0] == 'k' || buf[0] == 'K' || buf[0] == 'm' || buf[0] == 'M' || buf[0] == 'g' || buf[0] == 'G') && buf[1]
+	/* special hack to enable old 'any letter = all' hack without interfering with 'k'/'M' for kilo/mega: */
+	if ((buf[0] == 'k' || buf[0] == 'K' || buf[0] == 'm' || buf[0] == 'M') && buf[1]
 	    && (buf[1] < '0' || buf[1] > '9')) {
 		//all..
 		buf[0] = 'a';
 		buf[1] = 0;
 	} else
 
-	/* new method slightly extended: allow leading 'k' or 'M' or 'G' too */
-	if ((buf[0] == 'k' || buf[0] == 'K' || buf[0] == 'm' || buf[0] == 'M' || buf[0] == 'g' || buf[0] == 'G') && buf[1]) {
+	/* new method slightly extended: allow leading 'k' or 'm' too */
+	if ((buf[0] == 'k' || buf[0] == 'K' || buf[0] == 'm' || buf[0] == 'M') && buf[1]) {
 		/* add leading '0' to revert it to the usual format */
 		for (i = QUANTITY_WIDTH + 1; i >= 1; i--) buf[i] = buf[i - 1];
 		buf[0] = '0';
@@ -4386,19 +3547,18 @@ s32b c_get_quantity(cptr prompt, s32b max) {
 	i1 = atoi(bi1);
 	if ((buf[n] == 'k' || buf[n] == 'K') && n > 0) mul = 1000;
 	else if (buf[n] == 'm' || buf[n] == 'M') mul = 1000000;
-	else if (buf[n] == 'g' || buf[n] == 'G') mul = 1000000000;
 	if (mul > 1) {
 		n++;
 		i = 0;
-		while (buf[n] >= '0' && buf[n] <= '9' && i < 6) bi2[i++] = buf[n++];
+		while(buf[n] >= '0' && buf[n] <= '9' && i < 6) bi2[i++] = buf[n++];
 		bi2[i] = '\0';
 //Send_msg(format("%s-%s", bi1, bi2));
 
 		i = 0;
-		while (i < 9) {
+		while (i < 6) {
 			if (bi2[i] == '\0') {
 				j = i;
-				while (j < 9) bi2[j++] = '0';
+				while (j < 6) bi2[j++] = '0';
 				break;
 			}
 			i++;
@@ -4407,7 +3567,6 @@ s32b c_get_quantity(cptr prompt, s32b max) {
 
 		if (mul == 1000) bi2[3] = '\0';
 		else if (mul == 1000000) bi2[6] = '\0';
-		else if (mul == 1000000000) bi2[9] = '\0';
 
 		i2 = atoi(bi2);
 		amt = i1 * mul + i2;
@@ -4423,8 +3582,6 @@ s32b c_get_quantity(cptr prompt, s32b max) {
 		amt = amt * 1000;
 	else if (strchr(buf, 'm') || strchr(buf, 'M')
 		amt = amt * 1000000;
-	else if (strchr(buf, 'g') || strchr(buf, 'G')
-		amt = amt * 1000000000;
 #endif
 
 
@@ -4435,7 +3592,7 @@ s32b c_get_quantity(cptr prompt, s32b max) {
 	    ) {
 		if (max >= 0) amt = max;
 		/* hack for dropping gold (max is -1) */
-		else amt = PY_MAX_GOLD;
+		else amt = 1000000000;
 	}
 
 	/* Enforce the maximum, if maximum is defined */
@@ -4445,93 +3602,113 @@ s32b c_get_quantity(cptr prompt, s32b max) {
 	if (amt < 0) amt = 0;
 
 	/* Return the result */
-	return(amt);
+	return (amt);
 }
 
-void clear_from(int row) {
+void clear_from(int row)
+{
 	int y;
 
 	/* Erase requested rows */
 	for (y = row; y < Term->hgt; y++)
+	{
 		/* Erase part of the screen */
 		Term_erase(0, y, 255);
+	}
 }
 
-void prt_num(cptr header, int num, int row, int col, byte color) {
+void prt_num(cptr header, int num, int row, int col, byte color)
+{
 	int len = strlen(header);
 	char out_val[32];
-
 	put_str(header, row, col);
 	put_str("   ", row, col + len);
 	(void)sprintf(out_val, "%6d", num);
 	c_put_str(color, out_val, row, col + len + 3);
 }
 
-/* print large numbers, used in C screen for Xp values and Au */
-void prt_lnum(cptr header, s32b num, int row, int col, byte color) {
-	int len = strlen(header) + 1;
+void prt_lnum(cptr header, s32b num, int row, int col, byte color)
+{
+	int len = strlen(header);
 	char out_val[32];
-
 	put_str(header, row, col);
-	if (c_cfg.colourize_bignum && color != TERM_L_UMBER) {
-		/* Drained value? */
-		if (color == TERM_YELLOW) colour_bignum(num, -1, out_val, 3, TRUE);
-		/* Normal value */
-		else colour_bignum(num, -1, out_val, 1, TRUE);
-	}
-	else (void)sprintf(out_val, "%10d", (int)num); /* Increased form 9 to 10 just for gold (~2 billion limit) */
+	(void)sprintf(out_val, "%9d", (int)num);
 	c_put_str(color, out_val, row, col + len);
 }
 
 
-static void ascii_to_text(char *buf, cptr str) {
+static void ascii_to_text(char *buf, cptr str)
+{
 	char *s = buf;
 
 	/* Analyze the "ascii" string */
-	while (*str) {
+	while (*str)
+	{
 		byte i = (byte)(*str++);
 
-		if (i == ESCAPE) {
+		if (i == ESCAPE)
+		{
 			*s++ = '\\';
 			*s++ = 'e';
-		} else if (i == MACRO_WAIT) {
+		}
+		else if (i == MACRO_WAIT)
+		{
 			*s++ = '\\';
 			*s++ = 'w';
-		} else if (i == MACRO_XWAIT) {
-			*s++ = '\\';
-			*s++ = 'W';
-		} else if (i == ' ') {
+		}
+		else if (i == ' ')
+		{
 			*s++ = '\\';
 			*s++ = 's';
-		} else if (i == '\b') {
+		}
+		else if (i == '\b')
+		{
 			*s++ = '\\';
 			*s++ = 'b';
-		} else if (i == '\t') {
+		}
+		else if (i == '\t')
+		{
 			*s++ = '\\';
 			*s++ = 't';
-		} else if (i == '\n') {
+		}
+		else if (i == '\n')
+		{
 			*s++ = '\\';
 			*s++ = 'n';
-		} else if (i == '\r') {
+		}
+		else if (i == '\r')
+		{
 			*s++ = '\\';
 			*s++ = 'r';
-		} else if (i == '^') {
+		}
+		else if (i == '^')
+		{
 			*s++ = '\\';
 			*s++ = '^';
-		} else if (i == '\\') {
+		}
+		else if (i == '\\')
+		{
 			*s++ = '\\';
 			*s++ = '\\';
-		} else if (i < 32) {
+		}
+		else if (i < 32)
+		{
 			*s++ = '^';
 			*s++ = i + 64;
-		} else if (i < 127)
+		}
+		else if (i < 127)
+		{
 			*s++ = i;
-		else if (i < 64) {
+		}
+		else if (i < 64)
+		{
 			*s++ = '\\';
 			*s++ = '0';
 			*s++ = octify(i / 8);
 			*s++ = octify(i % 8);
-		} else {
+		}
+		else
+		{
 			*s++ = '\\';
 			*s++ = 'x';
 			*s++ = hexify(i / 16);
@@ -4543,7 +3720,8 @@ static void ascii_to_text(char *buf, cptr str) {
 	*s = '\0';
 }
 
-static errr macro_dump(cptr fname) {
+static errr macro_dump(cptr fname)
+{
 	int i, j, n;
 
 	FILE *fff;
@@ -4571,7 +3749,7 @@ static errr macro_dump(cptr fname) {
 	fff = my_fopen(buf, "w");
 
 	/* Failure */
-	if (!fff) return(-1);
+	if (!fff) return (-1);
 
 
 	/* Skip space */
@@ -4581,7 +3759,8 @@ static errr macro_dump(cptr fname) {
 	fprintf(fff, "# Automatic macro dump\n\n");
 
 	/* Dump them */
-	for (i = 0; i < macro__num; i++) {
+	for (i = 0; i < macro__num; i++)
+	{
 		/* Start the macro */
 		fprintf(fff, "# Macro '%d'\n\n", i);
 
@@ -4595,7 +3774,8 @@ static errr macro_dump(cptr fname) {
 		/* Support really long macros - mikaelh */
 		fprintf(fff, "A:");
 
-		for (j = 0, n = strlen(macro__act[i]); j < n; j += 1023) {
+		for (j = 0, n = strlen(macro__act[i]); j < n; j += 1023)
+		{
 			/* Take a piece of the action */
 			strncpy(buf, &macro__act[i][j], 1023);
 			buf[1023] = '\0';
@@ -4630,11 +3810,13 @@ static errr macro_dump(cptr fname) {
 	my_fclose(fff);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
-static void get_macro_trigger(char *buf) {
+static void get_macro_trigger(char *buf)
+{
 	int i, n = 0;
+
 	char tmp[1024];
 
 	/* Flush */
@@ -4647,7 +3829,8 @@ static void get_macro_trigger(char *buf) {
 	i = inkey();
 
 	/* Read the pattern */
-	while (i) {
+	while (i)
+	{
 		/* Save the key */
 		buf[n++] = i;
 
@@ -4693,7 +3876,7 @@ void interact_macros(void) {
 	Term_save();
 
 	/* No macros should work within the macro menu itself */
-	inkey_interact_macros = TRUE; /* This makes setting inkey_msg = TRUE after cmd_message() redundant and therefore not needed */
+	inkey_interact_macros = TRUE;
 
 	/* Did we just finish recording a macro by entering this menu? */
 	if (recording_macro) {
@@ -4718,7 +3901,7 @@ void interact_macros(void) {
 		/* Selections */
 		l = 2;
 		Term_putstr(5, l++, -1, TERM_L_BLUE, "(\377yz\377B) Invoke macro wizard         *** Recommended ***");
-		Term_putstr(5, l++, -1, TERM_L_BLUE, "(\377ys\377B/\377yS\377B/\377yF\377B) Save macros to named / global.prf / form-named pref file");
+		Term_putstr(5, l++, -1, TERM_L_BLUE, "(\377ys\377B) Save macros to a pref file");
 		Term_putstr(5, l++, -1, TERM_WHITE, "(\377yl\377w) Load macros from a pref file");
 		l++;
 		Term_putstr(5, l++, -1, TERM_WHITE, "(\377yd\377w) Delete a macro from a key   (restores a key's normal behaviour)");
@@ -4761,7 +3944,7 @@ void interact_macros(void) {
 		else if (i == ':') cmd_message();
 
 		/* Take a screenshot */
-		else if (i == KTRL('T')) xhtml_screenshot("screenshot????", 2);
+		else if (i == KTRL('T')) xhtml_screenshot("screenshot????");
 
 		/* Load a pref file */
 		else if (i == 'l') {
@@ -4789,7 +3972,7 @@ void interact_macros(void) {
 		/* Save a 'macro' file */
 		else if (i == 's') {
 			/* Prompt */
-			Term_putstr(0, l, -1, TERM_L_GREEN, "Command: Save a macro file (use 'global.prf' for account-wide)");
+			Term_putstr(0, l, -1, TERM_L_GREEN, "Command: Save a macro file");
 
 			/* Get a filename, handle ESCAPE */
 			Term_putstr(0, l + 1, -1, TERM_WHITE, "File: ");
@@ -4809,32 +3992,13 @@ void interact_macros(void) {
 		/* Save a 'macro' file as 'global.prf' */
 		else if (i == 'S') {
 			/* Prompt */
-			Term_putstr(0, l, -1, TERM_L_GREEN, "Command: Save a macro file to global.prf (account-wide)");
+			Term_putstr(0, l, -1, TERM_L_GREEN, "Command: Save a macro file to global.prf");
 
 			/* Get a filename, handle ESCAPE */
 			Term_putstr(0, l + 1, -1, TERM_WHITE, "File: ");
 
 			/* Default filename */
 			strcpy(tmp, "global.prf");
-
-			/* Ask for a file */
-			if (!askfor_aux(tmp, 70, 0)) continue;
-
-			/* Dump the macros */
-			(void)macro_dump(tmp);
-		}
-
-		/* Save a 'macro' file as <cname>_<form name> pref file, or revert to just cname if in player form */
-		else if (i == 'F') {
-			/* Prompt */
-			Term_putstr(0, l, -1, TERM_L_GREEN, "Command: Save a macro file named for form (or 'global.prf' for account-wide)");
-
-			/* Get a filename, handle ESCAPE */
-			Term_putstr(0, l + 1, -1, TERM_WHITE, "File: ");
-
-			/* Default filename */
-			if (strcmp(c_p_ptr->body_name, "Player")) sprintf(tmp, "%s%c%s.prf", cname, PRF_BODY_SEPARATOR, c_p_ptr->body_name);
-			else sprintf(tmp, "%s.prf", cname);
 
 			/* Ask for a file */
 			if (!askfor_aux(tmp, 70, 0)) continue;
@@ -4896,7 +4060,6 @@ void interact_macros(void) {
 			    (strlen(buf) == 10 && (buf[8] == '/' || buf[8] == '*')) || /* x11 - to do: fix this crap */
 			    (*buf >= 'a' && *buf <= 'w') || /* inventory */
 			    *buf == '+' || *buf == '-' || /* the '+' and '-' keys are used in certain input prompts (targetting, drop newest item) */
-			    *buf == ' ' || /* spacebar is used almost everywhere, should only be command macro */
 			    (buf[0] == 1 && buf[1] == 0) /* CTRL+A glitch */
 			    )
 				c_msg_print("\377oWarning: This key may only work with command macros, not hybrid or normal ones!");
@@ -4928,7 +4091,6 @@ void interact_macros(void) {
 			    (strlen(buf) == 10 && (buf[8] == '/' || buf[8] == '*')) || /* x11 - to do: fix this crap */
 			    (*buf >= 'a' && *buf <= 'w') || /* inventory */
 			    *buf == '+' || *buf == '-' || /* the '+' and '-' keys are used in certain input prompts (targetting, drop newest item) */
-			    *buf == ' ' || /* spacebar is used almost everywhere, should only be command macro */
 			    (buf[0] == 1 && buf[1] == 0) /* CTRL+A glitch */
 			    )
 				c_msg_print("\377oWarning: This key may only work with command macros, not hybrid or normal ones!");
@@ -4984,11 +4146,11 @@ void interact_macros(void) {
 				macro_processing_exclusive = TRUE;
 
 				/* Access the "basic" pref file */
-				strcpy(buf2, "pref.prf");
-				process_pref_file(buf2);
+				strcpy(buf, "pref.prf");
+				process_pref_file(buf);
 				/* Access the "basic" system pref file */
-				sprintf(buf2, "pref-%s.prf", ANGBAND_SYS);
-				process_pref_file(buf2);
+				sprintf(buf, "pref-%s.prf", ANGBAND_SYS);
+				process_pref_file(buf);
 
  #ifdef FORGET_MACRO_VISUALS
 				/* Access the "visual" system pref file (if any) */
@@ -4997,64 +4159,8 @@ void interact_macros(void) {
 
 				macro_trigger_exclusive[0] = 0; //unhack
 				macro_processing_exclusive = FALSE;
-
-
-				/* if there's a default macro on that key, ask user if he wants to keep it */
-				for (i = 0; i < macro__num; i++) {
-					if (streq(macro__pat[i], buf)) {
-						strncpy(macro__buf, macro__act[i], 159);
-						macro__buf[159] = '\0';
-						break;
-					}
-				}
-				if (i < macro__num) {
-					ascii_to_text(buf2, macro__buf);
-					Term_putstr(0, l + 3, -1, TERM_YELLOW, "                                                                               ");
-					Term_putstr(0, l + 3, -1, TERM_YELLOW, buf2);
-					Term_putstr(0, l + 2, -1, TERM_YELLOW, format("This key resets to the following default %s macro. Delete it too? [y/N]",
-					    macro__hyb[i] ? "hybrid" : (macro__cmd[i] ? "command" : "normal")));
-					i = inkey();
-					if (i == 'y' || i == 'Y') macro_del(buf);
-				}
-			} else {
+			} else
 				c_msg_print("No macro was found.");
-
-				/* If there's a default macro available for this key, ask user if he wants to restore it! */
-				strcpy(macro_trigger_exclusive, buf); //hack
-				macro_processing_exclusive = TRUE;
-
-				/* Access the "basic" pref file */
-				strcpy(buf2, "pref.prf");
-				process_pref_file(buf2);
-				/* Access the "basic" system pref file */
-				sprintf(buf2, "pref-%s.prf", ANGBAND_SYS);
-				process_pref_file(buf2);
-
- #ifdef FORGET_MACRO_VISUALS
-				/* Access the "visual" system pref file (if any) */
-				handle_process_font_file();
- #endif
-
-				macro_trigger_exclusive[0] = 0; //unhack
-				macro_processing_exclusive = FALSE;
-
-				for (i = 0; i < macro__num; i++) {
-					if (streq(macro__pat[i], buf)) {
-						strncpy(macro__buf, macro__act[i], 159);
-						macro__buf[159] = '\0';
-						break;
-					}
-				}
-				if (i < macro__num) {
-					ascii_to_text(buf2, macro__buf);
-					Term_putstr(0, l + 3, -1, TERM_YELLOW, "                                                                               ");
-					Term_putstr(0, l + 3, -1, TERM_YELLOW, buf2);
-					Term_putstr(0, l + 2, -1, TERM_YELLOW, format("Do you wish to reset this key to the following default %s macro? [y/N]",
-					    macro__hyb[i] ? "hybrid" : (macro__cmd[i] ? "command" : "normal")));
-					i = inkey();
-					if (i != 'y' && i != 'Y') macro_del(buf);
-				}
-			}
 		}
 #endif
 
@@ -5188,303 +4294,22 @@ void interact_macros(void) {
 				macro__buf[159] = '\0';
 				ascii_to_text(buf2, macro__buf);
 
-#if 0 /* not a glitch maybe, just treat them @ len>2 clause.. */
-#ifdef WINDOWS
-				/* 'Glitch': Macros read from file have a trailing \r linefeed -_- */
-				if (strlen(buf) > 2 && buf[strlen(buf) - 2] == '\\' && buf[strlen(buf) - 1] == 'r') buf[strlen(buf) - 2] = 0; //trim it
-#endif
-#endif
-
 				/* Make the trigger human-readable */
 				m_ctrl = m_alt = m_shift = FALSE;
-#if 0 /* For debugging only: Code exclusion */
-				if (TRUE) {
-					sprintf(t_key, "%-9.9s", buf);
-					/* ensure termination (in paranoid case of overflow) */
-					t_key[9] = '\0';
-				} else
-#endif
 				if (strlen(buf) == 1) {
 					/* just a simple key */
 					sprintf(t_key, "%c        ", buf[0]);
 				} else if (strlen(buf) == 2) {
-					/* ctrl + a simple key ('^%c' uppercase) or a special key ('\%c' or '^%c' lowercase) keypress
-					 *
-					 * special keys are represented by \+<normal letter> (lowercase) combo
-					 * but comment from previous dev states:
-					 * "special keys are represented by ^+<normal letter> combo.. >_>"
-					 * so the code tries to consider both */
-					m_ctrl = FALSE;
-					bool is_simple = FALSE;
-
-					switch (buf[1]) {
-						/* a lowercase letter indicates special key */
-						case 'b': sprintf(t_key, "Bsp/Del  "); break; // 'Backspace' and also 'Del' key! why?
-						case 'r': sprintf(t_key, "Enter    "); break;
-						case 's': sprintf(t_key, "Space    "); break;
-						case 't': sprintf(t_key, "Tab      "); break;
-						case 'w': sprintf(t_key, "`        "); break; // a grave (`) on en_US keyboard
-						default: is_simple = TRUE;
-					}
-					if (is_simple) {
-						if (buf[0] != '\\') {
-							/* ctrl + a simple key */
-							m_ctrl = TRUE;
-							sprintf(t_key, "%c        ", buf[1]);
-						} else sprintf(t_key, "\\%c       ", buf[1]); /* an unknown special key */
-					}
+					/* '^%c' : ctrl + a simple key */
+					m_ctrl = TRUE; /* not testing for the '^' actually, we assume it must be there.. */
+					sprintf(t_key, "%c        ", buf[1]);
 				} else {
 					/* special key, possibly with shift and/or ctrl */
-					int keycode;
-
 					bptr = buf + 2;
-					/* Linux */
 					if (*bptr == 'N') { m_ctrl = TRUE; bptr++; }
 					if (*bptr == 'S') { m_shift = TRUE; bptr++; }
 					if (*bptr == 'O') { m_alt = TRUE; bptr++; }
-					/* Windows */
-					if (*bptr == 'C') { m_ctrl = TRUE; bptr++; }
-					if (*bptr == 'S') { m_shift = TRUE; bptr++; }
-					if (*bptr == 'A') { m_alt = TRUE; bptr++; }
 					bptr++;
-
-					/* Translate keycode to some human-readable key (keyboard-layout-dependant hit or miss tho...) */
-#ifdef WINDOWS
-					/* Windows keycode */
-					if (bptr[0] == 'F' && bptr[1] == 'F') {
-						bptr[4] = 0;
-						keycode = strtol(bptr + 2, NULL, 16);
-
-						switch (keycode) {
-						case 0xBE: strcpy(bptr,  "F1"); break;
-						case 0xBF: strcpy(bptr,  "F2"); break;
-						case 0xC0: strcpy(bptr,  "F3"); break;
-						case 0xC1: strcpy(bptr,  "F4"); break;
-						case 0xC2: strcpy(bptr,  "F5"); break;
-						case 0xC3: strcpy(bptr,  "F6"); break;
-						case 0xC4: strcpy(bptr,  "F7"); break;
-						case 0xC5: strcpy(bptr,  "F8"); break;
-						case 0xC6: strcpy(bptr,  "F9"); break;
-						case 0xC7: strcpy(bptr,  "F10"); break;
-						case 0xC8: strcpy(bptr,  "F11"); break;
-						case 0xC9: strcpy(bptr,  "F12"); break;
-
-						case 0x61: strcpy(bptr,  "PrtScr"); break;
-						case 0x14: strcpy(bptr,  "Scroll"); break;
-						case 0x13: strcpy(bptr,  "Pause"); break;
-
-						/* Arrow keys et al, also number pad at numlock off */
-						case 0x52: strcpy(bptr,  "Up"); break;
-						case 0x54: strcpy(bptr,  "Down"); break;
-						case 0x51: strcpy(bptr,  "Left"); break;
-						case 0x53: strcpy(bptr,  "Right"); break;
-						case 0x63: strcpy(bptr,  "Ins"); break; // 'Del' is ctrl+b!
-						case 0x55: strcpy(bptr,  "PageUp"); break;
-						case 0x56: strcpy(bptr,  "PageDn"); break;
-						case 0x50: strcpy(bptr,  "Home"); break;
-						case 0x57: strcpy(bptr,  "End"); break;
-
-						/* Number pad (Numlock independant) */
-						case 0xAF: strcpy(bptr,  "Num/"); break;
-						case 0xAA: strcpy(bptr,  "Num*"); break;
-						case 0xAD: strcpy(bptr,  "Num-"); break;
-						case 0xAB: strcpy(bptr,  "Num+"); break;
-						case 0x8D: strcpy(bptr,  "NumRet"); break;
-
-						/* Number pad (Numlock off) */
-						case 0x9F: strcpy(bptr,  "num."); break;
-						case 0x9E: strcpy(bptr,  "num0"); break;
-						case 0x9C: strcpy(bptr,  "num1"); break;
-						case 0x99: strcpy(bptr,  "num2"); break;
-						case 0x9B: strcpy(bptr,  "num3"); break;
-						case 0x96: strcpy(bptr,  "num4"); break;
-						case 0x9D: strcpy(bptr,  "num5"); break;
-						case 0x98: strcpy(bptr,  "num6"); break;
-						case 0x95: strcpy(bptr,  "num7"); break;
-						case 0x97: strcpy(bptr,  "num8"); break;
-						case 0x9A: strcpy(bptr,  "num9"); break;
-
-						/* Number pad (Numlock off) */
-						case 0xAC: strcpy(bptr,  "NUM."); break;
-						case 0xB0: strcpy(bptr,  "NUM0"); break;
-						case 0xB1: strcpy(bptr,  "NUM1"); break;
-						case 0xB2: strcpy(bptr,  "NUM2"); break;
-						case 0xB3: strcpy(bptr,  "NUM3"); break;
-						case 0xB4: strcpy(bptr,  "NUM4"); break;
-						case 0xB5: strcpy(bptr,  "NUM5"); break;
-						case 0xB6: strcpy(bptr,  "NUM6"); break;
-						case 0xB7: strcpy(bptr,  "NUM7"); break;
-						case 0xB8: strcpy(bptr,  "NUM8"); break;
-						case 0xB9: strcpy(bptr,  "NUM9"); break;
-
-						/* Number pad duplicate, apparently numbers only, no idea.. */
-						case 0xD8: strcpy(bptr,  "Num7"); break;
-						case 0xD9: strcpy(bptr,  "Num8"); break;
-						case 0xDA: strcpy(bptr,  "Num9"); break;
-						case 0xDB: strcpy(bptr,  "Num4"); break;
-						case 0xDC: strcpy(bptr,  "Num5"); break;
-						case 0xDD: strcpy(bptr,  "Num6"); break;
-						case 0xDE: strcpy(bptr,  "Num1"); break;
-						case 0xDF: strcpy(bptr,  "Num2"); break;
-						case 0xE0: strcpy(bptr,  "Num3"); break;
-						}
-					} else if (*(bptr - 1) == 'x') {
-						bptr[2] = 0;
-						keycode = strtol(bptr, NULL, 16);
-
-						switch (keycode) {
-						case 0x3B: strcpy(bptr,  "F1"); break;
-						case 0x3C: strcpy(bptr,  "F2"); break;
-						case 0x3D: strcpy(bptr,  "F3"); break;
-						case 0x3E: strcpy(bptr,  "F4"); break;
-						case 0x3F: strcpy(bptr,  "F5"); break;
-						case 0x40: strcpy(bptr,  "F6"); break;
-						case 0x41: strcpy(bptr,  "F7"); break;
-						case 0x42: strcpy(bptr,  "F8"); break;
-						case 0x43: strcpy(bptr,  "F9"); break;
-						case 0x44: strcpy(bptr,  "F10"); break;
-						case 0x57: strcpy(bptr,  "F11"); break;
-						case 0x58: strcpy(bptr,  "F12"); break;
-
-						//? case 0x61: strcpy(bptr,  "PrtScr"); break;
-						//? case 0x14: strcpy(bptr,  "Scroll"); break;
-						//? case 0x13: strcpy(bptr,  "Pause"); break;
-
-						/* Arrow keys et al, also number pad at numlock off */
-						case 0x48: strcpy(bptr,  "Up"); break;
-						case 0x50: strcpy(bptr,  "Down"); break;
-						case 0x4A: strcpy(bptr,  "num-"); break;
-						case 0x4B: strcpy(bptr,  "Left"); break;
-						case 0x4C: strcpy(bptr,  "num5"); break;
-						case 0x4D: strcpy(bptr,  "Right"); break;
-						case 0x4E: strcpy(bptr,  "num+"); break;
-						case 0x52: strcpy(bptr,  "Ins"); break;
-						case 0x53: strcpy(bptr,  "Del"); break;
-						case 0x49: strcpy(bptr,  "PageUp"); break;
-						case 0x51: strcpy(bptr,  "PageDn"); break;
-						case 0x47: strcpy(bptr,  "Home"); break;
-						case 0x4F: strcpy(bptr,  "End"); break;
-
-						/* Number pad (Numlock off) */
-						/* -- duplicates of the normal keyboard key block listed above, while numlock is off! --
-						case 0x53: strcpy(bptr,  "num."); break;
-						case 0x52: strcpy(bptr,  "num0"); break;
-						case 0x4F: strcpy(bptr,  "num1"); break;
-						case 0x50: strcpy(bptr,  "num2"); break;
-						case 0x51: strcpy(bptr,  "num3"); break;
-						case 0x4B: strcpy(bptr,  "num4"); break;
-						//(unusable with numlock off) case 0x: strcpy(bptr,  "num5"); break;
-						case 0x4D: strcpy(bptr,  "num6"); break;
-						case 0x47: strcpy(bptr,  "num7"); break;
-						case 0x48: strcpy(bptr,  "num8"); break;
-						case 0x49: strcpy(bptr,  "num9"); break;
-						---- */
-
-						/* Number pad (Numlock on)
-						   - same as the normal keyboard keys with corresponding symbols! - */
-
-						/* Strange codes left over.. looking like numpad */
-						case 0x77: strcpy(bptr,  "Num7"); break;
-						case 0x8D: strcpy(bptr,  "Num8"); break;
-						case 0x84: strcpy(bptr,  "Num9"); break;
-						case 0x8E: strcpy(bptr,  "Num-"); break;
-						case 0x73: strcpy(bptr,  "Num4"); break;
-						case 0x8F: strcpy(bptr,  "Num5"); break;
-						case 0x74: strcpy(bptr,  "Num6"); break;
-						case 0x90: strcpy(bptr,  "Num+"); break;
-						case 0x75: strcpy(bptr,  "Num1"); break;
-						case 0x91: strcpy(bptr,  "Num2"); break;
-						case 0x76: strcpy(bptr,  "Num3"); break;
-						case 0x92: strcpy(bptr,  "Num0"); break;
-						case 0x93: strcpy(bptr,  "Num."); break;
-						}
-					} else if (bptr[0] == '_') {
-						//???
-					}
-#else
-					/* Linux keycode */
-					if (bptr[0] == 'F' && bptr[1] == 'F') {
-						bptr[4] = 0;
-						keycode = strtol(bptr + 2, NULL, 16);
-
-						switch (keycode) {
-						case 0xBE: strcpy(bptr,  "F1"); break;
-						case 0xBF: strcpy(bptr,  "F2"); break;
-						case 0xC0: strcpy(bptr,  "F3"); break;
-						case 0xC1: strcpy(bptr,  "F4"); break;
-						case 0xC2: strcpy(bptr,  "F5"); break;
-						case 0xC3: strcpy(bptr,  "F6"); break;
-						case 0xC4: strcpy(bptr,  "F7"); break;
-						case 0xC5: strcpy(bptr,  "F8"); break;
-						case 0xC6: strcpy(bptr,  "F9"); break;
-						case 0xC7: strcpy(bptr,  "F10"); break;
-						case 0xC8: strcpy(bptr,  "F11"); break;
-						case 0xC9: strcpy(bptr,  "F12"); break;
-
-						case 0x61: strcpy(bptr,  "PrtScr"); break;
-						case 0x14: strcpy(bptr,  "Scroll"); break;
-						case 0x13: strcpy(bptr,  "Pause"); break;
-
-						/* Arrow keys et al, also number pad at numlock off */
-						case 0x52: strcpy(bptr,  "Up"); break;
-						case 0x54: strcpy(bptr,  "Down"); break;
-						case 0x51: strcpy(bptr,  "Left"); break;
-						case 0x53: strcpy(bptr,  "Right"); break;
-						case 0x63: strcpy(bptr,  "Ins"); break; // 'Del' is ctrl+b!
-						case 0x55: strcpy(bptr,  "PageUp"); break;
-						case 0x56: strcpy(bptr,  "PageDn"); break;
-						case 0x50: strcpy(bptr,  "Home"); break;
-						case 0x57: strcpy(bptr,  "End"); break;
-
-						/* Number pad (Numlock independant) */
-						case 0xAF: strcpy(bptr,  "Num/"); break;
-						case 0xAA: strcpy(bptr,  "Num*"); break;
-						case 0xAD: strcpy(bptr,  "Num-"); break;
-						case 0xAB: strcpy(bptr,  "Num+"); break;
-						case 0x8D: strcpy(bptr,  "NumRet"); break;
-
-						/* Number pad (Numlock off) */
-						case 0x9F: strcpy(bptr,  "num."); break;
-						case 0x9E: strcpy(bptr,  "num0"); break;
-						case 0x9C: strcpy(bptr,  "num1"); break;
-						case 0x99: strcpy(bptr,  "num2"); break;
-						case 0x9B: strcpy(bptr,  "num3"); break;
-						case 0x96: strcpy(bptr,  "num4"); break;
-						case 0x9D: strcpy(bptr,  "num5"); break;
-						case 0x98: strcpy(bptr,  "num6"); break;
-						case 0x95: strcpy(bptr,  "num7"); break;
-						case 0x97: strcpy(bptr,  "num8"); break;
-						case 0x9A: strcpy(bptr,  "num9"); break;
-
-						/* Number pad (Numlock off) */
-						case 0xAC: strcpy(bptr,  "NUM."); break;
-						case 0xB0: strcpy(bptr,  "NUM0"); break;
-						case 0xB1: strcpy(bptr,  "NUM1"); break;
-						case 0xB2: strcpy(bptr,  "NUM2"); break;
-						case 0xB3: strcpy(bptr,  "NUM3"); break;
-						case 0xB4: strcpy(bptr,  "NUM4"); break;
-						case 0xB5: strcpy(bptr,  "NUM5"); break;
-						case 0xB6: strcpy(bptr,  "NUM6"); break;
-						case 0xB7: strcpy(bptr,  "NUM7"); break;
-						case 0xB8: strcpy(bptr,  "NUM8"); break;
-						case 0xB9: strcpy(bptr,  "NUM9"); break;
-
-						/* Number pad duplicate, apparently numbers only, no idea.. */
-						case 0xD8: strcpy(bptr,  "Num7"); break;
-						case 0xD9: strcpy(bptr,  "Num8"); break;
-						case 0xDA: strcpy(bptr,  "Num9"); break;
-						case 0xDB: strcpy(bptr,  "Num4"); break;
-						case 0xDC: strcpy(bptr,  "Num5"); break;
-						case 0xDD: strcpy(bptr,  "Num6"); break;
-						case 0xDE: strcpy(bptr,  "Num1"); break;
-						case 0xDF: strcpy(bptr,  "Num2"); break;
-						case 0xE0: strcpy(bptr,  "Num3"); break;
-						}
-					} else if (bptr[0] == '_') {
-						//???
-					}
-#endif
-
 					sprintf(t_key, "%-9.9s", bptr);
 					/* ensure termination (in paranoid case of overflow) */
 					t_key[9] = '\0';
@@ -5518,7 +4343,7 @@ void interact_macros(void) {
 						break;
 					case KTRL('T'):
 						/* Take a screenshot */
-						xhtml_screenshot("screenshot????", 2);
+						xhtml_screenshot("screenshot????");
 						/* keep current list */
 						i -= (i % 20) + 1;
 						break;
@@ -5537,7 +4362,7 @@ void interact_macros(void) {
 
 		/* Enter a 'quick & dirty' macro */
 		else if (i == 'q') {
-			bool call_by_name = FALSE, mimic_transform = FALSE;
+			bool call_by_name = FALSE, mimic_transform = FALSE, mimic_transform_by_name = FALSE;
 
 			/* Prompt */
 			Term_putstr(0, l, -1, TERM_L_GREEN, "Command: Enter a new 'quick & dirty' macro");
@@ -5552,69 +4377,82 @@ void interact_macros(void) {
 			buf2[0] = '\\'; //note: should in theory be ')e\',
 			buf2[1] = 'e'; //      but doesn't work due to prompt behaviour
 			buf2[2] = ')'; //      (\e will then get ignored)
-			buf2[3] = 0; //paranoia
 			bptr = buf;
 			b2ptr = buf2 + 3;
 			while (*bptr) {
-				/* close an active @..\ tag? */
 				if (call_by_name) {
-					if (*bptr == '\\') { /* '\' is terminator for '@' call-by-name tag */
-						call_by_name = mimic_transform = FALSE;
+					if (*bptr == '\\') {
+						call_by_name = FALSE;
 						*b2ptr++ = '\\'; *b2ptr++ = 'r';
 						bptr++;
-					} else *b2ptr++ = *bptr++;
-					continue;
-				}
+					} else {
+						*b2ptr++ = *bptr++;
+					}
+				} else {
+					/* service: mimic-transformation automatically adds the required '\r' at the end */
+					switch (*bptr) {
+					case 'P': case 'I': case 'F': case 'S': case 'T': case 'M': case 'R': case 's':
+						if (mimic_transform) {
+							if (!mimic_transform_by_name) {
+								*b2ptr++ = '\\'; *b2ptr++ = 'r';
+							}
+							mimic_transform = mimic_transform_by_name = FALSE;
+						}
+						break;
+					default:
+						if (mimic_transform && ((*bptr) < '0' || (*bptr) > '9')) {
+							*b2ptr++ = '\\'; *b2ptr++ = 'r';
+							mimic_transform = FALSE;
+						}
+					}
 
-				/* service (end of I-tag): mimic-transformation into monster index number automatically adds the required '\r' at the end */
-				if (mimic_transform && (*bptr) != '@' && (*bptr) != '-' && ((*bptr) < '0' || (*bptr) > '9')) { /* allow '-1' for 'previous form' */
-					*b2ptr++ = '\\'; *b2ptr++ = 'r';
-					mimic_transform = FALSE;
-				}
-
-				/* expand q'n'd token to a real command */
-				switch (*bptr) {
-				case 'P': /* use innate mimic power */
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '3'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
-					bptr++;	break;
-				case 'I': /* use innate mimic power: transform into specific */
-					mimic_transform = TRUE;
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '3'; *b2ptr++ = '\\'; *b2ptr++ = 'r'; *b2ptr++ = 'c';
-					bptr++;	break;
-				case 'F': /* employ fighting technique */
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '5'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
-					bptr++;	break;
-				case 'S': /* employ shooting technique */
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '6'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
-					bptr++;	break;
-				case 'T': /* set a trap */
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '0'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
-					bptr++;	break;
-				case 'M': /* cast a spell */
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '1'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
-					bptr++;	break;
-				case 'R': /* draw a rune */
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '2'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
-					bptr++;	break;
-				case 's': /* change stance */
-					*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '3'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
-					bptr++;	break;
+					switch (*bptr) {
+					case 'P': /* use innate mimic power */
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '3'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
+						bptr++;	break;
+					case 'I': /* use innate mimic power: transform into specific */
+						mimic_transform = TRUE;
+						if (*(bptr + 1) == '@') mimic_transform_by_name = TRUE;
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '3'; *b2ptr++ = '\\'; *b2ptr++ = 'r'; *b2ptr++ = 'c';
+						bptr++;	break;
+					case 'F': /* employ fighting technique */
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '5'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
+						bptr++;	break;
+					case 'S': /* employ shooting technique */
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '6'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
+						bptr++;	break;
+					case 'T': /* set a trap */
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '0'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
+						bptr++;	break;
+					case 'M': /* cast a spell */
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '1'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
+						bptr++;	break;
+					case 'R': /* draw a rune */
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '2'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
+						bptr++;	break;
+					case 's': /* change stance */
+						*b2ptr++ = 'm'; *b2ptr++ = '@'; *b2ptr++ = '1'; *b2ptr++ = '3'; *b2ptr++ = '\\'; *b2ptr++ = 'r';
+						bptr++;	break;
 #if 0 /* disabled, to allow @q */
-				case '*': /* set a target */
-					*b2ptr++ = '*'; *b2ptr++ = 't';
-					bptr++;	break;
+					case '*': /* set a target */
+						*b2ptr++ = '*'; *b2ptr++ = 't';
+						bptr++;	break;
 #endif
-				case '@': /* start 'call-by-name' mode, reading the spell/item name next */
-					call_by_name = TRUE;
-					if (!mimic_transform) *b2ptr++ = '@'; /* does work, but is actually not required when entering a mimic form */
-					bptr++;	break;
-				default:
-					*b2ptr++ = *bptr++;
+					case '@': /* start 'call-by-name' mode, reading the spell/item name next */
+						call_by_name = TRUE;
+						*b2ptr++ = '@';
+						bptr++;	break;
+					default:
+						*b2ptr++ = *bptr++;
+					}
 				}
 			}
-			/* service (end of line): mimic-transformation into monster index number automatically adds the required '\r' at the end */
+
+			/* service: mimic-transformation automatically adds the required '\r' at the end */
 			if (mimic_transform) {
-				*b2ptr++ = '\\'; *b2ptr++ = 'r';
+				if (!mimic_transform_by_name) {
+					*b2ptr++ = '\\'; *b2ptr++ = 'r';
+				}
 			}
 
 			/* terminate anyway */
@@ -5640,18 +4478,11 @@ void interact_macros(void) {
 				/* Automatically choose usually best fitting macro type,
 				   depending on chosen trigger key! */
 				//[normal macros: F-keys (only keys that aren't used for any text input)]
-				//command macros: / * a..w (all keys that are used in important standard prompts: inventory) and spacebar
+				//command macros: / * a..w (all keys that are used in important standard prompts: inventory)
 				//hybrid macros: all others, maybe even also normal-macro-keys
 				if (!strcmp(buf, "/") || !strcmp(buf, "*") || /* windows */
 				    (strlen(buf) == 10 && (buf[8] == '/' || buf[8] == '*')) || /* x11 - to do: fix this crap */
-#if 0
 				    (*buf >= 'a' && *buf <= 'w') || /* inventory */
-#else
-				    (*buf >= 'a' && *buf <= 'z') || /* command keys - you shouldn't really put macros on these, but w/e.. */
-				    (*buf >= 'A' && *buf <= 'Z') ||
-				    (*buf >= '0' && *buf <= '9') || /* menu choices. Especially for ~ menu it is required that these are command macros so they don't trigger there.. */
-				    *buf == ' ' || /* spacebar is used almost everywhere, should only be command macro */
-#endif
 				    *buf == '+' || *buf == '-' || /* the '+' and '-' keys are used in certain input prompts (targetting, drop newest item) */
 				    (buf[0] == 1 && buf[1] == 0) /* CTRL+A glitch */
 				    ) {
@@ -5696,8 +4527,7 @@ void interact_macros(void) {
 			Term_putstr(5, 14, -1, TERM_WHITE, "menu again. You'll then be able to create a normal, command or hybrid");
 			Term_putstr(4, 15, -1, TERM_WHITE, "macro from the whole recorded action by choosing the usual menu points");
 			Term_putstr(16, 16, -1, TERM_WHITE, "for the different macro types: h), c) or n).");
-			Term_putstr(19, 20, -1, TERM_SELECTOR, ">>>                                <<<");
-			Term_putstr(19 + 3, 20, -1, TERM_L_RED,   "Press any key to start recording");
+			Term_putstr(19, 20, -1, TERM_L_RED, ">>>Press any key to start recording<<<");
 
 			/* Wait for confirming keypress to finally start recording */
 			inkey();
@@ -5746,6 +4576,9 @@ void interact_macros(void) {
 
 			macro_processing_exclusive = TRUE;
 
+			//initialize_main_pref_files();
+			//initialize_player_pref_files();
+
 			/* Access the "basic" pref file */
 			strcpy(buf, "pref.prf");
 			process_pref_file(buf);
@@ -5764,11 +4597,6 @@ void interact_macros(void) {
 			/* Access the "race" pref file */
 			if (race < Setup.max_race) {
 				sprintf(buf, "%s.prf", race_info[race].title);
-				process_pref_file(buf);
-			}
-			/* Access the "trait" pref file */
-			if (race < Setup.max_trait) {
-				sprintf(buf, "%s.prf", trait_info[trait].title);
 				process_pref_file(buf);
 			}
 			/* Access the "class" pref file */
@@ -5801,6 +4629,9 @@ void interact_macros(void) {
 
 			macro_processing_exclusive = TRUE;
 
+			//initialize_main_pref_files();
+			//initialize_player_pref_files();
+
 			/* Access the "basic" pref file */
 			strcpy(buf, "pref.prf");
 			process_pref_file(buf);
@@ -5817,11 +4648,6 @@ void interact_macros(void) {
 			/* Access the "race" pref file */
 			if (race < Setup.max_race) {
 				sprintf(buf, "%s.prf", race_info[race].title);
-				process_pref_file(buf);
-			}
-			/* Access the "trait" pref file */
-			if (race < Setup.max_trait) {
-				sprintf(buf, "%s.prf", trait_info[trait].title);
 				process_pref_file(buf);
 			}
 			/* Access the "class" pref file */
@@ -5856,6 +4682,9 @@ void interact_macros(void) {
 
 			macro_processing_exclusive = TRUE;
 
+			//initialize_main_pref_files();
+			//initialize_player_pref_files();
+
 			/* Access the "basic" pref file */
 			strcpy(buf, "pref.prf");
 			process_pref_file(buf);
@@ -5874,11 +4703,6 @@ void interact_macros(void) {
 			/* Access the "race" pref file */
 			if (race < Setup.max_race) {
 				sprintf(buf, "%s.prf", race_info[race].title);
-				process_pref_file(buf);
-			}
-			/* Access the "trait" pref file */
-			if (trait < Setup.max_trait) {
-				sprintf(buf, "%s.prf", trait_info[trait].title);
 				process_pref_file(buf);
 			}
 			/* Access the "class" pref file */
@@ -5913,6 +4737,9 @@ void interact_macros(void) {
 
 			macro_processing_exclusive = TRUE;
 
+			//initialize_main_pref_files();
+			//initialize_player_pref_files();
+
 			/* Access the "basic" pref file */
 			strcpy(buf, "pref.prf");
 			process_pref_file(buf);
@@ -5932,11 +4759,6 @@ void interact_macros(void) {
 				sprintf(buf, "%s.prf", race_info[race].title);
 				process_pref_file(buf);
 			}
-			/* Access the "trait" pref file */
-			if (trait < Setup.max_trait) {
-				sprintf(buf, "%s.prf", trait_info[trait].title);
-				process_pref_file(buf);
-			}
 			/* Access the "class" pref file */
 			if (class < Setup.max_class) {
 				sprintf(buf, "%s.prf", class_info[class].title);
@@ -5949,9 +4771,8 @@ void interact_macros(void) {
 
 			macro_processing_exclusive = FALSE;
 			c_msg_print("Reninitialized all macros, omitting all usually customized prf-files:");
-			c_msg_format(" 'global.prf', '%s.prf', '%s.prf', '%s.prf, '%s.prf'", cname,
+			c_msg_format(" 'global.prf', '%s.prf', '%s.prf', '%s.prf'", cname,
 			    race < Setup.max_race ? race_info[race].title : "NO_RACE",
-			    trait < Setup.max_trait ? trait_info[trait].title : "NO_TRAIT",
 			    class < Setup.max_class ? class_info[class].title : "NO_CLASS");
 		}
 
@@ -5990,6 +4811,9 @@ void interact_macros(void) {
 
 			macro_processing_exclusive = TRUE;
 
+			//initialize_main_pref_files();
+			//initialize_player_pref_files();
+
 			/* Access the "basic" pref file */
 			strcpy(buf, "pref.prf");
 			process_pref_file(buf);
@@ -6006,11 +4830,6 @@ void interact_macros(void) {
 			/* Access the "race" pref file */
 			if (race < Setup.max_race) {
 				sprintf(buf, "%s.prf", race_info[race].title);
-				process_pref_file(buf);
-			}
-			/* Access the "trait" pref file */
-			if (trait < Setup.max_trait) {
-				sprintf(buf, "%s.prf", trait_info[trait].title);
 				process_pref_file(buf);
 			}
 			/* Access the "class" pref file */
@@ -6059,24 +4878,16 @@ void interact_macros(void) {
 #define mw_stance 'I'
 #define mw_shoot 'j'
 #define mw_trap 'H'
-#define mw_device 'J'
-#define mw_any 'k'
-#define mw_anydir 'K'
-#define mw_abilitynt 'l'
-#define mw_abilityt 'L'
-#define mw_common 'm'
-#define mw_prfele 'M'
-#define mw_slash 'n'
-#define mw_custom 'N'
+#define mw_device 'l'
+#define mw_anydir 'k'
+#define mw_any 'K'
+#define mw_abilitynt 'm'
+#define mw_abilityt 'M'
+#define mw_custom 'n'
 #define mw_load 'o'
-#define mw_option 'O'
-#define mw_equip 'p'
-#define mw_dir_run 'q'
-#define mw_dir_tunnel 'r'
-#define mw_dir_disarm 's'
-#define mw_dir_bash 't'
-#define mw_dir_close 'u'
-#define mw_LAST 'u'
+#define mw_equip 'q'
+
+#define mw_LAST 'q'
 
 			/* Invoke wizard to create a macro step-by-step as easy as possible  */
 			Term_putstr(0, l, -1, TERM_L_GREEN, "Command: Invoke macro wizard");
@@ -6097,23 +4908,8 @@ Chain_Macro:
 
 			/* Initialize wizard state: First state */
 			i = choice = 0;
-			/* Paranoia */
-			memset(tmp, 0, 160);
-			memset(buf, 0, 1024);
-			memset(buf2, 0, 1024);
 
 			while (i != -1) {
-				/* Restart wizard from a wrong choice? */
-				if (i == -2) {
-					/* Paranoia */
-					memset(tmp, 0, 160);
-					memset(buf, 0, 1024);
-					memset(buf2, 0, 1024);
-					/* Reinitialize */
-					i = choice = chain_macro_buf[0] = tmp[0] = buf[0] = buf2[0] = 0;
-					should_wait = FALSE;
-				}
-
 				Term_putstr(12, 2, -1, i == 0 ? TERM_L_GREEN : TERM_SLATE, "Step 1:  Choose an action for the macro to perform.");
 				Term_putstr(12, 3, -1, i == 1 ? TERM_L_GREEN : TERM_SLATE, "Step 2:  If required, choose item, spell, and targetting method.");
 				Term_putstr(12, 4, -1, i == 2 ? TERM_L_GREEN : TERM_SLATE, "Step 3:  Choose the key you want to bind the macro to.");
@@ -6122,50 +4918,38 @@ Chain_Macro:
 
 				switch (i) {
 				case 0:
-					l = 8;
-					Term_putstr(5, l++, -1, TERM_GREEN, "Which of the following actions should the macro perform?");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "a\377w/\377Gb) Drink a potion. \377w/\377G Read a scroll.");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "c\377w/\377GC) Fire ranged weapon (including boomerangs). \377w/\377G Throw an item.");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "d\377w/\377GD) Cast school \377w/\377G mimic spell without a target (or target manually).");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "e\377w/\377GE) Cast school \377w/\377G mimic spell with target.");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "f)   Cast a mimic spell by number (with and without target).");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "g\377w/\377GG) Polymorph into monster. \377w/\377G Set preferred immunity (mimicry users).");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "h\377w/\377GH) Draw runes to cast a runespell. \377w/\377G Set up a monster trap.");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "i\377w/\377GI) Fighting technique. \377w/\377G Switch combat stance (most melee classes).");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "j\377w/\377GJ) Shooting technique (archers, rangers). \377w/\377G Activate magic device.");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "k\377w/\377GK) Use any item without \377w/\377G with a target).");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "l\377w/\377GL) Use a basic ability ('m') without \377w/\377G with target (Draconian breath).");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "m\377w/\377GM) Common commands and functions. \377w/\377G Pick breath element (Draconians).");
-					Term_putstr(8, l++, -1, TERM_L_GREEN, "n\377w/\377GN) Enter a slash command. \377w/\377G Enter a custom action (same as % a).");
-					Term_putstr(6, l++, -1, TERM_L_GREEN, "o\377w/\377GO\377w/\377Gp) Load a macro file. \377w/\377G Modify an option. \377w/\377G Change equipment.");
-					Term_putstr(2, l++, -1, TERM_L_GREEN, "q\377w/\377Gr\377w/\377Gs\377w/\377Gt\377w/\377Gu) Directional running \377w/\377G tunneling \377w/\377G disarming \377w/\377G bashing \377w/\377G closing.");
-
+					Term_putstr( 5, 9, -1, TERM_GREEN, "Which of the following actions should the macro perform?");
+					Term_putstr(8, 10, -1, TERM_L_GREEN, "a/b) Drink a potion/read a scroll");
+					Term_putstr(8, 11, -1, TERM_L_GREEN, "c/C) Fire ranged weapon/throw an item");
+					Term_putstr(8, 12, -1, TERM_L_GREEN, "d/D) Cast school/mimic spell without a target (or target manually)");
+					Term_putstr(8, 13, -1, TERM_L_GREEN, "e/E) Cast school/mimic spell with target");
+					Term_putstr(8, 14, -1, TERM_L_GREEN, "f)   Cast a mimic spell by number (with and without target)");
+					Term_putstr(8, 15, -1, TERM_L_GREEN, "g/G) Polymorph into monster/set preferred immunity (mimicry users)");
+					Term_putstr(8, 16, -1, TERM_L_GREEN, "h/H) Draw runes to cast a runespell / set up a monster trap");
+					Term_putstr(8, 17, -1, TERM_L_GREEN, "i/I) Use a fighting technique/switch combat stance (most melee classes)");
+					Term_putstr(8, 18, -1, TERM_L_GREEN, "j)   Use a shooting technique (archers and rangers)");
+					Term_putstr(8, 19, -1, TERM_L_GREEN, "k/K) Use any item with / without a target)");
+					Term_putstr(8, 20, -1, TERM_L_GREEN, "l)   Use a magic device or activate an item");
+					Term_putstr(8, 21, -1, TERM_L_GREEN, "m/M) Use a basic ability ('m') without/with target (Draconian breath)");
+					Term_putstr(8, 22, -1, TERM_L_GREEN, "n)   Enter a custom action (same as pressing 'a' in macro screen)");
+					Term_putstr(8, 23, -1, TERM_L_GREEN, "o/q) Load a macro file / change equipment (wield/takeoff/swap)");
 
 					while (TRUE) {
-						/* Hack: Hide the cursor */
-						Term->scr->cx = Term->wid;
-						Term->scr->cu = 1;
-
 						switch (choice = inkey()) {
 						case ESCAPE:
-						//case 'p': <-this is mw_equip now
+						case 'p':
 						case '\010': /* backspace */
 							i = -1; /* leave */
 							break;
-						case ':':
-							/* specialty: allow chatting from within here (only in macro wizard step 1) */
-							cmd_message();
-							continue;
 						case KTRL('T'):
 							/* Take a screenshot */
-							xhtml_screenshot("screenshot????", 2);
+							xhtml_screenshot("screenshot????");
 							continue;
 						default:
 							/* invalid action -> exit wizard */
 							if ((choice < 'a' || choice > mw_LAST) &&
-							    choice != 'C' && choice != 'D' && choice != 'E' &&
-							    choice != 'G' && choice != 'H' && choice != 'I' && choice != 'J' &&
-							    choice != 'K' && choice != 'L' && choice != 'M' && choice != 'N' && choice != 'O') {
+							    choice != 'C' && choice != 'D' && choice != 'E' && choice != 'M' &&
+							    choice != 'G' && choice != 'I' && choice != 'K' && choice != 'H') {
 								//i = -1;
 								continue;
 							}
@@ -6187,19 +4971,14 @@ Chain_Macro:
 						Term_putstr(5, 12, -1, TERM_GREEN, "if you want to quaff a 'Potion of Cure Critical Wounds'.");
 						Term_putstr(5, 16, -1, TERM_L_GREEN, "Enter partial potion name or inscription:");
 						break;
-
 					case mw_read:
 						Term_putstr(5, 10, -1, TERM_GREEN, "Please enter a distinctive part of the scroll's name or inscription.");
 						//Term_putstr(5, 11, -1, TERM_GREEN, "and pay attention to upper-case and lower-case letters!");
 						Term_putstr(5, 11, -1, TERM_GREEN, "For example, enter:     \377GPhase Door");
 						Term_putstr(5, 12, -1, TERM_GREEN, "if you want to read a 'Scroll of Phase Door'.");
 						Term_putstr(5, 16, -1, TERM_L_GREEN, "Enter partial scroll name or inscription:");
-						should_wait = TRUE; /* recharge scrolls mostly; id/enchant scrolls.. */
 						break;
-
 					case mw_any:
-						should_wait = TRUE; /* Just to be on the safe side, if the item picked is one that might require waiting (eg scroll of recharging in a chained macro). */
-						__attribute__ ((fallthrough));
 					case mw_anydir:
 						Term_putstr(5, 10, -1, TERM_GREEN, "Please enter a distinctive part of the item's name or inscription.");
 						//Term_putstr(5, 11, -1, TERM_GREEN, "and pay attention to upper-case and lower-case letters!");
@@ -6213,48 +4992,34 @@ Chain_Macro:
 						}
 						Term_putstr(5, 16, -1, TERM_L_GREEN, "Enter partial potion name or inscription:");
 						break;
-
 					case mw_schoolnt:
-						sprintf(tmp, "return get_class_spellnt(%d)", p_ptr->pclass);
-						strcpy(buf, string_exec_lua(0, tmp));
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter the exact spell name.");// and pay attention");
 						//Term_putstr(10, 11, -1, TERM_GREEN, "to upper-case and lower-case letters and spaces!");
-						Term_putstr(10, 11, -1, TERM_GREEN, format("For example, enter:     \377G%s", buf));
+						Term_putstr(10, 11, -1, TERM_GREEN, "For example, enter:     \377GPhase Door");
 						Term_putstr(10, 12, -1, TERM_GREEN, "You must have learned a spell before you can use it!");
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "Enter exact spell name:");
-						should_wait = TRUE; /* identify/recharge spells */
 						break;
-
 					case mw_mimicnt:
-						sprintf(tmp, "return get_class_mimicnt(%d)", p_ptr->pclass);
-						strcpy(buf, string_exec_lua(0, tmp));
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter the exact spell name.");//and pay attention");
 						//Term_putstr(10, 11, -1, TERM_GREEN, "to upper-case and lower-case letters and spaces!");
-						Term_putstr(10, 11, -1, TERM_GREEN, format("For example, enter:     \377G%s", buf));
+						Term_putstr(10, 11, -1, TERM_GREEN, "For example, enter:     \377GBlink");
 						Term_putstr(10, 12, -1, TERM_GREEN, "You must have learned a spell before you can use it!");
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "Enter exact spell name:");
 						break;
-
 					case mw_schoolt:
-						sprintf(tmp, "return get_class_spellt(%d)", p_ptr->pclass);
-						strcpy(buf, string_exec_lua(0, tmp));
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter the exact spell name.");// and pay attention");
 						//Term_putstr(10, 11, -1, TERM_GREEN, "to upper-case and lower-case letters and spaces!");
-						Term_putstr(10, 11, -1, TERM_GREEN, format("For example, enter:     \377G%s", buf));
+						Term_putstr(10, 11, -1, TERM_GREEN, "For example, enter:     \377GManathrust");
 						Term_putstr(10, 12, -1, TERM_GREEN, "You must have learned a spell before you can use it!");
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "Enter exact spell name:");
 						break;
-
 					case mw_mimict:
-						sprintf(tmp, "return get_class_mimict(%d)", p_ptr->pclass);
-						strcpy(buf, string_exec_lua(0, tmp));
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter the exact spell name.");// and pay attention");
 						//Term_putstr(10, 11, -1, TERM_GREEN, "to upper-case and lower-case letters and spaces!");
-						Term_putstr(10, 11, -1, TERM_GREEN, format("For example, enter:     \377G%s", buf));
+						Term_putstr(10, 11, -1, TERM_GREEN, "For example, enter:     \377GMagic Missile");
 						Term_putstr(10, 12, -1, TERM_GREEN, "You must have learned a spell before you can use it!");
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "Enter exact spell name:");
 						break;
-
 					case mw_mimicidx:
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter a spell number, starting from 1, which is");
 						Term_putstr(10, 11, -1, TERM_GREEN, "the first spell after the 3 basic powers and immunity");
@@ -6263,7 +5028,6 @@ Chain_Macro:
 						Term_putstr(10, 14, -1, TERM_GREEN, "You must have learned a spell before you can use it!");
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "Enter spell index number:");
 						break;
-
 					case mw_fight:
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter the exact technique name.");// and pay attention");
 						//Term_putstr(10, 11, -1, TERM_GREEN, "to upper-case and lower-case letters and spaces!");
@@ -6271,29 +5035,22 @@ Chain_Macro:
 						Term_putstr(10, 12, -1, TERM_GREEN, "You must have learned a technique before you can use it!");
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "Enter exact technique name:");
 						break;
-
 					case mw_stance:
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please pick a stance:");
 						Term_putstr(10, 11, -1, TERM_GREEN, "  \377Ga\377g) Balanced stance (standard)");
 						Term_putstr(10, 12, -1, TERM_GREEN, "  \377Gb\377g) Defensive stance");
 						Term_putstr(10, 13, -1, TERM_GREEN, "  \377Gc\377g) Offensive stance");
-						/* Hack: Hide the cursor */
-						Term->scr->cx = Term->wid;
-						Term->scr->cu = 1;
 
 						while (TRUE) {
 							switch (choice = inkey()) {
 							case ESCAPE:
 							case 'p':
 							case '\010': /* backspace */
-								i = -2; /* leave */
+								i = -1; /* leave */
 								break;
-							case ':': /* Allow chatting */
-								cmd_message();
-								continue;
 							case KTRL('T'):
 								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
+								xhtml_screenshot("screenshot????");
 								continue;
 							default:
 								/* invalid action -> exit wizard */
@@ -6305,12 +5062,11 @@ Chain_Macro:
 							break;
 						}
 						/* exit? */
-						if (i == -2) continue;
+						if (i == -1) continue;
 
 						buf[0] = choice;
 						choice = mw_stance;
 						break;
-
 					case mw_shoot:
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter the exact technique name.");// and pay attention");
 						//Term_putstr(10, 11, -1, TERM_GREEN, "to upper-case and lower-case letters and spaces!");
@@ -6318,118 +5074,470 @@ Chain_Macro:
 						Term_putstr(10, 12, -1, TERM_GREEN, "You must have learned a technique before you can use it!");
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "Enter exact technique name:");
 						break;
-
 					case mw_poly:
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please enter the exact monster name OR its code. (You can find");
-						Term_putstr(10, 11, -1, TERM_GREEN, "codes you have already learned by pressing  \377s~ 2 @  \377gin the game");
-						Term_putstr(10, 12, -1, TERM_GREEN, "or by pressing  \377s:  \377gto chat and then typing the command:  \377s/mon @");
+						Term_putstr(10, 11, -1, TERM_GREEN, "codes you have already learned by pressing  \377s~ 2  \377gin the game");
+						Term_putstr(10, 12, -1, TERM_GREEN, "or by pressing  \377s:  \377gto chat and then typing the command:  \377s/mon");
 						Term_putstr(10, 13, -1, TERM_GREEN, "The first number on the left, in parentheses, is what you need.)");
 						Term_putstr(10, 14, -1, TERM_GREEN, "For example, enter  \377GFruit bat\377g  or just  \377G37  \377gto transform into one.");
-						Term_putstr(10, 15, -1, TERM_GREEN, "To return to the form you used before your current form, enter:  \377G-1\377g .");
-						Term_putstr(10, 16, -1, TERM_GREEN, "To return to your normal form, use  \377GPlayer\377g  or its code  \377G0\377g  .");
-						Term_putstr(10, 17, -1, TERM_GREEN, "To get asked about the form every time, just leave this blank.");
-						//Term_putstr(10, 18, -1, TERM_GREEN, "You must have learned a form before you can use it!");
-						Term_putstr(1, 19, -1, TERM_L_GREEN, "Enter exact monster name/code or leave blank:");
+						Term_putstr(10, 15, -1, TERM_GREEN, "To return to your normal form, use  \377GPlayer\377g  or its code  \377G0\377g  .");
+						//Term_putstr(10, 15, -1, TERM_GREEN, "You must have learned a form before you can use it!");
+						Term_putstr(1, 17, -1, TERM_L_GREEN, "Enter exact monster name/code or leave blank:");
 						should_wait = TRUE;
 						break;
-
 					case mw_prfimm:
 						Term_putstr(5, 10, -1, TERM_GREEN, "Please choose an immunity preference:");
-						Term_putstr(5, 11, -1, TERM_GREEN, "\377Ga\377g) Just check (displays your current immunity preference)");
-						Term_putstr(5, 12, -1, TERM_GREEN, "\377Gb\377g) None (pick one randomly on polymorphing)");
-						Term_putstr(5, 13, -1, TERM_GREEN, "\377Gc\377g) Electricity  \377Gd\377g) Cold  \377Ge\377g) Fire  \377Gf\377g) Acid  \377Gg\377g) Poison  \377Gh\377g) Water");
-						Term_putstr(15, 16, -1, TERM_L_GREEN, "Pick one (a-h): ");
+						Term_putstr(5, 11, -1, TERM_GREEN, "\377Ga\377g) Lightning  \377Gb\377g) Frost  \377Gc\377g) Acid  \377Gd\377g) Fire  \377Ge\377g) Poison  \377Gf\377g) Water");
+						Term_putstr(5, 12, -1, TERM_GREEN, "\377G*\377g) None (pick one randomly on polymorphing)");
+						Term_putstr(5, 13, -1, TERM_GREEN, "\377G?\377g) Just check (displays your current immunity preference)");
+						Term_putstr(15, 16, -1, TERM_L_GREEN, "Pick one (a-f,*,?):");
 
 						while (TRUE) {
 							switch (choice = inkey()) {
 							case ESCAPE:
 							case 'p':
 							case '\010': /* backspace */
-								i = -2; /* leave */
+								i = -1; /* leave */
 								break;
-							case ':': /* Allow chatting */
-								cmd_message();
-								continue;
 							case KTRL('T'):
 								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
+								xhtml_screenshot("screenshot????");
 								continue;
 							default:
 								/* invalid action -> exit wizard */
-								if (choice < 'a' || choice > 'h') {
-									//i = -2;
+								if ((choice < 'a' || choice > 'f') && choice != '?' && choice != '*') {
+									//i = -1;
 									continue;
 								}
 							}
 							break;
 						}
 						/* exit? */
-						if (i == -2) continue;
+						if (i == -1) continue;
 
 						/* build macro part */
 						switch (choice) {
-						case 'a': strcpy(buf2, "\\e)m@3\rd@Check\r"); break;
-						case 'b': strcpy(buf2, "\\e)m@3\rd@None\r"); break;
-						case 'c': strcpy(buf2, "\\e)m@3\rd@Electricity\r"); break;
-						case 'd': strcpy(buf2, "\\e)m@3\rd@Cold\r"); break;
-						case 'e': strcpy(buf2, "\\e)m@3\rd@Fire\r"); break;
-						case 'f': strcpy(buf2, "\\e)m@3\rd@Acid\r"); break;
-						case 'g': strcpy(buf2, "\\e)m@3\rd@Poison\r"); break;
-						case 'h': strcpy(buf2, "\\e)m@3\rd@Water\r"); break;
+						case 'a': strcpy(buf2, "\\e)m@3\rd@Lightning\r"); break;
+						case 'b': strcpy(buf2, "\\e)m@3\rd@Frost\r"); break;
+						case 'c': strcpy(buf2, "\\e)m@3\rd@Acid\r"); break;
+						case 'd': strcpy(buf2, "\\e)m@3\rd@Fire\r"); break;
+						case 'e': strcpy(buf2, "\\e)m@3\rd@Poison\r"); break;
+						case 'f': strcpy(buf2, "\\e)m@3\rd@Water\r"); break;
+						case '*': strcpy(buf2, "\\e)m@3\rd@None\r"); break;
+						case '?': strcpy(buf2, "\\e)m@3\rd@Check\r"); break;
 						}
 
 						choice = mw_prfimm; /* hack - remember */
 						break;
-
-					case mw_rune:
+					case mw_rune: //Hardcoded, so must be maintained. - Kurzel
+						strcpy(buf2, "");
 						strcpy(buf, "");
-						u32b u = 0;
+						u16b e_flags = 0;
+						u16b m_flags = 0;
 
-						/* Hack: Hide the cursor */
-						Term->scr->cx = Term->wid;
-						Term->scr->cu = 1;
+						/* ---------- Draw runes ---------- */
 
-						/* Ask for a runespell? */
-						while (!exec_lua(0, format("return rcraft_end(%d)", u))) {
-							clear_from(8);
-							exec_lua(0, format("return rcraft_prt(%d, %d, %d)", u, 1));
-							/* Hack: Hide the cursor */
-							Term->scr->cx = Term->wid;
-							Term->scr->cu = 1;
+						Term_putstr(10, 10, -1, TERM_GREEN, "Please choose the component runes of the spell.");
+						Term_putstr(10, 11, -1, TERM_GREEN, "ie. Select the spell runes to combine:");
+
+						Term_putstr(4, 13, -1, TERM_GREEN, "(Select the \377Usame \377grune twice or press \377sENTER \377gto cast a single rune spell!)");
+
+						i = 0;
+						for (j = 0; j < 2; j++) {
+							if (i == -1 || i == -2) continue; //invalid action -OR- drawing less than the maximum number of runes
+
+							clear_from(14);
+							//Term_putstr(10, 14, -1, TERM_GREEN, format("Selected runes: \377s%s", buf2)); //Redundant unless RCRAFT_MAX_ELEMENTS > 2
+							for (i = 0; i < RCRAFT_MAX_ELEMENTS; i++) {
+								/* Show duplicate rune(s) in umber (or press ENTER; allow both!) */
+								if (e_flags & r_elements[i].flag) {
+									Term_putstr(10, 15 + i % 6, -1, TERM_L_UMBER, format("%c) \377%c%s", 'a' + i, 'U', r_elements[i].name));
+								}
+								else {
+									Term_putstr(10, 15 + i % 6, -1, TERM_L_GREEN, format("%c) \377%c%s", 'a' + i, 'G', r_elements[i].name));
+								}
+							}
+
 							switch (choice = inkey()) {
+							case '\r':
+								if (j > 0) i = -2; //Are we on the second iteration? (Don't exit with 0 runes!)
+								else j--;
+								break;
 							case ESCAPE:
 							case '\010': /* backspace */
-								i = -2; /* flag exit */
-								break; /* exit switch */
-							case ':': /* Allow chatting */
-								cmd_message();
+								i = -1; /* leave */
+								continue;
+							case KTRL('T'):
+								/* Take a screenshot */
+								xhtml_screenshot("screenshot????");
+								j--;
+								continue;
+							default: /* invalid action -> exit wizard */
+								if (choice < 'a' || choice > 'a' + RCRAFT_MAX_ELEMENTS - 1) {
+									j--;
+									//i = -1; //Just ignore it. (ESC to exit)
+									continue;
+								}
+
+								/* add this rune.. */
+								e_flags |= r_elements[choice - 'a'].flag;
+								/* Enable below for old 'rune list' display - Redundant at the moment, but cool~ +_+ */
+								//strcat(buf2, r_elements[choice - 'a'].name);
+								//strcat(buf2, " ");
+							}
+
+							/* build macro part: 'a'..'p' or '\r' */
+							strcat(buf, format("%c", choice));
+						}
+						if (i == -1) continue; //invalid action -> exit
+
+						/* ---------- Select imperative ---------- */
+
+						clear_from(10);
+						Term_putstr(10, 10, -1, TERM_GREEN, "Please choose the imperative of the spell.");
+						Term_putstr(10, 11, -1, TERM_GREEN, "ie. Select the spell modifier:");
+
+						/* Print the header */
+						Term_putstr(10, 13, -1, TERM_L_GREEN, "   Imperative Level Cost Fail Damage Radius Duration Energy");
+
+						/* Analyze parameters */
+						byte element[RCRAFT_MAX_ELEMENTS];
+						byte elements = flags_to_elements(element, e_flags);
+						/* Rune check for the restricted spells; enhanced, sign, glyph, sigil, boon. - Kurzel */
+						byte projection = flags_to_projection(e_flags);
+						bool has_rune = 0;
+						for (i = 0; i < INVEN_PACK; i++) {
+							if (inventory[i].tval == TV_RUNE && inventory[i].sval == projection) has_rune = 1;
+						}
+						byte skill = rspell_skill(element, elements);
+
+						/* Fill the list */
+						int color;
+						char tmpbuf[80];
+						for (i = 0; i < RCRAFT_MAX_IMPERATIVES; i++) {
+
+							/* Get the line color */
+							if (r_imperatives[i].level+4 < skill) color = (r_imperatives[i].flag == I_ENHA && !has_rune) ? 'R' : 'G'; //Ew, hardcode the 1st spell type level-1 - Kurzel
+							else color = 'D';
+
+							/* Fill a line */
+							sprintf(tmpbuf, "\377%c%c) %-10s %s%d %3d%% %s%d%% %5d%% %5s%d %7d%% %5d%%",
+							    color, 'a' + i, r_imperatives[i].name,
+								ABS(r_imperatives[i].level) >= 10 ? (r_imperatives[i].level >= 0 ? "  +" : "  ") : (r_imperatives[i].level >= 0 ? "   +" : "   "),
+								r_imperatives[i].level, r_imperatives[i].cost * 10,
+							    ABS(r_imperatives[i].fail) >= 10 ? (r_imperatives[i].fail >= 0 ? "+" : "") : (r_imperatives[i].fail >= 0 ? " +" : " "),
+							    r_imperatives[i].fail, r_imperatives[i].damage * 10, r_imperatives[i].radius >= 0 ? "+" : "-", ABS(r_imperatives[i].radius),
+							    r_imperatives[i].duration * 10, r_imperatives[i].energy * 10);
+
+							/* Print the line */
+							Term_putstr(10, 14 + i, -1, TERM_L_GREEN, tmpbuf);
+						}
+
+						while (TRUE) {
+							switch (choice = inkey()) {
+							case ESCAPE:
+							case 'p':
+							case '\010': /* backspace */
+								i = -1; /* leave */
 								break;
 							case KTRL('T'):
 								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
-								break;
+								xhtml_screenshot("screenshot????");
+								continue;
 							default:
-								i = (islower(choice) ? A2I(choice) : -1);
-								if (i < 0 || i > exec_lua(0, format("return rcraft_max(%d)", u))) {
-									i = -2; /* flag exit */
-									break; /* exit switch */
+								/* invalid action -> exit wizard */
+								if (choice < 'a' || choice > ('a'+RCRAFT_MAX_IMPERATIVES-1)) {
+									//i = -1; //Just ignore it. (ESC to exit)
+									continue;
 								}
-								u |= exec_lua(0, format("return rcraft_bit(%d,%d)", u, i));
-								strcat(buf, format("%c", choice)); /* build macro */
-								break;
 							}
-							if (i == -2) break; /* exit while */
+							break;
 						}
-						if (i == -2) continue; /* exit for */
+						/* exit? */
+						if (i == -1) continue;
 
-						/* Ask for a direction? */
-						if (exec_lua(0, format("return rcraft_dir(%d)", u)))
+						/* Store the imperative */
+						m_flags |= r_imperatives[choice - 'a'].flag;
+
+						/* build macro part: 'a'..'h' */
+						strcat(buf, format("%c", choice));
+
+						/* ---------- Select form ---------- */
+
+						clear_from(10);
+						Term_putstr(10, 10, -1, TERM_GREEN, "Please choose the form of the spell.");
+						Term_putstr(10, 11, -1, TERM_GREEN, "ie. Select the spell type:");
+
+						/* Print the header */
+						Term_putstr(10, 13, -1, TERM_L_GREEN, "   Form    Level Cost Fail Info");
+
+						/* Check for a penalty due to status */
+						u16b penalty = 0;
+						if (p_ptr->blind) penalty += 10;
+						//if (p_ptr->confused) penalty += 10; //#ifdef ENABLE_CONFUSED_CASTING
+						if (p_ptr->stun > 50) penalty += 25;
+						else if (p_ptr->stun) penalty += 15;
+
+						/* Analyze more parameters */
+						byte imperative = flags_to_imperative(m_flags);
+						byte level, cost, fail;
+						s16b diff, sdiff;
+
+						/* Print the list */
+						//int color;
+						//char tmpbuf[80];
+						for (i = 0; i < RCRAFT_MAX_TYPES; i++) {
+
+							/* Analyze list parameters */
+							level = rspell_level(imperative, i);
+							diff = rspell_diff(skill, level);
+							cost = rspell_cost(imperative, i, skill);
+							fail = rspell_fail(imperative, i, diff, penalty);
+							u32b dx, dy;
+							u16b damage = rspell_damage(&dx, &dy, imperative, i, skill, projection);
+							u16b dice = damroll(dx, dy);
+							byte radius = rspell_radius(imperative, i, skill, projection);
+							byte duration = rspell_duration(imperative, i, skill, projection, dice);
+
+							/* Extra parameters */
+							sdiff = skill - level + 1; //For a real 'level difference' display.
+
+							/* Get the line color */
+							if (diff > 0) {
+								color = 'G';
+								if (penalty) color = 'y';
+								if (p_ptr->msp < cost) color = 'o';
+								if (r_imperatives[imperative].flag == I_ENHA && !has_rune) color = 'R';
+								//if (p_ptr->anti_magic && r_types[i].flag != T_SIGL) color = 'r'; //#define ENABLE_SHELL_ENCHANT
+								if (p_ptr->anti_magic) color = 'r';
+							}
+							else color = 'D';
+
+							/* Fill a line */
+							switch (r_types[i].flag) {
+
+								case T_BOLT: { //Beam
+									if (r_imperatives[imperative].flag != I_ENHA) {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %dd%d",
+										color, 'a' + i, r_types[i].name, sdiff, cost, fail, dx, dy);
+									} else {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %dd%d",
+										color, 'a' + i, "beam", sdiff, cost, fail, dx, dy);
+									}
+								break; }
+
+								case T_CLOU: { //Storm
+									if (r_imperatives[imperative].flag != I_ENHA) {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d rad %d dur %d",
+										color, 'a' + i, r_types[i].name, sdiff, cost, fail, rget_level(damage), radius, duration);
+									} else {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d rad %d dur %d",
+										color, 'a' + i, "storm", sdiff, cost, fail, rget_level(damage)*15/10, 1, duration*2);
+									}
+								break; }
+
+								case T_SIGN: { //Glyph
+									if (!has_rune && color != 'D') color = 'R';
+									if (r_imperatives[imperative].flag != I_ENHA) {
+										switch (projection) {
+
+											case SV_R_LITE: { //Illumination
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d rad %d illumination",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, rspell_damage(&dx, &dy, imperative, flags_to_type(T_BALL), skill, projection)/4, 3+radius*2);
+											break; }
+
+											case SV_R_DARK: { //Invisibility
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dur %d+1d%d pow %d invisibility",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, duration/2, duration/2, damage);
+											break; }
+
+											case SV_R_NEXU: { //Teleportation
+												switch (r_imperatives[imperative].flag) {
+													//Manual tuning; Phase Door (6-12), Blink (10), Teleport (100), Spell (100-200) - Kurzel
+													case I_MINI: { radius = 12 + rget_level(12); break; }
+													case I_LENG: { radius = 25 + rget_level(25); break; }
+													case I_COMP: { radius =  6 + rget_level( 6); break; }
+													case I_MODE: { radius = 25 + rget_level(25); break; }
+													case I_EXPA: { radius = 75 + rget_level(75); break; }
+													case I_BRIE: { radius = 25 + rget_level(25); break; }
+													case I_MAXI: { radius = 50 + rget_level(50); break; }
+												}
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% rad %d teleportation",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, radius);
+											break; }
+
+											case SV_R_NETH: { //Annihilation
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% pow %d annihilation (bolt)",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, 8+(damage+5)/10);
+											break; }
+
+											case SV_R_CHAO: { //Polymorph Self
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% polymorph self",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail);
+											break; }
+
+											case SV_R_MANA: { //Recharging
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% pow %d recharging",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, damage);
+											break; }
+
+											case SV_R_CONF: { //Reflection
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dur %d+1d%d reflection",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, duration/2, duration/2);
+											break; }
+
+											case SV_R_INER: { //Mass Stasis
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% pow %d mass stasis",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, damage*2);
+											break; }
+
+											case SV_R_ELEC:
+											case SV_R_FIRE:
+											case SV_R_COLD:
+											case SV_R_ACID:
+											case SV_R_POIS: { //Infusion
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dur %d+1d%d %s infusion",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, duration/2, duration/2, r_projections[projection].name);
+											break; }
+
+											case SV_R_WATE: { //Quench Thirst
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% quench thirst",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail);
+											break; }
+
+											case SV_R_GRAV: { //Mass Teleport-To
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% pow %d mass teleport-to",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, damage*2);
+											break; }
+
+											case SV_R_SHAR: { //Dig
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dig (bolt)",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail);
+											break; }
+
+											case SV_R_SOUN: { //Disarm
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% rad %d disarm",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, radius);
+											break; }
+
+											case SV_R_TIME: { //Haste
+												damage = rget_level(15) * r_imperatives[imperative].damage / 10;
+												if (damage < 1) damage = 1;
+												if (damage > 10) damage = 10;
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dur %d+1d%d +%d speed",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, duration/2, duration/2, damage);
+											break; }
+
+											case SV_R_DISE: { //Resistance
+												sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dur %d+1d%d base resistance",
+												color, 'a' + i, r_types[i].name, sdiff, cost, fail, duration/2, duration/2);
+											break; }
+
+											case SV_R_ICEE:
+											case SV_R_PLAS: { //Shield
+													damage = rget_level(20) * r_imperatives[imperative].damage / 10;
+													if (damage < 1) damage = 1;
+													if (damage > 20) damage = 20;
+													sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %dd%d dur %d+1d%d +%d AC",
+													color, 'a' + i, r_types[i].name, sdiff, cost, fail, dx, dy, duration/2, duration/2, damage);
+											break; }
+
+										}
+									} else {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d",
+										color, 'a' + i, "glyph", sdiff, cost, fail, rspell_damage(&dx, &dy, imperative, flags_to_type(T_BALL), skill, projection));
+									}
+								break; }
+
+								case T_BALL: { //Swarm
+									if (r_imperatives[imperative].flag != I_ENHA) {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d rad %d",
+										color, 'a' + i, r_types[i].name, sdiff, cost, fail, damage, radius);
+									} else {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d or %d (x%d)",
+										color, 'a' + i, "swarm", sdiff, cost, fail, rspell_damage(&dx, &dy, flags_to_imperative(I_MINI), flags_to_type(T_BALL), skill, projection)/2, rspell_damage(&dx, &dy, flags_to_imperative(I_MINI), flags_to_type(T_BALL), skill, projection), (((3+(sdiff-1)/10) > 3) ? (3+(sdiff-1)/10) : 3));
+									}
+								break; }
+
+								case T_WAVE: { //Surge
+									if (r_imperatives[imperative].flag != I_ENHA) {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d (x3) rad %d",
+										color, 'a' + i, r_types[i].name, sdiff, cost, fail, rget_level(damage), radius);
+									} else {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d",
+										color, 'a' + i, "surge", sdiff, cost, fail, damage*2);
+									}
+								break; }
+
+								case T_SIGL: { //Boon
+									if (!has_rune && color != 'D') color = 'R';
+									if (r_imperatives[imperative].flag != I_ENHA) {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% %s resistance",
+										color, 'a' + i, r_types[i].name, sdiff, cost, fail, r_projections[projection].name);
+									} else {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% miscellaneous boni",
+										color, 'a' + i, "boon", sdiff, cost, fail);
+									}
+								break; }
+
+								case T_BURS: { //Flare
+									if (r_imperatives[imperative].flag != I_ENHA) {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d rad %d",
+										color, 'a' + i, r_types[i].name, sdiff, cost, fail, damage, radius);
+									} else {
+										sprintf(tmpbuf, "\377%c%c) %-7s %5d %4d %3d%% dam %d (33%% backlash)",
+										color, 'a' + i, "flare", sdiff, cost, fail, dx*dy);
+									}
+								break; }
+
+							}
+							Term_putstr(10, 14 + i, -1, TERM_L_GREEN, tmpbuf);
+						}
+
+						while (TRUE) {
+							switch (choice = inkey()) {
+							case ESCAPE:
+							case 'p':
+							case '\010': /* backspace */
+								i = -1; /* leave */
+								break;
+							case KTRL('T'):
+								/* Take a screenshot */
+								xhtml_screenshot("screenshot????");
+								continue;
+							default:
+								/* invalid action -> exit wizard */
+								if (choice < 'a' || choice > ('a'+RCRAFT_MAX_TYPES-1)) {
+									//i = -1; //Just ignore it. (ESC to exit)
+									continue;
+								}
+							}
+							break;
+						}
+						/* exit? */
+						if (i == -1) continue;
+
+						/* Store the type */
+						m_flags |= r_types[choice - 'a'].flag;
+
+						/* build macro part: 'a'..'h' */
+						strcat(buf, format("%c", choice));
+
+						/* ---------- Determine if a direction is needed (hard-coded) ---------- */
+
+						/* Request the Direction -- Hardcoded - Kurzel */
+						if (((m_flags & T_BOLT) == T_BOLT)
+						 || (((m_flags & T_CLOU) == T_CLOU) && !((m_flags & I_ENHA) == I_ENHA)) //Until (if) Storm can be targeted! - Kurzel
+						 || (((m_flags & T_SIGN) == T_SIGN) && (((projection == SV_R_NETH) && ((m_flags & I_ENHA) != I_ENHA))))
+						 || (((m_flags & T_SIGN) == T_SIGN) && (((projection == SV_R_SHAR) && ((m_flags & I_ENHA) != I_ENHA))))
+						 || ((m_flags & T_BALL) == T_BALL)
+						 || ((m_flags & T_BURS) == T_BURS))
 							strcat(buf, "*t");
 
+						/* hack before we exit: remember menu choice 'runespell' */
 						choice = mw_rune;
 						i = 1;
 						break;
-
 					case mw_trap:
 						/* ---------- Enter trap kit name ---------- */
 						Term_putstr(5, 10, -1, TERM_GREEN, "Please enter a distinctive part of the trap kit name or inscription.");
@@ -6442,7 +5550,7 @@ Chain_Macro:
 						Term_gotoxy(50, 16);
 						strcpy(buf, "");
 						if (!askfor_aux(buf, 159, 0)) {
-							i = -2;
+							i = -1;
 							continue;
 						}
 						strcat(buf, "\\r");
@@ -6461,7 +5569,7 @@ Chain_Macro:
 						Term_gotoxy(50, 17);
 						strcpy(buf2, "");
 						if (!askfor_aux(buf2, 159, 0)) {
-							i = -2;
+							i = -1;
 							continue;
 						}
 						/* Choose ammo manually? Terminate partial macro here. */
@@ -6471,7 +5579,6 @@ Chain_Macro:
 						strcat(buf, "@");
 						strcat(buf, buf2);
 						break;
-
 					case mw_device:
 						Term_putstr(10, 10, -1, TERM_GREEN, "Please choose the type of magic device you want to use:");
 						Term_putstr(15, 12, -1, TERM_L_GREEN, "a) a wand");
@@ -6481,23 +5588,16 @@ Chain_Macro:
 						Term_putstr(15, 16, -1, TERM_L_GREEN, "e) an activatable item that doesn't require a target");
 						Term_putstr(15, 17, -1, TERM_L_GREEN, "f) an activatable item that requires a target");
 
-						/* Hack: Hide the cursor */
-						Term->scr->cx = Term->wid;
-						Term->scr->cu = 1;
-
 						while (TRUE) {
 							switch (choice = inkey()) {
 							case ESCAPE:
 							case 'p':
 							case '\010': /* backspace */
-								i = -2; /* leave */
+								i = -1; /* leave */
 								break;
-							case ':': /* Allow chatting */
-								cmd_message();
-								continue;
 							case KTRL('T'):
 								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
+								xhtml_screenshot("screenshot????");
 								continue;
 							default:
 								/* invalid action -> exit wizard */
@@ -6509,26 +5609,26 @@ Chain_Macro:
 							break;
 						}
 						/* exit? */
-						if (i == -2) continue;
+						if (i == -1) continue;
 
 						/* build macro part */
 						j = 0; /* hack: != 1 means 'undirectional' device */
 						if (c_cfg.rogue_like_commands) {
 							switch (choice) {
 							case 'a': strcpy(buf2, "\\e)z@"); j = 1; break;
-							case 'b': strcpy(buf2, "\\e)Z@"); should_wait = TRUE; /* For staves of perception */ break;
-							case 'c': strcpy(buf2, "\\e)a@"); should_wait = TRUE; /* For rods of perception */ break;
+							case 'b': strcpy(buf2, "\\e)Z@"); break;
+							case 'c': strcpy(buf2, "\\e)a@"); break;
 							case 'd': strcpy(buf2, "\\e)a@"); j = 1; break;
-							case 'e': strcpy(buf2, "\\e)A@"); should_wait = TRUE; /* For eg stone of lore */ break;
+							case 'e': strcpy(buf2, "\\e)A@"); break;
 							case 'f': strcpy(buf2, "\\e)A@"); j = 1; break;
 							}
 						} else {
 							switch (choice) {
 							case 'a': strcpy(buf2, "\\e)a@"); j = 1; break;
-							case 'b': strcpy(buf2, "\\e)u@"); should_wait = TRUE; /* For staves of perception */ break;
-							case 'c': strcpy(buf2, "\\e)z@"); should_wait = TRUE; /* For rods of perception */ break;
+							case 'b': strcpy(buf2, "\\e)u@"); break;
+							case 'c': strcpy(buf2, "\\e)z@"); break;
 							case 'd': strcpy(buf2, "\\e)z@"); j = 1; break;
-							case 'e': strcpy(buf2, "\\e)A@"); should_wait = TRUE; /* For eg stone of lore */ break;
+							case 'e': strcpy(buf2, "\\e)A@"); break;
 							case 'f': strcpy(buf2, "\\e)A@"); j = 1; break;
 							}
 						}
@@ -6551,8 +5651,8 @@ Chain_Macro:
 						case 'd': Term_putstr(5, 12, -1, TERM_GREEN, "For example, enter:     \377GLightn");
 							Term_putstr(5, 13, -1, TERM_GREEN, "if you want to use a 'Rod of Lightning Bolts'.");
 							break;
-						case 'e': Term_putstr(5, 12, -1, TERM_GREEN, "For example, enter:     \377GFrostw");
-							Term_putstr(5, 13, -1, TERM_GREEN, "if you want to use a 'Frostwoven Cloak'.");
+						case 'e': Term_putstr(5, 12, -1, TERM_GREEN, "For example, enter:     \377GFrostweav");
+							Term_putstr(5, 13, -1, TERM_GREEN, "if you want to use a 'Cloak of Frostweaving'.");
 							break;
 						case 'f': Term_putstr(5, 12, -1, TERM_GREEN, "For example, enter:     \377GSerpen");
 							Term_putstr(5, 13, -1, TERM_GREEN, "if you want to use an 'Amulet of the Serpents'.");
@@ -6562,6 +5662,7 @@ Chain_Macro:
 
 						/* hack before we exit: remember menu choice 'magic device' */
 						choice = mw_device;
+
 						break;
 
 					case mw_abilitynt:
@@ -6586,12 +5687,6 @@ Chain_Macro:
 						Term_putstr(5, 16, -1, TERM_L_GREEN, "Enter partial item name or inscription:");
 						break;
 
-					case mw_slash:
-						Term_putstr(5, 10, -1, TERM_GREEN, "Please enter the complete slash command.");
-						Term_putstr(5, 11, -1, TERM_GREEN, "For example, enter:     \377G/cough");
-						Term_putstr(5, 16, -1, TERM_L_GREEN, "Enter a slash command:");
-						break;
-
 					case mw_custom:
 						Term_putstr(5, 10, -1, TERM_GREEN, "Please enter the custom macro action string.");
 						Term_putstr(5, 11, -1, TERM_GREEN, "(You have to specify everything manually here, and won't get");
@@ -6606,34 +5701,30 @@ Chain_Macro:
 						Term_putstr(5, 16, -1, TERM_L_GREEN, "Exact file name:");
 						break;
 
-					case mw_option:
-						Term_putstr(5, 10, -1, TERM_GREEN, "Do you want to enable, disable or toggle (flip) an option?");
-						Term_putstr(5, 11, -1, TERM_L_GREEN, "    y\377g) enable an option");
-						Term_putstr(5, 12, -1, TERM_L_GREEN, "    n\377g) disable an option");
-						Term_putstr(5, 13, -1, TERM_L_GREEN, "    t\377g) toggle an option");
-						Term_putstr(5, 15, -1, TERM_L_GREEN, "    Y\377g) enable an option and display feedback message");
-						Term_putstr(5, 16, -1, TERM_L_GREEN, "    N\377g) disable an option and display feedback message");
-						Term_putstr(5, 17, -1, TERM_L_GREEN, "    T\377g) toggle an option and display feedback message");
-						/* hack: hide cursor */
-						Term->scr->cx = Term->wid;
-						Term->scr->cu = 1;
+					case mw_equip:
+						Term_putstr(5, 10, -1, TERM_GREEN, "Do you want to wear/wield, take off or swap an item?");
+						Term_putstr(5, 11, -1, TERM_L_GREEN, "    w\377g) primary wear/wield");
+						Term_putstr(5, 12, -1, TERM_L_GREEN, "    W\377g) secondary wear/wield");
+						Term_putstr(5, 13, -1, TERM_L_GREEN, "    t\377g) take off an item");
+						Term_putstr(5, 14, -1, TERM_L_GREEN, "    x\377g) swap item(s)");
+						Term_putstr(5, 16, -1, TERM_GREEN, "Note: This macro depends on your current 'rogue_like_commands' option");
+						Term_putstr(5, 17, -1, TERM_GREEN, "      setting and will not work anymore if you change the keymap.");
 
 						while (TRUE) {
 							switch (choice = inkey()) {
 							case ESCAPE:
 							case 'p':
 							case '\010': /* backspace */
-								i = -2; /* leave */
+								i = -1; /* leave */
 								break;
-							case ':': /* Allow chatting */
-								cmd_message();
-								continue;
 							case KTRL('T'):
 								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
+								xhtml_screenshot("screenshot????");
 								continue;
-							case 'y': case 'n': case 't':
-							case 'Y': case 'N': case 'T':
+							case 'w':
+							case 'W':
+							case 't':
+							case 'x':
 								break;
 							default:
 								continue;
@@ -6641,94 +5732,7 @@ Chain_Macro:
 							break;
 						}
 						/* exit? */
-						if (i == -2) continue;
-
-						clear_from(10);
-						Term_putstr(5, 10, -1, TERM_GREEN, "Now please enter the exact name of an option, for example: \377Gbig_map");
-						Term_putstr(5, 12, -1, TERM_L_GREEN, "Enter exact option name: ");
-
-						j = choice;
-						choice = mw_option;
-						break;
-
-					case mw_equip:
-						Term_putstr(5, 10, -1, TERM_GREEN, "Do you want to wear/wield, take off or swap an item?");
-						Term_putstr(5, 11, -1, TERM_L_GREEN, "    w\377g) primary wear/wield");
-						Term_putstr(5, 12, -1, TERM_L_GREEN, "    W\377g) secondary wear/wield");
-						if (c_cfg.rogue_like_commands) {
-							Term_putstr(5, 13, -1, TERM_L_GREEN, "    T\377g) take off an item");
-							Term_putstr(5, 14, -1, TERM_L_GREEN, "    S\377g) swap item(s)");
-						} else {
-							Term_putstr(5, 13, -1, TERM_L_GREEN, "    t\377g) take off an item");
-							Term_putstr(5, 14, -1, TERM_L_GREEN, "    x\377g) swap item(s)");
-						}
-						Term_putstr(5, 15, -1, TERM_L_GREEN, "    d\377g) invoke '/dress' command (optionally with a tag)");
-						Term_putstr(5, 16, -1, TERM_L_GREEN, "    b\377g) invoke '/bed' command (optionally with a tag)");
-						Term_putstr(5, 18, -1, TERM_GREEN, "Note: This macro depends on your current 'rogue_like_commands' option");
-						Term_putstr(5, 19, -1, TERM_GREEN, "      setting and will not work anymore if you change the keymap.");
-						/* Hack: Hide the cursor */
-						Term->scr->cx = Term->wid;
-						Term->scr->cu = 1;
-
-						if (c_cfg.rogue_like_commands) {
-							while (TRUE) {
-								switch (choice = inkey()) {
-								case ESCAPE:
-								case 'p':
-								case '\010': /* backspace */
-									i = -2; /* leave */
-									break;
-								case ':': /* Allow chatting */
-									cmd_message();
-									continue;
-								case KTRL('T'):
-									/* Take a screenshot */
-									xhtml_screenshot("screenshot????", 2);
-									continue;
-								case 'w':
-								case 'W':
-								case 'T':
-								case 'S':
-									break;
-								case 'd':
-								case 'b':
-									break;
-								default:
-									continue;
-								}
-								break;
-							}
-						} else {
-							while (TRUE) {
-								switch (choice = inkey()) {
-								case ESCAPE:
-								case 'p':
-								case '\010': /* backspace */
-									i = -2; /* leave */
-									break;
-								case ':': /* Allow chatting */
-									cmd_message();
-									continue;
-								case KTRL('T'):
-									/* Take a screenshot */
-									xhtml_screenshot("screenshot????", 2);
-									continue;
-								case 'w':
-								case 'W':
-								case 't':
-								case 'x':
-									break;
-								case 'd':
-								case 'b':
-									break;
-								default:
-									continue;
-								}
-								break;
-							}
-						}
-						/* exit? */
-						if (i == -2) continue;
+						if (i == -1) continue;
 
 						clear_from(10);
 						Term_putstr(5, 10, -1, TERM_GREEN, "Please enter a distinctive part of the item's name or inscription.");
@@ -6736,293 +5740,11 @@ Chain_Macro:
 
 						j = choice;
 						choice = mw_equip;
-						if (j != 'd' && j != 'b') should_wait = TRUE; /* /dress and /bed don't need waiting for execution, as they are purely server-side */
-						break;
-
-					case mw_common:
-						l = 8;
-						//Term_putstr(10, l++, -1, TERM_GREEN, "Please choose one of these common commands and functions:"); --make room for one more entry instead
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "a) reply to last incoming whisper                 :+:");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "b) repeat previous chat command or message        :^P\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "c) toggle AFK state                               :/afk\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "d) word-of-recall (item must be inscribed '@R')   :/rec\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "e) cough (reduces sleep of monsters nearby)       :/cough\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "f) shout (breaks sleep of monsters nearby)        :/shout\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "g) quick-toggle option 'easy_disarm_montraps'     :/edmt\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "h) display some extra information                 :/ex\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "i) display in-game time (daylight is 6am-10pm)    :/time\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "j) prompt for a guide quick search                :/? ");
-						if (c_cfg.rogue_like_commands) {
-							Term_putstr(13, l++, -1, TERM_L_GREEN, "k) swap-item #1 (inscribe two items '@x0')        \\e)S0");
-							Term_putstr(13, l++, -1, TERM_L_GREEN, "l) swap-item #2 (inscribe two items '@x1')        \\e)S1");
-							Term_putstr(13, l++, -1, TERM_L_GREEN, "m) swap-item #3 (inscribe two items '@x2')        \\e)S2");
-						} else {
-							Term_putstr(13, l++, -1, TERM_L_GREEN, "k) swap-item #1 (inscribe two items '@x0')        \\e)x0");
-							Term_putstr(13, l++, -1, TERM_L_GREEN, "l) swap-item #2 (inscribe two items '@x1')        \\e)x1");
-							Term_putstr(13, l++, -1, TERM_L_GREEN, "m) swap-item #3 (inscribe two items '@x2')        \\e)x2");
-						}
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "n) enter/leave the PvP arena (PvP mode only)      :/pvp\\r");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "o) throw an item tagged {bad} at closest monster  \\e)*tv@{bad}\\r-");
-						Term_putstr(13, l++, -1, TERM_L_GREEN, "p) use an item inscribed '@/1' (w/ or /wo target) \\e)*t/1-");
-						/* Hack: Hide the cursor */
-						Term->scr->cx = Term->wid;
-						Term->scr->cu = 1;
-
-						while (TRUE) {
-							switch (choice = inkey()) {
-							case ESCAPE:
-							//case 'p': -- we have a) to p) available..
-							case '\010': /* backspace */
-								i = -2; /* leave */
-								break;
-							case ':': /* Allow chatting */
-								cmd_message();
-								continue;
-							case KTRL('T'):
-								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
-								continue;
-							default:
-								/* invalid action -> exit wizard */
-								if (choice < 'a' || choice > 'p') {
-									//i = -1;
-									continue;
-								}
-							}
-							break;
-						}
-						/* exit? */
-						if (i == -2) continue;
-
-						/* build macro part */
-						switch (choice) {
-						case 'a': strcpy(buf2, ":+:"); break;
-						case 'b': strcpy(buf2, ":^P\\r"); break;
-						case 'c': strcpy(buf2, ":/afk\\r"); break;
-						case 'd':
-#if 0
-							strcpy(buf2, ":/rec\\r"); break;
-#else
-							while (TRUE) {
-								clear_from(9);
-								l = 11;
-								Term_putstr(10, l++, -1, TERM_GREEN, "Please choose a type of word-of-recall:");
-								Term_putstr(13, l++, -1, TERM_L_GREEN, "a) just basic word-of-recall (in to max depth / back out again)");
-								Term_putstr(13, l++, -1, TERM_L_GREEN, "b) recall to a specific, fixed depth (or back out again)");
-								Term_putstr(13, l++, -1, TERM_L_GREEN, "c) world-travel recall, ie recall across the world surface");
-								Term_putstr(13, l++, -1, TERM_L_GREEN, "d) world-travel recall, specifically to Bree, aka (32,32)");
-								Term_putstr(13, l++, -1, TERM_L_GREEN, "e) Manual recall, will prompt you to enter destination each time");
-								while (TRUE) {
-									switch (choice = inkey()) {
-									case ESCAPE:
-									case 'p':
-									case '\010': /* backspace */
-										i = -2; /* leave */
-										break;
-									case ':': /* Allow chatting */
-										cmd_message();
-										continue;
-									case KTRL('T'):
-										/* Take a screenshot */
-										xhtml_screenshot("screenshot????", 2);
-										continue;
-									default:
-										/* invalid action -> exit wizard */
-										if (choice < 'a' || choice > 'e') {
-											//i = -1;
-											continue;
-										}
-									}
-									break;
-								}
-								/* exit? */
-								if (i == -2) {
-									/* hack before we exit: remember menu choice 'common' */
-									choice = mw_common;
-									break;
-								}
-
-								l++;
-								switch (choice) {
-								case 'a': strcpy(buf2, ":/rec\\r"); break;
-								case 'd': strcpy(buf2, ":/rec 32 32\\r"); break;
-								case 'b':
-									Term_putstr(5, l, -1, TERM_L_GREEN, "Enter a specific depth (eg '-500'): ");
-									strcpy(buf, "");
-									if (!askfor_aux(buf, 6, 0)) continue;
-									strcpy(buf2, ":/rec ");
-									strcat(buf2, buf);
-									strcat(buf2, "\\r");
-									break;
-								case 'c':
-									Term_putstr(5, l, -1, TERM_L_GREEN, "Enter world coordinates separated by space (eg '32 32'): ");
-									strcpy(buf, "");
-									if (!askfor_aux(buf, 6, 0)) continue;
-									strcpy(buf2, ":/rec ");
-									strcat(buf2, buf);
-									strcat(buf2, "\\r");
-									break;
-								case 'e': strcpy(buf2, ":/rec "); break;
-								}
-								break;
-							}
-							break;
-#endif
-						case 'e': strcpy(buf2, ":/cough\\r"); break;
-						case 'f': strcpy(buf2, ":/shout\\r"); break;
-						case 'g': strcpy(buf2, ":/edmt\\r"); break;
-						case 'h': strcpy(buf2, ":/ex\\r"); break;
-						case 'i': strcpy(buf2, ":/time\\r"); break;
-						case 'j': strcpy(buf2, ":/? "); break;
-						case 'k':
-							if (c_cfg.rogue_like_commands) strcpy(buf2, "\\e)S0");
-							else strcpy(buf2, "\\e)x0");
-							break;
-						case 'l':
-							if (c_cfg.rogue_like_commands) strcpy(buf2, "\\e)S1");
-							else strcpy(buf2, "\\e)x1");
-							break;
-						case 'm':
-							if (c_cfg.rogue_like_commands) strcpy(buf2, "\\e)S2");
-							else strcpy(buf2, "\\e)x2");
-							break;
-						case 'n': strcpy(buf2, ":/pvp\\r"); break;
-						case 'o': strcpy(buf2, "\e)*tv@{bad}\r-"); break;
-						case 'p': strcpy(buf2, "\e)*t/1-"); break;
-						}
-
-						/* hack before we exit: remember menu choice 'common' */
-						choice = mw_common;
-						/* exit? */
-						if (i == -2) continue;
-						break;
-
-					case mw_prfele:
-						Term_putstr(5, 10, -1, TERM_GREEN, "Please choose an elemental preference:");
-						Term_putstr(5, 11, -1, TERM_GREEN, "\377Ga\377g) Just check (displays your current elemental preference)");
-						Term_putstr(5, 12, -1, TERM_GREEN, "\377Gb\377g) None (random)");
-						Term_putstr(5, 13, -1, TERM_GREEN, "\377Gc\377g) Lightning  \377Gd\377g) Frost  \377Ge\377g) Fire  \377Gf\377g) Acid  \377Gg\377g) Poison");
-						Term_putstr(15, 16, -1, TERM_L_GREEN, "Pick one (a-g): ");
-
-						while (TRUE) {
-							switch (choice = inkey()) {
-							case ESCAPE:
-							case 'p':
-							case '\010': /* backspace */
-								i = -2; /* leave */
-								break;
-							case ':': /* Allow chatting */
-								cmd_message();
-								continue;
-							case KTRL('T'):
-								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
-								continue;
-							default:
-								/* invalid action -> exit wizard */
-								if (choice < 'a' || choice > 'g') {
-									//i = -2;
-									continue;
-								}
-							}
-							break;
-						}
-						/* exit? */
-						if (i == -2) continue;
-
-						/* build macro part */
-						switch (choice) {
-						case 'a': strcpy(buf2, "\\e)m@19\r@Check\r"); break;
-						case 'b': strcpy(buf2, "\\e)m@19\r@None\r"); break;
-						case 'c': strcpy(buf2, "\\e)m@19\r@Lightning\r"); break;
-						case 'd': strcpy(buf2, "\\e)m@19\r@Frost\r"); break;
-						case 'e': strcpy(buf2, "\\e)m@19\r@Fire\r"); break;
-						case 'f': strcpy(buf2, "\\e)m@19\r@Acid\r"); break;
-						case 'g': strcpy(buf2, "\\e)m@19\r@Poison\r"); break;
-						}
-
-						choice = mw_prfele; /* hack - remember */
-						break;
-
-					case mw_dir_bash:
-						/* can be shield-bash attack, so we need to call the target-selector */
-						if (c_cfg.rogue_like_commands) strcpy(buf2, "\\e)f*t");
-						else strcpy(buf2, "\\e)B*t");
-						break;
-					case mw_dir_run:
-					case mw_dir_tunnel:
-					case mw_dir_disarm:
-					case mw_dir_close:
-						clear_from(8);
-						Term_putstr(10, 10, -1, TERM_GREEN, "Please pick the specific, fixed direction:");
-
-						Term_putstr(25, 13, -1, TERM_L_GREEN, " 7  8  9");
-						Term_putstr(25, 14, -1, TERM_GREEN, "  \\ | /");
-						Term_putstr(25, 15, -1, TERM_L_GREEN, "4 \377g-\377G 5 \377g-\377G 6");
-						Term_putstr(25, 16, -1, TERM_GREEN, "  / | \\");
-						Term_putstr(25, 17, -1, TERM_L_GREEN, " 1  2  3");
-
-						Term_putstr(15, 20, -1, TERM_L_GREEN, "Your choice? (1 to 9) ");
-
-						while (TRUE) {
-							target_dir = inkey();
-							switch (target_dir) {
-							case ESCAPE:
-							case 'p':
-							case '\010': /* backspace */
-								i = -2; /* leave */
-								break;
-							case ':': /* Allow chatting */
-								cmd_message();
-								continue;
-							case KTRL('T'):
-								/* Take a screenshot */
-								xhtml_screenshot("screenshot????", 2);
-								continue;
-							default:
-								/* invalid action -> exit wizard */
-								if (target_dir < '1' || target_dir > '9') {
-									//i = -3;
-									continue;
-								}
-							}
-							break;
-						}
-
-						/* exit? */
-						if (i == -2) continue;
-
-						/* This is the default start for running-macros, instead of "\e)", but it probably doesn't matter..
-						   And since we're lazy we just use it for all of these minor functions here below. */
-						strcpy(buf2, "\\e\\e\\\\");
-
-						switch (choice) {
-						case mw_dir_run:
-							strcat(buf2, ".");
-							break;
-						case mw_dir_tunnel:
-							strcat(buf2, "+"); //actually same for rogue_like or normal, just normal also offers 'T'
-							break;
-						case mw_dir_disarm:
-							strcat(buf2, "D"); //actually same for rogue_like or normal
-							break;
-						case mw_dir_bash:
-							if (c_cfg.rogue_like_commands) strcat(buf2, "f");
-							else strcat(buf2, "B");
-							break;
-						case mw_dir_close:
-							strcat(buf2, "c"); //actually same for rogue_like or normal
-							break;
-						}
-						strcat(buf2, format("%c", target_dir));
+						should_wait = TRUE;
 						break;
 					}
 
-
-
 					/* --------------- specify item/parm if required --------------- */
-
-
 
 					/* might input a really long line? */
 					if (choice == mw_custom) {
@@ -7031,20 +5753,9 @@ Chain_Macro:
 						/* Get an item/spell name */
 						strcpy(buf, "");
 						if (!askfor_aux(buf, 159, 0)) {
-							i = -2;
+							i = -1;
 							continue;
 						}
-					}
-					else if (choice == mw_slash) {
-						Term_gotoxy(5, 17);
-
-						/* Get an item/spell name */
-						strcpy(buf, "");
-						if (!askfor_aux(buf, 159, 0)) {
-							i = -2;
-							continue;
-						}
-						strcpy(buf, format(":%s\r", buf));
 					}
 					/* mw_mimicidx is special: it requires a number (1..n) */
 					else if (choice == mw_mimicidx) {
@@ -7053,7 +5764,7 @@ Chain_Macro:
 							Term_gotoxy(47, 16);
 							strcpy(buf, "");
 							if (!askfor_aux(buf, 159, 0)) {
-								i = -2;
+								i = -1;
 								break;
 							}
 							/* not a number/invalid? retry (we have slots d)..z)) */
@@ -7063,21 +5774,18 @@ Chain_Macro:
 							strcpy(buf, format("%c", 'd' + atoi(buf)));
 							break;
 						}
-						if (i == -2) continue;
+						if (i == -1) continue;
 					}
 					/* no need for inputting an item/spell to use with the macro? */
-					else if (choice != mw_fire && choice != mw_rune && choice != mw_trap && choice != mw_prfimm &&
-					    choice != mw_stance && choice != mw_common && choice != mw_dir_run && choice != mw_dir_tunnel &&
-					    choice != mw_dir_disarm && choice != mw_dir_bash && choice != mw_dir_close && choice != mw_prfele) {
+					else if (choice != mw_fire && choice != mw_rune && choice != mw_trap && choice != mw_prfimm && choice != mw_stance) {
 						if (choice == mw_load) Term_gotoxy(23, 16);
-						else if (choice == mw_poly) Term_gotoxy(47, 19);
-						else if (choice == mw_option) Term_gotoxy(30, 12);
+						else if (choice == mw_poly) Term_gotoxy(47, 17);
 						else Term_gotoxy(47, 16);
 
 						/* Get an item/spell name */
 						strcpy(buf, "");
 						if (!askfor_aux(buf, 159, 0)) {
-							i = -2;
+							i = -1;
 							continue;
 						}
 
@@ -7085,16 +5793,10 @@ Chain_Macro:
 						if (choice != mw_poly || buf[0]) strcat(buf, "\\r");
 					}
 
-
-
 					/* --------------- complete the macro by glueing premade part and default part together --------------- */
 
-
-
 					/* generate the full macro action; magic device/preferred immunity macros are already pre-made */
-					if (choice != mw_device && choice != mw_prfimm && choice != mw_custom && choice != mw_common &&
-					    choice != mw_dir_run && choice != mw_dir_tunnel && choice != mw_dir_disarm && choice != mw_dir_bash &&
-					    choice != mw_dir_close && choice != mw_prfele) {
+					if (choice != mw_device && choice != mw_prfimm && choice != mw_custom) {
 						buf2[0] = '\\'; //note: should in theory be ')e\',
 						buf2[1] = 'e'; //      but doesn't work due to prompt behaviour
 						buf2[2] = ')'; //      (\e will then get ignored)
@@ -7256,10 +5958,6 @@ Chain_Macro:
 						buf2[l + 2] = 0;
 						break;
 
-					case mw_slash:
-						strcat(buf2, buf);
-						break;
-
 					case mw_custom:
 						strcpy(buf2, buf);
 						break;
@@ -7272,42 +5970,6 @@ Chain_Macro:
 						buf2[l] = '\\';
 						buf2[l + 1] = 'e';
 						buf2[l + 2] = 0;
-						break;
-
-					case mw_option:
-#if 0 /* actually invoke the options menu? */
-						buf2[3] = '%';
-						buf2[4] = 'z';
-						... implement locating the desired option ...
-						buf2[l] = '\\';
-						buf2[l + 1] = 'e';
-						buf2[l + 2] = '\\';
-						buf2[l + 3] = 'e';
-						buf2[l + 4] = 0;
-#else /* use client-side option-toggling slash command? */
-						switch (j) {
-						case 'y':
-							strcat(buf2, ":/opty ");
-							break;
-						case 'n':
-							strcat(buf2, ":/optn ");
-							break;
-						case 't':
-							strcat(buf2, ":/optt ");
-							break;
-						case 'Y':
-							strcat(buf2, ":/optvy ");
-							break;
-						case 'N':
-							strcat(buf2, ":/optvn ");
-							break;
-						case 'T':
-							strcat(buf2, ":/optvt ");
-							break;
-						}
-						strcat(buf2, buf);
-						strcat(buf2, "\\n");
-#endif
 						break;
 
 					case mw_equip:
@@ -7332,150 +5994,108 @@ Chain_Macro:
 								buf2[3] = 'w';
 								break;
 							case 'W':
-								buf2[3] = 'W';
+								buf2[3] = KTRL('W');
 								break;
-							case 'T':
+							case 't':
 								buf2[3] = 'T';
 								break;
-							case 'S':
-								buf2[3] = 'S';
+							case 'x':
+								buf2[3] = KTRL('A');
 								break;
 							}
-						switch (j) {
-						case 'd':
-							strcat(buf2, ":/dress");
-							if (buf[2]) { //buf[0+1] are "/r" if empty
-								strcat(buf2, " ");
-								strcat(buf2, buf);
-							} else strcat(buf2, buf);
-							break;
-						case 'b':
-							strcat(buf2, ":/bed");
-							if (buf[2]) { //buf[0+1] are "/r" if empty
-								strcat(buf2, " ");
-								strcat(buf2, buf);
-							} else strcat(buf2, buf);
-							break;
-						default:
-							buf2[4] = '@';
-							strcpy(buf2 + 5, buf);
-						}
+						buf2[4] = '@';
+						strcpy(buf2 + 5, buf);
 						break;
 					}
 
 					/* Convert the targetting method from XXX*t to *tXXX- ? */
 #ifdef MACRO_WIZARD_SMART_TARGET
 					/* ask about replacing '*t' vs '-' (4.4.6) vs '+' (4.4.6b) */
-					if (strstr(buf2, "*t")
-					    && choice != mw_mimicidx
-					    && choice != mw_common /* *t- is used there, we'll assume it always should be method a) */
+					if (strstr(buf2, "*t") && choice != mw_mimicidx
 					    && choice != mw_load /* (paranoia) */
 					    && choice != mw_custom
 					    ) {
+						clear_from(8);
+						Term_putstr(10, 8, -1, TERM_GREEN, "Please choose the targetting method:");
+
+						//Term_putstr(10, 11, -1, TERM_GREEN, "(\377UHINT: \377gAlso inscribe your ammo '!=' for auto-pickup!)");
+						Term_putstr(10, 10, -1, TERM_L_GREEN, "a) Target closest monster if such exists,");
+						Term_putstr(10, 11, -1, TERM_L_GREEN, "   otherwise cancel action. (\377URecommended in most cases!\377G)");
+						Term_putstr(10, 12, -1, TERM_L_GREEN, "b) Target closest monster if such exists,");
+						Term_putstr(10, 13, -1, TERM_L_GREEN, "   otherwise prompt for direction.");
+						Term_putstr(10, 14, -1, TERM_L_GREEN, "c) Target closest monster if such exists,");
+						Term_putstr(10, 15, -1, TERM_L_GREEN, "   otherwise target own grid.");
+						Term_putstr(10, 16, -1, TERM_L_GREEN, "d) Fire into a fixed direction or prompt for direction.");
+						Term_putstr(10, 17, -1, TERM_L_GREEN, "e) Target own grid (ie yourself).");
+
+						Term_putstr(10, 19, -1, TERM_L_GREEN, "f) Target most wounded friendly player,");
+						Term_putstr(10, 20, -1, TERM_L_GREEN, "   cancel action if no player is nearby. (\377UEg for 'Cure Wounds'.\377G)");
+						Term_putstr(10, 21, -1, TERM_L_GREEN, "g) Target most wounded friendly player,");
+						Term_putstr(10, 22, -1, TERM_L_GREEN, "   target own grid instead if no player is nearby.");
+
 						while (TRUE) {
-							i = 1; //clearing it in case it was set to -3 below
+							switch (choice = inkey()) {
+							case ESCAPE:
+							case 'p':
+							case '\010': /* backspace */
+								i = -1; /* leave */
+								break;
+							case KTRL('T'):
+								/* Take a screenshot */
+								xhtml_screenshot("screenshot????");
+								continue;
+							default:
+								/* invalid action -> exit wizard */
+								if (choice < 'a' || choice > 'g') {
+									//i = -1;
+									continue;
+								}
+							}
+							break;
+						}
+						/* exit? */
+						if (i == -1) continue;
+
+						/* Get a specific fixed direction */
+						if (choice == 'd') {
 							clear_from(8);
-							Term_putstr(10, 8, -1, TERM_GREEN, "Please choose the targetting method:");
+							Term_putstr(10, 10, -1, TERM_GREEN, "Please pick the specific, fixed direction or '?':");
 
-							//Term_putstr(10, 11, -1, TERM_GREEN, "(\377UHINT: \377gAlso inscribe your ammo '!=' for auto-pickup!)");
-							Term_putstr(10, 10, -1, TERM_L_GREEN, "a) Target closest monster if such exists,");
-							Term_putstr(10, 11, -1, TERM_L_GREEN, "   otherwise cancel action. (\377URecommended in most cases!\377G)");
-							Term_putstr(10, 12, -1, TERM_L_GREEN, "b) Target closest monster if such exists,");
-							Term_putstr(10, 13, -1, TERM_L_GREEN, "   otherwise prompt for direction.");
-							Term_putstr(10, 14, -1, TERM_L_GREEN, "c) Target closest monster if such exists,");
-							Term_putstr(10, 15, -1, TERM_L_GREEN, "   otherwise target own grid.");
-							Term_putstr(10, 16, -1, TERM_L_GREEN, "d) Fire into a fixed direction or prompt for direction.");
-							Term_putstr(10, 17, -1, TERM_L_GREEN, "e) Target own grid (ie yourself).");
+							Term_putstr(25, 13, -1, TERM_L_GREEN, " 7  8  9");
+							Term_putstr(25, 14, -1, TERM_GREEN, "  \\ | / ");
+							Term_putstr(25, 15, -1, TERM_L_GREEN, "4 \377g-\377G 5 \377g-\377G 6");
+							Term_putstr(25, 16, -1, TERM_GREEN, "  / | \\         \377G?\377g = 'Prompt for direction each time'");
+							Term_putstr(25, 17, -1, TERM_L_GREEN, " 1  2  3");
 
-							Term_putstr(10, 19, -1, TERM_L_GREEN, "f) Target most wounded friendly player,");
-							Term_putstr(10, 20, -1, TERM_L_GREEN, "   cancel action if no player is nearby. (\377UEg for 'Cure Wounds'.\377G)");
-							Term_putstr(10, 21, -1, TERM_L_GREEN, "g) Target most wounded friendly player,");
-							Term_putstr(10, 22, -1, TERM_L_GREEN, "   target own grid instead if no player is nearby.");
+							Term_putstr(15, 20, -1, TERM_L_GREEN, "Your choice? (1 to 9, or '?') ");
 
+							/* hack: temporarily enable macro parsing for using numpad keys without numlock to specify a direction */
+							inkey_interact_macros = FALSE;
 							while (TRUE) {
-								switch (choice = inkey()) {
+								switch (target_dir = inkey()) {
 								case ESCAPE:
 								case 'p':
 								case '\010': /* backspace */
-									i = -2; /* leave */
+									i = -1; /* leave */
 									break;
-								case ':': /* Allow chatting */
-									cmd_message();
-									inkey_msg = TRUE; /* And suppress macros again.. */
-									continue;
 								case KTRL('T'):
 									/* Take a screenshot */
-									xhtml_screenshot("screenshot????", 2);
+									xhtml_screenshot("screenshot????");
 									continue;
 								default:
 									/* invalid action -> exit wizard */
-									if (choice < 'a' || choice > 'g') {
-										//i = -2;
+									if ((target_dir < '1' || target_dir > '9') && target_dir != '?') {
+										//i = -1;
 										continue;
 									}
 								}
 								break;
 							}
+							/* disable macro parsing again */
+							inkey_interact_macros = TRUE;
 							/* exit? */
-							if (i == -2) break;
-
-							/* Get a specific fixed direction */
-							if (choice == 'd') {
-								clear_from(8);
-								Term_putstr(10, 10, -1, TERM_GREEN, "Please pick the specific, fixed direction or '%':");
-
-								Term_putstr(25, 13, -1, TERM_L_GREEN, " 7  8  9");
-								Term_putstr(25, 14, -1, TERM_GREEN, "  \\ | / ");
-								Term_putstr(25, 15, -1, TERM_L_GREEN, "4 \377g-\377G 5 \377g-\377G 6");
-								//Term_putstr(25, 16, -1, TERM_GREEN, "  / | \\         \377G?\377g = 'Prompt for direction each time'");
-								Term_putstr(25, 16, -1, TERM_GREEN, "  / | \\         \377G%\377g = 'Prompt for direction each time'");
-								Term_putstr(25, 17, -1, TERM_L_GREEN, " 1  2  3");
-
-								//Term_putstr(15, 20, -1, TERM_L_GREEN, "Your choice? (1 to 9, or '?') ");
-								Term_putstr(15, 20, -1, TERM_L_GREEN, "Your choice? (1 to 9, or '%') ");
-
-//#if 0 /* No - this will break if the user has any kind of macro on the key already. Eg on his '?' key, and then presses '?' here. Need another solution. */
-#if 1 /* Actually we need this, but we will replace ? by %, so it's guaranteedly a macro-free key. */
-								/* hack: temporarily enable macro parsing for using numpad keys without numlock to specify a direction */
-								inkey_interact_macros = FALSE;
-#endif
-								while (TRUE) {
-									target_dir = inkey();
-//c_message_add(format("target_dir = '%i' ( %c %c )", target_dir, (char)(target_dir & 0xFF), (char)((target_dir & 0xFF00) >> 8)));
-									switch (target_dir) {
-									case ESCAPE:
-									case 'p':
-									case '\010': /* backspace */
-										i = -3; /* leave */
-										break;
-									case ':': /* Allow chatting */
-										cmd_message();
-										continue;
-									case KTRL('T'):
-										/* Take a screenshot */
-										xhtml_screenshot("screenshot????", 2);
-										continue;
-									default:
-										/* invalid action -> exit wizard */
-										//if ((target_dir < '1' || target_dir > '9') && target_dir != '?') {
-										if ((target_dir < '1' || target_dir > '9') && target_dir != '%') {
-											//i = -3;
-											continue;
-										}
-									}
-									break;
-								}
-#if 1 /* (see above) */
-								/* disable macro parsing again */
-								inkey_interact_macros = TRUE;
-#endif
-								/* exit? */
-								if (i == -3) continue;
-							}
-							/* successfully done this step */
-							break;
+							if (i == -1) continue;
 						}
-						if (i == -2) continue;
 
 						if (choice != 'c') {
 							/* choose initial targetting mechanics */
@@ -7491,8 +6111,7 @@ Chain_Macro:
 							/* add new direction feature */
 							if (choice == 'b') strcat(buf, "+");
 							else if (choice == 'd') {
-								//if (target_dir != '?') strcat(buf, format("%c", target_dir));
-								if (target_dir != '%') strcat(buf, format("%c", target_dir));
+								if (target_dir != '?') strcat(buf, format("%c", target_dir));
 							}
 							else if (choice == 'e' || choice == 'g') strcat(buf, "5");
 							else strcat(buf, "-");
@@ -7535,14 +6154,14 @@ Chain_Macro:
 #if 0 /* no, because we allow remapping of this key too, here */
 						if (!strcmp(buf, format("%c", KTRL('T')))) {
 							/* Take a screenshot */
-							xhtml_screenshot("screenshot????", 2);
+							xhtml_screenshot("screenshot????");
 							continue;
 						} else
 #endif
 						if (!strcmp(buf, "\e")) {
 							c_msg_print("\377yKeys <ESC> and '%' aren't allowed to carry a macro.");
 							if (!strcmp(buf, "\e")) {
-								i = -2; /* leave */
+								i = -1; /* leave */
 								break;
 							}
 							continue;
@@ -7599,7 +6218,7 @@ Chain_Macro:
 						break;
 					}
 					/* exit? */
-					if (i == -2) continue;
+					if (i == -1) continue;
 
 					/* Automatically choose usually best fitting macro type,
 					   depending on chosen trigger key! */
@@ -7608,14 +6227,7 @@ Chain_Macro:
 					//hybrid macros: all others, maybe even also normal-macro-keys
 					if (!strcmp(buf, "/") || !strcmp(buf, "*") || /* windows */
 					    (strlen(buf) == 10 && (buf[8] == '/' || buf[8] == '*')) || /* x11 - to do: fix this crap */
-#if 0
 					    (*buf >= 'a' && *buf <= 'w') || /* inventory */
-#else
-					    (*buf >= 'a' && *buf <= 'z') || /* command keys - you shouldn't really put macros on these, but w/e.. */
-					    (*buf >= 'A' && *buf <= 'Z') ||
-					    (*buf >= '0' && *buf <= '9') || /* menu choices. Especially for ~ menu it is required that these are command macros so they don't trigger there.. */
-					    *buf == ' ' || /* spacebar is used almost everywhere, should only be command macro */
-#endif
 					    *buf == '+' || *buf == '-' || /* the '+' and '-' keys are used in certain input prompts (targetting, drop newest item) */
 					    (buf[0] == 1 && buf[1] == 0) /* CTRL+A glitch */
 					    ) {
@@ -7659,27 +6271,15 @@ Chain_Macro:
 	if (were_recording) Send_redraw(0);
 }
 
-#define INTEGRATED_SELECTOR /* Allows for a match length of 55 instead of 53 */
-#define AUTOINS_PAGESIZE 20
+
 void auto_inscriptions(void) {
-	int i, max_page = (MAX_AUTO_INSCRIPTIONS + AUTOINS_PAGESIZE - 1) / AUTOINS_PAGESIZE - 1, idx;
-	static int cur_line = 0, cur_page = 0;
-	char temp, tempbuf[MAX_CHARS]; //assuming that AUTOINS_MATCH_LEN + 8 and AUTOINS_TAG_LEN + 2 are always <= MAX_CHARS
-#ifdef INTEGRATED_SELECTOR
-	static int prev_line = 0;
-#endif
+	int i, cur_line = 0;
 	bool redraw = TRUE, quit = FALSE;
 
-	char tmp[160], buf[1024], *buf_ptr, c;
-	char match_buf[AUTOINS_MATCH_LEN + 8], tag_buf[AUTOINS_TAG_LEN + 2];
+	char tmp[160], buf[1024], *buf_ptr;
+	char match_buf[80], tag_buf[40];
 
 	char fff[1024];
-
-#ifdef REGEX_SEARCH
-	int ires = -999;
-	regex_t re_src;
-	char *regptr;
-#endif
 
 	/* Save screen */
 	Term_save();
@@ -7694,98 +6294,28 @@ void auto_inscriptions(void) {
 			Term_clear();
 
 			/* Describe */
-			Term_putstr(15,  0, -1, TERM_L_UMBER, format("*** Current Auto-Inscriptions List, page %d/%d ***", cur_page + 1, max_page + 1));
-			Term_putstr(2, 21, -1, TERM_L_UMBER, "(8/2) go up/down, (SPACE/BKSP or p) page down/up, (P) chat-paste, (ESC) exit");
-			Term_putstr(2, 22, -1, TERM_L_UMBER, "(e,RET/?,h/f/d/c) Edit/Help/Force/Delete/CLEAR ALL, (a) Auto-pickup/destroy");
-			Term_putstr(2, 23, -1, TERM_L_UMBER, "(w/x) move up/down, (l/s/S) Load/save from/to an '.ins' / 'global.ins' file");
+			Term_putstr(20,  0, -1, TERM_L_UMBER, "*** Current Auto-Inscriptions List ***");
+			Term_putstr(14, 21, -1, TERM_L_UMBER, "[Press 'n' for next, 'p' for previous, ESC to exit]");
+			Term_putstr(12, 22, -1, TERM_L_UMBER, "(l/s) Load/save auto-inscriptions from/to an '.ins' file");
+			Term_putstr(4, 23, -1, TERM_L_UMBER, "(e/d/c) Edit current ('?' wildcard, '!' forces)/delete current/CLEAR ALL");
 
-			for (i = 0; i < AUTOINS_PAGESIZE; i++) {
-				idx = cur_page * AUTOINS_PAGESIZE + i;
-#ifdef INTEGRATED_SELECTOR
-				if (i == cur_line) c = '4'; //TERM_SELECTOR
-				else
-#endif
-				c = 's'; //TERM_SLATE
+			for (i = 0; i < MAX_AUTO_INSCRIPTIONS; i++) {
 				/* build a whole line */
-#if 0 /* squeeze out every last char we could use for the inscription */
-				strcpy(match_buf, format("\377%c<\377w", c));
-#else
-				strcpy(match_buf, format("\377%c>\377w", c));
-#endif
-				if (auto_inscription_invalid[idx]) strcat(match_buf, "\377R");
-				strcat(match_buf, auto_inscription_match[idx]);
-#if 0 /* squeeze out every last char we could use for the inscription */
-				strcat(match_buf, format("\377%c>", c));
-#endif
+				strcpy(match_buf, "\377s<\377w");
+				strcat(match_buf, auto_inscription_match[i]);
+				strcat(match_buf, "\377s>");
 				strcpy(tag_buf, "\377y");
-				strcat(tag_buf, auto_inscription_tag[idx]);
-#if 0 /* squeeze out every last char we could use for the inscription */
-				sprintf(fff, "%3d %-62s %s%s<%s\377%c>", idx + 1, match_buf, /* spacing = AUTOINS_MATCH_LEN + 7 */
-				    auto_inscription_autodestroy[idx] ? "\377RA\377-" : (auto_inscription_autopickup[idx] ? "\377Ga\377-" : " "),
-				    auto_inscription_invalid[idx] ? "  " : "", /* silyl sprintf %- formatting.. */
-				    tag_buf, c);
-#else
-				sprintf(fff, "%3d %-59s %s%s\377%c>%s", idx + 1, match_buf, /* spacing = AUTOINS_MATCH_LEN + 7 */
-				    auto_inscription_autodestroy[idx] ? "\377RA\377-" : (auto_inscription_autopickup[idx] ? "\377Ga\377-" : " "),
-				    auto_inscription_invalid[idx] ? "  " : "", /* silyl sprintf %- formatting.. */
-				    c, tag_buf);
-#endif
+				strcat(tag_buf, auto_inscription_tag[i]);
+				sprintf(fff, "%2d) %-46s      %s", i + 1, match_buf, tag_buf);
 
-#ifdef INTEGRATED_SELECTOR
-				Term_putstr(0, i + 1, -1, auto_inscription_force[idx] ? TERM_L_BLUE : TERM_WHITE, fff);
-#else
-				Term_putstr(2, i + 1, -1, auto_inscription_force[idx] ? TERM_L_BLUE : TERM_WHITE, fff);
-#endif
+				Term_putstr(5, i + 1, -1, TERM_WHITE, fff);
 			}
 		}
-#ifdef INTEGRATED_SELECTOR
-		else {
-			for (i = 0; i < AUTOINS_PAGESIZE; i++) {
-				idx = cur_page * AUTOINS_PAGESIZE + i;
-
-				if (i == cur_line) c = '4'; //TERM_SELECTOR
-				else if (i == prev_line) c = 's'; //TERM_SLATE
-				else continue;
-				/* build a whole line */
-#if 0 /* squeeze out every last char we could use for the inscription */
-				strcpy(match_buf, format("\377%c<\377w", c));
-#else
-				strcpy(match_buf, format("\377%c>\377w", c));
-#endif
-				if (auto_inscription_invalid[idx]) strcat(match_buf, "\377R");
-				strcat(match_buf, auto_inscription_match[idx]);
-#if 0 /* squeeze out every last char we could use for the inscription */
-				strcat(match_buf, format("\377%c>", c));
-#endif
-				strcpy(tag_buf, "\377y");
-				strcat(tag_buf, auto_inscription_tag[idx]);
-#if 0 /* squeeze out every last char we could use for the inscription */
-				sprintf(fff, "%3d %-62s %s%s<%s\377%c>", idx + 1, match_buf, /* spacing = AUTOINS_MATCH_LEN + 7 */
-				    auto_inscription_autodestroy[idx] ? "\377RA\377-" : (auto_inscription_autopickup[idx] ? "\377Ga\377-" : " "),
-				    auto_inscription_invalid[idx] ? "  " : "", /* silyl sprintf %- formatting.. */
-				    tag_buf, c);
-#else
-				sprintf(fff, "%3d %-59s %s%s\377%c>%s", idx + 1, match_buf, /* spacing = AUTOINS_MATCH_LEN + 7 */
-				    auto_inscription_autodestroy[idx] ? "\377RA\377-" : (auto_inscription_autopickup[idx] ? "\377Ga\377-" : " "),
-				    auto_inscription_invalid[idx] ? "  " : "", /* silyl sprintf %- formatting.. */
-				    c, tag_buf);
-#endif
-
-#ifdef INTEGRATED_SELECTOR
-				Term_putstr(0, i + 1, -1, auto_inscription_force[idx] ? TERM_L_BLUE : TERM_WHITE, fff);
-#else
-				Term_putstr(2, i + 1, -1, auto_inscription_force[idx] ? TERM_L_BLUE : TERM_WHITE, fff);
-#endif
-			}
-		}
-		prev_line = cur_line;
-#endif
 		redraw = TRUE;
 
 		/* display editing 'cursor' */
-#ifndef INTEGRATED_SELECTOR
-		Term_putstr(0, cur_line + 1, -1, TERM_SELECTOR, ">");
-#endif
+		Term_putstr(1, cur_line + 1, -1, TERM_ORANGE, ">>>");
+
 		/* make cursor invisible */
 		Term_set_cursor(0);
 		inkey_flag = TRUE;
@@ -7794,203 +6324,25 @@ void auto_inscriptions(void) {
 		switch (inkey()) {
 		case KTRL('T'):
 			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", 2);
-			redraw = FALSE;
-			break;
-		case ':':
-			/* Allow to chat, to tell exact inscription-related stuff to other people easily */
-			cmd_message();
-			inkey_msg = TRUE; /* And suppress macros again.. */
-			break;
-		case '?':
-		case 'h':
-			Term_clear();
-			i = 0;
-
-			Term_putstr( 0, i++, -1, TERM_WHITE, "Editing item name matches (left column) and applied inscription (right column):");
-			i++;
-
-			Term_putstr( 0, i++, -1, TERM_YELLOW, "Editing item name matches:");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "The item name you enter is used as a partial match.");
-#if 0 /* legacy '!' marker */
-			Term_putstr( 0, i++, -1, TERM_WHITE, "If you prefix it with a '!' then any existing inscription will");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "be overwritten. Otherwise just trivial ones are, eg discount tags.");
-#endif
-			Term_putstr( 0, i++, -1, TERM_WHITE, "You can use '#' as wildcards, eg \"Rod#Healing\".");
-#ifdef REGEX_SEARCH
-			Term_putstr( 0, i++, -1, TERM_WHITE, "If you prefix a line with '$' the string will be interpreted as regexp.");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "In a regexp string, the '#' will no longer have a wildcard function.");
- #if 0 /* legacy '!' marker */
-			Term_putstr( 0, i++, -1, TERM_WHITE, "If you want to combine '!' and '$', have the '!' go first: !$regexp.");
- #endif
-			Term_putstr( 0, i++, -1, TERM_WHITE, "Regular expressions are parsed case-insensitively.");
-#endif
-			i++;
-
-			Term_putstr( 0, i++, -1, TERM_YELLOW, "Editing item inscriptions to be applied:");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "No special rules here, it works the same as manual inscriptions.");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "So you could even specify \"@@\" if you want a power-inscription.");
-#if 1 /* '!' has been replaced */
-			Term_putstr( 0, i++, -1, TERM_WHITE, "Press 'f' to toggle force-inscribing, which will overwrite an existing");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "Inscription always. Otherwise just trivial ones, eg discount tags.");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "A light blue inscription index number indicates forced-mode.");
-#endif
-			i++;
-
-			Term_putstr( 0, i++, -1, TERM_YELLOW, "Troubleshooting:");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "The auto-inscription menu tries to merge all applicable .ins files:");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "global.ins, <race>.ins, <trait>.ins, <class>.ins, <charname>.ins.");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "So if you have 'ghost' inscriptions popping up, look for these files");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "and modify/delete them as you see fit. The 'cleanest' result will");
-			Term_putstr( 0, i++, -1, TERM_WHITE, "occur if you delete all .ins files except for <charname>.ins.");
-
-			Term_putstr(25, 23, -1, TERM_L_BLUE, "(Press any key to go back)");
-			inkey();
-			break;
-		case 'P':
-			/* Paste currently selected entry to chat */
-			strcpy(match_buf, "\377s<\377w");
-			strcat(match_buf, auto_inscription_match[cur_page * AUTOINS_PAGESIZE + cur_line]);
-			strcat(match_buf, "\377s>");
-			strcpy(tag_buf, "\377y");
-			strcat(tag_buf, auto_inscription_tag[cur_page * AUTOINS_PAGESIZE + cur_line]);
-			sprintf(tmp, "\377sAuto-inscription %3d: %s%s<%s\377s>", cur_page * AUTOINS_PAGESIZE + cur_line + 1,
-			    match_buf,
-			    auto_inscription_autodestroy[cur_page * AUTOINS_PAGESIZE + cur_line] ? "\377RA\377s" : (auto_inscription_autopickup[cur_page * AUTOINS_PAGESIZE + cur_line] ? "\377Ga\377s" : " "),
-			    tag_buf);
-			Send_paste_msg(tmp);
+			xhtml_screenshot("screenshot????");
 			redraw = FALSE;
 			break;
 		case ESCAPE:
 			quit = TRUE; /* hack to leave loop */
 			break;
-		case '3': //pgdn
 		case 'n':
-		case ' ':
-			cur_page++;
-			if (cur_page > max_page) cur_page = 0;
-			redraw = TRUE;
-			break;
-		case '9': //pgup
-		case 'p':
-		case '\b':
-			cur_page--;
-			if (cur_page < 0) cur_page = max_page;
-			redraw = TRUE;
-			break;
-		case '1': //end
-			cur_page = max_page;
-			cur_line = 0;
-			redraw = TRUE;
-			break;
-		case '7': //home
-			cur_page = 0;
-			cur_line = 0;
-			redraw = TRUE;
-			break;
 		case '2':
-#ifndef INTEGRATED_SELECTOR
-			Term_putstr(0, cur_line + 1, -1, TERM_SELECTOR, " ");
-#endif
+			Term_putstr(1, cur_line + 1, -1, TERM_ORANGE, "   ");
 			cur_line++;
+			if (cur_line >= 20) cur_line = 0;
 			redraw = FALSE;
-			if (cur_line >= AUTOINS_PAGESIZE) {
-				cur_line = 0;
-				cur_page++;
-				if (cur_page > max_page) cur_page = 0;
-				redraw = TRUE;
-			}
 			break;
+		case 'p':
 		case '8':
-#ifndef INTEGRATED_SELECTOR
-			Term_putstr(0, cur_line + 1, -1, TERM_SELECTOR, " ");
-#endif
+			Term_putstr(1, cur_line + 1, -1, TERM_ORANGE, "   ");
 			cur_line--;
+			if (cur_line < 0) cur_line = 19;
 			redraw = FALSE;
-			if (cur_line < 0) {
-				cur_line = AUTOINS_PAGESIZE - 1;
-				cur_page--;
-				if (cur_page < 0) cur_page = max_page;
-				redraw = TRUE;
-			}
-			break;
-		case 'x':
-			idx = cur_page * AUTOINS_PAGESIZE + cur_line;
-			if (idx >= MAX_AUTO_INSCRIPTIONS - 1) break;
-
-			cur_line++;
-			redraw = FALSE;
-			if (cur_line >= AUTOINS_PAGESIZE) {
-				cur_line = 0;
-				cur_page++;
-				if (cur_page > max_page) cur_page = 0;
-				redraw = TRUE;
-			}
-
-			strcpy(tempbuf, auto_inscription_match[idx]);
-			strcpy(auto_inscription_match[idx], auto_inscription_match[idx + 1]);
-			strcpy(auto_inscription_match[idx + 1], tempbuf);
-
-			strcpy(tempbuf, auto_inscription_tag[idx]);
-			strcpy(auto_inscription_tag[idx], auto_inscription_tag[idx + 1]);
-			strcpy(auto_inscription_tag[idx + 1], tempbuf);
-
-			temp = auto_inscription_autodestroy[idx];
-			auto_inscription_autodestroy[idx] = auto_inscription_autodestroy[idx + 1];
-			auto_inscription_autodestroy[idx + 1] = temp;
-
-			temp = auto_inscription_autopickup[idx];
-			auto_inscription_autopickup[idx] = auto_inscription_autopickup[idx + 1];
-			auto_inscription_autopickup[idx + 1] = temp;
-
-			temp = auto_inscription_force[idx];
-			auto_inscription_force[idx] = auto_inscription_force[idx + 1];
-			auto_inscription_force[idx + 1] = temp;
-
-#ifdef REGEX_SEARCH
-			temp = auto_inscription_invalid[idx];
-			auto_inscription_invalid[idx] = auto_inscription_invalid[idx + 1];
-			auto_inscription_invalid[idx + 1] = temp;
-#endif
-			break;
-		case 'w':
-			idx = cur_page * AUTOINS_PAGESIZE + cur_line;
-			if (!idx) break;
-
-			cur_line--;
-			redraw = FALSE;
-			if (cur_line < 0) {
-				cur_line = AUTOINS_PAGESIZE - 1;
-				cur_page--;
-				if (cur_page < 0) cur_page = max_page;
-				redraw = TRUE;
-			}
-
-			strcpy(tempbuf, auto_inscription_match[idx]);
-			strcpy(auto_inscription_match[idx], auto_inscription_match[idx - 1]);
-			strcpy(auto_inscription_match[idx - 1], tempbuf);
-
-			strcpy(tempbuf, auto_inscription_tag[idx]);
-			strcpy(auto_inscription_tag[idx], auto_inscription_tag[idx - 1]);
-			strcpy(auto_inscription_tag[idx - 1], tempbuf);
-
-			temp = auto_inscription_autodestroy[idx];
-			auto_inscription_autodestroy[idx] = auto_inscription_autodestroy[idx - 1];
-			auto_inscription_autodestroy[idx - 1] = temp;
-
-			temp = auto_inscription_autopickup[idx];
-			auto_inscription_autopickup[idx] = auto_inscription_autopickup[idx - 1];
-			auto_inscription_autopickup[idx - 1] = temp;
-
-			temp = auto_inscription_force[idx];
-			auto_inscription_force[idx] = auto_inscription_force[idx - 1];
-			auto_inscription_force[idx - 1] = temp;
-
-#ifdef REGEX_SEARCH
-			temp = auto_inscription_invalid[idx];
-			auto_inscription_invalid[idx] = auto_inscription_invalid[idx - 1];
-			auto_inscription_invalid[idx - 1] = temp;
-#endif
 			break;
 		case 'l':
 			/* Prompt */
@@ -8007,12 +6359,12 @@ void auto_inscriptions(void) {
 
 			/* Process the given filename */
 			load_auto_inscriptions(tmp);
-			for (i = 0; i < INVEN_TOTAL; i++) apply_auto_inscriptions(i, FALSE);
+			for (i = 0; i <= INVEN_TOTAL; i++) apply_auto_inscriptions(i, FALSE);
 			break;
 		case 's':
 			/* Prompt */
 			clear_from(21);
-			Term_putstr(0, 22, -1, TERM_L_GREEN, "*** Save an .ins file ('global.ins' for account-wide) ***");
+			Term_putstr(0, 22, -1, TERM_L_GREEN, "*** Save an .ins file ***");
 
 			/* Get a filename, handle ESCAPE */
 			Term_putstr(0, 23, -1, TERM_WHITE, "File: ");
@@ -8025,161 +6377,64 @@ void auto_inscriptions(void) {
 			/* Dump the macros */
 			save_auto_inscriptions(tmp);
 			break;
-		case 'S':
-			/* Prompt */
-			clear_from(21);
-			Term_putstr(0, 22, -1, TERM_L_GREEN, "*** Save to account-wide 'global.ins' file ***");
-
-			/* Get a filename, handle ESCAPE */
-			Term_putstr(0, 23, -1, TERM_WHITE, "File: ");
-
-			strcpy(tmp, "global.ins");
-
-			/* Ask for a file */
-			if (!askfor_aux(tmp, 70, 0)) continue;
-
-			/* Dump the macros */
-			save_auto_inscriptions(tmp);
-			break;
 		case 'e':
 		case '6':
 		case '\n':
 		case '\r':
-//INTEGRATED_SELECTOR: - 2
 			/* Clear previous matching string */
-			Term_putstr(6 - 2, cur_line + 1, -1, TERM_L_GREEN, "                                                       ");
+			Term_putstr(9, cur_line + 1, -1, TERM_L_GREEN, "                                         ");
 			/* Go to the correct location */
-			Term_gotoxy(7 - 2, cur_line + 1);
-			strcpy(buf, auto_inscription_match[cur_page * AUTOINS_PAGESIZE + cur_line]);
+			Term_gotoxy(10, cur_line + 1);
+			strcpy(buf, auto_inscription_match[cur_line]);
 			/* Get a new matching string */
-			if (!askfor_aux(buf, AUTOINS_MATCH_LEN - 1, 0)) continue;
-
+			if (!askfor_aux(buf, 40, 0)) continue;
+			/* hack: remove leading/trailing wild cards since they are obsolete.
+			   Especially trailing ones currently make it not work. */
 			buf_ptr = buf;
-			/* special hack: allow just a '#' match */
-			if (strcmp(buf, "#") && strcmp(buf, "!#")) {
-				/* hack: remove leading/trailing wild cards since they are obsolete.
-				   Especially trailing ones currently make it not work. */
-				while (*buf_ptr == '#') buf_ptr++;
-				while (*(buf_ptr + strlen(buf_ptr) - 1) == '#') *(buf_ptr + strlen(buf_ptr) - 1) = '\0';
-			}
-
-//INTEGRATED_SELECTOR: - 2
-			Term_putstr(6 - 2, cur_line + 1, -1, TERM_L_GREEN, "                                                       ");
-			Term_putstr(7 - 2, cur_line + 1, -1, TERM_WHITE, buf_ptr);
+			while (*buf_ptr == '?') buf_ptr++;
+			while (*(buf_ptr + strlen(buf_ptr) - 1) == '?') *(buf_ptr + strlen(buf_ptr) - 1) = '\0';
+			Term_putstr(9, cur_line + 1, -1, TERM_L_GREEN, "                                         ");
+			Term_putstr(9, cur_line + 1, -1, TERM_WHITE, buf_ptr);
 			/* ok */
-			strcpy(auto_inscription_match[cur_page * AUTOINS_PAGESIZE + cur_line], buf_ptr);
+			strcpy(auto_inscription_match[cur_line], buf_ptr);
 
-#ifdef REGEX_SEARCH
-			/* Actually test regexp for validity right away, so we can avoid spam/annoyance/searching later. */
-			/* Check for '$' prefix, forcing regexp interpretation */
-			regptr = buf_ptr;
-			//legacy mode --  if (regptr[0] == '!') regptr++;
-			if (regptr[0] == '$') {
-				regptr++;
-				ires = regcomp(&re_src, regptr, REG_EXTENDED | REG_ICASE);
-				if (ires != 0) {
-					auto_inscription_invalid[cur_page * AUTOINS_PAGESIZE + cur_line] = TRUE;
-					c_msg_format("\377oInvalid regular expression in auto-inscription #%d.", cur_page * AUTOINS_PAGESIZE + cur_line + 1);
-					/* Re-colour the line to indicate error */
-					Term_putstr(11, cur_line + 1, -1, TERM_L_RED, buf_ptr);
-				} else auto_inscription_invalid[cur_page * AUTOINS_PAGESIZE + cur_line] = FALSE;
-				regfree(&re_src);
-			}
-#endif
-
-#if 0 /* squeeze out every last char we could use for the inscription */
 			/* Clear previous tag string */
-			Term_putstr(62, cur_line + 1, -1, TERM_L_GREEN, "                ");
+			Term_putstr(55, cur_line + 1, -1, TERM_L_GREEN, "                    ");
 			/* Go to the correct location */
-			Term_gotoxy(63, cur_line + 1);
-#else
-			/* Clear previous tag string */
-			Term_putstr(61, cur_line + 1, -1, TERM_L_GREEN, "                  ");
-			/* Go to the correct location */
-			Term_gotoxy(62, cur_line + 1);
-#endif
-			strcpy(buf, auto_inscription_tag[cur_page * AUTOINS_PAGESIZE + cur_line]);
+			Term_gotoxy(55, cur_line + 1);
+			strcpy(buf, auto_inscription_tag[cur_line]);
 			/* Get a new tag string */
-			if (!askfor_aux(buf, AUTOINS_TAG_LEN - 1, 0)) {
+			if (!askfor_aux(buf, 20, 0)) {
 				/* in case match was changed, we may also need to reapply */
-				for (i = 0; i < INVEN_TOTAL; i++) apply_auto_inscriptions(i, FALSE);
+				for (i = 0; i <= INVEN_TOTAL; i++) apply_auto_inscriptions(i, FALSE);
 				continue;
 			}
-			strcpy(auto_inscription_tag[cur_page * AUTOINS_PAGESIZE + cur_line], buf);
-			for (i = 0; i < INVEN_TOTAL; i++) apply_auto_inscriptions(i, FALSE);
+			strcpy(auto_inscription_tag[cur_line], buf);
+			for (i = 0; i <= INVEN_TOTAL; i++) apply_auto_inscriptions(i, FALSE);
 
 			/* comfort hack - fake advancing ;) */
-#ifndef INTEGRATED_SELECTOR
-			Term_putstr(0, cur_line + 1, -1, TERM_SELECTOR, " ");
-#endif
+			Term_putstr(1, cur_line + 1, -1, TERM_ORANGE, "   ");
 			cur_line++;
-			if (cur_line >= AUTOINS_PAGESIZE) {
-				cur_line = 0;
-				cur_page++;
-				if (cur_page > max_page) cur_page = 0;
-				redraw = TRUE;
-			}
+			if (cur_line >= 20) cur_line = 0;
 			break;
 		case 'd':
-			auto_inscription_match[cur_page * AUTOINS_PAGESIZE + cur_line][0] = 0;
-			auto_inscription_tag[cur_page * AUTOINS_PAGESIZE + cur_line][0] = 0;
-			auto_inscription_autopickup[cur_page * AUTOINS_PAGESIZE + cur_line] = FALSE;
-			auto_inscription_autodestroy[cur_page * AUTOINS_PAGESIZE + cur_line] = FALSE;
-			auto_inscription_force[cur_page * AUTOINS_PAGESIZE + cur_line] = FALSE;
-#ifdef REGEX_SEARCH
-			auto_inscription_invalid[cur_page * AUTOINS_PAGESIZE + cur_line] = FALSE;
-#endif
+		case '\b':
+			strcpy(auto_inscription_match[cur_line], "");
+			strcpy(auto_inscription_tag[cur_line], "");
 #if 0
 			/* also auto-advance by 1 line, for convenience */
 			cur_line++;
-			if (cur_line >= AUTOINS_PAGESIZE) {
-				cur_line = 0;
-				cur_page++;
-				if (cur_page > max_page) cur_page = 0;
-				redraw = TRUE;
-			}
+			if (cur_line >= 20) cur_line = 0;
 #endif
 			break;
 		case 'c':
 			for (i = 0; i < MAX_AUTO_INSCRIPTIONS; i++) {
-				auto_inscription_match[i][0] = 0;
-				auto_inscription_tag[i][0] = 0;
-				auto_inscription_autopickup[i] = FALSE;
-				auto_inscription_autodestroy[i] = FALSE;
-				auto_inscription_force[i] = FALSE;
-#ifdef REGEX_SEARCH
-				auto_inscription_invalid[i] = FALSE;
-#endif
+				strcpy(auto_inscription_match[i], "");
+				strcpy(auto_inscription_tag[i], "");
 			}
 			/* comfort hack - jump to first line */
-#ifndef INTEGRATED_SELECTOR
-			Term_putstr(0, cur_line + 1, -1, TERM_SELECTOR, " ");
-#endif
-			cur_line = cur_page = 0;
-			redraw = TRUE;
-			break;
-		case 'a':
-			/* cycle: nothing / auto-pickup / auto-destroy */
-			i = cur_page * AUTOINS_PAGESIZE + cur_line;
-			if (!auto_inscription_autopickup[i]) {
-				if (!auto_inscription_autodestroy[i])
-					auto_inscription_autopickup[i] = TRUE;
-				else auto_inscription_autopickup[i] = auto_inscription_autodestroy[i] = FALSE; /* <- shouldn't happen (someone messed up his .ins) */
-			} else {
-				if (auto_inscription_autodestroy[i])
-					auto_inscription_autopickup[i] = auto_inscription_autodestroy[i] = FALSE;
-				else
-					auto_inscription_autodestroy[i] = TRUE;
-			}
-			redraw = TRUE;
-			break;
-		case 'f':
-			/* toggle force-inscribe (same as '!' prefix) */
-			i = cur_page * AUTOINS_PAGESIZE + cur_line;
-			auto_inscription_force[i] = !auto_inscription_force[i];
-			/* if we changed to 'forced', we may need to reapply - note that competing inscriptions aren't well-defined here */
-			if (auto_inscription_force[i]) for (i = 0; i < INVEN_TOTAL; i++) apply_auto_inscriptions(i, FALSE);
-			redraw = TRUE;
+			Term_putstr(1, cur_line + 1, -1, TERM_ORANGE, "   ");
+			cur_line = 0;
 			break;
 		default:
 			/* Oops */
@@ -8201,66 +6456,17 @@ void auto_inscriptions(void) {
 	inkey_msg = FALSE;
 }
 
-/* Helper function for option manipulation - check before and after, and refresh stuff if the changes made require it.
-   init: TRUE before an option gets changed, FALSE afterwards. */
- void options_immediate(bool init) {
-	static bool changed1, changed2, changed3;
-	static bool changed4a, changed4b, changed4c;
-	static bool changed5, changed5a, changed6;
-	static bool changed7;
-
-	if (init) {
-		changed1 = c_cfg.exp_need; changed2 = c_cfg.exp_bar; changed3 = c_cfg.font_map_solid_walls;
-		changed4a = c_cfg.hp_bar; changed4b = c_cfg.mp_bar; changed4c = c_cfg.st_bar;
-		changed5 = c_cfg.equip_text_colour;
-		changed5a = c_cfg.equip_set_colour;
-		changed6 = c_cfg.colourize_bignum;
-		changed7 = c_cfg.load_form_macros;
-		return;
-	}
-
-	/* for exp_need option changes: */
-	if (changed1 != c_cfg.exp_need || changed2 != c_cfg.exp_bar || changed3 != c_cfg.font_map_solid_walls)
-		prt_level(p_ptr->lev, p_ptr->max_lev, p_ptr->max_plv, p_ptr->max_exp, p_ptr->exp, exp_adv, exp_adv_prev);
-	/* in case hp/mp/st are displayed as bars,
-	   or hp/mp/st have just been switched between number form and bar form */
-	if (changed3 != c_cfg.font_map_solid_walls ||
-	    changed4a != c_cfg.hp_bar || changed4b != c_cfg.mp_bar || changed4c != c_cfg.st_bar) {
-		if (changed4a != c_cfg.hp_bar) hp_bar = c_cfg.hp_bar;
-		if (changed4b != c_cfg.mp_bar) mp_bar = c_cfg.mp_bar;
-		if (changed4c != c_cfg.st_bar) st_bar = c_cfg.st_bar;
-		prt_hp(hp_max, hp_cur, hp_bar, hp_boosted);
-		prt_mp(mp_max, mp_cur, mp_bar);
-		prt_stamina(st_max, st_cur, st_bar);
-	}
-	if (changed5 != c_cfg.equip_text_colour) p_ptr->window |= PW_EQUIP;
-	if (changed5a != c_cfg.equip_set_colour) p_ptr->window |= PW_EQUIP;
-	if (changed6 != c_cfg.colourize_bignum) {
-		prt_gold(p_ptr->au);
-		prt_level(p_ptr->lev, p_ptr->max_lev, p_ptr->max_plv, p_ptr->max_exp, p_ptr->exp, exp_adv, exp_adv_prev);
-	}
-	if (changed7 != c_cfg.load_form_macros && c_cfg.load_form_macros) {
-		char tmp[MAX_CHARS];
-
-		if (strcmp(c_p_ptr->body_name, "Player")) sprintf(tmp, "%s%c%s.prf", cname, PRF_BODY_SEPARATOR, c_p_ptr->body_name);
-		else sprintf(tmp, "%s.prf", cname);
-		(void)process_pref_file(tmp);
-	}
-}
 
 /*
  * Interact with some options
  */
-static bool do_cmd_options_aux(int page, cptr info, int select) {
+static void do_cmd_options_aux(int page, cptr info) {
 	char	ch;
-	int	i, k, n = 0, k_no_advance;
-	static int k_lasttime[6] = { 0, 0, 0, 0, 0, 0};
+	int	i, k = 0, n = 0;
 	int	opt[24];
 	char	buf[256];
 	bool	tmp;
 
-	if (select != -1) k_lasttime[page] = select;
-	k = k_no_advance = k_lasttime[page];
 
 	/* Lookup the options */
 	for (i = 0; i < 24; i++) opt[i] = 0;
@@ -8279,10 +6485,7 @@ static bool do_cmd_options_aux(int page, cptr info, int select) {
 	/* Interact with the player */
 	while (TRUE) {
 		/* Prompt XXX XXX XXX */
-		if (select == -1)
-			sprintf(buf, "%s (\377yUp/Down\377w, \377yy\377w/\377yn\377w/\377yLeft\377w/\377yRight\377w set, \377yt\377w/\377yA\377w-\377yZ\377w toggle, \377yESC\377w accept)", info);
-		else
-			sprintf(buf, "%s (\377yy\377w/\377yn\377w/\377yLeft\377w/\377yRight\377w set, \377yt\377w/\377yA\377w-\377yZ\377w toggle, \377y/\377w next, \377yESC\377w accept)", info);
+		sprintf(buf, "%s (\377yUp/Down\377w, \377yy\377w/\377yn\377w/\377yLeft\377w/\377yRight\377w set, \377yt\377w/\377yA\377w-\377yZ\377w\377w toggle, \377yESC\377w accept)", info);
 		//prompt_topline(buf);
 		Term_putstr(0, 0, -1, TERM_WHITE, buf);
 
@@ -8313,142 +6516,93 @@ static bool do_cmd_options_aux(int page, cptr info, int select) {
 
 		/* Analyze */
 		switch (ch) {
-		case ESCAPE:
-		case KTRL('Q'):
-			/* Next time on this options page, restore our position */
-			k_lasttime[page] = k_no_advance;
-			return (FALSE);
-		case '/':
-			k_lasttime[page] = k_no_advance;
-			return (TRUE);
+			case ESCAPE:
+			case KTRL('Q'):
+				return;
 
-		case KTRL('T'):
-			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", 2);
-			break;
+			case KTRL('T'):
+				/* Take a screenshot */
+				xhtml_screenshot("screenshot????");
+				break;
 
-		case ':':
-			/* specialty: allow chatting from within here */
-			cmd_message();
-			inkey_msg = TRUE; /* And suppress macros again.. */
-			break;
+			case ':':
+				/* specialty: allow chatting from within here */
+				cmd_message();
+				break;
 
-		case '-':
-		case '8':
-		case 'k':
-		case '\010': //backspace
-			k = (n + k - 1) % n;
-			k_no_advance = k;
-			break;
+			case '-':
+			case '8':
+			case 'k':
+				k = (n + k - 1) % n;
+				break;
 
-		case '+':
-		case '2':
-		case 'j':
-		case '\n':
-		case '\r':
-		case ' ':
-			k = (k + 1) % n;
-			k_no_advance = k;
-			break;
+			case ' ':
+			case '\n':
+			case '\r':
+			case '2':
+			case 'j':
+				k = (k + 1) % n;
+				break;
 
-		case 'y':
-		case '6':
-		case 'l':
-		case 's': //set
-			(*option_info[opt[k]].o_var) = TRUE;
-			Client_setup.options[opt[k]] = TRUE;
-			check_immediate_options(opt[k], TRUE, TRUE);
-			k_no_advance = k;
-			k = (k + 1) % n;
-			break;
+			case 'y':
+			//case 'Y':
+			case '6':
+			case 'l':
+				(*option_info[opt[k]].o_var) = TRUE;
+				Client_setup.options[opt[k]] = TRUE;
+				check_immediate_options(opt[k], TRUE, TRUE);
+				k = (k + 1) % n;
+				break;
 
-		case 'n':
-		case '4':
-		case 'h':
-		case 'u': //unset
-			(*option_info[opt[k]].o_var) = FALSE;
-			Client_setup.options[opt[k]] = FALSE;
-			check_immediate_options(opt[k], FALSE, TRUE);
-			k_no_advance = k;
-			k = (k + 1) % n;
-			break;
+			case 'n':
+			//case 'N':
+			case '4':
+			case 'h':
+				(*option_info[opt[k]].o_var) = FALSE;
+				Client_setup.options[opt[k]] = FALSE;
+				check_immediate_options(opt[k], FALSE, TRUE);
+				k = (k + 1) % n;
+				break;
 
-		case 't':
-		case '5':
-		case 'w': //switch
-			tmp = 1 - (*option_info[opt[k]].o_var);
-			(*option_info[opt[k]].o_var) = tmp;
-			Client_setup.options[opt[k]] = tmp;
-			check_immediate_options(opt[k], tmp, TRUE);
-			k_no_advance = k;
-			k = (k + 1) % n;
-			break;
-		default:
-			/* directly toggle a specific option */
-			if (ch >= 'A' && ch <= 'A' + n - 1) {
-				k = ch - 'A';
-				k_no_advance = k;
+			case 't':
+			//case 'T':
+			case '5':
+			case 's':
 				tmp = 1 - (*option_info[opt[k]].o_var);
 				(*option_info[opt[k]].o_var) = tmp;
 				Client_setup.options[opt[k]] = tmp;
 				check_immediate_options(opt[k], tmp, TRUE);
+				k = (k + 1) % n;
 				break;
-			}
-			bell();
-			break;
+			default:
+				/* directly toggle a specific option */
+				if (ch >= 'A' && ch <= 'A' + n - 1) {
+					k = ch - 'A';
+					tmp = 1 - (*option_info[opt[k]].o_var);
+					(*option_info[opt[k]].o_var) = tmp;
+					Client_setup.options[opt[k]] = tmp;
+					check_immediate_options(opt[k], tmp, TRUE);
+					break;
+				}
+				bell();
+				break;
 		}
 	}
 }
 
 
 void display_account_information(void) {
-	int l = 3;
-	if (!acc_opt_screen) return;
-
-	if (acc_got_info) {
-		/* (Note: Flags that aren't displayed here yet but could be, if wanted:
-		   ACC_MULTI (usually all admins, never players), ACC_NOSCORE (comes with TRIAL)) */
-		if (acc_flags & ACC_TRIAL) c_prt(TERM_YELLOW, "Your account hasn't been validated.", l, 2);
-		else c_prt(TERM_L_GREEN, "Your account is valid.", l, 2);
-
-#if 1 /* display account flags as account info */
-		l++;
-		if (acc_flags & ACC_ADMIN) c_prt(TERM_BLUE, "Your account is an administrator.", l, 2);
-		else if (acc_flags & ACC_VRESTRICTED) c_prt(TERM_ORANGE, "Your account is extra-restricted.", l, 2);
-		else if (acc_flags & ACC_RESTRICTED) c_prt(TERM_YELLOW, "Your account is restricted.", l, 2);
-		else if (acc_flags & ACC_VPRIVILEGED) c_prt(TERM_L_BLUE, "Your account is extra-privileged.", l, 2);
-		else if (acc_flags & ACC_PRIVILEGED) c_prt(TERM_L_BLUE, "Your account is privileged.", l, 2);
-
-		l++;
-		if (acc_flags & ACC_ANOPVP) c_prt(TERM_RED, "Your account is not allowed under penalty to PvP.", l, 2);
-		else if (acc_flags & ACC_NOPVP) c_prt(TERM_WHITE, "Your account cannot participate in PvP.", l, 2);
-		else if (acc_flags & ACC_PVP) c_prt(TERM_SLATE, "Your account may participate in PvP.", l, 2);
-
-		l++;
-		if (acc_flags & ACC_VQUIET) c_prt(TERM_ORANGE, "Your account is silenced.", l, 2);
-		else if (acc_flags & ACC_QUIET) c_prt(TERM_YELLOW, "Your account is partially silenced.", l, 2);
-#endif
-	} else c_prt(TERM_SLATE, "Retrieving data...", l, 2);
-
-	/* Added in 4.7.3 */
-	l = 10;
-	c_prt(TERM_WHITE, "Account-based character information:", l, 0);
-	l += 2;
-	if (p_ptr->admin_dm) c_prt(TERM_BLUE, 			"Dungeon Master                 ", l, 2);
-	else if (p_ptr->admin_wiz) c_prt(TERM_BLUE, 		"Dungeon Wizard                 ", l, 2);
-#if 0 /* display account flags as character info */
-	else if (p_ptr->restricted == 2) c_prt(TERM_ORANGE, 	"Extra-restricted player account", l, 2);
-	else if (p_ptr->restricted == 1) c_prt(TERM_YELLOW, 	"Restricted player account      ", l, 2);
-	else if (p_ptr->privileged == 2) c_prt(TERM_L_BLUE, 	"Extra-privileged player account", l, 2);
-	else if (p_ptr->privileged == 1) c_prt(TERM_L_BLUE, 	"Privileged player account      ", l, 2);
-	else c_prt(TERM_L_GREEN, 				"Standard player account        ", l, 2);
-#else
-	else c_prt(TERM_L_GREEN, 				"Player character               ", l, 2);
-#endif
-
-	/* hack: hide cursor */
-	Term->scr->cx = Term->wid;
-	Term->scr->cu = 1;
+	if (acc_opt_screen) {
+		if (acc_got_info) {
+			if (acc_flags & ACC_TRIAL) {
+				c_prt(TERM_YELLOW, "Your account hasn't been validated.", 3, 2);
+			} else {
+				c_prt(TERM_L_GREEN, "Your account is valid.", 3, 2);
+			}
+		} else {
+			c_prt(TERM_SLATE, "Retrieving data...", 3, 2);
+		}
+	}
 }
 
 
@@ -8459,8 +6613,8 @@ static void do_cmd_options_acc(void) {
 	char ch;
 	bool change_pass = FALSE;
 	bool go = TRUE;
-	char old_pass[PASSWORD_LEN], new_pass[PASSWORD_LEN], con_pass[PASSWORD_LEN];
-	char tmp[PASSWORD_LEN];
+	char old_pass[16], new_pass[16], con_pass[16];
+	char tmp[16];
 
 	acc_opt_screen = TRUE;
 	acc_got_info = FALSE;
@@ -8481,7 +6635,7 @@ static void do_cmd_options_acc(void) {
 
 		if (change_pass) {
 			prt("Change password", 1, 0);
-			prt(format("Length must be from %d to %d characters", PASSWORD_MIN_LEN, PASSWORD_LEN - 1), 3, 2);
+			prt("Maximum length is 15 characters", 3, 2);
 			c_prt(TERM_L_WHITE, "Old password:", 6, 2);
 			c_prt(TERM_L_WHITE, "New password:", 8, 2);
 			c_prt(TERM_L_WHITE, "Confirm:", 10, 2);
@@ -8490,7 +6644,7 @@ static void do_cmd_options_acc(void) {
 			/* Ask for old password */
 			move_cursor(6, 16);
 			tmp[0] = '\0';
-			if (!askfor_aux(tmp, PASSWORD_LEN - 1, ASKFOR_PRIVATE)) {
+			if (!askfor_aux(tmp, 15, ASKFOR_PRIVATE)) {
 				change_pass = FALSE;
 				continue;
 			}
@@ -8507,7 +6661,7 @@ static void do_cmd_options_acc(void) {
 				/* Ask for new password */
 				move_cursor(8, 16);
 				tmp[0] = '\0';
-				if (!askfor_aux(tmp, PASSWORD_LEN - 1, ASKFOR_PRIVATE)) {
+				if (!askfor_aux(tmp, 15, ASKFOR_PRIVATE)) {
 					change_pass = FALSE;
 					break;
 				}
@@ -8518,7 +6672,7 @@ static void do_cmd_options_acc(void) {
 				/* Ask for the confirmation */
 				move_cursor(10, 16);
 				tmp[0] = '\0';
-				if (!askfor_aux(tmp, PASSWORD_LEN - 1, ASKFOR_PRIVATE)) {
+				if (!askfor_aux(tmp, 15, ASKFOR_PRIVATE)) {
 					change_pass = FALSE;
 					break;
 				}
@@ -8538,7 +6692,7 @@ static void do_cmd_options_acc(void) {
 
 			/* Send the request */
 			if (Send_change_password(old_pass, new_pass) == 1) {
-				//c_msg_print("\377wPassword change has been submitted.");
+				c_msg_print("\377gPassword change has been submitted.");
 #ifdef RETRY_LOGIN
 				/* update password in memory so we can relogin */
 				strcpy(pass, new_pass);
@@ -8593,7 +6747,7 @@ static void do_cmd_options_win(void) {
 
 	bool go = TRUE;
 
-	u32b old_flag[ANGBAND_TERM_MAX];
+	u32b old_flag[8];
 
 
 	/* Memorize old flags */
@@ -8621,12 +6775,13 @@ static void do_cmd_options_win(void) {
 			if (c_cfg.use_color && (j == x)) a = TERM_L_BLUE;
 
 			/* Window name, staggered, centered */
-			Term_putstr(30 + j * 5 - strlen(s) / 2, vertikal_offset + j % 2, -1, a, (char*)s);
+			Term_putstr(35 + j * 5 - strlen(s) / 2, vertikal_offset + j % 2, -1, a, (char*)s);
 		}
 
 		/* Display the options */
 		for (i = 0; i < NR_OPTIONS_SHOWN; i++) {
 			byte a = TERM_WHITE;
+
 			cptr str = window_flag_desc[i];
 
 			/* Use color */
@@ -8639,7 +6794,8 @@ static void do_cmd_options_win(void) {
 			Term_putstr(0, i + vertikal_offset + 2, -1, a, (char*)str);
 
 			/* Display the windows */
-			for (j = 1; j < ANGBAND_TERM_MAX; j++) {
+			for (j = 1; j < ANGBAND_TERM_MAX; j++)
+			{
 				byte a = TERM_SLATE;
 				char c = '.';
 
@@ -8653,84 +6809,83 @@ static void do_cmd_options_win(void) {
 				}
 
 				/* Flag value */
-				Term_putch(30 + j * 5, i + vertikal_offset + 2, a, c);
+				Term_putch(35 + j * 5, i + vertikal_offset + 2, a, c);
 			}
 		}
 
 		/* Place Cursor */
-		Term_gotoxy(30 + x * 5, y + vertikal_offset + 2);
+		Term_gotoxy(35 + x * 5, y + vertikal_offset + 2);
 
 		/* Get key */
 		ch = inkey();
 
 		/* Analyze */
 		switch (ch) {
-		case ESCAPE:
-			go = FALSE;
-			break;
+			case ESCAPE:
+				go = FALSE;
+				break;
 
-		case KTRL('T'):
-			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", 2);
-			break;
+			case KTRL('T'):
+				/* Take a screenshot */
+				xhtml_screenshot("screenshot????");
+				break;
 
-		/* specialty: allow chatting from within here */
-		case ':':
-			cmd_message();
-			inkey_msg = TRUE; /* And suppress macros again.. */
-			break;
+			/* specialty: allow chatting from within here */
+			case ':':
+				cmd_message();
+				break;
 
-		case 'T':
-		case 't':
-			/* Clear windows */
-			for (j = 1; j < ANGBAND_TERM_MAX; j++)
-				window_flag[j] &= ~(1L << y);
+			case 'T':
+			case 't':
+				/* Clear windows */
+				for (j = 1; j < ANGBAND_TERM_MAX; j++)
+					window_flag[j] &= ~(1L << y);
 
-			/* Clear flags */
-			for (i = 1; i < NR_OPTIONS_SHOWN; i++)
-				window_flag[x] &= ~(1L << i);
+				/* Clear flags */
+				for (i = 1; i < NR_OPTIONS_SHOWN; i++)
+					window_flag[x] &= ~(1L << i);
 
-			/* Fall through */
+				/* Fall through */
 
-		case 'y':
-		case 'Y':
-			/* Ignore screen */
-			if (x == 0) break;
+			case 'y':
+			case 'Y':
+				/* Ignore screen */
+				if (x == 0) break;
 
-			/* Set flag */
-			window_flag[x] |= (1L << y);
+				/* Set flag */
+				window_flag[x] |= (1L << y);
 
-			/* Update windows */
-			p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER | PW_MSGNOCHAT | PW_MESSAGE | PW_CHAT | PW_MINIMAP);//PW_LAGOMETER is called automatically, no need.
-			window_stuff();
-			break;
+				/* Update windows */
+				p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER | PW_MSGNOCHAT | PW_MESSAGE | PW_CHAT | PW_MINIMAP);//PW_LAGOMETER is called automatically, no need.
+				window_stuff();
+				break;
 
-		case 'n':
-		case 'N':
-			/* Clear flag */
-			window_flag[x] &= ~(1L << y);
+			case 'n':
+			case 'N':
+				/* Clear flag */
+				window_flag[x] &= ~(1L << y);
 
-			/* Update windows */
-			p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER | PW_MSGNOCHAT | PW_MESSAGE | PW_CHAT | PW_MINIMAP);//PW_LAGOMETER is called automatically, no need.
-			window_stuff();
-			break;
+				/* Update windows */
+				p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER | PW_MSGNOCHAT | PW_MESSAGE | PW_CHAT | PW_MINIMAP);//PW_LAGOMETER is called automatically, no need.
+				window_stuff();
+				break;
 
-		case '\r':
-			/* Toggle flag */
-			window_flag[x] ^= (1L << y);
+			case '\r':
+				/* Toggle flag */
+				window_flag[x] ^= (1L << y);
 
-			/* Update windows */
-			p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER | PW_MSGNOCHAT | PW_MESSAGE | PW_CHAT | PW_MINIMAP);//PW_LAGOMETER is called automatically, no need.
-			window_stuff();
-			break;
+				/* Update windows */
+				p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER | PW_MSGNOCHAT | PW_MESSAGE | PW_CHAT | PW_MINIMAP);//PW_LAGOMETER is called automatically, no need.
+				window_stuff();
+				break;
 
-		default:
-			d = keymap_dirs[ch & 0x7F];
+			default:
+				d = keymap_dirs[ch & 0x7F];
 
-			x = (x + ddx[d] + ANGBAND_TERM_MAX - 2) % (ANGBAND_TERM_MAX - 1) + 1;
-			y = (y + ddy[d] + NR_OPTIONS_SHOWN) % NR_OPTIONS_SHOWN;
+				x = (x + ddx[d] + 6) % 7 + 1;
+				y = (y + ddy[d] + NR_OPTIONS_SHOWN) % NR_OPTIONS_SHOWN;
 
-			if (!d) bell();
+				if (!d) bell();
 		}
 	}
 
@@ -8760,19 +6915,17 @@ static void do_cmd_options_win(void) {
 	/* Update windows */
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER | PW_MSGNOCHAT | PW_MESSAGE | PW_CHAT | PW_MINIMAP);//PW_LAGOMETER is called automatically, no need.
 	window_stuff();
-
-	check_for_playerlist();
 }
 
 #ifdef ENABLE_SUBWINDOW_MENU
  #if defined(WINDOWS) || defined(USE_X11)
-  #define MAX_FONTS 50
+#define MAX_FONTS 50
+  #ifdef WINDOWS
 
-//  #ifdef WINDOWS
 static int font_name_cmp(const void *a, const void *b) {
    #if 0 /* simple way */
 	return strcmp((const char*)a, (const char*)b);
-   #elif 0 /* sort in single-digit numbers before double-digit ones */
+   #else /* sort in single-digit numbers before double-digit ones */
 	char at[256], bt[256];
 	at[0] = '0';
 	bt[0] = '0';
@@ -8781,27 +6934,9 @@ static int font_name_cmp(const void *a, const void *b) {
 	if (atoi((char*)b) < 10) strcpy(bt + 1, (char *)b);
 	else strcpy(bt, (char *)b);
 	return strcmp(at, bt);
-   #else /* Sort by width, then height */
-	/* Let's sort the array by font size actually */
-	int fwid1, fhgt1, fwid2, fhgt2;
-	char *fmatch;
-
-	fwid1 = atoi(a);
-	fmatch = my_strcasestr(a, "x");
-	if (!fmatch) return(-1);  //paranoia - anyway, push 'broken' fonts towards the end of the list, just in case..
-	fhgt1 = atoi(fmatch + 1);
-
-	fwid2 = atoi(b);
-	fmatch = my_strcasestr(b, "x");
-	if (!fmatch) return(-1);  //paranoia - anyway, push 'broken' fonts towards the end of the list, just in case..
-	fhgt2 = atoi(fmatch + 1);
-
-	if (fwid1 != fwid2) return(fwid1 > fwid2) ? 1 : -1;
-	else if (fhgt1 != fhgt2) return(fhgt1 > fhgt2) ? 1 : -1;
-	else return(0);
    #endif
 }
-//  #endif
+  #endif
 
 static void do_cmd_options_fonts(void) {
 	int j, d, vertikal_offset = 3;
@@ -8813,13 +6948,11 @@ static void do_cmd_options_fonts(void) {
 	int fonts = 0;
 	char tmp_name[256];
 	char graphic_font_name[MAX_FONTS][256];
-	int graphic_fonts = 0;
+	int graphic_fonts=0;
 
   #ifndef WINDOWS
 	int x11_refresh = 50;
 	FILE *fff;
-  #else
-	char *cp, *cpp;
   #endif
 
   #ifdef WINDOWS /* Windows uses the .FON files */
@@ -8839,7 +6972,7 @@ static void do_cmd_options_fonts(void) {
 	while ((ent = readdir(dir))) {
 		strcpy(tmp_name, ent->d_name);
 		j = -1;
-		while (tmp_name[++j]) tmp_name[j] = tolower(tmp_name[j]);
+		while(tmp_name[++j]) tmp_name[j] = tolower(tmp_name[j]);
 		if (strstr(tmp_name, ".fon")) {
 			if (tmp_name[0] == 'g') {
 				strcpy(graphic_font_name[graphic_fonts], ent->d_name);
@@ -8854,10 +6987,18 @@ static void do_cmd_options_fonts(void) {
   #endif
 
   #ifdef USE_X11 /* Linux/OSX use at least the basic system fonts (/usr/share/fonts/misc) - C. Blue */
-	int misc_fonts = get_misc_fonts(font_name[fonts], MAX_FONTS - fonts, 256);
-
-	if (misc_fonts > 0) {
-		fonts += misc_fonts;
+	/* Get bitmap font folder ('misc') and scan fonts.alias in it for basic bitmap fonts:
+	   'cat `xset q | grep -o "[/a-z]*misc"`/fonts.alias | grep -o "^[0-9][0-9]*x[0-9]*\(bold\)\? " | grep -o "[^ ]*"' <- note the trailing space! */
+	j = system("cat `xset q | grep -o \"[/a-z]*misc\"`/fonts.alias | grep -o \"^[0-9][0-9]*x[0-9]*\\(bold\\)\\? \" | grep -o \"[^ ]*\" > /tmp/tomenet-fonts.tmp");
+	fff = fopen("/tmp/tomenet-fonts.tmp", "r");
+	if (fff) {
+		while (fonts < MAX_FONTS) {
+			if (!fgets(tmp_name, 256, fff)) break;
+			tmp_name[strlen(tmp_name) - 1] = 0; //remove trailing \n
+			strcpy(font_name[fonts], tmp_name);
+			fonts++;
+		}
+		remove("/tmp/tomenet-fonts.tmp"); //clean up
 	} else {
 		/* We boldly assume that these exist by default somehow! - They probably don't though,
 		   if the above command failed, but what else can we try at this point.. #despair */
@@ -8875,7 +7016,6 @@ static void do_cmd_options_fonts(void) {
 	fff = fopen(path, "r");
 	if (fff) {
 		char tmp[256], *cp;
-
 		while (fonts < MAX_FONTS) {
 			if (!fgets(tmp_name, 256, fff)) break;
 			tmp_name[strlen(tmp_name) - 1] = 0; //remove trailing \n
@@ -8887,7 +7027,7 @@ static void do_cmd_options_fonts(void) {
 			strcpy(tmp_name, cp);
 
 			cp = tmp_name + (strlen(tmp_name) - 1);
-			while (cp >= tmp_name && *cp == ' ') {
+			while (*cp == ' ') {
 				*cp = 0;
 				cp--;
 			}
@@ -8907,32 +7047,30 @@ static void do_cmd_options_fonts(void) {
 		return;
 	}
 
-//  #ifdef WINDOWS /* actually never sort fonts on X11, because they come in a sorted manner from fonts.alias and fonts.txt files already. */
+  #ifdef WINDOWS /* actually never sort fonts on X11, because they come in a sorted manner from fonts.alias and fonts.txt files already. */
 	qsort(font_name, fonts, sizeof(char[256]), font_name_cmp);
    #ifdef WINDOWS /* Windows supports graphic fonts for the mini map */
 	qsort(graphic_font_name, graphic_fonts, sizeof(char[256]), font_name_cmp);
    #endif
-//  #endif
+  #endif
 
-   #ifdef WINDOWS /* windows client currently saves full paths (todo: just change to filename only) */
+  #ifdef WINDOWS /* windows client currently saves full paths (todo: just change to filename only) */
 	for (j = 0; j < fonts; j++) {
 		strcpy(tmp_name, font_name[j]);
 		//path_build(font_name[j], 1024, path, font_name[j]);
-		//strcpy(font_name[j], ".\\");
-		font_name[j][0] = 0;
+		strcpy(font_name[j], ".\\");
 		strcat(font_name[j], path);
 		strcat(font_name[j], "\\");
 		strcat(font_name[j], tmp_name);
 	}
 	for (j = 0; j < graphic_fonts; j++) {
 		strcpy(tmp_name, graphic_font_name[j]);
-		//strcpy(graphic_font_name[j], ".\\");
-		graphic_font_name[j][0] = 0;
+		strcpy(graphic_font_name[j], ".\\");
 		strcat(graphic_font_name[j], path);
 		strcat(graphic_font_name[j], "\\");
 		strcat(graphic_font_name[j], tmp_name);
 	}
-   #endif
+  #endif
 
 	/* suppress hybrid macros */
 	inkey_msg_old = inkey_msg;
@@ -8944,8 +7082,8 @@ static void do_cmd_options_fonts(void) {
 	/* Interact */
 	while (go) {
 		/* Prompt XXX XXX XXX */
-		Term_putstr(0, 0, -1, TERM_WHITE, "  (<\377ydir\377w>, \377yv\377w (visibility), \377y-\377w/\377y+\377w,\377y=\377w (smaller/bigger), \377yENTER\377w (enter font name), \377yESC\377w)");
-		Term_putstr(0, 1, -1, TERM_WHITE, format("  (%d font%s and %d graphic font%s available, \377yl\377w to list in message window)", fonts, fonts == 1 ? "" : "s", graphic_fonts, graphic_fonts == 1 ? "" : "s"));
+		Term_putstr(0, 0, -1, TERM_WHITE, "  (<\377ydir\377w>, \377yv\377w (visibility), \377y-\377w/\377y+\377w (smaller/bigger), \377yENTER\377w (enter font name), \377yESC\377w)");
+		Term_putstr(0, 1, -1, TERM_WHITE, format("  (%d fonts available)", fonts));
 
 		/* Display the windows */
 		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
@@ -8963,7 +7101,7 @@ static void do_cmd_options_fonts(void) {
 			if (c_cfg.use_color && !term_get_visibility(j)) a = TERM_L_DARK;
 			strcpy(buf, get_font_name(j));
 			buf[59] = 0;
-			while (strlen(buf) < 59) strcat(buf, " ");
+			while(strlen(buf) < 59) strcat(buf, " ");
 			Term_putstr(20, vertikal_offset + j, -1, a, buf);
 		}
 
@@ -8984,23 +7122,23 @@ static void do_cmd_options_fonts(void) {
 
 		case KTRL('T'):
 			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", 2);
+			xhtml_screenshot("screenshot????");
 			break;
 		case ':':
 			/* specialty: allow chatting from within here */
 			cmd_message();
-			inkey_msg = TRUE; /* And suppress macros again.. */
 			break;
 
 		case 'v':
 			if (y == 0) break; /* main window cannot be invisible */
 			term_toggle_visibility(y);
+			Term_putstr(0, 15, -1, TERM_YELLOW, "-- Changes to window visibilities require a restart of the client --");
 			break;
 
-		case '=':
 		case '+':
 			/* find out which of the fonts in lib/xtra/fonts we're currently using */
-			if ((window_flag[y] & PW_MINIMAP) && graphic_fonts > 0) {
+			if ((window_flag[y] & PW_MINIMAP) && graphic_fonts > 0)
+			{
 				//Include the graphic fonts, because we are cycling the mini-map
 				for (j = 0; j < graphic_fonts - 1; j++) {
 					if (!strcasecmp(graphic_font_name[j], get_font_name(y))) {
@@ -9028,7 +7166,8 @@ static void do_cmd_options_fonts(void) {
 
 		case '-':
 			/* find out which of the fonts in lib/xtra/fonts we're currently using */
-			if ((window_flag[y] & PW_MINIMAP) && graphic_fonts > 0) {
+			if ((window_flag[y] & PW_MINIMAP) && graphic_fonts > 0)
+			{
 				//Include the graphic fonts, because we are cycling the mini-map
 				for (j = 1; j < graphic_fonts; j++) {
 					if (!strcasecmp(graphic_font_name[j], get_font_name(y))) {
@@ -9070,47 +7209,6 @@ static void do_cmd_options_fonts(void) {
   #endif
 			break;
 
-		case 'l':
-			if (!fonts && !graphic_fonts) {
-				c_message_add("No fonts and no graphical fonts found.");
-				break;
-			}
-			if (fonts) {
-				char tmp_name2[256];
-				int c = 0;
-
-				c_message_add(format("-- Fonts (%d): --", fonts));
-				tmp_name2[0] = 0;
-				for (j = 0; j < fonts; j++) {
-  #ifdef WINDOWS
-					/* Windows font names contain the whole .\lib\xtra\fonts\xxx, crop that */
-					cpp = font_name[j];
-					while ((cp = strchr(cpp, '\\'))) cpp = cp + 1;
-					sprintf(tmp_name, "%-18s", cpp);
-  #else
-					sprintf(tmp_name, "%-18s", font_name[j]);
-  #endif
-
-					/* print up to 4 font names per line */
-					c++;
-					if (c % 4 == 0 || strlen(tmp_name2) + strlen(tmp_name) > 79 - 2) {
-						c_message_add(format("  %s", tmp_name2));
-						tmp_name2[0] = 0;
-						c = 0;
-					}
-
-					strcat(tmp_name2, tmp_name);
-				}
-				c_message_add(format("  %s", tmp_name2));
-			}
-			if (graphic_fonts) {
-				c_message_add(format("-- Graphic fonts (%d): --", graphic_fonts));
-				for (j = 0; j < graphic_fonts; j++)
-					c_message_add(format("  %s", graphic_font_name[j]));
-			}
-			c_message_add(""); //linefeed
-			break;
-
 		default:
 			d = keymap_dirs[ch & 0x7F];
 			y = (y + ddy[d] + NR_OPTIONS_SHOWN) % NR_OPTIONS_SHOWN;
@@ -9120,28 +7218,26 @@ static void do_cmd_options_fonts(void) {
 
 	/* restore responsiveness to hybrid macros */
 	inkey_msg = inkey_msg_old;
-
-	check_for_playerlist();
 }
  #endif /* WINDOWS || USE_X11 */
 #endif /* ENABLE_SUBWINDOW_MENU */
 
-#ifdef USE_SOUND_2010
 static void do_cmd_options_sfx(void) {
- #if SOUND_SDL
+#if SOUND_SDL
 	do_cmd_options_sfx_sdl();
- #endif
+#endif
 }
 static void do_cmd_options_mus(void) {
- #if SOUND_SDL
+#if SOUND_SDL
 	do_cmd_options_mus_sdl();
- #endif
-}
 #endif
+}
 
 errr options_dump(cptr fname) {
 	int i, j;
+
 	FILE *fff;
+
 	char buf[1024];
 
 
@@ -9165,7 +7261,7 @@ errr options_dump(cptr fname) {
 	fff = my_fopen(buf, "w");
 
 	/* Failure */
-	if (!fff) return(-1);
+	if (!fff) return (-1);
 
 
 	/* Skip space */
@@ -9195,17 +7291,20 @@ errr options_dump(cptr fname) {
 	fprintf(fff, "\n");
 
 	/* Dump window flags */
-	for (i = 1; i < ANGBAND_TERM_MAX; i++) {
+	for (i = 1; i < ANGBAND_TERM_MAX; i++)
+	{
 		/* Require a real window */
-		if (!ang_term[i]) continue;
+		if (!ang_term_name[i]) continue;
 
 		/* Check each flag */
-		for (j = 0; j < NR_OPTIONS_SHOWN; j++) {
+		for (j = 0; j < NR_OPTIONS_SHOWN; j++)
+		{
 			/* Require a real flag */
 			if (!window_flag_desc[j]) continue;
 
 			/* Dump the flag */
-			if (window_flag[i] & (1L << j)) {
+			if (window_flag[i] & (1L << j))
+			{
 				/* Comment */
 				fprintf(fff, "# Window '%s', Flag '%s'\n",
 						ang_term_name[i], window_flag_desc[j]);
@@ -9225,7 +7324,7 @@ errr options_dump(cptr fname) {
 	my_fclose(fff);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -9244,10 +7343,8 @@ errr options_dump(cptr fname) {
 
 static void do_cmd_options_install_audio_packs(void) {
 	FILE *fff;
-	char path[1024], out_val[1024 + 28];
-	char c, ch, pack_name[1024];
+	char path[1024], c, ch, out_val[1024];
 	int r;
-	bool picked = FALSE;
 
 #ifdef WINDOWS /* use windows registry to locate 7-zip */
 	HKEY hTestKey;
@@ -9258,15 +7355,14 @@ static void do_cmd_options_install_audio_packs(void) {
 	unsigned long path_7z_type = REG_SZ;
 #endif
 
-	bool sound_pack = FALSE, music_pack = FALSE;
-	//bool sound_already = (audio_sfx > 3), music_already = (audio_music > 0);
+	bool sound_pack = TRUE, music_pack = TRUE;
+	bool sound_already = (audio_sfx > 3), music_already = (audio_music > 0);
 	bool password_ok = TRUE;
 
 	/* Clear screen */
 	Term_clear();
-	Term_putstr(0, 0, -1, TERM_WHITE, "Install a sound or music pack from \377y7z\377w files within your \377yTomeNET\377w folder...");
+	Term_putstr(0, 0, -1, TERM_WHITE, "Trying to install sound pack and music pack from 7z files...");
 	Term_fresh();
-#if 0 /* hmm why not? */
 	if (quiet_mode) {
 		Term_putstr(0, 1, -1, TERM_RED, "Client is running in 'quiet mode'. Cannot install audio packs!");
 		Term_putstr(0, 2, -1, TERM_RED, "(Restart TomeNET client with 'Sound=1' and without '-q'.)");
@@ -9274,7 +7370,6 @@ static void do_cmd_options_install_audio_packs(void) {
 		inkey();
 		return;
 	}
-#endif
 
 	/* test for availability of unarchiver */
 #ifdef WINDOWS
@@ -9352,7 +7447,7 @@ static void do_cmd_options_install_audio_packs(void) {
 	}
 	Term_putstr(0, 1, -1, TERM_WHITE, "Unarchiver 7-Zip (7zG.exe) found.");
 #else /* assume posix */
-    if (!strcmp(ANGBAND_SYS, "x11")) {
+if (!strcmp(ANGBAND_SYS, "x11")) {
  #if 0	/* command-line 7z */
 	r = system("7z > tmp.7z");
  #else	/* GUI 7z (for password prompts) */
@@ -9361,7 +7456,7 @@ static void do_cmd_options_install_audio_packs(void) {
 	r = system("7zG a tmp.7z tmp");
 	remove("tmp");
  #endif
-	if (!(fff = fopen("tmp.7z", "r"))) { /* paranoia? */
+        if (!(fff = fopen("tmp.7z", "r"))) { /* paranoia? */
 		Term_putstr(0, 1, -1, TERM_RED, "7-zip GUI not found ('7zG'). Install it first. (Package name is 'p7zip'.)");
 		Term_putstr(0, 9, -1, TERM_WHITE, "Press any key to return to options menu...");
 		inkey();
@@ -9374,7 +7469,7 @@ static void do_cmd_options_install_audio_packs(void) {
 		return;
 	}
 	Term_putstr(0, 1, -1, TERM_WHITE, "Unarchiver (7zG) found.");
-    } else { /* gcu */
+} else { /* gcu */
 	/* assume posix; ncurses commandline */
 	r = system("7z > tmp.7z");
 	if (!(fff = fopen("tmp.7z", "r"))) { /* paranoia? */
@@ -9390,229 +7485,161 @@ static void do_cmd_options_install_audio_packs(void) {
 		return;
 	}
 	Term_putstr(0, 1, -1, TERM_WHITE, "Unarchiver (7z) found.");
-    }
+}
 #endif
 	Term_fresh();
 	fclose(fff);
 	remove("tmp.7z");
 
-#ifdef WINDOWS
-    { /* Use native Windows functions from dirent to query directory structure directly */
-	struct dirent *de;
-	DIR *dr;
+	/* test for existence of sound pack file */
+	if (!(fff = fopen("TomeNET-soundpack.7z", "r"))) sound_pack = FALSE;
+	else fclose(fff);
 
-	if (!(dr = opendir("."))) {
-		c_message_add("\377oError: Couldn't scan TomeNET folder.");
-		return;
-	}
-	while ((de = readdir(dr))) {
-		strcpy(pack_name, de->d_name);
-		if (!strncmp(pack_name, "TomeNET-soundpack", 17) || !strncmp(pack_name, "TomeNET-musicpack", 17)) {
-			if (!strncmp(pack_name, "TomeNET-soundpack", 17)) sound_pack = TRUE;
-			if (!strncmp(pack_name, "TomeNET-musicpack", 17)) music_pack = TRUE;
-
-			Term_putstr(0, 3, -1, TERM_ORANGE, format("Found file '%s'. Install this one? [Y/n]", pack_name));
-			while (TRUE) {
-				c = inkey();
-				if (c == 'n' || c == 'N') break;
-				if (c == 'y' || c == 'Y' || c == ' ' || c == '\r') break;
-			}
-			if (c == 'n' || c == 'N') continue;
-
-			if (!strncmp(pack_name, "TomeNET-soundpack", 17)) music_pack = FALSE;
-			if (!strncmp(pack_name, "TomeNET-musicpack", 17)) sound_pack = FALSE;
-			picked = TRUE;
-			break;
-		}
-	}
-	closedir(dr);
-    }
-#else /* assume POSIX */
-	r = system("ls TomeNET-soundpack*.7z TomeNET-musicpack*.7z > __tomenet.tmp");
-	fff = fopen("__tomenet.tmp", "r");
-	if (!fff) {
-		c_message_add("\377oError: Couldn't scan TomeNET folder.");
-		return;
-	}
-	while (!feof(fff)) {
-		if (!fgets(pack_name, 1024, fff)) break;
-		pack_name[strlen(pack_name) - 1] = 0; //'ls' command outputs trailing '/' on each line
-		if (!strncmp(pack_name, "TomeNET-soundpack", 17) || !strncmp(pack_name, "TomeNET-musicpack", 17)) {
-			if (!strncmp(pack_name, "TomeNET-soundpack", 17)) sound_pack = TRUE;
-			if (!strncmp(pack_name, "TomeNET-musicpack", 17)) music_pack = TRUE;
-
-			Term_putstr(0, 3, -1, TERM_ORANGE, format("Found file '%s'. Install this one? [Y/n]", pack_name));
-			while (TRUE) {
-				c = inkey();
-				if (c == 'n' || c == 'N') break;
-				if (c == 'y' || c == 'Y' || c == ' ' || c == '\r') break;
-			}
-			if (c == 'n' || c == 'N') continue;
-
-			if (!strncmp(pack_name, "TomeNET-soundpack", 17)) music_pack = FALSE;
-			if (!strncmp(pack_name, "TomeNET-musicpack", 17)) sound_pack = FALSE;
-			picked = TRUE;
-			break;
-		}
-	}
-	fclose(fff);
-	remove("__tomenet.tmp");
-#endif
+	/* test for existence of music pack file */
+	if (!(fff = fopen("TomeNET-musicpack.7z", "r"))) music_pack = FALSE;
+	else fclose(fff);
 
 	if (!sound_pack && !music_pack) {
-		Term_putstr(0, 3, -1, TERM_ORANGE, "Neither files 'TomeNET-soundpack*.7z' nor 'TomeNET-musicpack*.7z' were");
-		Term_putstr(0, 4, -1, TERM_ORANGE, "found in your TomeNET folder. Aborting audio pack installation.       ");
-		Term_putstr(0, 9, -1, TERM_WHITE, "Press any key to return to options menu...                             ");
-		inkey();
-		return;
-	}
-	if (!picked) {
-		Term_putstr(0, 3, -1, TERM_ORANGE, "You skipped all available audio packs, hence none were installed.     ");
-		Term_putstr(0, 4, -1, TERM_ORANGE, "Aborting audio pack installation.                                     ");
-		Term_putstr(0, 9, -1, TERM_WHITE, "Press any key to return to options menu...                             ");
+		Term_putstr(0, 3, -1, TERM_ORANGE, "Neither file 'TomeNET-soundpack.7z' nor 'TomeNET-musicpack.7z' were");
+		Term_putstr(0, 4, -1, TERM_ORANGE, "found in your TomeNET folder. Aborting audio pack installation.");
+		Term_putstr(0, 9, -1, TERM_WHITE, "Press any key to return to options menu...");
 		inkey();
 		return;
 	}
 
-	/* Check what folder name the pack wants to extract to, whether that folder already exists, and allow to cancel the process. */
-#ifdef WINDOWS
-	/* uhoh: 7zG actually does NOT support 'l' command, lol. Need to trust that we can run 7z in the same folder for that, I guess */
-	strcpy(out_val, path_7z);
-	out_val[strlen(out_val) - 5] = 0;
-	strcat(out_val, ".exe"); //'''>_> {cough}
- #if 0
-	_spawnl(_P_WAIT, out_val, format("\"%s\"", out_val), "l", pack_name, ">", "__tomenet.tmp", NULL);
- #else
-	fff = fopen("__tomenethelper.bat", "w");
-	if (!fff) {
-		c_message_add("\377oError: Couldn't write temporary file.");
-		return;
+	/* verify if we'd be overwriting stuff */
+	if (!sound_pack) {
+		Term_putstr(0, 3, -1, TERM_SLATE, "(File 'TomeNET-soundpack.7z' not found, skipping.)");
 	}
-	fprintf(fff, format("@\"%s\" l %s > __tomenet.tmp\n", out_val, pack_name));
-	fclose(fff);
-	_spawnl(_P_WAIT, "__tomenethelper.bat", "__tomenethelper.bat", NULL);
-	remove("__tomenethelper.bat");
- #endif
-#else /* assume POSIX */
-    if (!strcmp(ANGBAND_SYS, "x11")) {
-	r = system(format("7z l %s > __tomenet.tmp", pack_name));
-    } else { /* gcu */
-	r = system(format("7z l %s > __tomenet.tmp", pack_name));
-    }
-#endif
-	fff = fopen("__tomenet.tmp", "r");
-	if (!fff) {
-		c_message_add("\377oError: Couldn't scan 7z file.");
-		return;
-	}
-	while (!feof(fff)) {
-		if (!fgets(out_val, 1024, fff)) break;
-		/* Scan for folder names */
-		if (!strstr(out_val, "D....")) continue;
-		if (sound_pack) {
-			/* The first folder must start on 'sound' */
-			if (!strstr(out_val, " sound") || strchr(out_val, '/')) {
-				c_message_add("\377oError: Invalid sound pack file. Has no top folder 'sound*'.");
-				fclose(fff);
-				remove("__tomenet.tmp");
-				return;
+	if (sound_pack && sound_already) {
+		Term_putstr(0, 3, -1, TERM_YELLOW, "It seems a sound pack is already installed.");
+		Term_putstr(0, 4, -1, TERM_YELLOW, "Do you want to extract 'TomeNET-soundpack.7z' and overwrite it? (y/n)");
+		while (TRUE) {
+			c = inkey();
+			if (c == 'n' || c == 'N') {
+				sound_pack = FALSE;
+				break;
 			}
-			picked = FALSE;//abuse
-			strcpy(path, strstr(out_val, "sound"));
+			if (c == 'y' || c == 'Y') break;
 		}
-		if (music_pack) {
-			/* The first folder must start on 'music' */
-			if (!strstr(out_val, " music") || strchr(out_val, '/')) {
-				c_message_add("\377oError: Invalid music pack file. Has no top folder 'music*'.");
-				fclose(fff);
-				remove("__tomenet.tmp");
-				return;
-			}
-			picked = FALSE;//abuse
-			strcpy(path, strstr(out_val, "music"));
-		}
-		if (!picked) break;
 	}
-	fclose(fff);
-	remove("__tomenet.tmp");
-	if (picked) {
-		c_message_add("\377oError: Invalid audio pack file. Has no top folder.");
-		return;
-	}
-	Term_putstr(0, 3, -1, TERM_YELLOW, "That pack wants to install to this target folder. Is that ok? (y/n):");
-#ifdef WINDOWS
-	path[strlen(path) - 1] = 0; //trailing newline
-	Term_putstr(0, 4, -1, TERM_YELLOW, format(" '%s\\%s'", ANGBAND_DIR_XTRA, path));
-#else
-	path[strlen(path) - 1] = 0; //trailing newline
-	Term_putstr(0, 4, -1, TERM_YELLOW, format(" '%s/%s'", ANGBAND_DIR_XTRA, path));
-#endif
-	while (TRUE) {
-		c = inkey();
-		if (c == 'n' || c == 'N') {
-			c_message_add("\377yInstallation process has been cancelled.");
-			return;
-		}
-		if (c == 'y' || c == 'Y') break;
-	}
-
-#ifdef SOUND_SDL
-	/* Windows OS: Need to close all related files so they can actually be overwritten, esp. the .cfg files */
-	if (!quiet_mode) close_audio_sdl();
-#endif
 
 	/* install sound pack */
 	if (sound_pack) {
-		Term_putstr(0, 3, -1, TERM_WHITE, "Installing sound pack...                                                    ");
+		Term_putstr(0, 3, -1, TERM_WHITE, "Installing sound pack...                   ");
 		Term_putstr(0, 4, -1, TERM_WHITE, "                                                                            ");
 		Term_fresh();
 		Term_flush();
 #if defined(WINDOWS)
-		_spawnl(_P_WAIT, path_7z, path_7z_quoted, "x", format("-o%s", ANGBAND_DIR_XTRA), pack_name, NULL);
+		_spawnl(_P_WAIT, path_7z, path_7z_quoted, "x", "TomeNET-soundpack.7z", NULL);
+		path_build(path, 1024, ANGBAND_DIR_XTRA, "sound");
+		sprintf(out_val, "xcopy /I /E /Q /Y /H sound %s", path);
+		r = system(out_val);
+		r = system("rmdir /S /Q sound");
 #else /* assume posix */
-    if (!strcmp(ANGBAND_SYS, "x11")) {
-		r = system(format("7zG x -o%s %s", ANGBAND_DIR_XTRA, pack_name));
-    } else { /* gcu */
-		r = system(format("7z x -o%s %s", ANGBAND_DIR_XTRA, pack_name));
-    }
+if (!strcmp(ANGBAND_SYS, "x11")) {
+		r = system("7zG x TomeNET-soundpack.7z");
+		path_build(path, 1024, ANGBAND_DIR_XTRA, "sound");
+		//r = system(format("mv sound %s", path));
+		mkdir(path, 0777); /* in case someone deleted his whole sound folder */
+		sprintf(out_val, "cp --recursive -f sound/* %s/", path);
+		r = system(out_val);
+		r = system("rm -rf sound");
+} else { /* gcu */
+		r = system("7z x TomeNET-soundpack.7z");
+		path_build(path, 1024, ANGBAND_DIR_XTRA, "sound");
+		//r = system(format("mv sound %s", path));
+		mkdir(path, 0777); /* in case someone deleted his whole sound folder */
+		sprintf(out_val, "cp --recursive -f sound/* %s/", path);
+		r = system(out_val);
+		r = system("rm -rf sound");
+}
 #endif
-		Term_putstr(0, 3, -1, TERM_L_GREEN, "Sound pack has been installed. You can select it via '\377gX\377G' in the '=' menu.   ");
+		Term_putstr(0, 3, -1, TERM_L_GREEN, "Sound pack has been installed.             ");
 		Term_putstr(0, 4, -1, TERM_L_GREEN, "YOU NEED TO RESTART TomeNET FOR THIS TO TAKE EFFECT.                        ");
+	}
+
+	/* verify if we'd be overwriting stuff */
+	if (!music_pack) {
+		Term_putstr(0, 6, -1, TERM_SLATE, "(File 'TomeNET-musicpack.7z' not found, skipping.)");
+	}
+	if (music_pack && music_already) {
+		Term_putstr(0, 6, -1, TERM_YELLOW, "It seems a music pack is already installed.");
+		Term_putstr(0, 7, -1, TERM_YELLOW, "Do you want to extract 'TomeNET-musicpack.7z' and overwrite it? (y/n)");
+		while (TRUE) {
+			c = inkey();
+			if (c == 'n' || c == 'N') {
+				music_pack = FALSE;
+				break;
+			}
+			if (c == 'y' || c == 'Y') break;
+		}
 	}
 
 	/* install music pack */
 	if (music_pack) {
-		Term_putstr(0, 6, -1, TERM_WHITE, "Installing music pack...                                                    ");
+		Term_putstr(0, 6, -1, TERM_WHITE, "Installing music pack...                   ");
 		Term_putstr(0, 7, -1, TERM_WHITE, "                                                                            ");
 		Term_fresh();
 		Term_flush();
 #if defined(WINDOWS)
-		//todo: custom foldernames-- remove("music/music.cfg"); //just for password_ok check below
+		remove("music/music.cfg"); //just for password_ok check below
 
-		_spawnl(_P_WAIT, path_7z, path_7z_quoted, "x", format("-o%s", ANGBAND_DIR_XTRA), pack_name, NULL);
+		_spawnl(_P_WAIT, path_7z, path_7z_quoted, "x", "TomeNET-musicpack.7z", NULL);
 
-		/*todo: custom foldernames password check--
-		* actually check for successful password, by checking whether at least music.cfg was extracted *
+		/* actually check for successful password, by checking whether at least music.cfg was extracted */
 		if (!(fff = fopen("music/music.cfg", "r"))) password_ok = FALSE;
 		else if (fgetc(fff) == EOF) { //paranoia
 			password_ok = FALSE;
 			fclose(fff);
 		} else fclose(fff);
-		*/
+
+		path_build(path, 1024, ANGBAND_DIR_XTRA, "music");
+		sprintf(out_val, "xcopy /I /E /Q /Y /H music %s", path);
+		r = system(out_val);
+		r = system("rmdir /S /Q music");
 #else /* assume posix */
-    if (!strcmp(ANGBAND_SYS, "x11")) {
-		//todo: custom foldernames-- remove("music/music.cfg"); //just for password_ok check below
-		r = system(format("7zG x -o%s %s", ANGBAND_DIR_XTRA, pack_name));
-		/*todo: custom foldernames password check... (see above) */
-    } else { /* gcu */
-		//todo: custom foldernames-- remove("music/music.cfg"); //just for password_ok check below
-		r = system(format("7z x -o%s %s", ANGBAND_DIR_XTRA, pack_name));
-		/*todo: custom foldernames password check... (see above) */
-    }
+if (!strcmp(ANGBAND_SYS, "x11")) {
+		remove("music/music.cfg"); //just for password_ok check below
+
+		r = system("7zG x TomeNET-musicpack.7z");
+
+		/* actually check for successful password, by checking whether at least music.cfg was extracted */
+		if (!(fff = fopen("music/music.cfg", "r"))) password_ok = FALSE;
+		else if (fgetc(fff) == EOF) { //paranoia
+			password_ok = FALSE;
+			fclose(fff);
+		} else fclose(fff);
+
+		path_build(path, 1024, ANGBAND_DIR_XTRA, "music");
+		//r = system(format("mv music %s", path));
+		mkdir(path, 0777); /* in case someone deleted his whole music folder */
+		sprintf(out_val, "cp --recursive -f music/* %s/", path);
+		r = system(out_val);
+		r = system("rm -rf music");
+} else { /* gcu */
+		remove("music/music.cfg"); //just for password_ok check below
+
+		r = system("7z x TomeNET-musicpack.7z");
+
+		/* actually check for successful password, by checking whether at least music.cfg was extracted */
+		if (!(fff = fopen("music/music.cfg", "r"))) password_ok = FALSE;
+		else if (fgetc(fff) == EOF) { //paranoia
+			password_ok = FALSE;
+			fclose(fff);
+		} else fclose(fff);
+
+		path_build(path, 1024, ANGBAND_DIR_XTRA, "music");
+		//r = system(format("mv music %s", path));
+		mkdir(path, 0777); /* in case someone deleted his whole music folder */
+		sprintf(out_val, "cp --recursive -f music/* %s/", path);
+		r = system(out_val);
+		r = system("rm -rf music");
+}
 #endif
 
 		if (password_ok) {
-			Term_putstr(0, 6, -1, TERM_L_GREEN, "Music pack has been installed. You can select it via '\377gX\377G' in the '=' menu.   ");
+			Term_putstr(0, 6, -1, TERM_L_GREEN, "Music pack has been installed.             ");
 			Term_putstr(0, 7, -1, TERM_L_GREEN, "YOU NEED TO RESTART TomeNET FOR THIS TO TAKE EFFECT.                        ");
 		} else {
 			Term_putstr(0, 6, -1, TERM_L_RED, "You entered a wrong password. Music pack could not be installed.");
@@ -9630,308 +7657,6 @@ static void do_cmd_options_install_audio_packs(void) {
 	//inkey();
 }
 
-/* I don't know how well these palette values work. I tried to make them as distinguishable as possible
-   while maintaining most colours at their 'original hue'.. Not sure how much sense that makes. - C. Blue */
-#define OCB_CMD_Y 21
-static void do_cmd_options_colourblindness(void) {
-	char ch;
-	bool go = TRUE;
-	int i, l;
-	int r, g, b;
-	char buf[MAX_CHARS];
-#ifdef WINDOWS
-	char bufc[MAX_CHARS];
-	long unsigned int c;
-#endif
-
-	/* Clear screen */
-	Term_clear();
-
-	/* Interact */
-	while (go) {
-		Term_putstr(0,  0, -1, TERM_L_BLUE, "Colour palette and colour blindness options");
-		l = 2;
-
-		Term_putstr(0, l++, -1, TERM_WHITE, "Feedback welcome! Currently, deuteranopia and");
-		Term_putstr(0, l++, -1, TERM_WHITE, "protanopia just use the same palette values.");
-		Term_putstr(0, l++, -1, TERM_WHITE, "If you use a colourblind setting or custom colours");
-		Term_putstr(0, l++, -1, TERM_WHITE, "you probably want to disable palette_animation in \377s=3\377w.");
-		l++;
-
-		Term_putstr(0, l++, -1, TERM_WHITE, "Note that you can view a named list of all colours");
-		Term_putstr(0, l++, -1, TERM_WHITE, "at any time by typing the '\377s/colours\377w' command in the");
-#if 1
-		Term_putstr(0, l++, -1, TERM_WHITE, "chat prompt.");
-#else
-		Term_putstr(0, l++, -1, TERM_WHITE, "chat prompt. The currently used config file is:");
- #ifdef WINDOWS
-		Term_putstr(0, l++, -1, TERM_L_WHITE, format("%s", ini_file));
- #else
-		Term_putstr(0, l++, -1, TERM_L_WHITE, format("%s", mangrc_filename));
- #endif
-#endif
-		l++;
-
-		if (c_cfg.palette_animation) Term_putstr(0, l++, -1, TERM_WHITE, "(\377yc\377w) Set a specific palette entry");
-		else l++;
-		l++;
-
-		Term_putstr(60, 1, -1, TERM_L_WHITE, " Current palette:");
-		/* Note: colour 0 is always fixed, unchangeable 0x000000, so we just skip it */
-#ifndef CUSTOMIZE_COLOURS_FREELY
-		for (i = 1; i < BASE_PALETTE_SIZE; i++) {
-#else
-		for (i = 0; i < BASE_PALETTE_SIZE; i++) {
-			if (!i) Term_putstr(55, 2 + i, -1, 1, format("%2d %s", i, colour_name[i]));
-			else
-#endif
-			Term_putstr(55, 2 + i, -1, i, format("%2d %s", i, colour_name[i]));
-			Term_putstr(66, 2 + i, -1, TERM_WHITE, format("%3d, %3d, %3d",
-			    (client_color_map[i] & 0xFF0000) >> 16,
-			    (client_color_map[i] & 0x00FF00) >> 8,
-			    client_color_map[i] & 0x0000FF));
-		}
-
-		if (c_cfg.palette_animation) {
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377yn\377w) Set palette to normal colours");
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377yd\377w) Set palette to Deuteranopia colours");
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377yp\377w) Set palette to Protanopia colours");
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377yt\377w) Set palette to Tritanopia colours");
-			l++;
-
-#ifdef WINDOWS
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377ys\377w) Save (modified) palette to current INI file");
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377yr\377w) Reset palette to values from current INI file");
-#else
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377ys\377w) Save (modified) palette to current rc-file");
-			Term_putstr(0, l++, -1, TERM_WHITE, "(\377yr\377w) Reset palette to values from current rc-file");
-#endif
-		} else {
-			Term_putstr(0, l++, -1, TERM_L_RED, "Sorry, palette-colours and related options are not");
-			Term_putstr(0, l++, -1, TERM_L_RED, "modifiable in command-line client mode (GCU) or if");
-			Term_putstr(0, l++, -1, TERM_L_RED, "the 'palette_animation' option (=1) is disabled.");
-			l += 5;
-		}
-
-		/* Hide cursor */
-		Term->scr->cx = Term->wid;
-		Term->scr->cu = 1;
-
-		/* Get key */
-		ch = inkey();
-
-		l = OCB_CMD_Y;
-		Term_putstr(0, l, -1, TERM_WHITE, "                                       ");
-
-		/* Analyze */
-		switch (ch) {
-		case ESCAPE:
-			go = FALSE;
-			break;
-
-		/* specialty: allow chatting from within here */
-		case ':':
-			cmd_message();
-			inkey_msg = TRUE; /* And suppress macros again.. */
-			continue;
-
-		case 'c':
-			if (!c_cfg.palette_animation) continue;
-			l = OCB_CMD_Y;
-#ifndef CUSTOMIZE_COLOURS_FREELY
-			Term_putstr(0, l, -1, TERM_L_WHITE, "Enter the colour index (1-15): ");
-			strcpy(buf, "1");
-			if (!askfor_aux(buf, 2, 0)) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			i = atoi(buf);
-			if (i < 1 || i > 15) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-#else
-			Term_putstr(0, l, -1, TERM_L_WHITE, "Enter the colour index (0-15): ");
-			strcpy(buf, "1");
-			if (!askfor_aux(buf, 2, 0)) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			i = atoi(buf);
-			if (i < 0 || i > 15) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-#endif
-			Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-
-			Term_putstr(0, l, -1, TERM_L_RED, "Enter new RED value (0-255)  : ");
-			strcpy(buf, "255");
-			if (!askfor_aux(buf, 3, 0)) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			r = atoi(buf);
-			if (r < 0 || r > 255) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-
-			Term_putstr(0, l, -1, TERM_L_GREEN, "Enter new GREEN value (0-255): ");
-			strcpy(buf, "255");
-			if (!askfor_aux(buf, 3, 0)) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			g = atoi(buf);
-			if (g < 0 || g > 255) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-
-			Term_putstr(0, l, -1, TERM_L_BLUE, "Enter new BLUE value (0-255) : ");
-			strcpy(buf, "255");
-			if (!askfor_aux(buf, 3, 0)) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			b = atoi(buf);
-			if (b < 0 || b > 255) {
-				Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-				continue;
-			}
-			Term_putstr(0, l, -1, TERM_WHITE, "                                     ");
-
-#ifndef CUSTOMIZE_COLOURS_FREELY
-			/* Black is not allowed (to prevent the user from locking himself out visually =p not a great help but pft) */
-			if (!r && !g && !b) {
-				Term_putstr(0, l, -1, TERM_YELLOW, "Sorry, setting any colour to black (0,0,0) is not allowed.");
-				c_message_add("\377ySorry, setting any colour to black (0,0,0) is not allowed.");
-				continue;
-			}
-#endif
-
-			client_color_map[i] = (r << 16) | (g << 8) | b;
-#ifdef CUSTOMIZE_COLOURS_FREELY
-			/* Safe-fail: Never allow colours 0 (bg) and 1 (fg) to be identical */
-			if (client_color_map[0] == client_color_map[1]) {
-				if (i == 0) client_color_map[1] = 0xFFFFFF - client_color_map[0];
-				else if (i == 1) client_color_map[0] = 0xFFFFFF - client_color_map[1];
-			}
-			/* Until live-'bg'-modification to new colour #0 values is fixed in set_palette(), hint to user to save and restart ASAP to fix the visuals */
-			if (!i) {
-				c_msg_print("\377RYou changed colour #0! To avoid messed up visuals, press 's' now");
-				c_msg_print("\377R to save this palette to your current config file and restart your client!");
-			}
-#endif
-			set_palette(i, r, g, b);
-			refresh_palette();
-			break;
-
-		case 'n':
-			if (!c_cfg.palette_animation) continue;
-			for (i = 0; i < CLIENT_PALETTE_SIZE; i++) {
-				client_color_map[i] = client_color_map_org[i];
-				if ((i == 6 || i == BASE_PALETTE_SIZE + 6) && lighterdarkblue && client_color_map[i] == 0x0000ff)
-#ifdef WINDOWS
-					enable_readability_blue_win();
-#else
- #ifdef USE_X11
-					enable_readability_blue_x11();
- #else
-					enable_readability_blue_gcu();
- #endif
-#endif
-				set_palette(i, (client_color_map[i] & 0xFF0000) >> 16, (client_color_map[i] & 0x00FF00) >> 8, (client_color_map[i] & 0x0000FF));
-			}
-			refresh_palette();
-			break;
-
-		case 'd':
-			if (!c_cfg.palette_animation) continue;
-			for (i = 0; i < CLIENT_PALETTE_SIZE; i++) {
-				client_color_map[i] = client_color_map_deu[i];
-				set_palette(i, (client_color_map[i] & 0xFF0000) >> 16, (client_color_map[i] & 0x00FF00) >> 8, client_color_map[i] & 0x0000FF);
-			}
-			refresh_palette();
-			break;
-
-		case 'p':
-			if (!c_cfg.palette_animation) continue;
-			for (i = 0; i < CLIENT_PALETTE_SIZE; i++) {
-				client_color_map[i] = client_color_map_pro[i];
-				set_palette(i, (client_color_map[i] & 0xFF0000) >> 16, (client_color_map[i] & 0x00FF00) >> 8, client_color_map[i] & 0x0000FF);
-			}
-			refresh_palette();
-			break;
-
-		case 't':
-			if (!c_cfg.palette_animation) continue;
-			for (i = 0; i < CLIENT_PALETTE_SIZE; i++) {
-				client_color_map[i] = client_color_map_tri[i];
-				set_palette(i, (client_color_map[i] & 0xFF0000) >> 16, (client_color_map[i] & 0x00FF00) >> 8, client_color_map[i] & 0x0000FF);
-			}
-			refresh_palette();
-			break;
-
-		case 's':
-			if (!c_cfg.palette_animation) continue;
-#ifdef WINDOWS
- #ifndef CUSTOMIZE_COLOURS_FREELY
-			for (i = 1; i < BASE_PALETTE_SIZE; i++) {
- #else
-			for (i = 0; i < BASE_PALETTE_SIZE; i++) {
- #endif
-				sprintf(buf, "Colormap_%d", i);
-				c = client_color_map[i];
-				sprintf(bufc,  "#%06lx", c);
-				WritePrivateProfileString("Base", buf, bufc, ini_file);
-			}
-#else
-			write_mangrc_colourmap();
-#endif
-			l = OCB_CMD_Y;
-			Term_putstr(0, l, -1, TERM_L_WHITE, "Configuration file has been updated.  ");
-			c_message_add("Configuration file has been updated.  ");
-			break;
-
-		case 'r':
-			if (!c_cfg.palette_animation) continue;
-			for (i = 0; i < CLIENT_PALETTE_SIZE; i++) {
-				client_color_map[i] = client_color_map_org[i];
-				if ((i == 6 || i == BASE_PALETTE_SIZE + 6) && lighterdarkblue && client_color_map[i] == 0x0000ff)
-#ifdef WINDOWS
-					enable_readability_blue_win();
-#else
- #ifdef USE_X11
-					enable_readability_blue_x11();
- #else
-					enable_readability_blue_gcu();
- #endif
-#endif
-				set_palette(i, (client_color_map[i] & 0xFF0000) >> 16, (client_color_map[i] & 0x00FF00) >> 8, (client_color_map[i] & 0x0000FF));
-			}
-			l = OCB_CMD_Y;
-			Term_putstr(0, l, -1, TERM_L_WHITE, "Colours reset from Configuration file.");
-			c_message_add("Colours reset from configuration file.");
-			refresh_palette();
-			break;
-
-		default:
-			bell();
-			continue;
-		}
-
-		/* Exit */
-		if (!go) break;
-
-		/* Redraw ALL windows with new palette colours */
-		//if (!c_cfg.palette_animation) refresh_palette();
-	}
-}
-
 /*
  * Set or unset various options.
  *
@@ -9939,11 +7664,10 @@ static void do_cmd_options_colourblindness(void) {
  * in any options which control "visual" aspects of the game.
  */
 void do_cmd_options(void) {
-	int k, l;
+	int k;
 	char tmp[1024];
-	static char src[1024] = { 0 };
 
-	options_immediate(TRUE);
+	bool changed1 = c_cfg.exp_need, changed2 = c_cfg.exp_bar, changed3 = c_cfg.font_map_solid_walls;
 
 	/* Save the screen */
 	Term_save();
@@ -9958,66 +7682,43 @@ void do_cmd_options(void) {
 		Term_clear();
 
 		/* Why are we here */
-		Term_putstr(0, 0, -1, TERM_L_GREEN, "TomeNET options - press '\377y/\377G' to search for an option");
+		c_prt(TERM_L_GREEN, "TomeNET options", 0, 0);
 
 		/* Give some choices */
-		l = 2;
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377y1\377w/\377y2\377w/\377y3\377w/\377y4\377w) User interface options 1/2/3/4");
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377y5\377w/\377y6\377w)     Audio options");
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377y7\377w/\377y8\377w/\377y9\377w)   Gameplay options 1/2/3");
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377yw\377w)       Window flags");
-#ifdef GLOBAL_BIG_MAP
-		if (strcmp(ANGBAND_SYS, "gcu"))
-			Term_putstr(2, l++, -1, TERM_WHITE, "(\377yb\377w/\377yM\377w/\377ym\377w)   Toggle/enable/disable big_map option (double screen height)");
-		else
-			Term_putstr(2, l++, -1, TERM_L_DARK, "(\377sb\377D/\377sM\377D/\377sm\377D)   Toggle/enable/disable big_map (double size) - NOT AVAILABLE ON GCU");
-#endif
-		l++;
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377os\377w/\377oS\377w)     Save all options & flags / Save to global.opt file (account-wide)");
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377ol\377w)       Load all options & flags");
-		if (strcmp(ANGBAND_SYS, "gcu"))
-			Term_putstr(2, l++, -1, TERM_WHITE, "(\377oT\377w)       Save current window positions and size to current config file");
-		else
-			Term_putstr(2, l++, -1, TERM_L_DARK, "(\377oT\377D)       Save current window positions and size - NOT AVAILABLE ON GCU");
+		Term_putstr(3, 2, -1, TERM_WHITE, "(\377y1\377w) User Interface Options 1");
+		Term_putstr(3, 3, -1, TERM_WHITE, "(\377y2\377w) User Interface Options 2");
+		Term_putstr(3, 4, -1, TERM_WHITE, "(\377y3\377w) User Interface Options 3");
+		Term_putstr(3, 5, -1, TERM_WHITE, "(\377y4\377w) Audio Options");
+		Term_putstr(3, 6, -1, TERM_WHITE, "(\377y5\377w) Game-Play Options 1");
+		Term_putstr(3, 7, -1, TERM_WHITE, "(\377y6\377w) Game-Play Options 2");
+		Term_putstr(3, 8, -1, TERM_WHITE, "(\377yw\377w) Window Flags");
+		Term_putstr(3, 9, -1, TERM_WHITE, "(\377os\377w) Save Options & Flags");
+		Term_putstr(3,10, -1, TERM_WHITE, "(\377ol\377w) Load Options & Flags");
 
-		l++;
-		Term_putstr(2, l++, -1, TERM_L_DARK, "----------------------------------------------------------------------------");
-
-		Term_putstr(2, l++, -1, TERM_SLATE, "The following settings are mostly saved automatically on quitting via CTRL+Q:");
-		l++;
-#ifdef USE_SOUND_2010
+		Term_putstr(3,12, -1, TERM_SLATE, "The following options are all saved automatically on quitting via CTRL+Q:");
 		if (c_cfg.rogue_like_commands)
-			Term_putstr(2, l++, -1, TERM_WHITE, "(\377yx\377w/\377yX\377w) Audio mixer (also accessible via CTRL+F hotkey) / Audio pack selector");
+			Term_putstr(3,13, -1, TERM_WHITE, "(\377yx\377w) Audio mixer (also accessible via CTRL+F hotkey)");
 		else
-			Term_putstr(2, l++, -1, TERM_WHITE, "(\377yx\377w/\377yX\377w) Audio mixer (also accessible via CTRL+U hotkey) / Audio pack selector");
+			Term_putstr(3,13, -1, TERM_WHITE, "(\377yx\377w) Audio mixer (also accessible via CTRL+U hotkey)");
 
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377yn\377w/\377yN\377w) Disable/reenable specific sound effects/music");
-#endif
+		Term_putstr(3,14, -1, TERM_WHITE, "(\377yn\377w/\377yN\377w) Disable/reenable specific sound effects/music");
 
 #if defined(WINDOWS) || defined(USE_X11)
 		/* Font (and window) settings aren't available in command-line mode */
 		if (strcmp(ANGBAND_SYS, "gcu")) {
  #ifdef ENABLE_SUBWINDOW_MENU
-			Term_putstr(2, l++, -1, TERM_WHITE, "(\377yf\377w) Window Fonts and Visibility");
+			Term_putstr(3,15, -1, TERM_WHITE, "(\377yf\377w) Window Fonts and Visibility");
  #endif
 			/* CHANGE_FONTS_X11 */
-			Term_putstr(2, l++, -1, TERM_WHITE, "(\377yF\377w) Cycle all font sizes at once (can be tapped multiple times)");
+			Term_putstr(3,16, -1, TERM_WHITE, "(\377yc\377w) Cycle all font sizes at once (can be tapped multiple times)");
 		}
 #endif
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377yc\377w) Colour palette and colour blindness options");
-		l++;
 
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377UA\377w) Account Options");
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377UI\377w) Install sound/music pack from 7z-file you placed in your TomeNET folder");
-#ifdef WINDOWS
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377UU\377w) Update the TomeNET Guide (downloads and reinits the Guide).");
-#else
-		Term_putstr(2, l++, -1, TERM_WHITE, "(\377UU\377w) Update the TomeNET Guide (requires 'wget' package to be installed).");
-#endif
+		Term_putstr(3,18, -1, TERM_WHITE, "(\377UA\377w) Account Options");
+		Term_putstr(3,19, -1, TERM_WHITE, "(\377UI\377w) Install sound/music pack from 7z-file you placed in your TomeNET folder");
 
-		/* hide cursor */
-		Term->scr->cx = Term->wid;
-		Term->scr->cu = 1;
+		/* Prompt */
+		c_prt(TERM_L_GREEN, "Command: ", 21, 0);
 
 		/* Get command */
 		k = inkey();
@@ -10026,127 +7727,50 @@ void do_cmd_options(void) {
 		if (k == ESCAPE || k == KTRL('Q')) break;
 
 		/* Take a screenshot */
-		if (k == KTRL('T')) xhtml_screenshot("screenshot????", 2);
+		if (k == KTRL('T')) xhtml_screenshot("screenshot????");
 		/* specialty: allow chatting from within here */
-		else if (k == ':') {
-			cmd_message();
-			inkey_msg = TRUE; /* And suppress macros again.. */
-		}
+		else if (k == ':') cmd_message();
 
 		else if (k == '1') {
-			do_cmd_options_aux(1, "User Interface Options 1", -1);
+			do_cmd_options_aux(1, "User Interface Options 1");
 		} else if (k == '2') {
-			do_cmd_options_aux(4, "User Interface Options 2", -1);
+			do_cmd_options_aux(4, "User Interface Options 2");
 		} else if (k == '3') {
-			do_cmd_options_aux(6, "User Interface Options 3", -1);
+			do_cmd_options_aux(6, "User Interface Options 3");
 		} else if (k == '4') {
-			do_cmd_options_aux(7, "User Interface Options 4", -1);
+			do_cmd_options_aux(5, "Audio Options");
 		} else if (k == '5') {
-			do_cmd_options_aux(5, "Audio Options 1", -1);
+			do_cmd_options_aux(2, "Game-Play Options 1");
 		} else if (k == '6') {
-			do_cmd_options_aux(9, "Audio Options 2", -1);
-		} else if (k == '7') {
-			do_cmd_options_aux(2, "Gameplay Options 1", -1);
-		} else if (k == '8') {
-			do_cmd_options_aux(3, "Gameplay Options 2", -1);
-		} else if (k == '9') {
-			do_cmd_options_aux(8, "Gameplay Options 3", -1);
-		}
-
-		/* Search for an option (by name) */
-		else if (k == '/') {
-			int m;
-			bool found = FALSE;
-
-			Term_putstr(0, 23, -1, TERM_YELLOW, "Enter (partial) option name: ");
-			if (!askfor_aux(src, 70, 0)) continue;
-
-			while (TRUE) {
-				for (l = 0; l < OPT_MAX; l++) {
-					if (!option_info[l].o_desc) continue; //option exists?
-					if (!option_info[l].o_enabled) continue; //option is disabled? not eligible for searching then
-					if (!my_strcasestr(option_info[l].o_text, src)) continue; //(partial) match?
-
-					found = TRUE;
-					k = 0;
-					for (m = 0; m < l; m++) {
-						if (!option_info[m].o_enabled) continue; //option is disabled? not listed then
-						if (option_info[m].o_page == option_info[l].o_page) k++;
-					}
-
-					switch(option_info[l].o_page) {
-					case 1:	m = do_cmd_options_aux(1, "User Interface Options 1", k); break;
-					case 4:	m = do_cmd_options_aux(4, "User Interface Options 2", k); break;
-					case 6:	m = do_cmd_options_aux(6, "User Interface Options 3", k); break;
-					case 7:	m = do_cmd_options_aux(7, "User Interface Options 4", k); break;
-					case 5:	m = do_cmd_options_aux(5, "Audio Options 1", k); break;
-					case 9:	m = do_cmd_options_aux(9, "Audio Options 2", k); break;
-					case 2:	m = do_cmd_options_aux(2, "Gameplay Options 1", k); break;
-					case 3:	m = do_cmd_options_aux(3, "Gameplay Options 2", k); break;
-					case 8: m = do_cmd_options_aux(8, "Gameplay Options 3", k); break;
-					default: m = found = FALSE; c_msg_print("Option not found.");
-					}
-
-					/* Don't continue searching? */
-					if (!m) {
-						found = FALSE;
-						break;
-					}
-				}
-				/* If we're not looking for subsequent results, leave the options page instead of wrapping around */
-				if (!found) {
-					if (l == OPT_MAX) c_msg_format("\377yOption '%s' not found.", src);
-					break;
-				}
-				/* ..otherwise start from the beginning again */
-			}
+			do_cmd_options_aux(3, "Game-Play Options 2");
 		}
 
 		/* Save a 'option' file */
 		else if (k == 's') {
+			/* Prompt */
+			Term_putstr(0, 20, -1, TERM_L_GREEN, "Command: Save an options file");
+
 			/* Get a filename, handle ESCAPE */
-			Term_putstr(0, 23, -1, TERM_YELLOW, "Save to file ('global.opt' for account-wide): ");
+			Term_putstr(0, 21, -1, TERM_YELLOW, "File: ");
 
 			/* Default filename */
+			//sprintf(tmp, "global.opt");
 			sprintf(tmp, "%s.opt", cname);
 
 			/* Ask for a file */
-			if (!askfor_aux(tmp, 70, 0)) continue;
-
-			/* Dump the macros */
-			(void)options_dump(tmp);
-		} else if (k == 'S') {
-			/* Get a filename, handle ESCAPE */
-			Term_putstr(0, 23, -1, TERM_YELLOW, "Save to file 'global.opt' (account-wide): ");
-
-			/* Default filename */
-			strcpy(tmp, "global.opt");
-
-			/* Ask for a file */
-			if (!askfor_aux(tmp, 70, 0)) continue;
-
-			/* Dump the macros */
-			(void)options_dump(tmp);
-		} else if (k == 'T') {
-			if (!strcmp(ANGBAND_SYS, "gcu")) {
-				c_message_add("\377ySorry, windows are not available in the GCU (command-line) client.");
+			if (!askfor_aux(tmp, 70, 0))
 				continue;
-			}
-#ifdef WINDOWS
-			save_term_data_to_term_prefs();
-			c_msg_format("\377wSaved current configuration to %s.", ini_file);
-#elif USE_X11
-			all_term_data_to_term_prefs();
-			write_mangrc(FALSE, FALSE, FALSE);
-			c_msg_format("\377wSaved current configuration to %s.", mangrc_filename);
-#else
-			c_msg_print("\377wCannot save configuration from menu, please quit to save.");
-#endif
+
+			/* Dump the macros */
+			(void)options_dump(tmp);
 		}
 		/* Load a pref file */
 		else if (k == 'l') {
+			/* Prompt */
+			Term_putstr(0, 20, -1, TERM_L_GREEN, "Command: Load an options file");
+
 			/* Get a filename, handle ESCAPE */
-			Term_putstr(0, 23, -1, TERM_YELLOW, "Load file: ");
+			Term_putstr(0, 21, -1, TERM_YELLOW, "File: ");
 
 			/* Default filename */
 			//sprintf(tmp, "global.opt");
@@ -10163,57 +7787,11 @@ void do_cmd_options(void) {
 		/* Account options */
 		else if (k == 'A') do_cmd_options_acc();
 
-		/* Update the TomeNET Guide */
-		else if (k == 'U') {
-			int res;
-#ifdef WINDOWS
-			char _latest_install[1024];
-
-			strcpy(_latest_install, "http://www.tomenet.eu/TomeNET-Guide.txt"); //argh, note that wget.exe doesn't support https protocol! need to use http
-			remove("TomeNET-Guide.txt");
-			res = _spawnl(_P_WAIT, "updater\\wget.exe", "wget.exe", "--dot-style=mega", _latest_install, NULL);
-			if (res != 0) c_msg_print("\377oFailed to download the Guide.");
-			else {
-				c_msg_print("\377gSuccessfully updated the Guide.");
-				init_guide();
-				//c_msg_format("Guide reinitialized. (errno %d,lastline %d,endofcontents %d,chapters %d)", guide_errno, guide_lastline, guide_endofcontents, guide_chapters);
-			}
-#else
-			FILE *fp;
-			char out_val[3];
-
-			remove("TomeNET-Guide.txt");
-			system("wget --connect-timeout=3 https://www.tomenet.eu/TomeNET-Guide.txt"); //something changed in the web server's cfg; curl still works fine, but now wget needs the timeout setting; wget.exe for Windows still works!
-
-			fp = fopen("TomeNET-Guide.txt", "r");
-			if (fp) {//~paranoia?
-				out_val[0] = 0;
-				fgets(out_val, 2, fp);
-				fclose(fp);
-				res = (out_val[0] < 32);
-				if (res != 0) c_msg_print("\377oFailed to update the Guide.");
-				else {
-					c_msg_print("\377gSuccessfully updated the Guide.");
-					init_guide();
-					//c_msg_format("Guide reinitialized. (errno %d,lastline %d,endofcontents %d,chapters %d)", guide_errno, guide_lastline, guide_endofcontents, guide_chapters);
-				}
-			} else c_msg_print("\377oFailed to download the Guide.");
-#endif
-		}
-
 		/* Window flags */
 		else if (k == 'w') {
 			/* Spawn */
 			do_cmd_options_win();
 		}
-#ifdef GLOBAL_BIG_MAP
-		/* Toggle big_map */
-		else if (k == 'b') set_bigmap(-1, FALSE);
-		/* Enable big_map */
-		else if (k == 'M') set_bigmap(1, FALSE);
-		/* Disable big_map */
-		else if (k == 'm') set_bigmap(0, FALSE);
-#endif
 
 #if defined(WINDOWS) || defined(USE_X11)
  #ifdef ENABLE_SUBWINDOW_MENU
@@ -10221,20 +7799,17 @@ void do_cmd_options(void) {
 		else if (k == 'f') do_cmd_options_fonts();
  #endif
 		/* Cycle all fonts */
-		else if (k == 'F') change_font(-1);
+		else if (k == 'c') change_font(-1);
 #endif
 
-#ifdef USE_SOUND_2010
 		/* Access audio mixer */
 		else if (k == 'x') interact_audio();
-		else if (k == 'X') audio_pack_selector();
+
+		else if (k == 'I') do_cmd_options_install_audio_packs();
+
 		/* Toggle single sfx/song from a list of all */
 		else if (k == 'n') do_cmd_options_sfx();
 		else if (k == 'N') do_cmd_options_mus();
-#endif
-		else if (k == 'I') do_cmd_options_install_audio_packs();
-
-		else if (k == 'c') do_cmd_options_colourblindness();
 
 		/* Unknown option */
 		else {
@@ -10251,7 +7826,9 @@ void do_cmd_options(void) {
 	/* Verify the keymap */
 	keymap_init();
 
-	options_immediate(FALSE);
+	/* for exp_need option changes: */
+	if (changed1 != c_cfg.exp_need || changed2 != c_cfg.exp_bar || changed3 != c_cfg.font_map_solid_walls)
+		prt_level(p_ptr->lev, p_ptr->max_lev, p_ptr->max_plv, p_ptr->max_exp, p_ptr->exp, exp_adv, exp_adv_prev);
 
 	inkey_msg = inkey_msg_old;
 
@@ -10262,11 +7839,6 @@ void do_cmd_options(void) {
 
 	/* Resend options to server */
 	Send_options();
-
-	if (custom_font_warning) {
-		custom_font_warning = FALSE;
-		if (c_cfg.font_map_solid_walls) c_msg_print("\377wCustom font loaded. If visuals seem wrong, disable '\377yfont_map_solid_walls\377w' in =1.");
-	}
 }
 
 
@@ -10304,7 +7876,7 @@ static void center_string_short(char *buf, cptr str) {
  */
 /* ToME parts. */
 #define STONE_COL 11
-#define STONE_COL_SHORT (11 + 6)
+#define STONE_COL_SHORT (11+6)
 static void print_tomb(cptr reason) {
 	bool done = FALSE;
 
@@ -10322,19 +7894,10 @@ static void print_tomb(cptr reason) {
 	if (use_sound) {
    #if 0
 		/* switch to login screen music if available, or fade music out */
-		if (insanity_death) {
-			if (!music(exec_lua(0, "return get_music_index(\"tomb_insanity\")")))
-				if (!music(exec_lua(0, "return get_music_index(\"tomb\")")))
-					music(-4);
-		} else {
-			if (!music(exec_lua(0, "return get_music_index(\"tomb\")"))) music(-4);
-		}
+		if (!music(exec_lua(0, "return get_music_index(\"tomb\")"))) music(-4);
    #else
 		/* switch to login screen music if available; otherwise just continue playing the current in-game music */
-		if (insanity_death) {
-			if (!music(exec_lua(0, "return get_music_index(\"tomb_insanity\")")))
-				music(exec_lua(0, "return get_music_index(\"tomb\")"));
-		} else music(exec_lua(0, "return get_music_index(\"tomb\")"));
+		music(exec_lua(0, "return get_music_index(\"tomb\")"));
    #endif
 	}
   #endif
@@ -10365,7 +7928,6 @@ static void print_tomb(cptr reason) {
 			while (0 == my_fgets(fp, buf, 1024)) {
 #if 1 /* allow colour code shortcut: '\{' = colour, '{' = normal */
 				char *t = buf, *t2 = buf2;
-
 				while (*t) {
 					if (*t != '\\') *t2++ = *t++;
 					else {
@@ -10391,6 +7953,15 @@ static void print_tomb(cptr reason) {
 			my_fclose(fp);
 		}
 
+#if 0	/* make the server send those info! */
+		/* King or Queen */
+		if (total_winner || (p_ptr->lev > PY_MAX_LEVEL))
+			p = "Magnificent";
+		/* Normal */
+		else
+			p =  cp_ptr->titles[(p_ptr->lev-1)/5] + c_text;
+#endif	/* 0 */
+
 		center_string(buf, cname);
 		c_put_str(TERM_L_UMBER, buf, 6, STONE_COL);
 
@@ -10408,20 +7979,20 @@ static void print_tomb(cptr reason) {
 #if 0
 		(void)sprintf(tmp, "Level: %d", (int)p_ptr->lev);
 		center_string_short(buf, tmp);
-		c_put_str(TERM_L_UMBER, buf, 11 - 2, STONE_COL_SHORT);
+		c_put_str(TERM_L_UMBER, buf, 11-2, STONE_COL_SHORT);
 
 		(void)sprintf(tmp, "Exp: %d", p_ptr->exp);
 		center_string_short(buf, tmp);
-		c_put_str(TERM_L_UMBER, buf, 12 - 2, STONE_COL_SHORT);
+		c_put_str(TERM_L_UMBER, buf, 12-2, STONE_COL_SHORT);
 #else
 		(void)sprintf(tmp, "Lv: %d, Exp: %d", (int)p_ptr->lev, p_ptr->exp);
-		center_string(buf, tmp);
-		c_put_str(TERM_L_UMBER, buf, 11 - 2, STONE_COL);
+		center_string_short(buf, tmp);
+		c_put_str(TERM_L_UMBER, buf, 11-2, STONE_COL_SHORT);
 #endif
 		/* XXX usually 0 */
 		(void)sprintf(tmp, "AU: %d", p_ptr->au);
 		center_string_short(buf, tmp);
-		c_put_str(TERM_L_UMBER, buf, 12 - 2, STONE_COL_SHORT);
+		c_put_str(TERM_L_UMBER, buf, 12-2, STONE_COL_SHORT);
 
 		/* Location */
 		if (c_cfg.depth_in_feet)
@@ -10429,7 +8000,7 @@ static void print_tomb(cptr reason) {
 		else
 			(void)sprintf(tmp, "Died on Lv %d %s", p_ptr->wpos.wz, location_pre);
 		center_string(buf, tmp);
-		c_put_str(TERM_L_UMBER, buf, 13 - 1, STONE_COL);
+		c_put_str(TERM_L_UMBER, buf, 13-1, STONE_COL);
 
 		if (location_name2[0])
 			sprintf(tmp, "%s", location_name2);
@@ -10438,12 +8009,12 @@ static void print_tomb(cptr reason) {
 		else
 			sprintf(tmp, "world map region (%d,%d)", p_ptr->wpos.wx, p_ptr->wpos.wy);
 		center_string(buf, tmp);
-		c_put_str(TERM_L_UMBER, buf, 14 - 1, STONE_COL);
+		c_put_str(TERM_L_UMBER, buf, 14-1, STONE_COL);
 
 		/* Time of death */
 		(void)sprintf(tmp, "%-.24s", ctime(&ct));
 		center_string(buf, tmp);
-		c_put_str(TERM_L_UMBER, buf, 17 - 3, STONE_COL);
+		c_put_str(TERM_L_UMBER, buf, 17-3, STONE_COL);
 
 		/* Death cause */
 		strcpy(reason2, reason);
@@ -10475,20 +8046,20 @@ static void print_tomb(cptr reason) {
 				strcpy(reason2, buf);
 			}
 			center_string(buf, "Killed by");
-			c_put_str(TERM_L_UMBER, buf, 18 - 3, STONE_COL);
+			c_put_str(TERM_L_UMBER, buf, 18-3, STONE_COL);
 			center_string(buf, reason2 + 10);
-			c_put_str(TERM_L_UMBER, buf, 21 - 5, STONE_COL);
+			c_put_str(TERM_L_UMBER, buf, 21-5, STONE_COL);
 		} else if (strstr(reason2, "Committed suicide")) {
 			if (p_ptr->total_winner) {
 				center_string(buf, "Died from ripe old age");
-				c_put_str(TERM_L_UMBER, buf, 19 - 3, STONE_COL);
+				c_put_str(TERM_L_UMBER, buf, 19-3, STONE_COL);
 			} else {
 				center_string(buf, "Committed suicide");
-				c_put_str(TERM_L_UMBER, buf, 19 - 3, STONE_COL);
+				c_put_str(TERM_L_UMBER, buf, 19-3, STONE_COL);
 			}
 		} else {
 			center_string(buf, reason2);
-			c_put_str(TERM_L_UMBER, buf, 21 - 5, STONE_COL);
+			c_put_str(TERM_L_UMBER, buf, 21-5, STONE_COL);
 		}
 	}
 }
@@ -10499,23 +8070,14 @@ static void print_tomb(cptr reason) {
  */
 void c_close_game(cptr reason) {
 	int k;
-#ifdef RAINY_TOMB
-	int x, y;
-	byte *scr_aa;
-	char32_t *scr_cc;
-#endif
 	char tmp[MAX_CHARS];
-	bool c_cfg_tmp = c_cfg.topline_no_msg;
 
 	/* Let the player view the last scene */
-	c_cfg.topline_no_msg = FALSE;
 	c_msg_format("%s ...Press '0' key to proceed", reason);
 
 	while (inkey() != '0');
-	c_cfg.topline_no_msg = c_cfg_tmp;
 
 	/* You are dead */
-	fullscreen_weather = TRUE;
 	print_tomb(reason);
 
 	/* Remember deceased char's name if we will just recreate the same.. */
@@ -10527,8 +8089,8 @@ void c_close_game(cptr reason) {
 	Term->scr->cu = 1;
 
 	/* Display tomb screen without an input prompt, allow taking a 'clear' screenshot! */
-	//while (inkey() == KTRL('T')) xhtml_screenshot("screenshot????", FALSE);
-	if (inkey() == KTRL('T')) xhtml_screenshot("screenshot????", FALSE);
+	//while (inkey() == KTRL('T')) xhtml_screenshot("screenshot????");
+	if (inkey() == KTRL('T')) xhtml_screenshot("screenshot????");
 #endif
 
 	put_str("ESC to quit, 'f' to dump the record or any other key to proceed", 23, 0);
@@ -10536,87 +8098,17 @@ void c_close_game(cptr reason) {
 	Term->scr->cx = Term->wid;
 	Term->scr->cu = 1;
 
-#ifdef RAINY_TOMB
- #define WEATHER_GEN_TICKS 3
- #define WEATHER_SNOW_MULT 3
-	/* Bad weather today? */
-	weather_elements = 0;
-	if (magik(50)) { //sometimes it rains or snows~ UwU
-		weather_panel_x = 0;
-		weather_panel_y = 0;
-		weather_type = 1 + rand_int(2) + 50;
-		weather_wind = rand_int(5);
-		if (weather_wind) wind_noticable = TRUE;
-		weather_gen_speed = WEATHER_GEN_TICKS;
-		weather_intensity = (weather_type % 10 == 2 && !(weather_wind || weather_wind >= 3) ? 5 : 8);
-		weather_speed_snow = weather_speed_rain = (weather_type % 10 == 2) ? WEATHER_SNOW_MULT * WEATHER_GEN_TICKS : (weather_wind ? 1 * WEATHER_GEN_TICKS : WEATHER_GEN_TICKS - 1);
-		/* Set currently visible screen as 'weather background'. */
-		for (y = 0; y < screen_hgt + SCREEN_PAD_TOP + SCREEN_PAD_BOTTOM - 1; y++) {
-			scr_aa = Term->scr->a[y + 1]; //+1 : leave first line blank for message prompts
-			scr_cc = Term->scr->c[y + 1];
-			for (x = 0; x < screen_wid + SCREEN_PAD_LEFT + SCREEN_PAD_RIGHT; x++) {
-				panel_map_a[x][y] = scr_aa[x];
-				panel_map_c[x][y] = scr_cc[x];
-			}
-		}
-
- #ifdef USE_SOUND_2010
-		if (use_sound) {
-			if (weather_type % 10 == 1) { //rain
-				if (weather_wind >= 1 && weather_wind <= 2) sound_weather(rain2_sound_idx);
-				else sound_weather(rain1_sound_idx);
-			} else if (weather_type % 10 == 2) { //snow
-				if (weather_wind >= 1 && weather_wind <= 2) sound_weather(snow2_sound_idx);
-				else sound_weather(snow1_sound_idx);
-			}
-		}
- #endif
-	} else weather_type = 0;
-#endif
 	/* TODO: bandle them in one loop instead of 2 */
 	while (1) {
 		/* Get command */
 		k = inkey();
 
 		/* Exit */
-		if (k == ESCAPE || k == KTRL('Q') || k == 'q' || k == 'Q') {
-#ifdef RAINY_TOMB
-			weather_elements = 0;
-			weather_type = 0;
- #if 0 /* not working correctly */
-			/* restore display behind weather particles */
-			for (k = 0; k < weather_elements; k++) {
-				/* only for elements within visible panel screen area */
-				if (weather_element_x[k] >= weather_panel_x &&
-				    weather_element_x[k] < weather_panel_x + screen_wid &&
-				    weather_element_y[k] >= weather_panel_y &&
-				    weather_element_y[k] < weather_panel_y + screen_hgt) {
-					/* restore original grid content */
-					Term_draw(0 + weather_element_x[k] - weather_panel_x,
-					    1 + weather_element_y[k] - weather_panel_y,
-					    panel_map_a[weather_element_x[k] - weather_panel_x][weather_element_y[k] - weather_panel_y],
-					    panel_map_c[weather_element_x[k] - weather_panel_x][weather_element_y[k] - weather_panel_y]);
-				}
-			}
-			Term_fresh();
- #endif
-			for (y = 1; y < screen_hgt + SCREEN_PAD_TOP + SCREEN_PAD_BOTTOM; y++) {
-				for (x = 0; x < screen_wid + SCREEN_PAD_LEFT + SCREEN_PAD_RIGHT; x++) {
-					Term_draw(x, y,
-					    panel_map_a[x][y - 1],
-					    panel_map_c[x][y - 1]);
-				}
-			}
- #ifdef USE_SOUND_2010
-			if (use_sound) sound_weather(-1); //fade out
- #endif
-#endif
-			return;
-		}
+		if (k == ESCAPE || k == KTRL('Q') || k == 'q' || k == 'Q') return;
 
 		else if (k == KTRL('T')) {
 			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", 2);
+			xhtml_screenshot("screenshot????");
 		}
 
 		/* Dump */
@@ -10627,10 +8119,6 @@ void c_close_game(cptr reason) {
 					file_character(tmp, FALSE);
 					break;
 				}
-			} else {
-				/* hack: hide cursor */
-				Term->scr->cx = Term->wid;
-				Term->scr->cu = 1;
 			}
 			continue;
 		}
@@ -10639,13 +8127,6 @@ void c_close_game(cptr reason) {
 
 		else if (k) break;
 	}
-#ifdef RAINY_TOMB
-	weather_elements = 0;
-	weather_type = 0;
- #ifdef USE_SOUND_2010
-	if (use_sound) sound_weather(-1); //fade out
- #endif
-#endif
 
 	/* Interact */
 	while (1) {
@@ -10676,7 +8157,7 @@ void c_close_game(cptr reason) {
 
 		/* Take a screenshot */
 		if (k == KTRL('T'))
-			xhtml_screenshot("screenshot????", FALSE);
+			xhtml_screenshot("screenshot????");
 
 		/* Character screen */
 		else if (k == '1' || k == 'C')
@@ -10697,7 +8178,7 @@ void c_close_game(cptr reason) {
 
 		/* Chat history */
 		else if (k == '5' || k == KTRL('O'))
-			do_cmd_messages_important();
+			do_cmd_messages_chatonly();
 
 #if 0
 		/* Skill browsing ... is not available for now */
@@ -10712,8 +8193,6 @@ void c_close_game(cptr reason) {
 			bell();
 		}
 	}
-
-	fullscreen_weather = FALSE;
 }
 
 
@@ -10725,14 +8204,69 @@ void my_memfrob(void *s, int n) {
 	int i;
 	char *str;
 
-	/* Ancient servers don't know this */
-	if (server_protocol < 2) return;
-
 	str = (char*) s;
 
-	for (i = 0; i < n; i++)
+	for (i = 0; i < n; i++) {
 		/* XOR every byte with 42 */
 		str[i] ^= 42;
+	}
+}
+
+
+
+/*
+ * Check if the server version fills the requirements.
+ * Copied from the server code.
+ *
+ * Branch has to be an exact match.
+ */
+bool is_newer_than(version_type *version, int major, int minor, int patch, int extra, int branch, int build) {
+#ifdef ATMOSPHERIC_INTRO
+	/* hack for animating colours before we even have network contact to server */
+	if (!version->major) return TRUE;
+#endif
+
+	if (version->major < major)
+		return FALSE; /* very old */
+	else if (version->major > major)
+		return TRUE; /* very new */
+	else if (version->minor < minor)
+		return FALSE; /* pretty old */
+	else if (version->minor > minor)
+		return TRUE; /* pretty new */
+	else if (version->patch < patch)
+		return FALSE; /* somewhat old */
+	else if (version->patch > patch)
+		return TRUE; /* somewhat new */
+	else if (version->extra < extra)
+		return FALSE; /* a little older */
+	else if (version->extra > extra)
+		return TRUE; /* a little newer */
+	/* Check that the branch is an exact match */
+	else if (version->branch == branch)
+	{
+		/* Now check the build */
+		if (version->build < build)
+			return FALSE;
+		else if (version->build > build)
+			return TRUE;
+	}
+
+	/* Default */
+	return FALSE;
+}
+
+bool is_same_as(version_type *version, int major, int minor, int patch, int extra, int branch, int build)
+{
+	if (version->major == major
+	    && version->minor == minor
+	    && version->patch == patch
+	    && version->extra == extra
+	    && version->branch == branch
+	    && version->build == build)
+		return TRUE;
+
+	return FALSE;
 }
 
 /* dummy */
@@ -10743,12 +8277,12 @@ void msg_format(int Ind, cptr fmt, ...) {
 }
 
 #ifdef USE_SOUND_2010
-bool sound(int val, int type, int vol, s32b player_id, int dist_x, int dist_y) {
-	if (!use_sound) return(TRUE);
+bool sound(int val, int type, int vol, s32b player_id) {
+	if (!use_sound) return TRUE;
 
 	/* play a sound */
-	if (sound_hook) return sound_hook(val, type, vol, player_id, dist_x, dist_y);
-	else return(FALSE);
+	if (sound_hook) return sound_hook(val, type, vol, player_id);
+	else return FALSE;
 }
 
 void sound_weather(int val) {
@@ -10766,18 +8300,11 @@ void sound_weather_vol(int val, int vol) {
 }
 
 bool music(int val) {
-	if (!use_sound) return(TRUE);
+	if (!use_sound) return TRUE;
 
 	/* play a sound */
 	if (music_hook) return music_hook(val);
-	else return(FALSE);
-}
-bool music_volume(int val, char vol) {
-	if (!use_sound) return(TRUE);
-
-	/* play a sound */
-	if (music_hook_vol) return music_hook_vol(val, vol);
-	else return(FALSE);
+	else return FALSE;
 }
 
 void sound_ambient(int val) {
@@ -10795,7 +8322,7 @@ void set_mixing(void) {
 }
 
 void interact_audio(void) {
-	int i, j, item_x[8] = {2, 12, 22, 32, 42, 52, 62, 72}, k;
+	int i, j, item_x[8] = {2, 12, 22, 32, 42, 52, 62, 72};
 	static int cur_item = 0;
 	int y_label = 20, y_toggle = 12, y_slider = 18;
 	bool redraw = TRUE, quit = FALSE;
@@ -10803,8 +8330,7 @@ void interact_audio(void) {
 	/* Save screen */
 	Term_save();
 
-	/* suppress hybrid macros */
-	bool inkey_msg_old = inkey_msg;
+	/* Prevent hybrid macros from triggering in here */
 	inkey_msg = TRUE;
 
 	/* Process requests until done */
@@ -10815,12 +8341,10 @@ void interact_audio(void) {
 
 			/* Describe */
 			Term_putstr(30,  0, -1, TERM_L_UMBER, "*** Audio Mixer ***");
-			//Term_putstr(3, 1, -1, TERM_L_UMBER, "Press arrow keys to navigate/modify, RETURN/SPACE to toggle, ESC to leave.");
-			Term_putstr(1, 1, -1, TERM_L_UMBER, "Navigate/modify: \377yArrow keys\377U. Toggle/modify: \377yRETURN\377U/\377ySPACE\377U. Reset: \377yr\377U. Exit: \377yESC\377U.");
-			//Term_putstr(6, 2, -1, TERM_L_UMBER, "Shortcuts: 'a': master, 'w': weather, 's': sound, 'c' or 'm': music.");
-			//Term_putstr(7, 3, -1, TERM_L_UMBER, "Jump to volume slider: SHIFT + according shortcut key given above.");
-			//Term_putstr(6, 2, -1, TERM_L_UMBER, "Shortcuts: 'a','w','s','c'/'m'. Shift + shortcut to jump to a slider.");
-			Term_putstr(1, 2, -1, TERM_L_UMBER, "Shortcuts: \377ya\377U,\377yw\377U,\377ys\377U,\377yc\377U/\377ym\377U. Sliders: \377ySHIFT+shortcut\377U. Reload packs & re-init: \377yCTRL+R\377U.");
+			Term_putstr(3, 1, -1, TERM_L_UMBER, "Press arrow keys to navigate/modify, RETURN/SPACE to toggle, ESC to leave.");
+//			Term_putstr(6, 2, -1, TERM_L_UMBER, "Shortcuts: 'a': master, 'w': weather, 's': sound, 'c' or 'm': music.");
+//			Term_putstr(7, 3, -1, TERM_L_UMBER, "Jump to volume slider: SHIFT + according shortcut key given above.");
+			Term_putstr(6, 2, -1, TERM_L_UMBER, "Shortcuts: 'a','w','s','c'/'m'. Shift + shortcut to jump to a slider.");
 
 			if (quiet_mode) Term_putstr(12, 4, -1, TERM_L_RED,                              "  Client is running in 'quiet mode': Audio is disabled.  ");
 			else if (audio_sfx > 3 && audio_music > 0) Term_putstr(12, 4, -1, TERM_L_GREEN, "     Sound pack and music pack have been detected.      ");
@@ -10835,9 +8359,6 @@ void interact_audio(void) {
 				Term_putstr(34, 4, -1, TERM_L_RED, "No sound pack seems to be installed.");
 			}
 			else Term_putstr(12, 4, -1, TERM_L_RED,                                         "Neither sound pack nor music pack seems to be installed. ");
-
-			if (!quiet_mode && noweather_mode) Term_putstr(2, 6, -1, TERM_L_RED, "Client is in no-weather-mode (-w).");
-			if (c_cfg.no_weather) Term_putstr(2, 7, -1, TERM_L_RED, "Weather disabled by 'no_weather' option.");
 
 			if (c_cfg.rogue_like_commands)
 				Term_putstr(3, y_label + 2, -1, TERM_SLATE, "Outside of this mixer you can toggle audio and music by CTRL+V and CTRL+Q.");
@@ -10856,10 +8377,7 @@ void interact_audio(void) {
 			else
 				Term_putstr(item_x[1], y_toggle + 3, -1, TERM_SLATE, "CTRL+C");
 			Term_putstr(item_x[2], y_toggle, -1, TERM_WHITE, format(" [%s]", cfg_audio_sound ? "\377GX\377w" : " "));
-			if (!quiet_mode && (noweather_mode || c_cfg.no_weather))
-				Term_putstr(item_x[3], y_toggle, -1, TERM_L_RED, format(" [%s]", cfg_audio_weather ? "\377rX\377R" : " "));
-			else
-				Term_putstr(item_x[3], y_toggle, -1, TERM_WHITE, format(" [%s]", cfg_audio_weather ? "\377GX\377w" : " "));
+			Term_putstr(item_x[3], y_toggle, -1, TERM_WHITE, format(" [%s]", cfg_audio_weather ? "\377GX\377w" : " "));
 
 			for (i = 4; i <= 7; i++) {
 				Term_putstr(item_x[i - 4], y_toggle + 1, -1, TERM_SLATE, "on/off");
@@ -10868,26 +8386,17 @@ void interact_audio(void) {
 				for (j = y_slider - 1; j >= y_slider - 11; j--)
 					Term_putstr(item_x[i], j, -1, TERM_SLATE, "  |");
 			}
-			if (!quiet_mode && (noweather_mode || c_cfg.no_weather)) {
-				Term_putstr(item_x[7], y_slider - 12, -1, TERM_L_RED, "  ^");
-				Term_putstr(item_x[7], y_slider, -1, TERM_L_RED, "  V");
-				for (j = y_slider - 1; j >= y_slider - 11; j--)
-					Term_putstr(item_x[7], j, -1, TERM_RED, "  |");
-			}
 
 			Term_putstr(item_x[4], y_slider - cfg_audio_master_volume / 10 - 1, -1, TERM_L_GREEN, "  =");
 			Term_putstr(item_x[5], y_slider - cfg_audio_music_volume / 10 - 1, -1, TERM_L_GREEN, "  =");
 			Term_putstr(item_x[6], y_slider - cfg_audio_sound_volume / 10 - 1, -1, TERM_L_GREEN, "  =");
-			if (!quiet_mode && (noweather_mode || c_cfg.no_weather))
-				Term_putstr(item_x[7], y_slider - cfg_audio_weather_volume / 10 - 1, -1, TERM_L_RED, "  =");
-			else
-				Term_putstr(item_x[7], y_slider - cfg_audio_weather_volume / 10 - 1, -1, TERM_L_GREEN, "  =");
+			Term_putstr(item_x[7], y_slider - cfg_audio_weather_volume / 10 - 1, -1, TERM_L_GREEN, "  =");
 		}
 		redraw = TRUE;
 
 		/* display editing 'cursor' */
-		//Term_putstr(item_x[cur_item], y_label + 2, -1, TERM_ORANGE, "  ^");
-		//Term_putstr(item_x[cur_item], y_label + 3, -1, TERM_ORANGE, "  |");
+//		Term_putstr(item_x[cur_item], y_label + 2, -1, TERM_ORANGE, "  ^");
+//		Term_putstr(item_x[cur_item], y_label + 3, -1, TERM_ORANGE, "  |");
 		Term_putstr(item_x[0], y_label, -1, cur_item == 0 ? TERM_ORANGE : TERM_WHITE, "Master");
 		Term_putstr(item_x[1], y_label, -1, cur_item == 1 ? TERM_ORANGE : TERM_WHITE, "Music");
 		Term_putstr(item_x[2], y_label, -1, cur_item == 2 ? TERM_ORANGE : TERM_WHITE, "Sound");
@@ -10903,17 +8412,10 @@ void interact_audio(void) {
 		inkey_flag = TRUE;
 
 		/* Wait for keypress */
-		k = inkey();
-		switch (k) {
-		/* allow chatting from within here */
-		case ':':
-			cmd_message();
-			inkey_msg = TRUE; /* And suppress macros again.. */
-			//redraw = FALSE; -- header 'mixer' gets overwritten -_-
-			break;
+		switch (inkey()) {
 		case KTRL('T'):
 			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", 2);
+			xhtml_screenshot("screenshot????");
 			redraw = FALSE;
 			break;
 		case KTRL('U'):
@@ -10923,16 +8425,16 @@ void interact_audio(void) {
 			break;
 		case 'n':
 		case '6':
-			//Term_putstr(item_x[cur_item], y_label + 2, -1, TERM_ORANGE, "   ");
-			//Term_putstr(item_x[cur_item], y_label + 3, -1, TERM_ORANGE, "   ");
+//			Term_putstr(item_x[cur_item], y_label + 2, -1, TERM_ORANGE, "   ");
+//			Term_putstr(item_x[cur_item], y_label + 3, -1, TERM_ORANGE, "   ");
 			cur_item++;
 			if (cur_item > 7) cur_item = 0;
 			redraw = FALSE;
 			break;
 		case 'p':
 		case '4':
-			//Term_putstr(item_x[cur_item], y_label + 2, -1, TERM_ORANGE, "   ");
-			//Term_putstr(item_x[cur_item], y_label + 3, -1, TERM_ORANGE, "   ");
+//			Term_putstr(item_x[cur_item], y_label + 2, -1, TERM_ORANGE, "   ");
+//			Term_putstr(item_x[cur_item], y_label + 3, -1, TERM_ORANGE, "   ");
 			cur_item--;
 			if (cur_item < 0) cur_item = 7;
 			redraw = FALSE;
@@ -10940,13 +8442,13 @@ void interact_audio(void) {
 		case '8':
 		case '+':
 			switch (cur_item) {
-			case 0:
+			case 0: cfg_audio_master = !cfg_audio_master; break;
+			case 1: cfg_audio_music = !cfg_audio_music; break;
+			case 2: cfg_audio_sound = !cfg_audio_sound; break;
+			case 3: cfg_audio_weather = !cfg_audio_weather; break;
 			case 4: if (cfg_audio_master_volume <= 90) cfg_audio_master_volume += 10; else cfg_audio_master_volume = 100; break;
-			case 1:
 			case 5: if (cfg_audio_music_volume <= 90) cfg_audio_music_volume += 10; else cfg_audio_music_volume = 100; break;
-			case 2:
 			case 6: if (cfg_audio_sound_volume <= 90) cfg_audio_sound_volume += 10; else cfg_audio_sound_volume = 100; break;
-			case 3:
 			case 7: if (cfg_audio_weather_volume <= 90) cfg_audio_weather_volume += 10; else cfg_audio_weather_volume = 100; break;
 			}
 			set_mixing();
@@ -10954,13 +8456,13 @@ void interact_audio(void) {
 		case '2':
 		case '-':
 			switch (cur_item) {
-			case 0:
+			case 0: cfg_audio_master = !cfg_audio_master; break;
+			case 1: cfg_audio_music = !cfg_audio_music; break;
+			case 2: cfg_audio_sound = !cfg_audio_sound; break;
+			case 3: cfg_audio_weather = !cfg_audio_weather; break;
 			case 4: if (cfg_audio_master_volume >= 10) cfg_audio_master_volume -= 10; else cfg_audio_master_volume = 0; break;
-			case 1:
 			case 5: if (cfg_audio_music_volume >= 10) cfg_audio_music_volume -= 10; else cfg_audio_music_volume = 0; break;
-			case 2:
 			case 6: if (cfg_audio_sound_volume >= 10) cfg_audio_sound_volume -= 10; else cfg_audio_sound_volume = 0; break;
-			case 3:
 			case 7: if (cfg_audio_weather_volume >= 10) cfg_audio_weather_volume -= 10; else cfg_audio_weather_volume = 0; break;
 			}
 			set_mixing();
@@ -10968,62 +8470,51 @@ void interact_audio(void) {
 		case KTRL('N'):
 		case KTRL('V'): //rl
 		case 'a':
-			toggle_master(TRUE);
+			cfg_audio_master = !cfg_audio_master;
+			set_mixing();
 			break;
 		case KTRL('C'):
 		case KTRL('X'): //rl
 		case 'c':
 		case 'm':
-			toggle_music(TRUE);
+			cfg_audio_music = !cfg_audio_music;
+			set_mixing();
 			break;
 		case 's':
-			toggle_sound();
+			cfg_audio_sound = !cfg_audio_sound;
+			set_mixing();
 			break;
 		case 'w':
-			toggle_weather();
+			cfg_audio_weather = !cfg_audio_weather;
+			set_mixing();
 			break;
 		case 'A':
-			cur_item = 0 + 4;
+			cur_item = 4;
 			break;
 		case 'C':
 		case 'M':
-			cur_item = 1 + 4;
+			cur_item = 5;
 			break;
 		case 'S':
-			cur_item = 2 + 4;
+			cur_item = 6;
 			break;
 		case 'W':
-			cur_item = 3 + 4;
-			break;
-		case 'r': /* reset all settings to default */
-			cfg_audio_master_volume = cfg_audio_music_volume = cfg_audio_sound_volume = cfg_audio_weather_volume = AUDIO_VOLUME_DEFAULT;
-			cfg_audio_master = cfg_audio_music = cfg_audio_sound = cfg_audio_weather = TRUE;
-			set_mixing();
+			cur_item = 7;
 			break;
 		case '\n':
 		case '\r':
 		case ' ':
 			switch (cur_item) {
-			case 0: toggle_master(TRUE); break;
-			case 1: toggle_music(TRUE); break;
-			case 2: toggle_sound(); break;
-			case 3: toggle_weather(); break;
-			case 4: if (cfg_audio_master_volume <= 90) cfg_audio_master_volume += 10; else cfg_audio_master_volume = 0;
-				set_mixing();
-				break;
-			case 5: if (cfg_audio_music_volume <= 90) cfg_audio_music_volume += 10; else cfg_audio_music_volume = 0;
-				set_mixing();
-				break;
-			case 6: if (cfg_audio_sound_volume <= 90) cfg_audio_sound_volume += 10; else cfg_audio_sound_volume = 0;
-				set_mixing();
-				break;
-			case 7: if (cfg_audio_weather_volume <= 90) cfg_audio_weather_volume += 10; else cfg_audio_weather_volume = 0;
-				set_mixing();
-				break;
+			case 0: cfg_audio_master = !cfg_audio_master; break;
+			case 1: cfg_audio_music = !cfg_audio_music; break;
+			case 2: cfg_audio_sound = !cfg_audio_sound; break;
+			case 3: cfg_audio_weather = !cfg_audio_weather; break;
+			case 4: if (cfg_audio_master_volume <= 90) cfg_audio_master_volume += 10; else cfg_audio_master_volume = 0; break;
+			case 5: if (cfg_audio_music_volume <= 90) cfg_audio_music_volume += 10; else cfg_audio_music_volume = 0; break;
+			case 6: if (cfg_audio_sound_volume <= 90) cfg_audio_sound_volume += 10; else cfg_audio_sound_volume = 0; break;
+			case 7: if (cfg_audio_weather_volume <= 90) cfg_audio_weather_volume += 10; else cfg_audio_weather_volume = 0; break;
 			}
-			break;
-		case KTRL('R'):
-			if (re_init_sound() == 0) c_message_add("Audio packs have been reloaded and audio been reinitialized successfully.");
+			set_mixing();
 			break;
 		default:
 			/* Oops */
@@ -11041,375 +8532,15 @@ void interact_audio(void) {
 	Flush_queue();
 
 	/* Re-enable hybrid macros */
-	inkey_msg = inkey_msg_old;
+	inkey_msg = FALSE;
 }
-void toggle_master(bool gui) {
-	cfg_audio_master = !cfg_audio_master;
-	if (!gui) c_message_add(format("\377yAudio is now %s.", cfg_audio_master ? (quiet_mode ? "ON (but client is running in quiet mode)" : "ON") : "OFF"));
-	set_mixing();
-}
-void toggle_music(bool gui) {
+void toggle_music(void) {
 	cfg_audio_music = !cfg_audio_music;
-	if (!gui)
-		c_message_add(format("\377yMusic is now %s.",
-		    cfg_audio_music ?
-		    (quiet_mode ? "ON (but client is running in quiet mode)" :
-		    (cfg_audio_master ? "ON" : "ON (but master mixer is set to off)"))
-		    : "OFF"));
 	set_mixing();
 }
-void toggle_sound(void) {
-	cfg_audio_sound = !cfg_audio_sound;
-	//c_message_add(format("\377ySound is now %s.", cfg_audio_sound ? "ON" : "OFF"));
+void toggle_audio(void) {
+	cfg_audio_master = !cfg_audio_master;
 	set_mixing();
-}
-void toggle_weather(void) {
-	cfg_audio_weather = !cfg_audio_weather;
-	//c_message_add(format("\377yWeather sound effects are now %s.", cfg_audio_weather ? "ON" : "OFF"));
-	set_mixing();
-}
-#endif
-
-#ifdef USE_SOUND_2010
-/* Select folders for music/sound pack to load, from a selection of all eligible folders within lib/xtra */
-#define MAX_PACKS 100
-#define PACKS_SCREEN 10
-void audio_pack_selector(void) {
-	int k, soundpacks = 0, musicpacks = 0;
-	static int cur_sp = 0, cur_mp = 0, cur_sy = 0, cur_my = 0;
-	bool redraw = TRUE, quit = FALSE;
-	char buf[1024], path[1024];
-	char sp_dir[MAX_PACKS][MAX_CHARS], mp_dir[MAX_PACKS][MAX_CHARS];
-	char sp_name[MAX_PACKS][MAX_CHARS], mp_name[MAX_PACKS][MAX_CHARS];
-	char sp_author[MAX_PACKS][MAX_CHARS], mp_author[MAX_PACKS][MAX_CHARS];
-	char sp_diz[MAX_PACKS][MAX_CHARS * 3], mp_diz[MAX_PACKS][MAX_CHARS * 3];
-	char *ckey, *cval;
-
-	FILE *fff, *fff2;
-#ifndef WINDOWS
-	int r;
-#endif
-
-	/* suppress hybrid macros */
-	bool inkey_msg_old = inkey_msg;
-	inkey_msg = TRUE;
-
-	/* Save screen */
-	Term_save();
-
-	/* Get list of all folders starting on 'music' or 'sound' within lib/xtra */
-	fff = fopen("__tomenet.tmp", "w"); //just make sure the file always exists, for easier file-reading handling.. pft */
-	if (!fff) {
-		c_message_add("\377oError: Couldn't write temporary file.");
-		return;
-	}
-	fclose(fff);
-#ifdef WINDOWS
- #if 0 /* use system calls - easy, but has drawback of cmd shell window popup -_- */
-	fff = fopen("__tomenethelper.bat", "w");
-	if (!fff) {
-		c_message_add("\377oError: Couldn't write temporary file.");
-		return;
-	}
-	fprintf(fff, "@dir %s /a:d /b > __tomenet.tmp\n", ANGBAND_DIR_XTRA);
-	fclose(fff);
-	/* Nasty path-guessing hardcoding here =p. */
-	//strcpy(buf, getenv("ComSpec"));
-	//_spawnl(_P_WAIT, buf, buf, "/c", "__tomenethelper.bat", NULL);
-	_spawnl(_P_WAIT, "__tomenethelper.bat", "__tomenethelper.bat", NULL);
- #else
-    { /* Use native Windows functions from dirent to query directory structure directly */
-	struct dirent *de;
-	DIR *dr = opendir(ANGBAND_DIR_XTRA);
-
-	if (dr == NULL) {
-		c_message_add("\377oError: Couldn't scan audio pack folders.");
-		return;
-	}
-
-	fff = fopen("__tomenet.tmp", "w"); //o lazy
-	while ((de = readdir(dr)) != NULL) fprintf(fff, "%s\n", de->d_name);
-	fclose(fff);
-
-	closedir(dr);
-    }
- #endif
-#else /* assume POSIX */
-	r = system(format("ls %s/*/ -d -1 > __tomenet.tmp", ANGBAND_DIR_XTRA)); // or "ls -d */ | cat > __tomenet.tmp" in case -1 isnt supported?
-#endif
-	fff = fopen("__tomenet.tmp", "r");
-	if (!fff) {
-		c_message_add("\377oError: Couldn't scan audio pack folders.");
-		return;
-	}
-	while (!feof(fff)) {
-		if (!fgets(buf, 1024, fff)) break;
-#ifndef WINDOWS
-		buf[strlen(buf) - 2] = 0; //'ls' command outputs trailing '/' on each line
-#else
-		buf[strlen(buf) - 1] = 0; //trailing newline
-#endif
-
-#ifndef WINDOWS
-		/* crop xtra path */
-		strcpy(path, buf + strlen(ANGBAND_DIR_XTRA) + 1);
-		strcpy(buf, path);
-#endif
-
-		/* Found a sound pack folder? */
-		if (!strncmp(buf, "sound", 5)) {
-			if (soundpacks < MAX_PACKS) {
-				if (!strcmp(buf, cfg_soundpackfolder)) {
-					cur_sp = soundpacks; //currently used pack
-					cur_sy = cur_sp > PACKS_SCREEN ? PACKS_SCREEN : cur_sp;
-				}
-				strcpy(sp_dir[soundpacks], buf);
-				/* read [Title] metadata */
-				strcpy(sp_name[soundpacks], "No name");
-				strcpy(sp_author[soundpacks], "nobody");
-				strcpy(sp_diz[soundpacks], "No description");
-#ifdef WINDOWS
-				path_build(path, 1024, ANGBAND_DIR_XTRA, format("%s\\sound.cfg", buf));
-#else
-				path_build(path, 1024, ANGBAND_DIR_XTRA, format("%s/sound.cfg", buf));
-#endif
-				fff2 = fopen(path, "r");
-				if (!fff2) continue;
-				while (!feof(fff2)) {
-					if (!fgets(buf, 1024, fff2)) break;
-					buf[strlen(buf) - 1] = 0;
-
-					/* Trim leading spaces/tabs */
-					ckey = buf;
-					while (*ckey == ' ' || *ckey == '\t') ckey++;
-
-					/* Search for key separator */
-					if (!(cval = strchr(ckey, '='))) continue;
-					*cval = 0;
-					cval++;
-					/* Trim spaces/tabs */
-					while (ckey[strlen(ckey) - 1] == ' ' || ckey[strlen(ckey) - 1] == '\t') ckey[strlen(ckey) - 1] = 0;
-					while (*cval == ' ' || *cval == '\t') cval++;
-					while (cval[strlen(cval) - 1] == ' ' || cval[strlen(cval) - 1] == '\t') cval[strlen(cval) - 1] = 0;
-
-					/* Scan for pack info */
-					if (!strcmp(ckey, "packname")) {
-						strcpy(sp_name[soundpacks], cval);
-						continue;
-					}
-					if (!strcmp(ckey, "author")) {
-						strcpy(sp_author[soundpacks], cval);
-						continue;
-					}
-					if (!strcmp(ckey, "description")) {
-						strcpy(sp_diz[soundpacks], cval);
-						continue;
-					}
-				}
-				fclose(fff2);
-				soundpacks++;
-			}
-			continue;
-		}
-		/* Found a music pack folder? */
-		if (!strncmp(buf, "music", 5)) {
-			if (musicpacks < MAX_PACKS) {
-				if (!strcmp(buf, cfg_musicpackfolder)) {
-					cur_mp = musicpacks; //currently used pack
-					cur_my = cur_mp > PACKS_SCREEN ? PACKS_SCREEN : cur_mp;
-				}
-				strcpy(mp_dir[musicpacks], buf);
-				/* read [Title] metadata */
-				strcpy(mp_name[musicpacks], "No name");
-				strcpy(mp_author[musicpacks], "nobody");
-				strcpy(mp_diz[musicpacks], "No description");
-#ifdef WINDOWS
-				path_build(path, 1024, ANGBAND_DIR_XTRA, format("%s\\music.cfg", buf));
-#else
-				path_build(path, 1024, ANGBAND_DIR_XTRA, format("%s/music.cfg", buf));
-#endif
-				fff2 = fopen(path, "r");
-				if (!fff2) continue;
-				while (!feof(fff2)) {
-					if (!fgets(buf, 1024, fff2)) break;
-					buf[strlen(buf) - 1] = 0;
-
-					/* Trim leading spaces/tabs */
-					ckey = buf;
-					while (*ckey == ' ' || *ckey == '\t') ckey++;
-
-					/* Search for key separator */
-					if (!(cval = strchr(ckey, '='))) continue;
-					*cval = 0;
-					cval++;
-					/* Trim spaces/tabs */
-					while (ckey[strlen(ckey) - 1] == ' ' || ckey[strlen(ckey) - 1] == '\t') ckey[strlen(ckey) - 1] = 0;
-					while (*cval == ' ' || *cval == '\t') cval++;
-					while (cval[strlen(cval) - 1] == ' ' || cval[strlen(cval) - 1] == '\t') cval[strlen(cval) - 1] = 0;
-
-					/* Scan for pack info */
-					if (!strcmp(ckey, "packname")) {
-						strcpy(mp_name[musicpacks], cval);
-						continue;
-					}
-					if (!strcmp(ckey, "author")) {
-						strcpy(mp_author[musicpacks], cval);
-						continue;
-					}
-					if (!strcmp(ckey, "description")) {
-						strcpy(mp_diz[musicpacks], cval);
-						continue;
-					}
-				}
-				fclose(fff2);
-				musicpacks++;
-			}
-			continue;
-		}
-	}
-	fclose(fff);
-	remove("__tomenet.tmp");
-#ifndef WINDOWS
-	(void)r; //slay compiler warning -_-;;;
-#else
-	remove("__tomenethelper.bat");
-#endif
-
-	while (1) {
-		if (redraw) {
-			/* Clear screen */
-			Term_clear();
-
-			/* Describe */
-			Term_putstr(25,  0, -1, TERM_L_UMBER, "*** Audio Pack Selector ***");
-			Term_putstr(1, 1, -1, TERM_L_WHITE, "Press \377yq\377w/\377ya\377w to navigate sound packs, \377yw\377w/\377ys\377w to navigate music packs, \377yESC\377w to accept.");
-			Term_putstr(5, 3, -1, TERM_L_UMBER, "Available sound packs:");
-			Term_putstr(45, 3, -1, TERM_L_UMBER, "Available music packs:");
-
-			for (k = 0; k < PACKS_SCREEN; k++) {
-				if (k - cur_sy + cur_sp >= soundpacks) break;
-				if (k == cur_sy)
-					Term_putstr(0, 4 + k, -1, TERM_SELECTOR, sp_dir[cur_sp + k - cur_sy]);
-				else
-					Term_putstr(0, 4 + k, -1, TERM_WHITE, sp_dir[cur_sp + k - cur_sy]);
-			}
-			for (k = 0; k < PACKS_SCREEN; k++) {
-				if (k - cur_my + cur_mp >= musicpacks) break;
-				if (k == cur_my)
-					Term_putstr(40, 4 + k, -1, TERM_SELECTOR, mp_dir[cur_mp + k - cur_my]);
-				else
-					Term_putstr(40, 4 + k, -1, TERM_WHITE, mp_dir[cur_mp + k - cur_my]);
-			}
-
-			Term_putstr(0, 15, -1, TERM_L_UMBER, "Selected SP:");
-			Term_putstr(13, 15, -1, TERM_YELLOW, format("%s [by %s]", sp_name[cur_sp], sp_author[cur_sp]));
-			Term_putstr(0, 16, -1, TERM_L_WHITE, sp_diz[cur_sp]);
-			if (strlen(sp_diz[cur_sp]) >= 80) Term_putstr(0, 17, -1, TERM_L_WHITE, &sp_diz[cur_sp][80]);
-			if (strlen(sp_diz[cur_sp]) >= 160) Term_putstr(0, 18, -1, TERM_L_WHITE, &sp_diz[cur_sp][160]);
-			Term_putstr(0, 20, -1, TERM_L_UMBER, "Selected MP:");
-			Term_putstr(13, 20, -1, TERM_YELLOW, format("%s [by %s]", mp_name[cur_mp], mp_author[cur_mp]));
-			Term_putstr(0, 21, -1, TERM_L_WHITE, mp_diz[cur_mp]);
-			if (strlen(mp_diz[cur_mp]) >= 80) Term_putstr(0, 22, -1, TERM_L_WHITE, &mp_diz[cur_mp][80]);
-			if (strlen(mp_diz[cur_mp]) >= 160) Term_putstr(0, 23, -1, TERM_L_WHITE, &mp_diz[cur_mp][160]);
-		}
-		redraw = TRUE;
-
-		/* make cursor invisible */
-		Term_set_cursor(0);
-		inkey_flag = TRUE;
-
-		/* Wait for keypress */
-		k = inkey();
-		switch (k) {
-		case KTRL('T'):
-			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", 2);
-			redraw = FALSE;
-			break;
-		case ESCAPE:
-			quit = TRUE; /* hack to leave loop */
-			break;
-		case 'a':
-			if (cur_sp < soundpacks - 1) {
-				cur_sp++;
-				if (cur_sy < PACKS_SCREEN - 1) cur_sy++;
-			}
-			//redraw = FALSE;
-			break;
-		case 'q':
-			if (cur_sp) {
-				cur_sp--;
-				if (cur_sy) cur_sy--;
-			}
-			//redraw = FALSE;
-			break;
-		case 's':
-			if (cur_mp < musicpacks - 1) {
-				cur_mp++;
-				if (cur_my < PACKS_SCREEN - 1) cur_my++;
-			}
-			//redraw = FALSE;
-			break;
-		case 'w':
-			if (cur_mp) {
-				cur_mp--;
-				if (cur_my) cur_my--;
-			}
-			//redraw = FALSE;
-			break;
-		default:
-			/* Oops */
-			bell();
-		}
-
-		/* Leave */
-		if (quit) break;
-	}
-
-	/* No changes were made? */
-	if (!strcmp(cfg_soundpackfolder, sp_dir[cur_sp]) && !strcmp(cfg_musicpackfolder, mp_dir[cur_mp])) {
-		/* Reload screen */
-		Term_load();
-
-		/* Flush the queue */
-		Flush_queue();
-
-		/* Re-enable hybrid macros */
-		inkey_msg = inkey_msg_old;
-
-		return;
-	}
-
-	/* Sound or music pack were changed - notify, apply and re-init audio system (if SDL): */
-	if (strcmp(cfg_soundpackfolder, sp_dir[cur_sp])) {
-		c_message_add(format("Switched sound pack to '%s'.", sp_dir[cur_sp]));
-		strcpy(cfg_soundpackfolder, sp_dir[cur_sp]);
-	}
-	if (strcmp(cfg_musicpackfolder, mp_dir[cur_mp])) {
-		c_message_add(format("Switched music pack to '%s'.", mp_dir[cur_mp]));
-		strcpy(cfg_musicpackfolder, mp_dir[cur_mp]);
-	}
-
-#ifdef WINDOWS
-	store_audiopackfolders();
-#else /* assume POSIX */
-	write_mangrc(FALSE, FALSE, TRUE);
-#endif
-
-	/* Reload screen */
-	Term_load();
-
-	/* Flush the queue */
-	Flush_queue();
-
-	/* Re-enable hybrid macros */
-	inkey_msg = inkey_msg_old;
-
-	/* Switch it live! */
-	if (re_init_sound() == 0) c_message_add("Audio packs have been reloaded and audio been reinitialized successfully.");
-
-	//No longer true (for SDL, our only sound sytem at this point basically):
-	//c_message_add("\377RAfter changing audio packs, a game client restart is required!");
 }
 #endif
 
@@ -11447,21 +8578,6 @@ void Send_paste_msg(char *msg) {
 #define PANEL_Y	(SCREEN_PAD_TOP)
 void check_immediate_options(int i, bool yes, bool playing) {
 #ifdef USE_GCU
-	if (!strcmp(ANGBAND_SYS, "gcu")) {
-		/* Hack for now: Palette animation seems to cause segfault on login in command-line client */
-		if (option_info[i].o_var == &c_cfg.palette_animation) {
-			c_cfg.palette_animation = FALSE;
-			(*option_info[i].o_var) = FALSE;
-			Client_setup.options[i] = FALSE;
-		}
-		if (option_info[i].o_var == &c_cfg.disable_lightning) {
-			c_cfg.disable_lightning = FALSE;
-			(*option_info[i].o_var) = FALSE;
-			Client_setup.options[i] = FALSE;
-		}
-	}
-
- #ifndef GLOBAL_BIG_MAP
 	/* BIG_MAP is currently not supported in GCU client */
 	if (!strcmp(ANGBAND_SYS, "gcu") && option_info[i].o_var == &c_cfg.big_map) {
 		c_cfg.big_map = FALSE;
@@ -11470,9 +8586,8 @@ void check_immediate_options(int i, bool yes, bool playing) {
 		screen_hgt = SCREEN_HGT;
 		if (playing) Send_screen_dimensions();
 	} else
- #endif
 #endif
-#ifndef GLOBAL_BIG_MAP
+
 	/* Not yet. First, process all the option files before doing this */
 	if (option_info[i].o_var == &c_cfg.big_map && global_big_map_hold) return;
 
@@ -11502,7 +8617,6 @@ void check_immediate_options(int i, bool yes, bool playing) {
 			}
 		}
 	}
-#endif
 
 	/* Terminate all weather visuals and sounds via 'no_weather' option? */
 	if (!noweather_mode && option_info[i].o_var == &c_cfg.no_weather && c_cfg.no_weather) {
@@ -11540,32 +8654,12 @@ void check_immediate_options(int i, bool yes, bool playing) {
 		if (screen_icky) Term_switch(0);
 	}
 
-#ifdef USE_SOUND_2010
-	/* Refresh music when shuffle_music or play_all is toggled */
-	if (option_info[i].o_var == &c_cfg.shuffle_music || option_info[i].o_var == &c_cfg.play_all) {
+	/* Refresh music when shuffle_music is toggled */
+	if (option_info[i].o_var == &c_cfg.shuffle_music) {
 		/* ..but only if we're not already in the process of changing music! */
 		if (music_next == -1)
 			music(-3); //refresh!
 	}
-#endif
-
-	if ((option_info[i].o_var == &c_cfg.mp_huge_bar ||
-	    option_info[i].o_var == &c_cfg.sn_huge_bar ||
-	    option_info[i].o_var == &c_cfg.hp_huge_bar) ||
-	    (option_info[i].o_var == &c_cfg.font_map_solid_walls &&
-	    (c_cfg.mp_huge_bar || c_cfg.sn_huge_bar || c_cfg.hp_huge_bar))) {
-		/* Reset static vars for hp/sp/mp for drawing huge bars to enforce redrawing */
-		prev_huge_cmp = prev_huge_csn = prev_huge_chp = -1;
-		if (screen_icky) Term_switch(0);
-		clear_huge_bars();
-		/* Avoid div/0 if client just logged in with a character, which also initializes the options and calls us */
-		if (p_ptr->mmp) draw_huge_bar(0, &prev_huge_cmp, p_ptr->cmp, &prev_huge_mmp, p_ptr->mmp);
-		if (p_ptr->msane) draw_huge_bar(1, &prev_huge_csn, p_ptr->csane, &prev_huge_msn, p_ptr->msane);
-		if (p_ptr->mhp) draw_huge_bar(2, &prev_huge_chp, p_ptr->chp, &prev_huge_mhp, p_ptr->mhp);
-		if (screen_icky) Term_switch(0);
-	}
-	if (option_info[i].o_var == &c_cfg.sn_huge_bar && c_cfg.sn_huge_bar && is_older_than(&server_version, 4, 8, 1, 3, 0, 0))
-		c_message_add("Server version 4.8.1.3.0.0 or higher required for the 'huge sanity bar' feature.");
 }
 
 /* Helper functions for DONT_CLEAR_TOPLINE_IF_AVOIDABLE - C. Blue */
@@ -11633,33 +8727,14 @@ u32b parse_color_code(const char *str) {
 		sscanf(str + 1, "%lx", &c);
 	}
 
-	return(c);
+	return c;
 }
-
-#ifdef USE_GRAPHICS
-/* Load the graphics pref file "graphics-{graphic_tiles}.pref" aka
-   "Access the "graphic visual" system pref file (if any)". */
-static void handle_process_graphics_file(void) {
-	char fname[255 + 13 + 1];
-	/* Figure out graphics prefs file name to be loaded. */
-	sprintf(fname, "graphics-%s.prf", graphic_tiles);
-	/* Access the "graphic visual" system pref file (if any). */
-
-	/* During the graphics file parsing the offset needs to be MAX_FONT_CHAR + 1.
-	 * The grafics redefinition can use tile indexing from 0 and
-	 * there is no need to update graphics files after MAX_FONT_CHAR is changed. */
-	char_map_offset = MAX_FONT_CHAR + 1;
-	if (process_pref_file(fname) == -1) printf("Can't read graphics preferences file: %s\n", fname);
-	char_map_offset = 0;
-}
-#endif
 
 /* Load the default font's or a custom font's pref file aka
     "Access the "visual" system pref file (if any)". */
-/* If graphics is enabled, load graphic's pref file (if any). */
 #define CUSTOM_FONT_PRF /* enable custom pref files? */
 void handle_process_font_file(void) {
-	char buf[1024 + 17];
+	char buf[1024];
 #ifdef CUSTOM_FONT_PRF
 	char fname[1024];
 	int i;
@@ -11671,13 +8746,13 @@ void handle_process_font_file(void) {
 		Client_setup.f_attr[i] = 0;
 		Client_setup.f_char[i] = 0;
 	}
-	floor_mapping_mod = u32b_char_dict_free(floor_mapping_mod);
+	for (i = 0; i < 256; i++) floor_mapping_mod[i] = 0;
 	//race info (monsters)
 	for (i = 0; i < MAX_R_IDX; i++) {
 		Client_setup.r_attr[i] = 0;
 		Client_setup.r_char[i] = 0;
 	}
-	monster_mapping_mod = u32b_char_dict_free(monster_mapping_mod);
+	for (i = 0; i < 256; i++) monster_mapping_mod[i] = 0;
 	//kind info (objects)
 	for (i = 0; i < MAX_K_IDX; i++) {
 		Client_setup.k_attr[i] = 0;
@@ -11690,12 +8765,9 @@ void handle_process_font_file(void) {
 	}
  #endif
 
-	/* Just to be sure. During the font parsing the offset needs to be 0.*/
-	char_map_offset = 0;
-
 	/* Actually try to load a custom font-xxx.prf file, depending on the main screen font */
 	get_screen_font_name(fname);
-	if (fname[0]) {
+	if (!use_graphics && fname[0]) {
 		FILE *fff;
 		/* Linux: fname has this format: '5x8' */
 		/* Windows: fname has this format: '.\lib\xtra\font\16X24X.FON' */
@@ -11718,31 +8790,20 @@ void handle_process_font_file(void) {
 		path_build(fname, 1024, ANGBAND_DIR_USER, buf);
 		fff = my_fopen(fname, "r");
 		/* If custom file doesn't exist, fallback to normal font pref file: */
-		custom_font_warning = FALSE;
 		if (!fff) sprintf(buf, "font-%s.prf", ANGBAND_SYS);
-		else {
-			fclose(fff);
-			if (c_cfg.font_map_solid_walls) custom_font_warning = TRUE;
-		}
+		else fclose(fff);
 		process_pref_file(buf);
- #ifdef USE_GRAPHICS
-		if (use_graphics) handle_process_graphics_file();
- #endif
 
 		/* Resend definitions to the server */
 		if (in_game) Send_client_setup();
 	} else {
 #endif
-		/* Access the "visual" system pref file (if any) */
-		sprintf(buf, "font-%s.prf", ANGBAND_SYS);
-		process_pref_file(buf);
-#ifdef USE_GRAPHICS
-		if (use_graphics) handle_process_graphics_file();
-#endif
+	/* Access the "visual" system pref file (if any) */
+	sprintf(buf, "%s-%s.prf", (use_graphics ? "graf" : "font"), ANGBAND_SYS);
+	process_pref_file(buf);
 #ifdef CUSTOM_FONT_PRF
 	}
 #endif
-	Send_font();
 }
 
 #ifdef RETRY_LOGIN
@@ -11761,410 +8822,3 @@ void clear_macros(void) {
 	for (i = 0; i < 256; i++) macro__use[i] = 0;
 }
 #endif
-
-/* Colourize 3-digit clusters a bit to make reading big numbers more comfortable. - C. Blue
-   method:
-   0 - price tags inside stores (white/l-umber)
-   1 - AU/XP line in main window (l-green/slate), also Au/Xp in C screen
-   2 - like 1 but make it a length 9 number instead of length 10
-   afford: can we afford the price? if false, use dark colouring.
- */
-#define COLBIGNUM_A1S "\377y"
-#define COLBIGNUM_A2S "\377w"
-#define COLBIGNUM_B1S "\377W"
-#define COLBIGNUM_B2S "\377G"
-#define COLBIGNUM_M1S "\377u"
-#define COLBIGNUM_M2S "\377U"
-#define COLBIGNUM_C1S "\377W"
-#define COLBIGNUM_C2S "\377y"
-
-#define COLBIGNUM_DARK_A1S "\377s"
-#define COLBIGNUM_DARK_A2S "\377D"
-#define COLBIGNUM_DARK_B1S "\377s"
-#define COLBIGNUM_DARK_B2S "\377D"
-#define COLBIGNUM_DARK_M1S "\377s"
-#define COLBIGNUM_DARK_M2S "\377D"
-
-#define FIXED_PY_MAX_XXX
-void colour_bignum(s32b bn, s32b bn_max, char *out_val, byte method, bool afford) {
-	out_val[0] = 0;
-
-	if (afford) {
-		switch (method) {
-		case 0:
-			/* No billion prices in npc stores but could be in pstores */
-			if (bn >= 1000000000) (void)sprintf(out_val, COLBIGNUM_A1S "%d" COLBIGNUM_A2S "%03d" COLBIGNUM_A1S "%03d" COLBIGNUM_A2S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-			else if (bn >= 1000000) (void)sprintf(out_val, COLBIGNUM_A2S "%3d" COLBIGNUM_A1S "%03d" COLBIGNUM_A2S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-			else if (bn >= 1000) (void)sprintf(out_val, COLBIGNUM_A1S "%6d" COLBIGNUM_A2S "%03d", bn / 1000, bn % 1000);
-			else (void)sprintf(out_val, COLBIGNUM_A2S "%9d", bn);
-			break;
-		case 1:
-			/* Doesn't look thaaat nice colour-wise maybe, despite being easier to interpret :/ */
-			if (bn != bn_max) {
-				/* Assume max of 4 triplets aka 12-digit number */
-				if (bn >= 1000000000) sprintf(out_val, COLBIGNUM_B1S "%1d" COLBIGNUM_B2S "%03d" COLBIGNUM_B1S "%03d" COLBIGNUM_B2S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000000) sprintf(out_val, COLBIGNUM_B2S "%4d" COLBIGNUM_B1S "%03d" COLBIGNUM_B2S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000) sprintf(out_val, COLBIGNUM_B1S "%7d" COLBIGNUM_B2S "%03d", bn / 1000, bn % 1000);
-				else sprintf(out_val, COLBIGNUM_B2S "%10d", bn);
-			} else {
-#ifndef FIXED_PY_MAX_XXX
-				/* Alternating umber tones for PY_MAX_GOLD/PY_MAX_EXP */
-				sprintf(out_val, COLBIGNUM_M2S "%1d" COLBIGNUM_M1S "%03d" COLBIGNUM_M2S "%03d" COLBIGNUM_M1S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-#else
-				/* Since they are constants, just display it all in one colour, cannot be misinterpreted */
-				sprintf(out_val, COLBIGNUM_M2S "%10d", bn);
-#endif
-			}
-			break;
-		case 2:
-			if (bn != bn_max) {
-				/* Assume max of 4 triplets aka 12-digit number */
-				if (bn >= 1000000) sprintf(out_val, COLBIGNUM_B2S "%3d" COLBIGNUM_B1S "%03d" COLBIGNUM_B2S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000) sprintf(out_val, COLBIGNUM_B1S "%6d" COLBIGNUM_B2S "%03d", bn / 1000, bn % 1000);
-				else sprintf(out_val, COLBIGNUM_B2S "%9d", bn);
-			} else {
-#ifndef FIXED_PY_MAX_XXX
-				/* Alternating umber tones for PY_MAX_GOLD/PY_MAX_EXP */
-				sprintf(out_val, COLBIGNUM_M1S "%3d" COLBIGNUM_M2S "%03d" COLBIGNUM_M1S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-#else
-				/* Since they are constants, just display it all in one colour, cannot be misinterpreted */
-				sprintf(out_val, COLBIGNUM_M2S "%9d", bn);
-#endif
-			}
-			break;
-		case 3:
-			/* Like 1, but for drained values */
-			if (bn != bn_max) {
-				/* Assume max of 4 triplets aka 12-digit number */
-				if (bn >= 1000000000) sprintf(out_val, COLBIGNUM_C1S "%1d" COLBIGNUM_C2S "%03d" COLBIGNUM_C1S "%03d" COLBIGNUM_C2S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000000) sprintf(out_val, COLBIGNUM_C2S "%4d" COLBIGNUM_C1S "%03d" COLBIGNUM_C2S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000) sprintf(out_val, COLBIGNUM_C1S "%7d" COLBIGNUM_C2S "%03d", bn / 1000, bn % 1000);
-				else sprintf(out_val, COLBIGNUM_C2S "%10d", bn);
-			} else {
-#ifndef FIXED_PY_MAX_XXX
-				/* Alternating umber tones for PY_MAX_GOLD/PY_MAX_EXP */
-				sprintf(out_val, COLBIGNUM_M2S "%1d" COLBIGNUM_M1S "%03d" COLBIGNUM_M2S "%03d" COLBIGNUM_M1S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-#else
-				/* Since they are constants, just display it all in one colour, cannot be misinterpreted */
-				sprintf(out_val, COLBIGNUM_M2S "%10d", bn);
-#endif
-			}
-			break;
-		}
-	} else {
-		switch (method) {
-		case 0:
-			/* No billion prices in npc stores but could be in pstores */
-			if (bn >= 1000000000) (void)sprintf(out_val, COLBIGNUM_DARK_A1S "%d" COLBIGNUM_DARK_A2S "%03d" COLBIGNUM_DARK_A1S "%03d" COLBIGNUM_DARK_A2S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-			else if (bn >= 1000000) (void)sprintf(out_val, COLBIGNUM_DARK_A2S "%3d" COLBIGNUM_DARK_A1S "%03d" COLBIGNUM_DARK_A2S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-			else if (bn >= 1000) (void)sprintf(out_val, COLBIGNUM_DARK_A1S "%6d" COLBIGNUM_DARK_A2S "%03d", bn / 1000, bn % 1000);
-			else (void)sprintf(out_val, COLBIGNUM_DARK_A2S "%9d", bn);
-			break;
-		case 1:
-			/* Doesn't look thaaat nice colour-wise maybe, despite being easier to interpret :/ */
-			if (bn != bn_max) {
-				/* Assume max of 4 triplets aka 12-digit number */
-				if (bn >= 1000000000) sprintf(out_val, COLBIGNUM_DARK_B1S "%1d" COLBIGNUM_DARK_B2S "%03d" COLBIGNUM_DARK_B1S "%03d" COLBIGNUM_DARK_B2S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000000) sprintf(out_val, COLBIGNUM_DARK_B2S "%4d" COLBIGNUM_DARK_B1S "%03d" COLBIGNUM_DARK_B2S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000) sprintf(out_val, COLBIGNUM_DARK_B1S "%7d" COLBIGNUM_DARK_B2S "%03d", bn / 1000, bn % 1000);
-				else sprintf(out_val, COLBIGNUM_DARK_B2S "%10d", bn);
-			} else {
-#ifndef FIXED_PY_MAX_XXX
-				/* Alternating umber tones for PY_MAX_GOLD/PY_MAX_EXP */
-				sprintf(out_val, COLBIGNUM_DARK_M2S "%1d" COLBIGNUM_DARK_M1S "%03d" COLBIGNUM_DARK_M2S "%03d" COLBIGNUM_DARK_M1S "%03d", bn / 1000000000, (bn % 1000000000) / 1000000, (bn % 1000000) / 1000, bn % 1000);
-#else
-				/* Since they are constants, just display it all in one colour, cannot be misinterpreted */
-				sprintf(out_val, COLBIGNUM_DARK_M2S "%10d", bn);
-#endif
-			}
-			break;
-		case 2:
-			if (bn != bn_max) {
-				/* Assume max of 4 triplets aka 12-digit number */
-				if (bn >= 1000000) sprintf(out_val, COLBIGNUM_DARK_B2S "%3d" COLBIGNUM_DARK_B1S "%03d" COLBIGNUM_DARK_B2S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-				else if (bn >= 1000) sprintf(out_val, COLBIGNUM_DARK_B1S "%6d" COLBIGNUM_DARK_B2S "%03d", bn / 1000, bn % 1000);
-				else sprintf(out_val, COLBIGNUM_DARK_B2S "%9d", bn);
-			} else {
-#ifndef FIXED_PY_MAX_XXX
-				/* Alternating umber tones for PY_MAX_GOLD/PY_MAX_EXP */
-				sprintf(out_val, COLBIGNUM_DARK_M1S "%3d" COLBIGNUM_DARK_M2S "%03d" COLBIGNUM_DARK_M1S "%03d", bn / 1000000, (bn % 1000000) / 1000, bn % 1000);
-#else
-				/* Since they are constants, just display it all in one colour, cannot be misinterpreted */
-				sprintf(out_val, COLBIGNUM_DARK_M2S "%9d", bn);
-#endif
-			}
-			break;
-		}
-	}
-
-}
-
-/* key codes: ^__XXXX\r and ^_XXXX\r */
-char key_map_dos_unix[][3][10] = {
-	{"FFBE", "F1", ""},
-	{"FFBF", "F2", ""},
-	{"FFC0", "F3", ""},
-	{"FFC1", "F4", ""},
-	{"FFC2", "F5", ""},
-	{"FFC3", "F6", ""},
-	{"FFC4", "F7", ""},
-	{"FFC5", "F8", ""},
-	{"FFC6", "F9", ""},
-	{"FFC7", "F10", ""},
-	{"FFC8", "F11", ""},
-	{"FFC9", "F12", ""},
-
-	{"FF61", "PrtScr", ""},
-	{"FF14", "Scroll", ""},
-	{"FF13", "Pause", ""},
-
-	/* Arrow keys et al, also number pad at numlock off */
-	{"FF52", "Up", ""},
-	{"FF54", "Down", ""},
-	{"FF51", "Left", ""},
-	{"FF53", "Right", ""},
-	{"FF63", "Ins", ""}, // 'Del' is ctrl+b!
-	{"FF55", "PageUp", ""},
-	{"FF56", "PageDn", ""},
-	{"FF50", "Home", ""},
-	{"FF57", "End", ""},
-
-	/* Number pad (Numlock independant) */
-	{"FFAF", "Num/", ""},
-	{"FFAA", "Num*", ""},
-	{"FFAD", "Num-", ""},
-	{"FFAB", "Num+", ""},
-	{"FF8D", "NumRet", ""},
-
-	/* Number pad (Numlock off) */
-	{"FF9F", "num.", ""},
-	{"FF9E", "num0", ""},
-	{"FF9C", "num1", ""},
-	{"FF99", "num2", ""},
-	{"FF9B", "num3", ""},
-	{"FF96", "num4", ""},
-	{"FF9D", "num5", ""},
-	{"FF98", "num6", ""},
-	{"FF95", "num7", ""},
-	{"FF97", "num8", ""},
-	{"FF9A", "num9", ""},
-
-	/* Number pad (Numlock off) */
-	{"FFAC", "NUM.", ""},
-	{"FFB0", "NUM0", ""},
-	{"FFB1", "NUM1", ""},
-	{"FFB2", "NUM2", ""},
-	{"FFB3", "NUM3", ""},
-	{"FFB4", "NUM4", ""},
-	{"FFB5", "NUM5", ""},
-	{"FFB6", "NUM6", ""},
-	{"FFB7", "NUM7", ""},
-	{"FFB8", "NUM8", ""},
-	{"FFB9", "NUM9", ""},
-
-	/* Number pad duplicate, apparently numbers only, no idea.. */
-	{"FFD8", "Num7", ""},
-	{"FFD9", "Num8", ""},
-	{"FFDA", "Num9", ""},
-	{"FFDB", "Num4", ""},
-	{"FFDC", "Num5", ""},
-	{"FFDD", "Num6", ""},
-	{"FFDE", "Num1", ""},
-	{"FFDF", "Num2", ""},
-	{"FFE0", "Num3", ""},
-
-	{"x3B", "F1", ""},
-	{"x3C", "F2", ""},
-	{"x3D", "F3", ""},
-	{"x3E", "F4", ""},
-	{"x3F", "F5", ""},
-	{"x40", "F6", ""},
-	{"x41", "F7", ""},
-	{"x42", "F8", ""},
-	{"x43", "F9", ""},
-	{"x44", "F10", ""},
-	{"x57", "F11", ""},
-	{"x58", "F12", ""},
-
-	//? 	{"x61", "PrtScr", ""},
-	//? 	{"x14", "Scroll", ""},
-	//? 	{"x13", "Pause", ""},
-
-	/* Arrow keys et al, also number pad at numlock off */
-	{"x48", "Up", ""},
-	{"x50", "Down", ""},
-	{"x4A", "num-", ""},
-	{"x4B", "Left", ""},
-	{"x4C", "num5", ""},
-	{"x4D", "Right", ""},
-	{"x4E", "num+", ""},
-	{"x52", "Ins", ""},
-	{"x53", "Del", ""},
-	{"x49", "PageUp", ""},
-	{"x51", "PageDn", ""},
-	{"x47", "Home", ""},
-	{"x4F", "End", ""},
-
-	/* Number pad (Numlock off) */
-	/* -- duplicates of the normal keyboard key block listed above, while numlock is off! --
-	{"x53", "num.", ""},
-	{"x52", "num0", ""},
-	{"x4F", "num1", ""},
-	{"x50", "num2", ""},
-	{"x51", "num3", ""},
-	{"x4B", "num4", ""},
-	//(unusable with numlock off) 	{"x", "num5", ""},
-	{"x4D", "num6", ""},
-	{"x47", "num7", ""},
-	{"x48", "num8", ""},
-	{"x49", "num9", ""}, */
-
-	/* Number pad (Numlock on)
-	   - same as the normal keyboard keys with corresponding symbols! - */
-
-	/* Strange codes left over.. looking like numpad */
-	{"x77", "Num7", ""},
-	{"x8D", "Num8", ""},
-	{"x84", "Num9", ""},
-	{"x8E", "Num-", ""},
-	{"x73", "Num4", ""},
-	{"x8F", "Num5", ""},
-	{"x74", "Num6", ""},
-	{"x90", "Num+", ""},
-	{"x75", "Num1", ""},
-	{"x91", "Num2", ""},
-	{"x76", "Num3", ""},
-	{"x92", "Num0", ""},
-	{"x93", "Num.", ""},
-	//} else if (bptr[0] == '_') {
-
-	/* Linux keycode */
-	//if (bptr[0] == 'F' && bptr[1] == 'F') {
-	{"FFBE", "F1", ""},
-	{"FFBF", "F2", ""},
-	{"FFC0", "F3", ""},
-	{"FFC1", "F4", ""},
-	{"FFC2", "F5", ""},
-	{"FFC3", "F6", ""},
-	{"FFC4", "F7", ""},
-	{"FFC5", "F8", ""},
-	{"FFC6", "F9", ""},
-	{"FFC7", "F10", ""},
-	{"FFC8", "F11", ""},
-	{"FFC9", "F12", ""},
-
-	{"FF61", "PrtScr", ""},
-	{"FF14", "Scroll", ""},
-	{"FF13", "Pause", ""},
-
-	/* Arrow keys et al, also number pad at numlock off */
-	{"FF52", "Up", ""},
-	{"FF54", "Down", ""},
-	{"FF51", "Left", ""},
-	{"FF53", "Right", ""},
-	{"FF63", "Ins", ""}, // 'Del' is ctrl+b!
-	{"FF55", "PageUp", ""},
-	{"FF56", "PageDn", ""},
-	{"FF50", "Home", ""},
-	{"FF57", "End", ""},
-
-	/* Number pad (Numlock independant) */
-	{"FFAF", "Num/", ""},
-	{"FFAA", "Num*", ""},
-	{"FFAD", "Num-", ""},
-	{"FFAB", "Num+", ""},
-	{"FF8D", "NumRet", ""},
-
-	/* Number pad (Numlock off) */
-	{"FF9F", "num.", ""},
-	{"FF9E", "num0", ""},
-	{"FF9C", "num1", ""},
-	{"FF99", "num2", ""},
-	{"FF9B", "num3", ""},
-	{"FF96", "num4", ""},
-	{"FF9D", "num5", ""},
-	{"FF98", "num6", ""},
-	{"FF95", "num7", ""},
-	{"FF97", "num8", ""},
-	{"FF9A", "num9", ""},
-
-	/* Number pad (Numlock off) */
-	{"FFAC", "NUM.", ""},
-	{"FFB0", "NUM0", ""},
-	{"FFB1", "NUM1", ""},
-	{"FFB2", "NUM2", ""},
-	{"FFB3", "NUM3", ""},
-	{"FFB4", "NUM4", ""},
-	{"FFB5", "NUM5", ""},
-	{"FFB6", "NUM6", ""},
-	{"FFB7", "NUM7", ""},
-	{"FFB8", "NUM8", ""},
-	{"FFB9", "NUM9", ""},
-
-	/* Number pad duplicate, apparently numbers only, no idea.. */
-	{"FFD8", "Num7", ""},
-	{"FFD9", "Num8", ""},
-	{"FFDA", "Num9", ""},
-	{"FFDB", "Num4", ""},
-	{"FFDC", "Num5", ""},
-	{"FFDD", "Num6", ""},
-	{"FFDE", "Num1", ""},
-	{"FFDF", "Num2", ""},
-	{"FFE0", "Num3", ""},
-	//} else if (bptr[0] == '_') {
-};
-
-/* -1: toggle, 0 = disable, 1 = enable */
-void set_bigmap(int bm, bool verbose) {
-	/* BIG_MAP is currently not supported in GCU client */
-	if (!strcmp(ANGBAND_SYS, "gcu")) {
-		c_message_add("\377ySorry, big_map is not available in the GCU (command-line) client.");
-		return;
-	}
-
-	switch (bm) {
-	case -1:
-		global_c_cfg_big_map = !global_c_cfg_big_map;
-		if (verbose) {
-			if (global_c_cfg_big_map) c_message_add("Toggled big_map mode to 'enabled'.");
-			else c_message_add("Toggled big_map mode to 'disabled'.");
-		}
-		break;
-	case 1:
-		if (global_c_cfg_big_map) {
-			c_message_add("The screen is already in big_map mode.");
-			return;
-		}
-		if (verbose) c_message_add("Set big_map mode to 'enabled'.");
-		global_c_cfg_big_map = TRUE;
-		break;
-	case 0:
-		if (!global_c_cfg_big_map) {
-			c_message_add("The screen is already not in big_map mode.");
-			return;
-		}
-		if (verbose) c_message_add("Set big_map mode to 'disabled'.");
-		global_c_cfg_big_map = FALSE;
-		break;
-	}
-
-	if (is_newer_than(&server_version, 4, 4, 9, 1, 0, 1) /* redundant */
-	    && (sflags1 & SFLG1_BIG_MAP)) {
-		if (!global_c_cfg_big_map && screen_hgt != SCREEN_HGT) {
-			screen_hgt = SCREEN_HGT;
-			resize_main_window(CL_WINDOW_WID, CL_WINDOW_HGT);
-			if (screen_icky) Term_switch(0);
-			Term_clear(); /* get rid of map tiles where now status bars go instead */
-			if (screen_icky) Term_switch(0);
-			Send_screen_dimensions();
-		}
-		if (global_c_cfg_big_map && screen_hgt <= SCREEN_HGT) {
-			screen_hgt = MAX_SCREEN_HGT;
-			resize_main_window(CL_WINDOW_WID, CL_WINDOW_HGT);
-			if (screen_icky) Term_switch(0);
-			Term_clear(); /* paranoia ;) */
-			if (screen_icky) Term_switch(0);
-			Send_screen_dimensions();
-		}
-	}
-}

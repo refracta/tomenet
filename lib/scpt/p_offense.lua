@@ -2,7 +2,6 @@
 
 HCURSE_I = add_spell {
 	["name"] = 	"Curse I",
-	["name2"] = 	"Curse I",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -22,7 +21,6 @@ HCURSE_I = add_spell {
 }
 HCURSE_II = add_spell {
 	["name"] = 	"Curse II",
-	["name2"] = 	"Curse II",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -45,7 +43,6 @@ HCURSE_II = add_spell {
 }
 HCURSE_III = add_spell {
 	["name"] = 	"Curse III",
-	["name2"] = 	"Curse III",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -68,8 +65,7 @@ HCURSE_III = add_spell {
 }
 
 HGLOBELIGHT_I = add_spell {
-	["name"] = 	"Call Light I",
-	["name2"] = 	"CLight I",
+	["name"] = 	"Holy Light I",
 	["school"] = 	{SCHOOL_HOFFENSE, SCHOOL_HSUPPORT},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -99,8 +95,7 @@ HGLOBELIGHT_I = add_spell {
 	}
 }
 HGLOBELIGHT_II = add_spell {
-	["name"] = 	"Call Light II",
-	["name2"] = 	"CLight II",
+	["name"] = 	"Holy Light II",
 	["school"] = 	{SCHOOL_HOFFENSE, SCHOOL_HSUPPORT},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -120,41 +115,30 @@ HGLOBELIGHT_II = add_spell {
 	["desc"] = 	{ "Creates a powerful globe of pure light that hurts all foes.", }
 }
 
-function get_literay_dam(Ind, limit_lev)
-	local lev
-
-	lev = get_level(Ind, HLITERAY, 50)
-	if limit_lev ~= 0 and lev > limit_lev then lev = limit_lev + (lev - limit_lev) / 3 end
-
-	return 5 + ((lev * 2) / 5), 7 + ((lev * 3) / 3) + 1
-end
-HLITERAY = add_spell {
-	["name"] = 	"Ray of Light",
-	["name2"] = 	"Ray",
-	["school"] = 	SCHOOL_HOFFENSE,
+if (def_hack("TEST_SERVER", nil)) then
+HCURSEDD = add_spell {
+	["name"] = 	"Cause wounds",
+	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
-	["level"] = 	18,
-	["mana"] = 	10,
-	["mana_max"] = 	10,
-	["fail"] = 	-30,
+	["am"] = 	75,
+	["level"] = 	5,
+	["mana"] = 	1,
+	["mana_max"] = 	20,
+	["fail"] = 	15,
 	["stat"] = 	A_WIS,
-	["direction"] = TRUE,
 	["ftk"] = 1,
 	["spell"] = 	function(args)
-			fire_beam(Ind, GF_LITE, args.dir, damroll(get_literay_dam(Ind, 15)), " casts a ray of light for")
+			fire_grid_bolt(Ind, GF_MISSILE, args.dir, 10 + get_level(Ind, HCURSEDD, 300), "points and curses for")
 	end,
 	["info"] = 	function()
-			local x, y
-
-			x, y = get_literay_dam(Ind, 15)
-			return "dam "..x.."d"..y
+			return "power "..(10 + get_level(Ind, HCURSEDD, 300))
 	end,
-	["desc"] = 	{ "Conjures up holy light into a powerful ray.", }
+	["desc"] = 	{ "Curse an enemy, causing wounds.", }
 }
+end
 
 HORBDRAIN_I = add_spell {
 	["name"] = 	"Orb of Draining I",
-	["name2"] = 	"OoD I",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -177,7 +161,6 @@ HORBDRAIN_I = add_spell {
 }
 HORBDRAIN_II = add_spell {
 	["name"] = 	"Orb of Draining II",
-	["name2"] = 	"OoD II",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -191,6 +174,8 @@ HORBDRAIN_II = add_spell {
 	["spell"] = 	function(args)
 		local typ
 		typ = GF_HOLY_ORB
+		--fire_ball(Ind, typ, args.dir, 20 + get_level(Ind, HORBDRAIN_I, 475), 2 + get_level(Ind, HORBDRAIN_I, 3), " casts a holy orb for")
+		--fire_ball(Ind, typ, args.dir, 20 + get_level(Ind, HORBDRAIN_I, 660), 2 + get_level(Ind, HORBDRAIN_I, 3), " casts a holy orb for")
 		fire_ball(Ind, typ, args.dir, 20 + get_level(Ind, HORBDRAIN_I, 560), 2 + get_level(Ind, HORBDRAIN_I, 3), " casts a holy orb for")
 	end,
 	["info"] = 	function()
@@ -201,7 +186,6 @@ HORBDRAIN_II = add_spell {
 
 HEXORCISM_I = add_spell {
 	["name"] = 	"Exorcism I",
-	["name2"] = 	"Exo I",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -220,7 +204,6 @@ HEXORCISM_I = add_spell {
 }
 HEXORCISM_II = add_spell {
 	["name"] = 	"Exorcism II",
-	["name2"] = 	"Exo II",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -240,7 +223,6 @@ HEXORCISM_II = add_spell {
 
 HRELSOULS_I = add_spell {
 	["name"] = 	"Redemption I",
-	["name2"] = 	"Red I",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -259,7 +241,6 @@ HRELSOULS_I = add_spell {
 }
 HRELSOULS_II = add_spell {
 	["name"] = 	"Redemption II",
-	["name2"] = 	"Red II",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -278,7 +259,6 @@ HRELSOULS_II = add_spell {
 }
 HRELSOULS_III = add_spell {
 	["name"] = 	"Redemption III",
-	["name2"] = 	"Red III",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["spell_power"] = 0,
 	["am"] = 	75,
@@ -295,11 +275,15 @@ HRELSOULS_III = add_spell {
 	end,
 	["desc"] = 	{ "Banishes nearby undead.", }
 }
-
+-- Occult
+if (def_hack("TEMP2", nil)) then
+    HDCS = {SCHOOL_HOFFENSE, SCHOOL_OSHADOW}
+else
+    HDCS = {SCHOOL_HOFFENSE}
+end
 HDRAINCLOUD = add_spell {
 	["name"] = 	"Doomed Grounds",
-	["name2"] = 	"Doom",
-	["school"] = 	{SCHOOL_HOFFENSE, SCHOOL_OSHADOW},
+	["school"] = 	HDCS,
 	["spell_power"] = 0,
 	["am"] = 	75,
 	["level"] = 	40,     -- pointless for crap with low lvl anyway
@@ -309,12 +293,14 @@ HDRAINCLOUD = add_spell {
 	["stat"] = 	A_WIS,
 	["direction"] = TRUE,
 	["spell"] = 	function(args)
+			--fire_cloud(Ind, GF_OLD_DRAIN, args.dir, 2 + 4096, 3, 8 + get_level(Ind, HDRAINCLOUD, 10), 10, " drains for")
 			fire_cloud(Ind, GF_ANNIHILATION, args.dir, 3, 3, 5 + get_level(Ind, HDRAINCLOUD, 39) / 4, 10, " damages for")
+			-- 4096 is a hack handled in spells1.c.
 			-- HUGE note about this spell: it can NOT kill a monster!
 			--                                                      -the_sandman
 	end,
 	["info"] = 	function()
-			return "dam 3% rad 3 dur "..(5 + get_level(Ind, HDRAINCLOUD, 39) / 4)
+			return "dam ".."var".." rad 3 dur "..(5 + get_level(Ind, HDRAINCLOUD, 39) / 4)
 	end,
 	["desc"] = 	{
 			"Curses an area temporarily, damaging those walking across.",
@@ -324,7 +310,6 @@ HDRAINCLOUD = add_spell {
 
 EARTHQUAKE = add_spell {
 	["name"] = 	"Earthquake",
-	["name2"] = 	"Quake",
 	["school"] = 	{SCHOOL_HOFFENSE},
 	["level"] = 	42,
 	["mana"] = 	50,
@@ -340,4 +325,26 @@ EARTHQUAKE = add_spell {
 	["desc"] = 	{ "Creates a localized earthquake." }
 }
 
---HHOLYWORD
+--[[
+HHOLYWORD = add_spell {
+	["name"] = 	"Holy Word",
+	["school"] = 	{SCHOOL_HOFFENSE, SCHOOL_HCURING},
+	["spell_power"] = 0,
+	["am"] = 	75,
+	["level"] = 	45,
+	["mana"] = 	500,
+	["fail"] = 	30,
+	["stat"] = 	A_WIS,
+	["spell"] = 	function(args)
+			hp_player(Ind, 1000)
+			set_afraid(Ind, 0)
+			set_poisoned(Ind, 0, 0)
+			set_stun(Ind, 0, 0)
+			set_cut(Ind, 0, 0)
+			end,
+	["info"] = 	function()
+			return "Dispels & heals."
+			end,
+	["desc"] = 	{ "Dispels evil, heals and cures you." }
+}
+]]

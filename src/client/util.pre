@@ -14,13 +14,12 @@ $#include "angband.h"
 
 typedef char* cptr;
 typedef int errr;
-typedef unsigned char bool; /* TODO: Comment this out, to enable C99 _Bool */
+typedef unsigned char bool;
 typedef unsigned char byte;
 typedef signed short s16b;
 typedef unsigned short u16b;
 typedef signed int s32b;
 typedef unsigned int u32b;
-typedef u32b char32_t;
 
 
 $extern s32b intMod(s32b a, s32b b);
@@ -113,7 +112,7 @@ extern int Send_store_sell(int item, int amt);
 extern int Send_store_leave(void);
 extern int Send_store_confirm(void);
 extern int Send_redraw(char mode);
-extern int Send_special_line(int type, int line, char *srcstr);
+extern int Send_special_line(int type, int line);
 extern int Send_party(s16b command, cptr buf);
 extern int Send_guild(s16b command, cptr buf);
 extern int Send_purchase_house(int dir);
@@ -134,7 +133,7 @@ extern int Send_activate_skill(int mkey, int book, int spell, int dir, int item,
 extern errr Term_fresh(void);
 extern errr Term_set_cursor(int v);
 extern errr Term_gotoxy(int x, int y);
-extern errr Term_draw(int x, int y, byte a, char32_t c);
+extern errr Term_draw(int x, int y, byte a, char c);
 extern errr Term_addch(byte a, char c);
 extern errr Term_addstr(int n, byte a, cptr s);
 extern errr Term_putch(int x, int y, byte a, char c);

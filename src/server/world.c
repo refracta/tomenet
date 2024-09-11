@@ -13,12 +13,6 @@
 
 #include "../world/world.h"
 
-/* Use character \373 (ASCII 251) to indicate that our message is a reply to an IRC-gameserver-command ('?<command')
-   such as ?players, ?who, ?seen. This is used to tell the IRC-relay to not crop our server index number from our reply message.
-   Note that this \373 usage has nothing to do with the \373 used in object1.c, files.c, nclient.c and c-files.c.
-   The IRC-relay must be recent enough to handle the \373 code, otherwise you must comment out this definition: */
-#define USE_IRC_COMMANDREPLY_INDICATOR
-
 /* pfft. i'll use generic lists when i get around to it */
 struct svlist{
 	struct svlist *next;
@@ -46,7 +40,6 @@ void world_reboot();
 /* Generic list handling function */
 struct list *addlist(struct list **head, int dsize) {
 	struct list *newlp;
-
 	newlp = malloc(sizeof(struct list));
 	if (newlp) {
 		newlp->data = malloc(dsize);
@@ -61,9 +54,8 @@ struct list *addlist(struct list **head, int dsize) {
 }
 
 /* Generic list handling function */
-struct list *remlist(struct list **head, struct list *dlp) {
+struct list *remlist(struct list **head, struct list *dlp){
 	struct list *lp;
-
 	lp = *head;
 	if (!lp || !dlp) return(NULL);
 	if (dlp == *head) {
@@ -84,44 +76,34 @@ struct list *remlist(struct list **head, struct list *dlp) {
 	return(dlp->next);
 }
 
-void world_update_players() {
+void world_update_players(){
 	int i;
-
 	for (i = 1; i <= NumPlayers; i++) {
-		if (Players[i]->conn == NOT_CONNECTED) continue;
-		if (Players[i]->admin_dm) continue;
-
-		world_player(Players[i]->id, Players[i]->name, 1, 0);
+		if(Players[i]->conn != NOT_CONNECTED){
+			if (!Players[i]->admin_dm)
+				world_player(Players[i]->id, Players[i]->name, 1, 0);
+		}
 	}
 }
 
 bool world_check_ignore(int Ind, uint32_t id, int16_t server) {
 	struct remote_ignore *curr;
-
 	curr = Players[Ind]->w_ignore;
 	while (curr) {
-		if (curr->serverid == server && curr->id == id) return(TRUE);
+		if (curr->serverid == server && curr->id == id)
+			return(TRUE);
 		curr = curr->next;
 	}
 	return(FALSE);
 }
 
-/* Colour of private messages received across worlds.
-   Keep consistent with util.c definition! */
-#define WP_PMSG_DEFAULT_COLOUR 's'
-/* Accept issuing IRC ?... commands from Discord too? */
-#define DISCORD_IRC_COMMANDS
-/* Suppress negative ?... command output to reduce clutter? */
-#define NOCLUTTER_IRC_COMMANDS
 void world_comm(int fd, int arg) {
 	static char buffer[1024], msg[MSG_LEN], *msg_ptr, *wmsg_ptr, *wmsg_ptr2;
-	char cbuf[sizeof(struct wpacket)];
-	char *p;
+	char cbuf[sizeof(struct wpacket)], *p;
 	static short bpos = 0;
 	static short blen = 0;
 	int x, i;
 	struct wpacket *wpk;
-
 	x = recv(fd, buffer + (bpos + blen), 1024 - (bpos + blen), 0);
 	if (x == 0) {
 		//struct rplist *c_pl, *n_pl;
@@ -130,7 +112,7 @@ void world_comm(int fd, int arg) {
 		remove_input(WorldSocket);
 		close(WorldSocket);	/* ;) this'll fix it... */
 		/* Clear all the world players quietly */
-		while (remlist(&rpmlist, rpmlist));
+		while(remlist(&rpmlist, rpmlist));
 #if 0
 		c_pl = rpmlist;
 		while (c_pl) {
@@ -142,289 +124,250 @@ void world_comm(int fd, int arg) {
 #endif
 		WorldSocket = -1;
 	}
-
 	blen += x;
 	while (blen >= sizeof(struct wpacket)) {
 		wpk = (struct wpacket*)(buffer + bpos);
 		switch (wpk->type) {
-		case WP_SINFO:
-			/* Server login information */
-			add_server(&wpk->d.sinfo);
-			break;
-		case WP_CHAT:
-			/* TEMPORARY chat broadcast method */
-#if 0
-			/* strip special chat codes \374/5/6 before testing prefix() */
-			p = wpk->d.chat.ctxt;
-			if (*p == '\374') p++;
-			else if (*p == '\375') p++;
-			if (*p == '\376') p++;
+			case WP_SINFO:
+				/* Server login information */
+				add_server(&wpk->d.sinfo);
+				break;
+			case WP_CHAT:
+				/* TEMPORARY chat broadcast method */
+				/* strip special chat codes \374/5/6 before testing prefix() */
+				p = wpk->d.chat.ctxt;
+				if (*p == '\374') p++;
+				else if (*p == '\375') p++;
+				if (*p == '\376') p++;
+
+#if 0 /* see #else below */
+				if (!(cfg.worldd_pubchat || (cfg.worldd_broadcast && prefix(p, "\377r[\377"))))
+					break; /* Filter incoming public chat and broadcasts here now - mikaelh */
+#else /* Consistency: Let world's 'server' flags decide about filtering our incoming messages */
 #endif
 
-			/* World's 'server' flags decides about filtering our incoming messages */
-			for (i = 1; i <= NumPlayers; i++) {
-				if (Players[i]->conn == NOT_CONNECTED) continue;
-
-				/* lame method just now */
-				if (world_check_ignore(i, wpk->d.chat.id, wpk->serverid)) continue;
-				msg_print(i, wpk->d.chat.ctxt);
-			}
-
-#if 1
-			/* log */
-			wmsg_ptr = wpk->d.chat.ctxt;
-			/* strip \374,\375,\376 */
-			while (*wmsg_ptr >= '\374' && *wmsg_ptr < '\377') wmsg_ptr++;
-			strcpy(msg, wmsg_ptr);
-			/* strip next colour code */
-			wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
-			msg_ptr = strchr(msg, '\377');
-			strcpy(msg_ptr, wmsg_ptr);
-			/* strip next colour code */
-			wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
-			msg_ptr = strchr(msg, '\377');
-			strcpy(msg_ptr, wmsg_ptr);
-			/* strip next colour code if at the beginning of the actual message line */
-			if (*(wmsg_ptr + 1) == '\377') {
-				strcpy(msg_ptr + 1, wmsg_ptr + 3);
-				/* strip next colour code if existing  */
-				if ((wmsg_ptr = strchr(wmsg_ptr + 3, '\377'))
-				    /* not in /me though: ']' check */
-				    && (wmsg_ptr2 = strchr(wpk->d.chat.ctxt + 9, ']')) && wmsg_ptr2 < wmsg_ptr) {
-					msg_ptr = strchr(msg + 1, '\377');
-					strcpy(msg_ptr, wmsg_ptr + 2);
-				}
-			}
-			s_printf("%s\n", msg);
-#endif
-			break;
-		case WP_PMSG:
-			/* private message from afar -authed */
-			for (i = 1; i <= NumPlayers; i++) {
-				if (!strcmp(Players[i]->name, wpk->d.pmsg.victim)) {
-					if (!world_check_ignore(i, wpk->d.pmsg.id, wpk->serverid)) {
-						msg_format(i, "\375\377%c[%s:%s] %s", WP_PMSG_DEFAULT_COLOUR, wpk->d.pmsg.player, Players[i]->name, wpk->d.pmsg.ctxt);
-						/* Remember sender for quick replying */
-						strcpy(Players[i]->reply_name, wpk->d.pmsg.player);
+				for (i = 1; i <= NumPlayers; i++) {
+					if (Players[i]->conn != NOT_CONNECTED) {
+						/* lame method just now */
+						if (world_check_ignore(i, wpk->d.chat.id, wpk->serverid))
+							continue;
+						msg_print(i, wpk->d.chat.ctxt);
 					}
 				}
-			}
-			break;
-		case WP_MESSAGE:
-			/* A raw message - no data */
-			msg_broadcast_format(0, "%s", wpk->d.smsg.stxt);
+
 #if 1
-			/* log */
-			wmsg_ptr = wpk->d.smsg.stxt;
-			/* strip \374,\375,\376 */
-			while (*wmsg_ptr >= '\374' && *wmsg_ptr < '\377') wmsg_ptr++;
-			strcpy(msg, wmsg_ptr);
-			/* strip next colour code */
-			wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
-			msg_ptr = strchr(msg, '\377');
-			strcpy(msg_ptr, wmsg_ptr);
-			/* strip next colour code */
-			wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
-			msg_ptr = strchr(msg, '\377');
-			strcpy(msg_ptr, wmsg_ptr);
-			/* strip next colour code if at the beginning of the actual message line */
-			if (*(wmsg_ptr + 1) == '\377') strcpy(msg_ptr + 1, wmsg_ptr + 3);
-			s_printf("%s\n", msg);
-#endif
-			break;
-		case WP_NPLAYER:
-		case WP_QPLAYER:
-			/* we need to handle a list */
-			/* full death must count! */
-			add_rplayer(wpk);
-			break;
-		case WP_AUTH:
-			/* Authentication request */
-			wpk->d.auth.val = chk(cfg.pass, wpk->d.auth.pass);
-			x = sizeof(struct wpacket);
-			x = send(WorldSocket, wpk, x, 0);
-			world_update_players();
-			break;
-		case WP_SQUIT:
-			/* Remove players */
-			rem_server(wpk->d.sid);
-			break;
-		case WP_RESTART:
-			set_runlevel(0);
-			break;
-		case WP_IRCCHAT:
-#if 1
-			/* Allow certain status commands from IRC to TomeNET server. */
-			if (((p = strchr(wpk->d.chat.ctxt, ']')) && *(p += 2) == '?')
- #ifdef DISCORD_IRC_COMMANDS
-			    /* Allow those commands also from Discord. (Format: "\377y(IRC) [TDiscord] [Username] ?...".) */
-			    || (p && (p = strchr(p + 1, ']')) && *(p += 2) == '?')
- #endif
-			    ) {
-				if (!strncmp(p, "?help", 5)) {
- //#ifdef NOCLUTTER_IRC_COMMANDS
-					if (wpk->d.sid == 1) /* Only the first authenticated server (ie with servers list index '1') gets to reply */
- //#endif
-					msg_to_irc("Bot commands are: ?help, ?players, ?who, ?seen.");
-					break;
-				}
-				/* list number + character names of players online */
-				else if (!strncmp(p, "?players", 8)) {
-					char buf[MSG_LEN + MAX_CHARS], bufp[MSG_LEN + MAX_CHARS]; //overspill, will get cut off at MSG_LEN and indicated by '..' chars
-
-					x = 0;
-					bufp[0] = 0;
-					for (i = 1; i <= NumPlayers; i++) {
-						if (Players[i]->conn == NOT_CONNECTED) continue;
-						if (Players[i]->admin_dm && cfg.secret_dungeon_master) continue;
-
-						x++;
-						if (strlen(bufp) >= MSG_LEN) continue;
-
-						if (x != 1) strcat(bufp, ", ");
-						strcat(bufp, Players[i]->name);
-						strcat(bufp, " (");
-						strcat(bufp, Players[i]->accountname);
-						strcat(bufp, ")");
+				/* log */
+				wmsg_ptr = wpk->d.chat.ctxt;
+				/* strip \374,\375,\376 */
+				while (*wmsg_ptr >= '\374' && *wmsg_ptr < '\377') wmsg_ptr++;
+				strcpy(msg, wmsg_ptr);
+				/* strip next colour code */
+				wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
+				msg_ptr = strchr(msg, '\377');
+				strcpy(msg_ptr, wmsg_ptr);
+				/* strip next colour code */
+				wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
+				msg_ptr = strchr(msg, '\377');
+				strcpy(msg_ptr, wmsg_ptr);
+				/* strip next colour code if at the beginning of the actual message line */
+				if (*(wmsg_ptr + 1) == '\377') {
+					strcpy(msg_ptr + 1, wmsg_ptr + 3);
+					/* strip next colour code if existing  */
+					if ((wmsg_ptr = strchr(wmsg_ptr + 3, '\377'))
+					    /* not in /me though: ']' check */
+					    && (wmsg_ptr2 = strchr(wpk->d.chat.ctxt + 9, ']')) && wmsg_ptr2 < wmsg_ptr) {
+						msg_ptr = strchr(msg + 1, '\377');
+						strcpy(msg_ptr, wmsg_ptr + 2);
 					}
-					if (!x) strcpy(buf, "\373No players online.");
-					else {
-						if (x == 1) strcpy(buf, "\3731 player: ");
-						else strcpy(buf, format("\373%d players: ", x));
-						strcat(buf, bufp);
-						if (buf[MSG_LEN - 1]) {
-							buf[MSG_LEN - 3] = '.';
-							buf[MSG_LEN - 2] = '.';
-							buf[MSG_LEN - 1] = 0;
+				}
+				s_printf("%s\n", msg);
+#endif
+				break;
+			case WP_PMSG:
+				/* private message from afar -authed */
+				for (i = 1; i <= NumPlayers; i++) {
+					if (!strcmp(Players[i]->name, wpk->d.pmsg.victim)) {
+						if (!world_check_ignore(i, wpk->d.pmsg.id, wpk->serverid)) {
+							msg_format(i, "\375\377s[%s:%s] %s", wpk->d.pmsg.player, Players[i]->name, wpk->d.pmsg.ctxt);
+							/* Remember sender for quick replying */
+							strcpy(Players[i]->reply_name, wpk->d.pmsg.player);
 						}
 					}
- #ifdef NOCLUTTER_IRC_COMMANDS
-					if (x)
- #endif
-					msg_to_irc(buf);
-					break;
 				}
-				else if (!strncmp(p, "?seen", 5)) {
-					char buf[MSG_LEN];
+				break;
+			case WP_MESSAGE:
+				/* A raw message - no data */
+				msg_broadcast_format(0, "%s", wpk->d.smsg.stxt);
 
-					get_laston(p + 5 + 1, buf, FALSE, FALSE);
- #ifdef NOCLUTTER_IRC_COMMANDS
-					if (!strstr(buf, "Sorry, couldn't find")) /* If noone was found, suppress message */
- #endif
-					msg_to_irc(format("\373%s", buf));
-					break;
-				}
-				else if (!strncmp(p, "?who", 4)) {
-					u32b p_id;
-					cptr acc;
-
-					if (strlen(p) < 6) {
- #ifndef NOCLUTTER_IRC_COMMANDS
-						msg_to_irc("You must specify a character name.");
- #endif
+#if 1
+				/* log */
+				wmsg_ptr = wpk->d.smsg.stxt;
+				/* strip \374,\375,\376 */
+				while (*wmsg_ptr >= '\374' && *wmsg_ptr < '\377') wmsg_ptr++;
+				strcpy(msg, wmsg_ptr);
+				/* strip next colour code */
+				wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
+				msg_ptr = strchr(msg, '\377');
+				strcpy(msg_ptr, wmsg_ptr);
+				/* strip next colour code */
+				wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
+				msg_ptr = strchr(msg, '\377');
+				strcpy(msg_ptr, wmsg_ptr);
+				/* strip next colour code if at the beginning of the actual message line */
+				if (*(wmsg_ptr + 1) == '\377')
+					strcpy(msg_ptr + 1, wmsg_ptr + 3);
+				s_printf("%s\n", msg);
+#endif
+				break;
+			case WP_NPLAYER:
+			case WP_QPLAYER:
+				/* we need to handle a list */
+				/* full death must count! */
+				add_rplayer(wpk);
+				break;
+			case WP_AUTH:
+				/* Authentication request */
+				wpk->d.auth.val = chk(cfg.pass, wpk->d.auth.pass);
+				x = sizeof(struct wpacket);
+				x = send(WorldSocket, wpk, x, 0);
+				world_update_players();
+				break;
+			case WP_SQUIT:
+				/* Remove players */
+				rem_server(wpk->d.sid);
+				break;
+			case WP_RESTART:
+				set_runlevel(0);
+				break;
+			case WP_IRCCHAT:
+#if 1
+				/* Allow certain status commands from IRC to TomeNET server */
+				if ((p = strchr(wpk->d.chat.ctxt, ']')) && *(p += 2) == '?') {
+					if (!strncmp(p, "?help", 5)) {
+						msg_to_irc("Bot commands are: ?players, ?who, ?seen.");
 						break;
 					}
+					/* list number + character names of players online */
+					else if (!strncmp(p, "?players", 8)) {
+						char buf[MSG_LEN];
+						strcpy(buf, " 0 Players: ");
+						x = 0;
+						for (i = 1; i <= NumPlayers; i++) {
+							if (Players[i]->conn == NOT_CONNECTED) continue;
+							if (Players[i]->admin_dm && cfg.secret_dungeon_master) continue;
 
-					/* char names always start on upper-case */
-					p[5] = toupper(p[5]);
+							x++;
+							if (strlen(buf) + strlen(Players[i]->name) + 2 >= MSG_LEN - 20) continue; /* paranoia reserved */
+							if (x != 1) strcat(buf, ", ");
+							strcat(buf, Players[i]->name);
+							strcat(buf, " (");
+							strcat(buf, Players[i]->accountname);
+							strcat(buf, ")");
+						}
+						if (!x) strcpy(buf, "No players online");
+						else {
+							if (x >= 10) buf[0] = '0' + x / 10;
+							buf[1] = '0' + x % 10;
+						}
+						if (x == 1) buf[9] = ' '; /* Player_s_ */
+						msg_to_irc(buf);
+						break;
+					}
+					else if (!strncmp(p, "?seen", 5)) {
+						char buf[MSG_LEN];
+						get_laston(p + 5 + 1, buf, FALSE, FALSE);
+						msg_to_irc(buf);
+						break;
+					}
+					else if (!strncmp(p, "?who", 4)) {
+						u32b p_id;
+						cptr acc;
 
-					if (!(p_id = lookup_player_id(p + 5))) {
-						struct account acc;
-						bool done = FALSE;
+						if (strlen(p) < 6) {
+							msg_to_irc("You must specify a character name.");
+							break;
+						}
+
+						/* char names always start on upper-case */
+						p[5] = toupper(p[5]);
+
+						if (!(p_id = lookup_player_id(p + 5))) {
+							struct account acc;
+							bool done = FALSE;
 
 #if 1 /* hack: also do a 'whowas' here by checking the reserved names list */
-						for (i = 0; i < MAX_RESERVED_NAMES; i++) {
-							if (!reserved_name_character[i][0]) break;
+							for (i = 0; i < MAX_RESERVED_NAMES; i++) {
+								if (!reserved_name_character[i][0]) break;
 
-							if (!strcmp(reserved_name_character[i], p + 5)) {
-								msg_to_irc(format("\373That deceased character belonged to account: %s", reserved_name_account[i]));
-								done = TRUE;
-								break;
+								if (!strcmp(reserved_name_character[i], p + 5)) {
+									msg_to_irc(format("That deceased character belonged to account: %s", reserved_name_account[i]));
+									done = TRUE;
+									break;
+								}
 							}
-						}
-						if (done) break;
+							if (done) break;
 #endif
 
 #if 0 /* don't check for account name */
- #ifndef NOCLUTTER_IRC_COMMANDS
-						msg_to_irc("\373That character name does not exist.");
- #endif
+							msg_to_irc("That character name does not exist.");
 #else /* check for account name */
-						if (!GetAccount(&acc, p + 5, NULL, FALSE))
- #ifndef NOCLUTTER_IRC_COMMANDS
-							msg_to_irc("\373That character or account name does not exist.");
- #else
-							;
- #endif
-						else
-							msg_to_irc("\373There is no such character, but there is an account of that name.");
+							if (!GetAccount(&acc, p + 5, NULL, FALSE)) msg_to_irc("That character or account name does not exist.");
+							else msg_to_irc("There is no such character, but there is an account of that name.");
 #endif
+							break;
+						}
+						acc = lookup_accountname(p_id);
+						if (!acc) {
+							msg_to_irc("***ERROR: No account found.");
+							break;
+						}
+						if (lookup_player_admin(p_id))
+							msg_to_irc(format("That administrative character belongs to: %s", acc));
+						else {
+							u16b ptype = lookup_player_type(p_id);
+							int lev = lookup_player_level(p_id);
+							msg_to_irc(format("That level %d %s %s belongs to: %s",
+							    lev,
+							    //race_info[ptype & 0xff].title,
+							    special_prace_lookup[ptype & 0xff],
+							    class_info[ptype >> 8].title,
+							    acc));
+						}
 						break;
 					}
-
-					acc = lookup_accountname(p_id);
-					if (!acc) {
- //#ifndef NOCLUTTER_IRC_COMMANDS
-						msg_to_irc("\373***ERROR: No account found."); //paranoia except on new server without any players
- //#endif
-						break;
-					}
-					if (lookup_player_admin(p_id))
-						msg_to_irc(format("\373That administrative character belongs to: %s", acc));
-					else {
-						u16b ptype = lookup_player_type(p_id);
-						int lev = lookup_player_level(p_id);
-						player_type Dummy;
-
-						Dummy.prace = ptype & 0xff;
-						Dummy.pclass = (ptype & 0xff00) >> 8;
-						Dummy.ptrait = TRAIT_NONE;
-
-						msg_to_irc(format("\373That level %d %s%s belongs to: %s",
-						    lev,
-						    //race_info[ptype & 0xff].title,
-						    //special_prace_lookup[ptype & 0xff],
-						    get_prace2(&Dummy),
-						    class_info[ptype >> 8].title,
-						    acc));
-					}
-					break;
 				}
-			}
 #endif
 
 #if 0 /* 0ed for consistency: Let world's 'server' flags decide about filtering our incoming messages */
-			if (!cfg.worldd_ircchat) break;
+				if (!cfg.worldd_ircchat) break;
 #endif
 
-			for (i = 1; i <= NumPlayers; i++) {
-				if (Players[i]->conn == NOT_CONNECTED) continue;
-				if (Players[i]->ignoring_chat) continue;
-				if (Players[i]->limit_chat) continue;
-				msg_print(i, wpk->d.chat.ctxt);
-			}
+				for (i = 1; i <= NumPlayers; i++) {
+					if (Players[i]->conn == NOT_CONNECTED) continue;
+					if (Players[i]->ignoring_chat) continue;
+					if (Players[i]->limit_chat) continue;
+					msg_print(i, wpk->d.chat.ctxt);
+				}
 
 #if 1
-			/* log */
-			strcpy(msg, "[IRC]");
-			wmsg_ptr = wpk->d.chat.ctxt;
-			/* strip \374,\375,\376 */
-			while (*wmsg_ptr >= '\374' && *wmsg_ptr < '\377') wmsg_ptr++;
-			wmsg_ptr += 10;
-			strcat(msg, wmsg_ptr);
-			/* strip next colour code */
-			wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
-			msg_ptr = strchr(msg, '\377');
-			strcpy(msg_ptr, wmsg_ptr);
-			/* done */
-			s_printf("%s\n", msg);
+				/* log */
+				strcpy(msg, "[IRC]");
+				wmsg_ptr = wpk->d.chat.ctxt;
+				/* strip \374,\375,\376 */
+				while (*wmsg_ptr >= '\374' && *wmsg_ptr < '\377') wmsg_ptr++;
+				wmsg_ptr += 10;
+				strcat(msg, wmsg_ptr);
+				/* strip next colour code */
+				wmsg_ptr = strchr(wmsg_ptr, '\377') + 2;
+				msg_ptr = strchr(msg, '\377');
+				strcpy(msg_ptr, wmsg_ptr);
+				/* done */
+				s_printf("%s\n", msg);
 #endif
-			break;
-
-		default:
-			s_printf("unknown packet from world: %d\n", wpk->type);
+				break;
+			default:
+				s_printf("unknown packet from world: %d\n", wpk->type);
 		}
-
 		/* update buffer position and remaining data size */
 		bpos += sizeof(struct wpacket);
 		blen -= sizeof(struct wpacket);
@@ -441,11 +384,13 @@ void world_comm(int fd, int arg) {
 int world_find_server(char *pname) {
 	struct list *lp;
 	struct rplist *c_pl;
-
 	lp = rpmlist;
+
 	while (lp) {
 		c_pl = (struct rplist*)lp->data;
-		if (!strcmp(c_pl->name, pname)) return(c_pl->server);
+		if (!strcmp(c_pl->name, pname)) {
+			return(c_pl->server);
+		}
 		lp = lp->next;
 	}
 	return(0);
@@ -455,11 +400,13 @@ int world_find_server(char *pname) {
 struct rplist *world_find_player(char *pname, int16_t server) {
 	struct list *lp;
 	struct rplist *c_pl;
-
 	lp = rpmlist;
+
 	while (lp) {
 		c_pl = (struct rplist*)lp->data;
-		if (!stricmp(c_pl->name, pname) && (!server || server == c_pl->server)) return(c_pl);
+		if (!stricmp(c_pl->name, pname) && (!server || server == c_pl->server)) {
+			return(c_pl);
+		}
 		lp = lp->next;
 	}
 	return(NULL);
@@ -473,9 +420,10 @@ int world_remote_players(FILE *fff) {
 	struct rplist *c_pl;
 	struct svlist *c_sv;
 	char servername[30];
-
 	lp = rpmlist;
-	if (lp) fprintf(fff, "\n\377y Remote players on different servers:\n\n");
+	if (lp) {
+		fprintf(fff, "\n\377y Remote players on different servers:\n\n");
+	}
 	while (lp) {
 		c_pl = (struct rplist*)lp->data;
 		slp = svlist;
@@ -488,21 +436,22 @@ int world_remote_players(FILE *fff) {
 			}
 			slp = slp->next;
 		}
-
-		//fprintf(fff, "\377%c  %s\377s on '%s'\n", c_pl->server ? 'w' : 'W', c_pl->name, servername);
+		
+//		fprintf(fff, "\377%c  %s\377s on '%s'\n", c_pl->server ? 'w' : 'W', c_pl->name, servername);
 		fprintf(fff, "\377s %s\377%c %s\n", servername, c_pl->server ? 'w' : 'W', c_pl->name);
 		num++;
 		lp = lp->next;
 	}
-	return(num);
+	return (num);
 }
 
 /* When a server logs in, we get information about it */
 void add_server(struct sinfo *sinfo) {
 	struct list *lp;
 	struct svlist *c_sr;
-
-	//c_sr = malloc(sizeof(struct svlist));
+/*
+	c_sr = malloc(sizeof(struct svlist));
+*/
 	lp = addlist(&svlist, sizeof(struct svlist));
 	if (lp) {
 		c_sr = (struct svlist*)lp->data;
@@ -515,13 +464,16 @@ void add_server(struct sinfo *sinfo) {
 void rem_server(int16_t id) {
 	struct rplist *c_pl;
 	struct svlist *c_sr;
+
 	struct list *lp;
 
 	/* remove all the old players */
 	lp = rpmlist;
 	while (lp) {
 		c_pl = (struct rplist*)lp->data;
-		if (c_pl->server == id) lp = remlist(&rpmlist, lp);
+		if (c_pl->server == id) {
+			lp = remlist(&rpmlist, lp);
+		}
 		else lp = lp->next;
 	}
 
@@ -529,7 +481,9 @@ void rem_server(int16_t id) {
 	lp = svlist;
 	while (lp) {
 		c_sr = (struct svlist*)lp->data;
-		if (c_sr->sid == id) lp = remlist(&svlist, lp);
+		if (c_sr->sid == id) {
+			lp = remlist(&svlist, lp);
+		}
 		else lp = lp->next;
 	}
 }
@@ -538,7 +492,6 @@ void add_rplayer(struct wpacket *wpk) {
 	struct list *lp;
 	struct rplist *n_pl, *c_pl;
 	unsigned char found = 0;
-
 	if (!wpk->d.play.silent)
 		msg_broadcast_format(0, "\374\377s%s has %s the game on another server.", wpk->d.play.name, (wpk->type == WP_NPLAYER ? "entered" : "left"));
 
@@ -546,7 +499,7 @@ void add_rplayer(struct wpacket *wpk) {
 	lp = rpmlist;
 	while (lp) {
 		c_pl = (struct rplist*)lp->data;
-		//if (/* c_pl->id == wpk->d.play.id && */ !(strcmp(c_pl->name, wpk->d.play.name))) {
+//		if (/* c_pl->id == wpk->d.play.id && */ !(strcmp(c_pl->name, wpk->d.play.name))) {
 		if (c_pl->server == wpk->d.play.server && !(strcmp(c_pl->name, wpk->d.play.name))) {
 			found = 1;
 			break;
@@ -569,7 +522,6 @@ void add_rplayer(struct wpacket *wpk) {
 void world_pmsg_send(uint32_t id, char *name, char *pname, char *text) {
 	int len;
 	if (WorldSocket == -1) return;
-
 	spk.type = WP_PMSG;
 	len = sizeof(struct wpacket);
 	snprintf(spk.d.pmsg.ctxt, MSG_LEN, "%s", text);
@@ -580,42 +532,9 @@ void world_pmsg_send(uint32_t id, char *name, char *pname, char *text) {
 	send(WorldSocket, &spk, len, 0);
 }
 
-void world_chat(uint32_t id, const char *text) {
+void world_chat(uint32_t id, char *text) {
 	int len;
-
-#ifdef ARCADE_SERVER
-	/* Hack: Don't broadcast game commands, that's intense spam.. */
-	char *t = strchr(text, ']');
-
-	if (t && (t = strchr(t, ' '))) {;
-		t++;
-		if (streq(t, "quit") || streq(t, "begin") || streq(t, "walls") || streq(t, "gates") ||
-		    streq(t, "midgate") || streq(t, "rings") || streq(t, "moveups") || streq(t, "float") ||
-		    streq(t, "centerups") || streq(t, "dark") || streq(t, "snakes") || streq(t, "options") ||
-		    streq(t, "maxwins") || streq(t, "race") || streq(t, "ai") || streq(t, "reset tron") ||
-
-		    streq(t, "reset") || streq(t, "city") || streq(t, "powerups") || streq(t, "prac") ||
-		    streq(t, "spectating") || streq(t, "max stuff") ||
-
-		    streq(t, "walls on") || streq(t, "walls off") || streq(t, "gates on") || streq(t, "gates off") ||
-		    streq(t, "city on") || streq(t, "city off") || streq(t, "rings on") || streq(t, "rings off") ||
-		    streq(t, "dark on") || streq(t, "dark off") || streq(t, "snakes on") || streq(t, "snakes off") ||
-		    streq(t, "maxwins on") || streq(t, "maxwins off") || streq(t, "powerups on") || streq(t, "powerups off") ||
-		    streq(t, "moveups on") || streq(t, "moveups off") || streq(t, "float on") || streq(t, "float off") ||
-		    streq(t, "prac on") || streq(t, "prac off") || streq(t, "centerups on") || streq(t, "centerups off") ||
-		    streq(t, "more walls") || streq(t, "less walls") || streq(t, "more speed") || streq(t, "less speed") ||
-		    streq(t, "ai on") || streq(t, "ai off") || streq(t, "midgate on") || streq(t, "midgate off") ||
-		    streq(t, "spectating on") || streq(t, "spectating off") || streq(t, "more rings") || streq(t, "less rings") ||
-		    streq(t, "race on") || streq(t, "race off") || streq(t, "less gate speed") || streq(t, "more gate speed") ||
-		    streq(t, "more length") || streq(t, "less length") ||
-		    //streq(t, "") || streq(t, "") || streq(t, "") || streq(t, "") ||
-		    FALSE)
-			return;
-	}
-#endif
-
 	if (WorldSocket == -1) return;
-
 	spk.type = WP_CHAT;
 	len = sizeof(struct wpacket);
 	snprintf(spk.d.chat.ctxt, MSG_LEN, "%s", text);
@@ -625,7 +544,6 @@ void world_chat(uint32_t id, const char *text) {
 
 void world_reboot() {
 	int len;
-
 	if (WorldSocket == -1) return;
 	spk.type = WP_RESTART;
 	len = sizeof(struct wpacket);
@@ -634,7 +552,6 @@ void world_reboot() {
 
 void world_msg(char *text) {
 	int len;
-
 	if (WorldSocket == -1) return;
 	spk.type = WP_MESSAGE;
 	len = sizeof(struct wpacket);
@@ -644,12 +561,6 @@ void world_msg(char *text) {
 
 void msg_to_irc(char *text) {
 	int len;
-
-#ifndef USE_IRC_COMMANDREPLY_INDICATOR
-	/* Trim the indicator char, as we don't want to use it. */
-	if (text[0] == '\373') text++;
-#endif
-
 	if (WorldSocket == -1) return;
 	spk.type = WP_MSG_TO_IRC;
 	len = sizeof(struct wpacket);
@@ -660,7 +571,6 @@ void msg_to_irc(char *text) {
 /* we can rely on ID alone when we merge data */
 void world_player(uint32_t id, char *name, uint16_t enter, byte quiet) {
 	int len;
-
 	if (WorldSocket == -1) return;
 	spk.type = (enter ? WP_NPLAYER : WP_QPLAYER);
 	len = sizeof(struct wpacket);
@@ -675,7 +585,6 @@ uint32_t chk(char *s1, char *s2) {
 	unsigned int i, j = 0;
 	int m1, m2;
 	static uint32_t rval[2] = {0, 0};
-
 	rval[0] = 0L;
 	rval[1] = 0L;
 	m1 = strlen(s1);

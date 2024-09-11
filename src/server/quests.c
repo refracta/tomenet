@@ -65,16 +65,6 @@
    when it spawns? Otherwise it'll just drop on top of them. */
 #define QUESTOR_OBJECT_CRUSHES
 
-/* Can certain text lines call lua functions instead of outputting a text? Those would be:
-   W: (talk), yR: (reply), X: (narration), x: (log), Wr: (default_reply).
-   Syntax is  ...://luafunctionname(flags!, "...")  where flags! can also be flags or left out:
-   //luafn("...") - basic function,
-   //luafn(flags, "...") - function that can read quest flags,
-   //luafn(flags!, "...") - function that can read quest flags and will write them back (lua function must return flags).
-   Note that the actual lua function will have an 'Ind' parameter inserted right before the custom parameters (but after a possible 'flags' parameter):
-   function luafn(flags, Ind, "..."). */
-#define QUESTS_ALLOW_LUA
-
 
 static void quest_goal_check_reward(int pInd, int q_idx);
 static bool quest_goal_check(int pInd, int q_idx, bool interacting);
@@ -338,7 +328,7 @@ static cave_type **quest_prepare_zcave(struct worldpos *wpos, bool stat, cptr tp
 			   - except if we're planning exactly this */
 			if (wpos->wz && !dungeon) {
 				s_printf("QUEST_PREPARE_ZCAVE: Already allocated for mapfile.\n");
-				return(NULL);
+				return NULL;
 			}
 
 			/* clear the floor and recreate it */
@@ -375,18 +365,11 @@ static cave_type **quest_prepare_zcave(struct worldpos *wpos, bool stat, cptr tp
 	return getcave(wpos);
 }
 
-/* Replace placeholders $$<letter> / $$<capital letter> in a string,
-   thereby personalising it for dialogues and narrations.
-   Examples:
-    $$P (party members, 0 = no party, 1 = only yourself, 2+..). Same for $$G for guild members.
-    $$E (trait-/class-affected race, eg Enlightened/Corrupted, empty for Hell Knight/Death Knight, else same as race)
-
-   Note that similar placeholders are already used in other places exclusively:
-   $$p1..5 for randomized passwords.
-   $$q/Q for questor name. */
+/* Replace placeholders $$n/N, $$t/T, $$r/R, $$a/A and $$c/C in a string,
+   thereby personalising it for dialogues and narrations. */
 static void quest_text_replace(char *dest, cptr src, player_type *p_ptr) {
 	char *textp, *textp2;
-	int pos = 0, lp;
+	int pos = 0;
 
 	/* no placeholder detected? */
 	if (!(textp = strstr(src, "$$"))) {
@@ -404,12 +387,6 @@ static void quest_text_replace(char *dest, cptr src, player_type *p_ptr) {
 			break;
 		case 'T':
 			strcat(dest, get_ptitle(p_ptr, FALSE));
-#ifdef ENABLE_SUBCLASS_TITLE
-			if (p_ptr->sclass) {
-				strcat(dest, " ");
-				strcat(dest, get_ptitle2(p_ptr, FALSE));
-			}
-#endif
 			break;
 		case 'R':
 			strcat(dest, race_info[p_ptr->prace].title);
@@ -418,54 +395,27 @@ static void quest_text_replace(char *dest, cptr src, player_type *p_ptr) {
 			strcat(dest, get_prace(p_ptr));
 			break;
 		case 'C':
-			strcat(dest, class_info[p_ptr->pclass].title);
+			strcat(dest, race_info[p_ptr->prace].title);
 			break;
-		case 'E':
-			strcat(dest, get_prace2(p_ptr));
-			break;
-
 		case 'n':
 			strcat(dest, p_ptr->name);
-			lp = pos - 1;
-			while (dest[++lp]) dest[lp] = tolower(dest[lp]);
+			dest[pos] = tolower(dest[pos]);
 			break;
 		case 't':
 			strcat(dest, get_ptitle(p_ptr, FALSE));
-#ifdef ENABLE_SUBCLASS_TITLE
-			if (p_ptr->sclass) {
-				strcat(dest, " ");
-				strcat(dest, get_ptitle2(p_ptr, FALSE));
-			}
-#endif
-			lp = pos - 1;
-			while (dest[++lp]) dest[lp] = tolower(dest[lp]);
+			dest[pos] = tolower(dest[pos]);
 			break;
 		case 'r':
 			strcat(dest, race_info[p_ptr->prace].title);
-			lp = pos - 1;
-			while (dest[++lp]) dest[lp] = tolower(dest[lp]);
+			dest[pos] = tolower(dest[pos]);
 			break;
 		case 'a':
 			strcat(dest, get_prace(p_ptr));
-			lp = pos - 1;
-			while (dest[++lp]) dest[lp] = tolower(dest[lp]);
+			dest[pos] = tolower(dest[pos]);
 			break;
 		case 'c':
-			strcat(dest, class_info[p_ptr->pclass].title);
-			lp = pos - 1;
-			while (dest[++lp]) dest[lp] = tolower(dest[lp]);
-			break;
-		case 'e':
-			strcat(dest, get_prace2(p_ptr));
-			lp = pos - 1;
-			while (dest[++lp]) dest[lp] = tolower(dest[lp]);
-			break;
-
-		case 'P':
-			strcat(dest, format("%d", !p_ptr->party ? 0 : parties[p_ptr->party].members));
-			break;
-		case 'G':
-			strcat(dest, format("%d", !p_ptr->guild ? 0 : guilds[p_ptr->guild].members));
+			strcat(dest, race_info[p_ptr->prace].title);
+			dest[pos] = tolower(dest[pos]);
 			break;
 		}
 
@@ -488,7 +438,7 @@ static u32b quest_pick_flag(u32b flagarray, int size) {
 	int i;
 	int flags = 0, choice;
 
-	if (flagarray == 0x0) return(0x0);
+	if (flagarray == 0x0) return 0x0;
 
 	/* count flags that are set */
 	for (i = 0; i < size; i++)
@@ -501,9 +451,9 @@ static u32b quest_pick_flag(u32b flagarray, int size) {
 	for (i = 0; i < size; i++) {
 		if (!(flagarray & (0x1 << i))) continue;
 		if (--choice) continue;
-		return(0x1 << i);
+		return (0x1 << i);
 	}
-	return(0x0); //paranoia
+	return 0x0; //paranoia
 }
 
 /* Tries to find a suitable wpos and x, y location (for questors or quest items),
@@ -563,7 +513,7 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 	else {
 		choice = quest_pick_flag(q_loc->s_location_type, 4);
 		/* no or non-existing type specified */
-		if (!choice) return(FALSE);
+		if (!choice) return FALSE;
 
 		switch (choice) {
 		case QI_SLOC_SURFACE:
@@ -574,7 +524,7 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 			/* pick from specified list */
 			else choice = quest_pick_flag(q_loc->s_terrains & wild, 32);
 			/* no or non-existing type specified */
-			if (!choice) return(FALSE);
+			if (!choice) return FALSE;
 
 			/* pick one wpos location randomly, that matches our terrain */
 			tries = 2000;
@@ -586,42 +536,33 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 				   them around in case we have to deallocate the sector */
 				if (wild_info[y][x].ondepth && tries > 1000) continue;
 
-				bool match = FALSE;
-
 				switch (wild_info[y][x].type) {
-				case WILD_OCEAN: match = (choice == RF8_WILD_OCEAN); break;
-				case WILD_LAKE: match = (choice == RF8_WILD_LAKE); break;
-				case WILD_GRASSLAND: match = (choice == RF8_WILD_GRASS); break;
-				case WILD_FOREST: match = (choice == RF8_WILD_WOOD); break;
-				case WILD_SWAMP: match = (choice == RF8_WILD_SWAMP); break;
-				case WILD_DENSEFOREST: match = (choice == RF8_WILD_WOOD); break;
-				case WILD_WASTELAND: match = (choice == RF8_WILD_WASTE); break;
-				case WILD_DESERT: match = (choice == RF8_WILD_DESERT); break;
-				case WILD_ICE: match = (choice == RF8_WILD_ICE); break;
+				case WILD_OCEAN: if (choice == RF8_WILD_OCEAN) break;
+				case WILD_LAKE: if (choice == RF8_WILD_LAKE) break;
+				case WILD_GRASSLAND: if (choice == RF8_WILD_GRASS) break;
+				case WILD_FOREST: if (choice == RF8_WILD_WOOD) break;
+				case WILD_SWAMP: if (choice == RF8_WILD_SWAMP) break;
+				case WILD_DENSEFOREST: if (choice == RF8_WILD_WOOD) break;
+				case WILD_WASTELAND: if (choice == RF8_WILD_WASTE) break;
+				case WILD_DESERT: if (choice == RF8_WILD_DESERT) break;
+				case WILD_ICE: if (choice == RF8_WILD_ICE) break;
 				}
-				if (match) break;
 			}
-			if (!tries) { /* engage emergency eloquence */
-				bool match = FALSE;
-
-				for (x = 0; x < MAX_WILD_X; x++) {
+			if (!tries) /* engage emergency eloquence */
+				for (x = 0; x < MAX_WILD_X; x++)
 					for (y = 0; y < MAX_WILD_Y; y++) {
 						switch (wild_info[y][x].type) {
-						case WILD_OCEAN: match = (choice == RF8_WILD_OCEAN); break;
-						case WILD_LAKE: match = (choice == RF8_WILD_LAKE); break;
-						case WILD_GRASSLAND: match = (choice == RF8_WILD_GRASS); break;
-						case WILD_FOREST: match = (choice == RF8_WILD_WOOD); break;
-						case WILD_SWAMP: match = (choice == RF8_WILD_SWAMP); break;
-						case WILD_DENSEFOREST: match = (choice == RF8_WILD_WOOD); break;
-						case WILD_WASTELAND: match = (choice == RF8_WILD_WASTE); break;
-						case WILD_DESERT: match = (choice == RF8_WILD_DESERT); break;
-						case WILD_ICE: match = (choice == RF8_WILD_ICE); break;
+						case WILD_OCEAN: if (choice == RF8_WILD_OCEAN) break;
+						case WILD_LAKE: if (choice == RF8_WILD_LAKE) break;
+						case WILD_GRASSLAND: if (choice == RF8_WILD_GRASS) break;
+						case WILD_FOREST: if (choice == RF8_WILD_WOOD) break;
+						case WILD_SWAMP: if (choice == RF8_WILD_SWAMP) break;
+						case WILD_DENSEFOREST: if (choice == RF8_WILD_WOOD) break;
+						case WILD_WASTELAND: if (choice == RF8_WILD_WASTE) break;
+						case WILD_DESERT: if (choice == RF8_WILD_DESERT) break;
+						case WILD_ICE: if (choice == RF8_WILD_ICE) break;
 						}
-						if (match) break;
 					}
-					if (match) break;
-				}
-			}
 			/* paranoia.. */
 			if (x == MAX_WILD_X && y == MAX_WILD_Y) {
 				/* back to test server :-p */
@@ -637,7 +578,7 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 		case QI_SLOC_TOWN:
 			choice = quest_pick_flag(q_loc->s_towns_array, 5);
 			/* no or non-existing type specified */
-			if (!choice) return(FALSE);
+			if (!choice) return FALSE;
 
 			/* assume non-dungeon town */
 			wpos->wz = 0;
@@ -685,22 +626,22 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 					}
 				break;
 			case QI_STOWN_WILD:
-				return(FALSE);
+				return FALSE;
 				break;
 			case QI_STOWN_DUNGEON:
-				return(FALSE);
+				return FALSE;
 				break;
 			case QI_STOWN_IDDC:
-				return(FALSE);
+				return FALSE;
 				break;
 			case QI_STOWN_IDDC_FIXED:
-				return(FALSE);
+				return FALSE;
 				break;
 			}
 			break;
 
 		case QI_SLOC_DUNGEON:
-			if (!q_loc->s_dungeons) return(FALSE);
+			if (!q_loc->s_dungeons) return FALSE;
 			i = q_loc->s_dungeon[rand_int(q_loc->s_dungeons)];
 
 			/* IDDC? */
@@ -777,21 +718,21 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 				}
 				if (x == MAX_WILD_X && y == MAX_WILD_Y) {
 					s_printf("QUEST_SPECIAL_SPAWN_LOCATION: Couldn't get suitable dungeon location.\n");
-					return(FALSE);
+					return FALSE;
 				}
 			}
 			break;
 
 #if 0 /* included in QI_SLOC_DUNGEON atm */
 		case QI_SLOC_TOWER:
-			return(FALSE);
+			return FALSE;
 			break;
 #endif
 		}
 	}
 
 	zcave = quest_prepare_zcave(wpos, stat, q_loc->tpref, q_loc->tpref_x, q_loc->tpref_y, dungeon);
-	if (!zcave) return(FALSE);
+	if (!zcave) return FALSE;
 
 	/* Specified exact starting location within given wpos? */
 	if (q_loc->start_x != -1) {
@@ -826,7 +767,7 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 			break;
 		}
 		if (!i) {
-			return(FALSE);
+			return FALSE;
 			s_printf("QUEST_SPECIAL_SPAWN_LOCATION: No free spawning location.\n");
 		}
 	}
@@ -834,7 +775,7 @@ static bool quest_special_spawn_location(struct worldpos *wpos, s16b *x_result, 
 	*x_result = x;
 	*y_result = y;
 
-	return(TRUE);
+	return TRUE;
 }
 
 /* Attempt to spawn a monster-type questor */
@@ -854,7 +795,7 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
 	   (for when an F-line dictates 'despawned' already in stage -1) */
 	if (q_questor->despawned) {
 		s_printf("QUESTOR_MONSTER: still despawned.\n");
-		return(TRUE);
+		return TRUE;
 	}
 
 	wpos.wx = q_questor->current_wpos.wx;
@@ -869,7 +810,7 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
 
 
 	/* If no monster race index is set for the questor, don't spawn him. (paranoia) */
-	if (!q_questor->ridx) return(FALSE);
+	if (!q_questor->ridx) return FALSE;
 
 	/* ---------- Try to spawn the questor monster ---------- */
 
@@ -882,7 +823,7 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
 #else
 		q_ptr->cur_cooldown = QERROR_COOLDOWN;
 #endif
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* make sure no other player/moster is occupying our spawning grid */
@@ -914,7 +855,7 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
 #else
 			q_ptr->cur_cooldown = QERROR_COOLDOWN;
 #endif
-			return(FALSE);
+			return FALSE;
 		}
 
 		teleport_away(c_ptr->m_idx, 1);
@@ -960,9 +901,8 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
 	r_ptr->flags0 = rbase_ptr->flags0;
 
 	r_ptr->flags1 |= RF1_FORCE_MAXHP;
-	r_ptr->flags2 |= RF2_NEVER_ACT;
 	r_ptr->flags3 |= RF3_RES_TELE | RF3_RES_NEXU;
-	r_ptr->flags7 |= RF7_NO_TARGET;
+	r_ptr->flags7 |= RF7_NO_TARGET | RF7_NEVER_ACT;
 	if (q_questor->invincible) r_ptr->flags7 |= RF7_NO_DEATH; //for now we just use NO_DEATH flag for invincibility
 	r_ptr->flags8 |= RF8_GENO_PERSIST | RF8_GENO_NO_THIN | RF8_ALLOW_RUNNING | RF8_NO_AUTORET;
 	r_ptr->flags9 |= RF9_IM_TELE;
@@ -1007,7 +947,7 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
 	r_ptr->freq_spell = rbase_ptr->freq_spell;
 
 #ifdef MONSTER_ASTAR
-	if (r_ptr->flags7 & RF7_ASTAR) {
+	if (r_ptr->flags0 & RF0_ASTAR) {
 		/* search for an available A* table to use */
 		for (i = 0; i < ASTAR_MAX_INSTANCES; i++) {
 			/* found an available instance? */
@@ -1031,7 +971,7 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
  #else
 			q_ptr->cur_cooldown = QERROR_COOLDOWN;
  #endif
-			return(FALSE);
+			return FALSE;
 		}
 	}
 #endif
@@ -1085,14 +1025,14 @@ static bool questor_monster(int q_idx, qi_questor *q_questor, int questor_idx) {
 	}
 
 	q_questor->talk_focus = 0;
-	return(TRUE);
+	return TRUE;
 }
 
 #ifdef QUESTOR_OBJECT_EXCLUSIVE
  #ifndef QUESTOR_OBJECT_CRUSHES
 /* Helper function for questor_object() to teleport away a whole pile of items */
 static void teleport_objects_away(struct worldpos *wpos, s16b x, s16b y, int dist) {
-	int this_o_idx, next_o_idx = 0;
+	u16b this_o_idx, next_o_idx = 0;
 	int j;
 	s16b cx, cy;
 
@@ -1109,10 +1049,10 @@ static void teleport_objects_away(struct worldpos *wpos, s16b x, s16b y, int dis
 
 		if (!in_bounds(cy, cx)) continue;
 		if (!cave_floor_bold(zcave, cy, cx) ||
-		    cave_perma_bold2(zcave, cy, cx)) continue;
+		    cave_perma_bold(zcave, cy, cx)) continue;
 
 //		(void)floor_carry(cy, cx, &tmp_obj);
-		drop_near(TRUE, 0, &tmp_obj, 0, wpos, cy, cx);
+		drop_near(0, &tmp_obj, 0, wpos, cy, cx);
 		delete_object_idx(this_o_idx, FALSE);
 		break;
 	}
@@ -1125,7 +1065,7 @@ static void teleport_objects_away(struct worldpos *wpos, s16b x, s16b y, int dis
 
 		if (!in_bounds(cy, cx)) continue;
 		if (!cave_floor_bold(zcave, cy, cx) ||
-		    cave_perma_bold2(zcave, cy, cx)) continue;
+		    cave_perma_bold(zcave, cy, cx)) continue;
 
 		/* no idea if this works */
 		if (!cave_naked_bold(zcave, cy, cx)) continue;
@@ -1162,7 +1102,7 @@ static bool questor_object(int q_idx, qi_questor *q_questor, int questor_idx) {
 	c_ptr = &zcave[y][x];
 
 	/* If no monster race index is set for the questor, don't spawn him. (paranoia) */
-	if (!q_questor->otval || !q_questor->osval) return(FALSE);
+	if (!q_questor->otval || !q_questor->osval) return FALSE;
 
 
 	/* ---------- Try to spawn the questor object ---------- */
@@ -1176,7 +1116,7 @@ static bool questor_object(int q_idx, qi_questor *q_questor, int questor_idx) {
 #else
 		q_ptr->cur_cooldown = QERROR_COOLDOWN;
 #endif
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* make sure no other object is occupying our spawning grid */
@@ -1191,7 +1131,7 @@ static bool questor_object(int q_idx, qi_questor *q_questor, int questor_idx) {
 #else
 			q_ptr->cur_cooldown = QERROR_COOLDOWN;
 #endif
-			return(FALSE);
+			return FALSE;
 		}
 
 #ifdef QUESTOR_OBJECT_EXCLUSIVE
@@ -1233,7 +1173,7 @@ static bool questor_object(int q_idx, qi_questor *q_questor, int questor_idx) {
 	o_ptr->next_o_idx = c_ptr->o_idx; /* on top of pile, if any */
 	o_ptr->stack_pos = 0;
 	c_ptr->o_idx = o_idx;
-	nothing_test2(c_ptr, x, y, &wpos, 1); //was 3
+	nothing_test2(c_ptr, x, y, &wpos, 3);
 	q_ptr->objects_registered++;
 	o_ptr->marked = 0;
 	o_ptr->held_m_idx = 0;
@@ -1285,7 +1225,7 @@ static bool questor_object(int q_idx, qi_questor *q_questor, int questor_idx) {
 	}
 
 	q_questor->talk_focus = 0;
-	return(TRUE);
+	return TRUE;
 }
 
 /* Helper function: Initialise and spawn a questor.
@@ -1303,23 +1243,23 @@ static bool quest_spawn_questor(int q_idx, int questor_idx) {
 #else
 		q_ptr->cur_cooldown = QERROR_COOLDOWN;
 #endif
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* generate and spawn the questor */
 	switch (q_questor->type) {
 	case QI_QUESTOR_NPC:
-		if (!questor_monster(q_idx, q_questor, questor_idx)) return(FALSE);
+		if (!questor_monster(q_idx, q_questor, questor_idx)) return FALSE;
 		break;
 	case QI_QUESTOR_ITEM_PICKUP:
-		if (!questor_object(q_idx, q_questor, questor_idx)) return(FALSE);
+		if (!questor_object(q_idx, q_questor, questor_idx)) return FALSE;
 		break;
 	default: ;
 		//TODO: other questor-types
 		/* discard */
 	}
 
-	return(TRUE);
+	return TRUE;
 }
 
 /* Spawn questor, prepare sector/floor, make things static if requested, etc. */
@@ -1330,7 +1270,7 @@ bool quest_activate(int q_idx) {
 	/* catch bad mistakes */
 	if (!q_ptr->defined) {
 		s_printf("QUEST_UNDEFINED: Cancelled attempt to activate quest %d.\n", q_idx);
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* Quest is now 'active' */
@@ -1376,7 +1316,7 @@ bool quest_activate(int q_idx) {
 	q_ptr->cur_stage = -1;
 	quest_set_stage(0, q_idx, 0, FALSE, NULL);
 
-	return(TRUE);
+	return TRUE;
 }
 
 /* Helper function for quest_deactivate().
@@ -1409,8 +1349,7 @@ static void quest_erase_objects(int q_idx, byte individual, s32b p_id) {
 #if QDEBUG > 1
 		s_printf("Erased one at %d.\n", j);
 #endif
-		o_list[j].questor = FALSE;
-		o_list[j].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
+		o_list[j].questor = o_list[j].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
 		q_info[q_idx].objects_registered--; //..and count down manually
 		delete_object_idx(j, TRUE);
 	}
@@ -1440,8 +1379,7 @@ static void quest_erase_objects(int q_idx, byte individual, s32b p_id) {
 #if QDEBUG > 1
 			s_printf("QUEST_OBJECT: player '%s'\n", p_ptr->name);
 #endif
-			o_ptr->questor = FALSE;
-			o_ptr->quest = 0; //prevent questitem_d() check from triggering when deleting it!..
+			o_ptr->questor = o_ptr->quest = 0; //prevent questitem_d() check from triggering when deleting it!..
 			q_info[q_idx].objects_registered--; //..and count down manually
 			//questitem_d(o_ptr, o_ptr->number);
 			inven_item_increase(j, i, -99);
@@ -1500,8 +1438,7 @@ static void quest_erase_objects(int q_idx, byte individual, s32b p_id) {
 
 				s_printf("QUEST_OBJECT_ERASE: savegame '%s'\n", p_ptr->name);
 				o_ptr->tval = o_ptr->sval = o_ptr->k_idx = 0;
-				o_ptr->questor = FALSE;
-				o_ptr->quest = 0; //paranoia, just to make sure to prevent questitem_d() check from triggering when deleting it!
+				o_ptr->questor = o_ptr->quest = 0; //paranoia, just to make sure to prevent questitem_d() check from triggering when deleting it!
 				q_info[q_idx].objects_registered--; //..and count down manually
 				/* write savegame back */
 				save_player(NumPlayers);
@@ -1676,8 +1613,7 @@ static void quest_despawn_questor(int q_idx, int questor_idx) {
 #if QDEBUG > 1
 				s_printf(" ..ok.\n");
 #endif
-				o_list[o_idx].questor = FALSE;
-				o_list[o_idx].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
+				o_list[o_idx].questor = o_list[o_idx].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
 				q_info[q_idx].objects_registered--; //..and count down manually
 				delete_object_idx(c_ptr->o_idx, TRUE);
 			} else
@@ -1706,8 +1642,7 @@ static void quest_despawn_questor(int q_idx, int questor_idx) {
 				if (o_list[j].quest != q_idx + 1) continue;
 				if (o_list[j].questor_idx != questor_idx) continue;
 				s_printf(" found it at %d!\n", j);
-				o_list[j].questor = FALSE;
-				o_list[j].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
+				o_list[j].questor = o_list[j].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
 				q_info[q_idx].objects_registered--; //..and count down manually
 				delete_object_idx(j, TRUE);
 				//:-p break;
@@ -1756,8 +1691,8 @@ void quest_deactivate(int q_idx) {
 s16b quest_get_cooldown(int pInd, int q_idx) {
 	quest_info *q_ptr = &q_info[q_idx];
 
-	if (pInd && q_ptr->individual) return(Players[pInd]->quest_cooldown[q_idx]);
-	return(q_ptr->cur_cooldown);
+	if (pInd && q_ptr->individual) return Players[pInd]->quest_cooldown[q_idx];
+	return q_ptr->cur_cooldown;
 }
 
 /* set a current quest's cooldown. Either just uses q_ptr->cur_cooldown directly for global
@@ -1971,25 +1906,25 @@ static bool quest_get_goal(int pInd, int q_idx, int goal, bool nisi) {
 	qi_goal *q_goal = &quest_qi_stage(q_idx, stage)->goal[goal];
 
 	if (!pInd || !q_ptr->individual) {
-		if (nisi && q_goal->nisi) return(FALSE);
-		return(q_goal->cleared); /* no player? global goal */
+		if (nisi && q_goal->nisi) return FALSE;
+		return q_goal->cleared; /* no player? global goal */
 	}
 
 	p_ptr = Players[pInd];
 	for (i = 0; i < MAX_PQUESTS; i++)
 		if (p_ptr->quest_idx[i] == q_idx) break;
 	if (i == MAX_PQUESTS) {
-		if (nisi && q_goal->nisi) return(FALSE);
-		return(q_goal->cleared); /* player isn't on this quest. return global goal. */
+		if (nisi && q_goal->nisi) return FALSE;
+		return q_goal->cleared; /* player isn't on this quest. return global goal. */
 	}
 
 	if (q_ptr->individual) {
-		if (nisi && p_ptr->quest_goals_nisi[i][goal]) return(FALSE);
-		return(p_ptr->quest_goals[i][goal]); /* individual quest */
+		if (nisi && p_ptr->quest_goals_nisi[i][goal]) return FALSE;
+		return p_ptr->quest_goals[i][goal]; /* individual quest */
 	}
 
-	if (nisi && q_goal->nisi) return(FALSE);
-	return(q_goal->cleared); /* global quest */
+	if (nisi && q_goal->nisi) return FALSE;
+	return q_goal->cleared; /* global quest */
 }
 /* just return the 'nisi' state of a quest goal (for ungoal_r) */
 static bool quest_get_goal_nisi(int pInd, int q_idx, int goal) {
@@ -1998,25 +1933,25 @@ static bool quest_get_goal_nisi(int pInd, int q_idx, int goal) {
 	int i, stage = quest_get_stage(pInd, q_idx);
 	qi_goal *q_goal = &quest_qi_stage(q_idx, stage)->goal[goal];
 
-	if (!pInd || !q_ptr->individual) return(q_goal->nisi); /* global quest */
+	if (!pInd || !q_ptr->individual) return q_goal->nisi; /* global quest */
 
 	p_ptr = Players[pInd];
 	for (i = 0; i < MAX_PQUESTS; i++)
 		if (p_ptr->quest_idx[i] == q_idx) break;
-	if (i == MAX_PQUESTS) return(q_goal->nisi);  /* player isn't on this quest. return global goal. */
+	if (i == MAX_PQUESTS) return q_goal->nisi;  /* player isn't on this quest. return global goal. */
 
-	if (q_ptr->individual) return(p_ptr->quest_goals_nisi[i][goal]); /* individual quest */
+	if (q_ptr->individual) return p_ptr->quest_goals_nisi[i][goal]; /* individual quest */
 
-	return(q_goal->nisi); /* global quest */
+	return q_goal->nisi; /* global quest */
 }
 
 /* Returns the current quest->stage struct. */
 qi_stage *quest_cur_qi_stage(int q_idx) {
-	return(&q_info[q_idx].stage[q_info[q_idx].cur_stage]);
+	return &q_info[q_idx].stage[q_info[q_idx].cur_stage];
 }
 /* Returns a quest->stage struct to a 'stage' index used in q_info.txt. */
 qi_stage *quest_qi_stage(int q_idx, int stage) {
-	return(&q_info[q_idx].stage[q_info[q_idx].stage_idx[stage]]);
+	return &q_info[q_idx].stage[q_info[q_idx].stage_idx[stage]];
 }
 /* return the current quest stage. Either just uses q_ptr->cur_stage directly for global
    quests, or p_ptr->quest_stage for individual quests. */
@@ -2025,15 +1960,15 @@ s16b quest_get_stage(int pInd, int q_idx) {
 	player_type *p_ptr;
 	int i;
 
-	if (!pInd || !q_ptr->individual) return(q_ptr->cur_stage); /* no player? global stage */
+	if (!pInd || !q_ptr->individual) return q_ptr->cur_stage; /* no player? global stage */
 
 	p_ptr = Players[pInd];
 	for (i = 0; i < MAX_PQUESTS; i++)
 		if (p_ptr->quest_idx[i] == q_idx) break;
-	if (i == MAX_PQUESTS) return(0); /* player isn't on this quest: pick stage 0, the entry stage */
+	if (i == MAX_PQUESTS) return 0; /* player isn't on this quest: pick stage 0, the entry stage */
 
-	if (q_ptr->individual) return(p_ptr->quest_stage[i]); /* individual quest */
-	return(q_ptr->cur_stage); /* global quest */
+	if (q_ptr->individual) return p_ptr->quest_stage[i]; /* individual quest */
+	return q_ptr->cur_stage; /* global quest */
 }
 
 /* return current quest flags. Either just uses q_ptr->flags directly for global
@@ -2043,15 +1978,15 @@ static u16b quest_get_flags(int pInd, int q_idx) {
 	player_type *p_ptr;
 	int i;
 
-	if (!pInd || !q_ptr->individual) return(q_ptr->flags); /* no player? global goal */
+	if (!pInd || !q_ptr->individual) return q_ptr->flags; /* no player? global goal */
 
 	p_ptr = Players[pInd];
 	for (i = 0; i < MAX_PQUESTS; i++)
 		if (p_ptr->quest_idx[i] == q_idx) break;
-	if (i == MAX_PQUESTS) return(q_ptr->flags); /* player isn't on this quest. return global goal. */
+	if (i == MAX_PQUESTS) return q_ptr->flags; /* player isn't on this quest. return global goal. */
 
-	if (q_ptr->individual) return(p_ptr->quest_flags[i]); /* individual quest */
-	return(q_ptr->flags); /* global quest */
+	if (q_ptr->individual) return p_ptr->quest_flags[i]; /* individual quest */
+	return q_ptr->flags; /* global quest */
 }
 /* set/clear quest flags */
 static void quest_set_flags(int pInd, int q_idx, u16b set_mask, u16b clear_mask) {
@@ -2076,7 +2011,7 @@ static void quest_set_flags(int pInd, int q_idx, u16b set_mask, u16b clear_mask)
 
 	if (q_ptr->individual) {
 		p_ptr->quest_flags[i] |= set_mask; /* individual quest */
-		p_ptr->quest_flags[i] &= ~clear_mask;
+		p_ptr->quest_flags[i] &= ~clear_mask; 
 		return;
 	}
 
@@ -2194,8 +2129,7 @@ static void quest_spawn_questitems(int q_idx, int stage) {
 	char name[MAX_CHARS];//ONAME_LEN?
 
 	struct worldpos wpos;
-	s16b x, y;
-	int o_idx;
+	s16b x, y, o_idx;
 	cave_type **zcave, *c_ptr;
 
 	for (i = 0; i < q_stage->qitems; i++) {
@@ -2227,7 +2161,6 @@ static void quest_spawn_questitems(int q_idx, int stage) {
 			o_ptr->owner = Players[py]->id;
 			o_ptr->mode = Players[py]->mode;
 			o_ptr->iron_trade = Players[py]->iron_trade;
-			o_ptr->iron_turn = turn;
 			inven_carry(py, o_ptr);
 			q_ptr->objects_registered++;
 			continue;
@@ -2262,7 +2195,7 @@ static void quest_spawn_questitems(int q_idx, int stage) {
 		o_ptr->next_o_idx = c_ptr->o_idx; /* on top of pile, if any */
 		o_ptr->stack_pos = 0;
 		c_ptr->o_idx = o_idx;
-		nothing_test2(c_ptr, x, y, &wpos, 2); //was 4
+		nothing_test2(c_ptr, x, y, &wpos, 4);
 		q_ptr->objects_registered++;
 
 		o_ptr->marked = 0;
@@ -2341,8 +2274,7 @@ static void quest_questor_hostility(int q_idx, int stage, int questor_idx) {
 
 	/* questor turns hostile to players? */
 	if (q_qhost->hostile_player) {
-		r_ptr->flags2 &= ~(RF2_NEVER_ACT);
-		r_ptr->flags7 &= ~(RF7_NO_TARGET);//| RF7_NO_DEATH; --done in quest_questor_morph() actually
+		r_ptr->flags7 &= ~(RF7_NO_TARGET | RF7_NEVER_ACT);//| RF7_NO_DEATH; --done in quest_questor_morph() actually
 		m_ptr->questor_hostile |= 0x1;
 	}
 
@@ -2529,7 +2461,7 @@ static void quest_add_dungeon(int q_idx, int stage) {
 	case 1: flags1 |= DF1_FORCE_DOWN; break;
 	case 2: flags2 |= DF2_IRON; break;
 	}
-	add_dungeon(&q_stage->dun_wpos, q_stage->dun_base, q_stage->dun_max, flags1, flags2 | DF2_RANDOM, flags3, q_stage->dun_tower, 0, q_stage->dun_theme, q_idx + 1, stage);
+	add_dungeon(&q_stage->dun_wpos, q_stage->dun_base, q_stage->dun_max, flags1, flags2, flags3, q_stage->dun_tower, 0, q_stage->dun_theme, q_idx + 1, stage);
 
 	/* place staircase */
 	do {
@@ -2564,12 +2496,12 @@ static byte quest_aux_attr = 255;
 static bool quest_aux(int r_idx) {
 	monster_race *r_ptr = &r_info[r_idx];
 
-	if (r_ptr->flags1 & RF1_UNIQUE) return(FALSE);
-	if (quest_aux_name && !strstr(r_name + r_ptr->name, quest_aux_name)) return(FALSE);
-	if (quest_aux_attr != 255 && r_ptr->d_attr != quest_aux_attr) return(FALSE);
-	if (quest_aux_char != 127 && r_ptr->d_char != quest_aux_char) return(FALSE);
+	if (r_ptr->flags1 & RF1_UNIQUE) return FALSE;
+	if (quest_aux_name && !strstr(r_name + r_ptr->name, quest_aux_name)) return FALSE;
+	if (quest_aux_attr != 255 && r_ptr->d_attr != quest_aux_attr) return FALSE;
+	if (quest_aux_char != 127 && r_ptr->d_char != quest_aux_char) return FALSE;
 
-	return(TRUE);
+	return TRUE;
 }
 /* Helper function for quest_spawn_monsters().
    It picks a specific monster (r_idx) from the specifications. */
@@ -2577,7 +2509,7 @@ static s16b quest_mspawn_pick(qi_monsterspawn *q_mspawn) {
 	int lev = q_mspawn->rlevmin + randint(q_mspawn->rlevmax - q_mspawn->rlevmin);
 
 	/* exact spec? */
-	if (q_mspawn->ridx) return(q_mspawn->ridx);
+	if (q_mspawn->ridx) return q_mspawn->ridx;
 
 	quest_aux_name = q_mspawn->name;
 	quest_aux_char = q_mspawn->rchar;
@@ -2586,7 +2518,7 @@ static s16b quest_mspawn_pick(qi_monsterspawn *q_mspawn) {
 	get_mon_num_hook = quest_aux;
 	get_mon_num2_hook = NULL;
 	get_mon_num_prep(0, NULL);//reject_uniques done in quest_aux()
-	return(get_mon_num(lev, lev - 10));//-10 : reduce OOD;
+	return get_mon_num(lev, lev - 10);//-10 : reduce OOD;
 }
 /* Spawn monsters on stage startup */
 static void quest_spawn_monsters(int q_idx, int stage) {
@@ -2738,7 +2670,7 @@ static bool quest_stage_automatics(int pInd, int q_idx, int py_q_idx, int stage,
 
 			quest_set_stage(pInd, q_idx, q_stage->change_stage, q_stage->quiet_change, NULL);
 			/* don't imprint/play dialogue of this stage anymore, it's gone~ */
-			return(TRUE);
+			return TRUE;
 		}
 
 		/* start the clock */
@@ -2771,7 +2703,7 @@ static bool quest_stage_automatics(int pInd, int q_idx, int py_q_idx, int stage,
 		}
 	}
 
-	return(FALSE);
+	return FALSE;
 }
 /* Imprint the current stage's tracking information of one of our pursued quests
    into our temporary quest data. This means target-flagging and kill/retrieve counting.
@@ -2918,62 +2850,6 @@ static void quest_imprint_stage(int Ind, int q_idx, int py_q_idx) {
 	quest_imprint_tracking_information(Ind, py_q_idx, FALSE);
 }
 
-#ifdef QUESTS_ALLOW_LUA
-static bool quest_calls_lua(int Ind, int q_idx, char *text) {
-	u16b flags = quest_get_flags(Ind, q_idx), setflags, clearflags;
-	char *argflags, *argflagsrw, *separator;
-	char luaparm[99], flagcombo[39];
-
-	if (text[0] != '/' || text[1] != '/'
-	    || !strchr(text + 2, '(')) //don't crash on erroneous q_info.txt format..
-		return(FALSE);
-
-	strcpy(luaparm, text + 2);
-	argflags = strstr(text + 2, "?flags?");
-	argflagsrw = strstr(text + 2, "!flags!");
-	separator = strchr(text + 2, ',');
-
-	/* Illegal syntax? */
-	if (separator && (separator < argflags || separator < argflagsrw)) return(FALSE);
-
-	if (argflagsrw) {
-		argflagsrw = strstr(luaparm, "!flags!"); //reset to work with cloned string instead
-		strcpy(argflagsrw, format("%d", flags));
-		strcat(luaparm, format(",%d", Ind)); //inject Ind, so we can access the players(Ind) in our lua function if we need to
-		if (separator) strcat(luaparm, separator);
-		else strcat(luaparm, ")");
-		s_printf("QUESTS_ALLOW_LUA: calling (rw) %s\n", luaparm); //debug info
-		sprintf(flagcombo, "%s", string_exec_lua(Ind, format("%s", luaparm)));
-		/* Check for validity. Must be format: 16bit value , 16bit value. */
-		if ((separator = strchr(flagcombo, ','))) {
-			*separator = 0;
-			setflags = atoi(flagcombo);
-			clearflags = atoi(separator + 1);
-			s_printf("QUESTS_ALLOW_LUA: setflags %d, clearflags %d\n", setflags, clearflags); //debug info
-			quest_set_flags(Ind, q_idx, setflags, clearflags);
-		}
-	} else if (argflags) {
-		argflags = strstr(luaparm, "?flags?"); //reset to work with cloned string instead
-		strcpy(argflags, format("%d", flags));
-		strcat(luaparm, format(",%d", Ind)); //inject Ind, so we can access the players(Ind) in our lua function if we need to
-		if (separator) strcat(luaparm, separator);
-		else strcat(luaparm, ")");
-		s_printf("QUESTS_ALLOW_LUA: calling (r) %s\n", luaparm); //debug info
-		(void)exec_lua(Ind, format("%s", luaparm));
-	} else {
-		//inject Ind, so we can access the players(Ind) in our lua function if we need to
-		separator = strchr(luaparm, '(');
-		strcpy(separator + 1, format("%d,", Ind));
-		separator = strchr(text + 2, '(');
-		strcat(luaparm, separator + 1);
-
-		s_printf("QUESTS_ALLOW_LUA: calling %s\n", luaparm); //debug info
-		(void)exec_lua(Ind, format("%s", luaparm));
-	}
-	return(TRUE);
-}
-#endif
-
 /* Helper function for quest_set_stage(), to re-individualise quests that just
    finished a timer/walk sequence and hence were 'temporarily global' of some sort.
    'final_player' must be TRUE for the last player that this function gets called
@@ -2991,7 +2867,7 @@ static byte quest_set_stage_individual(int Ind, int q_idx, int stage, bool quiet
 
 	for (j = 0; j < MAX_PQUESTS; j++)
 		if (p_ptr->quest_idx[j] == q_idx) break;
-	if (j == MAX_PQUESTS) return(j); //paranoia, shouldn't happen
+	if (j == MAX_PQUESTS) return j; //paranoia, shouldn't happen
 
 	/* clear any pending RIDs */
 	if (p_ptr->request_id >= RID_QUEST && p_ptr->request_id <= RID_QUEST_ACQUIRE + MAX_Q_IDX - 1) {
@@ -3003,7 +2879,6 @@ static byte quest_set_stage_individual(int Ind, int q_idx, int stage, bool quiet
 	if (!quiet) {
 		/* pre-scan narration if any line at all exists and passes the flag check */
 		bool anything = FALSE;
-
 		for (k = 0; k < QI_TALK_LINES; k++) {
 			if (q_stage->narration[k] &&
 			    ((q_stage->narration_flags[k] & quest_get_flags(Ind, q_idx)) == q_stage->narration_flags[k])) {
@@ -3023,9 +2898,6 @@ static byte quest_set_stage_individual(int Ind, int q_idx, int stage, bool quiet
 				msg_format(Ind, "\374\377U%s", q_stage->narration[k]);
 #else /* allow placeholders */
 				quest_text_replace(text, q_stage->narration[k], p_ptr);
- #ifdef QUESTS_ALLOW_LUA
-				if (!quest_calls_lua(Ind, q_idx, text))
- #endif
 				msg_format(Ind, "\374\377U%s", text);
 #endif
 			}
@@ -3041,7 +2913,7 @@ static byte quest_set_stage_individual(int Ind, int q_idx, int stage, bool quiet
 	p_ptr->quest_stage[j] = stage;
 
 	/* perform automatic actions (spawn new quest, (timed) further stage change) */
-	if (quest_stage_automatics(Ind, q_idx, j, stage, !final_player)) return(-1);
+	if (quest_stage_automatics(Ind, q_idx, j, stage, !final_player)) return -1;
 
 	/* update players' quest tracking data */
 	quest_imprint_stage(Ind, q_idx, j);
@@ -3068,7 +2940,7 @@ static byte quest_set_stage_individual(int Ind, int q_idx, int stage, bool quiet
 	if (final_player)
 		quest_spawn_questitems(q_idx, stage);
 
-	return(j);
+	return j;
 }
 /* Advance quest to a different stage (or start it out if stage is 0).
 
@@ -3191,9 +3063,6 @@ void quest_set_stage(int pInd, int q_idx, int stage, bool quiet, struct worldpos
 						msg_format(i, "\374\377U%s", q_stage->narration[k]);
 #else /* allow placeholders */
 						quest_text_replace(text, q_stage->narration[k], p_ptr);
- #ifdef QUESTS_ALLOW_LUA
-						if (!quest_calls_lua(i, q_idx, text))
- #endif
 						msg_format(i, "\374\377U%s", text);
 #endif
 					}
@@ -3436,21 +3305,21 @@ static bool quest_acquire(int Ind, int q_idx, bool quiet) {
 	/* quest is deactivated? -- paranoia here */
 	if (!q_ptr->active) {
 		msg_print(Ind, qi_msg_deactivated);
-		return(FALSE);
+		return FALSE;
 	}
 	/* quest is on [individual] cooldown? */
 	if (quest_get_cooldown(Ind, q_idx)) {
 		msg_print(Ind, qi_msg_cooldown);
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* quests is only for admins or privileged accounts at the moment? (for testing purpose) */
 	switch (q_ptr->privilege) {
-	case 1: if (!p_ptr->privileged && !is_admin(p_ptr)) return(FALSE);
+	case 1: if (!p_ptr->privileged && !is_admin(p_ptr)) return FALSE;
 		break;
-	case 2: if (p_ptr->privileged < 2 && !is_admin(p_ptr)) return(FALSE);
+	case 2: if (p_ptr->privileged != 2 && !is_admin(p_ptr)) return FALSE;
 		break;
-	case 3: if (!is_admin(p_ptr)) return(FALSE);
+	case 3: if (!is_admin(p_ptr)) return FALSE;
 	}
 
 	/* matches prerequisite quests? (ie this is a 'follow-up' quest) */
@@ -3460,26 +3329,26 @@ static bool quest_acquire(int Ind, int q_idx, bool quiet) {
 			if (strcmp(q_info[j].codename, q_ptr->prerequisites[i])) continue;
 			if (!p_ptr->quest_done[j]) {
 				msg_print(Ind, qi_msg_prereq);
-				return(FALSE);
+				return FALSE;
 			}
 		}
 	}
 	/* level / race / class / mode / body restrictions */
 	if (q_ptr->minlev && q_ptr->minlev > p_ptr->lev) {
 		msg_print(Ind, qi_msg_minlev);
-		return(FALSE);
+		return FALSE;
 	}
 	if (q_ptr->maxlev && q_ptr->maxlev < p_ptr->max_plv) {
 		msg_print(Ind, qi_msg_maxlev);
-		return(FALSE);
+		return FALSE;
 	}
 	if (!(q_ptr->races & (0x1 << p_ptr->prace))) {
 		msg_print(Ind, qi_msg_race);
-		return(FALSE);
+		return FALSE;
 	}
 	if (!(q_ptr->classes & (0x1 << p_ptr->pclass))) {
 		msg_print(Ind, qi_msg_class);
-		return(FALSE);
+		return FALSE;
 	}
 	ok = FALSE;
 	if (!q_ptr->must_be_fruitbat && !q_ptr->must_be_monster) ok = TRUE;
@@ -3491,7 +3360,7 @@ static bool quest_acquire(int Ind, int q_idx, bool quiet) {
 		if (q_ptr->must_be_fruitbat == 1) msg_print(Ind, qi_msg_truebat);
 		else if (q_ptr->must_be_fruitbat || q_ptr->must_be_monster == 37) msg_print(Ind, qi_msg_bat);
 		else msg_print(Ind, qi_msg_form);
-		return(FALSE);
+		return FALSE;
 	}
 	ok = FALSE;
 	if (q_ptr->mode_norm && !(p_ptr->mode & (MODE_EVERLASTING | MODE_PVP))) ok = TRUE;
@@ -3499,13 +3368,13 @@ static bool quest_acquire(int Ind, int q_idx, bool quiet) {
 	if (q_ptr->mode_pvp && (p_ptr->mode & MODE_PVP)) ok = TRUE;
 	if (!ok) {
 		msg_print(Ind, qi_msg_mode);
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* has the player completed this quest already/too often? */
 	if (p_ptr->quest_done[q_idx] > q_ptr->repeatable && q_ptr->repeatable != -1) {
 		if (!quiet) msg_print(Ind, qi_msg_done);
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* does the player have capacity to pick up one more quest? */
@@ -3515,7 +3384,7 @@ static bool quest_acquire(int Ind, int q_idx, bool quiet) {
 			if (p_ptr->quest_idx[i] == -1) break;
 		if (i == MAX_CONCURRENT_QUESTS) {
 			if (!quiet) msg_print(Ind, qi_msg_max);
-			return(FALSE);
+			return FALSE;
 		}
 	}
 
@@ -3524,14 +3393,14 @@ static bool quest_acquire(int Ind, int q_idx, bool quiet) {
 	s_printf("%s QUEST_MAY_ACQUIRE: (%d,%d,%d;%d,%d) %s (%d) may acquire quest '%s'(%d,%s).\n",
 	    showtime(), p_ptr->wpos.wx, p_ptr->wpos.wy, p_ptr->wpos.wz, p_ptr->px, p_ptr->py, p_ptr->name, Ind, q_name + q_ptr->name, q_idx, q_ptr->codename);
 #endif
-	return(TRUE);
+	return TRUE;
 }
 
 /* Check if player completed a deliver goal to a questor. */
 static void quest_check_goal_deliver_questor(int Ind, int q_idx, int py_q_idx) {
 	player_type *p_ptr = Players[Ind];
 	int j, k, stage;
-	quest_info *q_ptr = &q_info[q_idx];
+	quest_info *q_ptr = &q_info[q_idx];;
 	qi_stage *q_stage;
 	qi_goal *q_goal;
 
@@ -3637,7 +3506,7 @@ void quest_interact(int Ind, int q_idx, int questor_idx, FILE *fff) {
 	switch (q_ptr->privilege) {
 	case 1: if (!p_ptr->privileged && !is_admin(p_ptr)) return;
 		break;
-	case 2: if (p_ptr->privileged < 2 && !is_admin(p_ptr)) return;
+	case 2: if (p_ptr->privileged != 2 && !is_admin(p_ptr)) return;
 		break;
 	case 3: if (!is_admin(p_ptr)) return;
 	}
@@ -3765,9 +3634,6 @@ static void quest_dialogue(int Ind, int q_idx, int questor_idx, bool repeat, boo
 				msg_format(Ind, "\374\377U%s", q_stage_talk->talk[questor_idx][i]);
 #else /* allow placeholders */
 				quest_text_replace(text, q_stage_talk->talk[questor_idx][i], p_ptr);
- #ifdef QUESTS_ALLOW_LUA
-				if (!quest_calls_lua(Ind, q_idx, text))
- #endif
 				msg_format(Ind, "\374\377U%s", text);
 #endif
 
@@ -3847,7 +3713,7 @@ static bool qstrcmp(char *keyword, char *input) {
 			ck++;
 
 			/* keyword ends on wildcard? done! */
-			if (!(*ck)) return(FALSE); //matched successfully
+			if (!(*ck)) return FALSE; //matched successfully
 
 			/* do we have to terminate with exact ending (ie no wildcard at the end)? */
 			res = strchr(ck, '*');
@@ -3855,10 +3721,10 @@ static bool qstrcmp(char *keyword, char *input) {
 			/* yes, no further wild card coming up after this */
 			if (!res) {
 				res = strstr(ci, ck);
-				if (!res) return(TRUE);
+				if (!res) return TRUE;
 				ci = res + strlen(ck);
-				if (*ci) return(TRUE);
-				return(FALSE); //matched successfully
+				if (*ci) return TRUE;
+				return FALSE; //matched successfully
 			}
 			/* no, we have another wildcard coming up after this */
 			else {
@@ -3866,7 +3732,7 @@ static bool qstrcmp(char *keyword, char *input) {
 				subkeyword[res - ck] = 0;
 				ck = res;
 				res = strstr(ci, subkeyword);
-				if (!res) return(TRUE);
+				if (!res) return TRUE;
 				ci = res + strlen(subkeyword);
 			}
 		} else {
@@ -3875,21 +3741,21 @@ static bool qstrcmp(char *keyword, char *input) {
 
 			/* yes, no further wild card coming up after this */
 			if (!res) {
-				if (strlen(ci) > strlen(ck)) return(TRUE);
-				if (!strncmp(ci, ck, strlen(ck))) return(FALSE); //matched successfully
-				return(TRUE);
+				if (strlen(ci) > strlen(ck)) return TRUE;
+				if (!strncmp(ci, ck, strlen(ck))) return FALSE; //matched successfully
+				return TRUE;
 			}
 			/* no, we have another wildcard coming up after this */
 			else {
 				strncpy(subkeyword, ck, res - ck);
 				subkeyword[res - ck] = 0;
 				ck = res;
-				if (strncmp(ci, subkeyword, strlen(subkeyword))) return(TRUE);
+				if (strncmp(ci, subkeyword, strlen(subkeyword))) return TRUE;
 				ci = res + strlen(subkeyword);
 			}
 		}
 	}
-	return(FALSE); //matched successfully
+	return FALSE; //matched successfully
 }
 
 /* Player replied in a questor dialogue by entering a keyword. */
@@ -3917,7 +3783,7 @@ void quest_reply(int Ind, int q_idx, char *str) {
 	/* treat non-alphanum as spaces */
 	c = str;
 	while (*c) {
-		if (!isalphanum(*c) && *c >= 32) //don't accidentally mask ESC character..
+		if (!isalpha(*c) && !isdigit(*c) && *c >= 32) //don't accidentally mask ESC character..
 			*c = ' ';
 		c++;
 	}
@@ -3998,9 +3864,6 @@ void quest_reply(int Ind, int q_idx, char *str) {
 	for (i = 0; i < q_ptr->keywords; i++) {
 		q_key = &q_ptr->keyword[i];
 
-		/* Only allowed for admins? (Testing/debugging) */
-		if (q_key->admin_only && !is_admin(p_ptr)) continue;
-
 		if (!q_key->stage_ok[stage] || /* no more keywords? */
 		    !q_key->questor_ok[questor_idx]) continue;
 
@@ -4044,9 +3907,6 @@ void quest_reply(int Ind, int q_idx, char *str) {
 						msg_format(Ind, "\374\377U%s", q_kwr->reply[j]);
 #else /* allow placeholders */
 						quest_text_replace(text, q_kwr->reply[j], p_ptr);
- #ifdef QUESTS_ALLOW_LUA
-						if (!quest_calls_lua(Ind, q_idx, text))
- #endif
 						msg_format(Ind, "\374\377U%s", text);
 #endif
 					}
@@ -4121,9 +3981,6 @@ void quest_reply(int Ind, int q_idx, char *str) {
 			msg_format(Ind, "\374\377%c%s", pasv ? 'u' : 'U', text);
 #else /* allow placeholders */
 			quest_text_replace(text2, text, p_ptr);
- #ifdef QUESTS_ALLOW_LUA
-			if (!quest_calls_lua(Ind, q_idx, text2))
- #endif
 			msg_format(Ind, "\374\377%c%s", pasv ? 'u' : 'U', text2);
 #endif
 		}
@@ -4147,13 +4004,13 @@ static bool quest_goal_matches_kill(int q_idx, int stage, int goal, monster_type
 		if (q_kill->ridx[i] == 0) continue;
 		/* accept any monster? */
 		else if (q_kill->ridx[i] == -1) {
-			if (q_kill->reidx[i] == -1) return(TRUE);
-			else if (q_kill->reidx[i] == m_ptr->ego) return(TRUE);
+			if (q_kill->reidx[i] == -1) return TRUE;
+			else if (q_kill->reidx[i] == m_ptr->ego) return TRUE;
 		}
 		/* specified an r_idx */
 		else if (q_kill->ridx[i] == m_ptr->r_idx) {
-			if (q_kill->reidx[i] == -1) return(TRUE);
-			else if (q_kill->reidx[i] == m_ptr->ego) return(TRUE);
+			if (q_kill->reidx[i] == -1) return TRUE;
+			else if (q_kill->reidx[i] == m_ptr->ego) return TRUE;
 		}
 	}
 
@@ -4180,11 +4037,11 @@ static bool quest_goal_matches_kill(int q_idx, int stage, int goal, monster_type
 		/* min/max level check -- note that we use m-level, not r-level :-o */
 		if ((!q_kill->rlevmin || q_kill->rlevmin <= m_ptr->level) &&
 		    (!q_kill->rlevmax || q_kill->rlevmax >= m_ptr->level))
-			return(TRUE);
+			return TRUE;
 	}
 
 	/* pft */
-	return(FALSE);
+	return FALSE;
 }
 
 /* Test retrieve-item quest goal criteria vs an actually retrieved object, for a match.
@@ -4224,18 +4081,18 @@ static bool quest_goal_matches_object(int q_idx, int stage, int goal, object_typ
 		/* accept any tval? */
 		if (q_ret->otval[i] != -1 &&
 		    /* specified a tval */
-		    q_ret->otval[i] != o_ptr->tval) continue;
+		    q_ret->otval[i] != o_ptr->tval) continue;;
 
 		/* no sval specified? */
 		if (q_ret->osval[i] == 0) continue;//redundant with otval==0 check
 		/* accept any sval? */
 		if (q_ret->osval[i] != -1 &&
 		    /* specified a sval */
-		    q_ret->osval[i] != o_ptr->sval) continue;
+		    q_ret->osval[i] != o_ptr->sval) continue;;
 
 		break;
 	}
-	if (i == 10) return(FALSE);
+	if (i == 10) return FALSE;
 
 	/* check for pval/bpval/attr/name1/name2/name2b
 	   note: let's treat pval/bpval as minimum values instead of exact values for now.
@@ -4296,13 +4153,13 @@ static bool quest_goal_matches_object(int q_idx, int stage, int goal, object_typ
 
 		break;
 	}
-	if (i == 5) return(FALSE);
+	if (i == 5) return FALSE;
 
 	/* finally, test against minimum value */
-	if (q_ret->ovalue <= object_value_real(0, o_ptr)) return(TRUE);
+	if (q_ret->ovalue <= object_value_real(0, o_ptr)) return TRUE;
 
 	/* pft */
-	return(FALSE);
+	return FALSE;
 }
 
 /* Check if player completed a kill or item-retrieve goal.
@@ -4314,7 +4171,7 @@ static bool quest_goal_matches_object(int q_idx, int stage, int goal, object_typ
          items to be marked when they get picked up at the target location, to free those marked
          ones from same target loc restrictions for re-pickup. */
 static void quest_check_goal_kr(int Ind, int q_idx, int py_q_idx, monster_type *m_ptr, object_type *o_ptr) {
-	quest_info *q_ptr = &q_info[q_idx];
+	quest_info *q_ptr = &q_info[q_idx];;
 	player_type *p_ptr = Players[Ind];
 	int j, k, stage;
 	bool nisi, was_credited;
@@ -4701,7 +4558,7 @@ static void quest_handle_goal_deliver_wpos(int Ind, int py_q_idx, int q_idx, int
 static void quest_check_goal_deliver_xy(int Ind, int q_idx, int py_q_idx) {
 	player_type *p_ptr = Players[Ind];
 	int j, k, stage;
-	quest_info *q_ptr = &q_info[q_idx];
+	quest_info *q_ptr = &q_info[q_idx];;
 	qi_stage *q_stage;
 	qi_goal *q_goal;
 	qi_deliver *q_del;
@@ -4844,9 +4701,9 @@ static int quest_goal_check_stage(int pInd, int q_idx) {
 			if (!quest_get_goal(pInd, q_idx, q_stage->goals_for_stage[j][i], FALSE)) break;
 		}
 		/* we may proceed to another stage? */
-		if (i == QI_STAGE_GOALS) return(q_stage->next_stage_from_goals[j]);
+		if (i == QI_STAGE_GOALS) return q_stage->next_stage_from_goals[j];
 	}
-	return(255); /* goals are not complete yet */
+	return 255; /* goals are not complete yet */
 }
 
 /* Apply status effect(s) to a specific player.
@@ -4860,7 +4717,6 @@ void quest_statuseffect(int Ind, int fx) {
 	int k_idx = k_info_num[fx];
 	int tv = k_info[k_idx].tval, sv = k_info[k_idx].sval;
 	bool dummy;
-	object_type dummy_forge;
 
 	/* special effects, not in k_info */
 	if (fx < 0) switch (-fx) {
@@ -4881,7 +4737,7 @@ void quest_statuseffect(int Ind, int fx) {
 	if (tv == TV_FOOD) (void)eat_food(Ind, sv, NULL, &dummy);
 	else if (tv == TV_POTION || tv == TV_POTION2) (void)quaff_potion(Ind, tv, sv, -257);
 	else if (tv == TV_SCROLL) (void)read_scroll(Ind, tv, sv, NULL, 0, &dummy, &dummy);
-	else if (tv == TV_ROD) (void)zap_rod(Ind, sv, DEFAULT_RADIUS, &dummy_forge, &dummy);
+	else if (tv == TV_ROD) (void)zap_rod(Ind, sv, DEFAULT_RADIUS, NULL, &dummy);
 	else if (tv == TV_STAFF) (void)use_staff(Ind, sv, DEFAULT_RADIUS, FALSE, &dummy);
 	//not implemented--
 	//else if ((k_info[k_idx].flags3 & TR3_ACTIVATE)) (void)activate_item(Ind, tv, sv, DEFAULT_RADIUS, FALSE);
@@ -4896,7 +4752,6 @@ static void quest_reward_object(int pInd, int q_idx, object_type *o_ptr) {
 
 	if (pInd && q_ptr->individual) { //we should never get an individual quest without a pInd here..
 		o_ptr->iron_trade = Players[pInd]->iron_trade;
-		o_ptr->iron_turn = turn;
 		inven_carry(pInd, o_ptr);
 		return;
 	}
@@ -4921,7 +4776,6 @@ static void quest_reward_object(int pInd, int q_idx, object_type *o_ptr) {
 
 		/* hand him out the reward too */
 		o_ptr->iron_trade = Players[i]->iron_trade;
-		o_ptr->iron_turn = turn;
 		inven_carry(i, o_ptr);
 	}
 }
@@ -5157,7 +5011,6 @@ static void quest_goal_check_reward(int pInd, int q_idx) {
 						o_ptr->owner = Players[pInd]->id;
 						o_ptr->mode = Players[pInd]->mode;
 						o_ptr->iron_trade = Players[pInd]->iron_trade;
-						o_ptr->iron_turn = turn;
 						if (true_artifact_p(o_ptr)) determine_artifact_timeout(o_ptr->name1, &wpos);
 					}
 #endif
@@ -5175,7 +5028,6 @@ static void quest_goal_check_reward(int pInd, int q_idx) {
 						o_ptr->owner = Players[pInd]->id;
 						o_ptr->mode = Players[pInd]->mode;
 						o_ptr->iron_trade = Players[pInd]->iron_trade;
-						o_ptr->iron_turn = turn;
 						if (true_artifact_p(o_ptr)) determine_artifact_timeout(o_ptr->name1, &wpos);
 					}
 #endif
@@ -5255,14 +5107,14 @@ static bool quest_goal_check(int pInd, int q_idx, bool interacting) {
 
 	/* check goals for stage advancement */
 	stage = quest_goal_check_stage(pInd, q_idx);
-	if (stage == 255) return(FALSE); /* stage not yet completed */
+	if (stage == 255) return FALSE; /* stage not yet completed */
 
 	/* check goals for rewards */
 	quest_goal_check_reward(pInd, q_idx);
 
 	/* advance stage! */
 	quest_set_stage(pInd, q_idx, stage, FALSE, NULL);
-	return(TRUE); /* stage has been completed and changed to the next stage */
+	return TRUE; /* stage has been completed and changed to the next stage */
 }
 
 /* Check if a player's location is around any of his quest destinations (target/delivery). */
@@ -5492,9 +5344,6 @@ void quest_log(int Ind, int py_q_idx) {
 		msg_format(Ind, "\377U%s", q_stage->log[k]);
 #else /* allow placeholders */
 		quest_text_replace(text, q_stage->log[k], p_ptr);
- #ifdef QUESTS_ALLOW_LUA
-		if (!quest_calls_lua(Ind, q_idx, text))
- #endif
 		msg_format(Ind, "\377U%s", text);
 #endif
 	}
@@ -5510,7 +5359,7 @@ qi_questor *init_quest_questor(int q_idx, int num) {
 	qi_questor *p;
 
 	/* we already have this existing one */
-	if (q_ptr->questors > num) return(&q_ptr->questor[num]);
+	if (q_ptr->questors > num) return &q_ptr->questor[num];
 
 	/* allocate all missing instances up to the requested index */
 	p = (qi_questor*)realloc(q_ptr->questor, sizeof(qi_questor) * (num + 1));
@@ -5537,7 +5386,7 @@ qi_questor *init_quest_questor(int q_idx, int num) {
 	p->q_loc.tpref = NULL;
 
 	/* done, return the new, requested one */
-	return(&q_ptr->questor[num]);
+	return &q_ptr->questor[num];
 }
 
 /* Allocate/initialise a questor-morph, or return it if already existing. */
@@ -5546,7 +5395,7 @@ qi_questor_morph *init_quest_qmorph(int q_idx, int stage, int questor) {
 	qi_questor_morph *p;
 
 	/* we already have this existing one */
-	if (q_stage->questor_morph[questor]) return(q_stage->questor_morph[questor]);
+	if (q_stage->questor_morph[questor]) return q_stage->questor_morph[questor];
 
 	/* allocate a new one */
 	p = (qi_questor_morph*)malloc(sizeof(qi_questor_morph));
@@ -5562,7 +5411,7 @@ qi_questor_morph *init_quest_qmorph(int q_idx, int stage, int questor) {
 	p->name = NULL;
 
 	/* done, return the new, requested one */
-	return(p);
+	return p;
 }
 /* Allocate/initialise a questor-hostility, or return it if already existing. */
 qi_questor_hostility *init_quest_qhostility(int q_idx, int stage, int questor) {
@@ -5570,7 +5419,7 @@ qi_questor_hostility *init_quest_qhostility(int q_idx, int stage, int questor) {
 	qi_questor_hostility *p;
 
 	/* we already have this existing one */
-	if (q_stage->questor_hostility[questor]) return(q_stage->questor_hostility[questor]);
+	if (q_stage->questor_hostility[questor]) return q_stage->questor_hostility[questor];
 
 	/* allocate a new one */
 	p = (qi_questor_hostility*)malloc(sizeof(qi_questor_hostility));
@@ -5586,7 +5435,7 @@ qi_questor_hostility *init_quest_qhostility(int q_idx, int stage, int questor) {
 	q_stage->questor_hostility[questor] = p;
 
 	/* done, return the new, requested one */
-	return(p);
+	return p;
 }
 /* Allocate/initialise a questor-act, or return it if already existing. */
 qi_questor_act *init_quest_qact(int q_idx, int stage, int questor) {
@@ -5594,7 +5443,7 @@ qi_questor_act *init_quest_qact(int q_idx, int stage, int questor) {
 	qi_questor_act *p;
 
 	/* we already have this existing one */
-	if (q_stage->questor_act[questor]) return(q_stage->questor_act[questor]);
+	if (q_stage->questor_act[questor]) return q_stage->questor_act[questor];
 
 	/* allocate a new one */
 	p = (qi_questor_act*)malloc(sizeof(qi_questor_act));
@@ -5607,7 +5456,7 @@ qi_questor_act *init_quest_qact(int q_idx, int stage, int questor) {
 	q_stage->questor_act[questor] = p;
 
 	/* done, return the new, requested one */
-	return(p);
+	return p;
 }
 
 /* Allocate/initialise a quest stage, or return it if already existing. */
@@ -5621,11 +5470,11 @@ qi_stage *init_quest_stage(int q_idx, int num) {
 #if QDEBUG > 1
 		s_printf("QUESTS: referred to stage -1.\n");
 #endif
-		return(NULL);
+		return NULL;
 	}
 
 	/* we already have this existing one */
-	if (q_ptr->stage_idx[num] != -1) return(&q_ptr->stage[q_ptr->stage_idx[num]]);
+	if (q_ptr->stage_idx[num] != -1) return &q_ptr->stage[q_ptr->stage_idx[num]];
 
 	/* allocate a new one */
 	p = (qi_stage*)realloc(q_ptr->stage, sizeof(qi_stage) * (q_ptr->stages + 1));
@@ -5663,7 +5512,7 @@ qi_stage *init_quest_stage(int q_idx, int num) {
 	p->geno_wpos.wx = -1; //disable
 
 	/* done, return the new one */
-	return(&q_ptr->stage[q_ptr->stages - 1]);
+	return &q_ptr->stage[q_ptr->stages - 1];
 }
 
 /* Allocate/initialise a quest keyword, or return it if already existing. */
@@ -5672,7 +5521,7 @@ qi_keyword *init_quest_keyword(int q_idx, int num) {
 	qi_keyword *p;
 
 	/* we already have this existing one */
-	if (q_ptr->keywords > num) return(&q_ptr->keyword[num]);
+	if (q_ptr->keywords > num) return &q_ptr->keyword[num];
 
 	/* allocate all missing instances up to the requested index */
 	p = (qi_keyword*)realloc(q_ptr->keyword, sizeof(qi_keyword) * (num + 1));
@@ -5689,7 +5538,7 @@ qi_keyword *init_quest_keyword(int q_idx, int num) {
 	q_ptr->keywords = num + 1;
 
 	/* done, return the new, requested one */
-	return(&q_ptr->keyword[num]);
+	return &q_ptr->keyword[num];
 }
 
 /* Allocate/initialise a quest keyword reply, or return it if already existing. */
@@ -5698,7 +5547,7 @@ qi_kwreply *init_quest_kwreply(int q_idx, int num) {
 	qi_kwreply *p;
 
 	/* we already have this existing one */
-	if (q_ptr->kwreplies > num) return(&q_ptr->kwreply[num]);
+	if (q_ptr->kwreplies > num) return &q_ptr->kwreply[num];
 
 	/* allocate all missing instances up to the requested index */
 	p = (qi_kwreply*)realloc(q_ptr->kwreply, sizeof(qi_kwreply) * (num + 1));
@@ -5715,7 +5564,7 @@ qi_kwreply *init_quest_kwreply(int q_idx, int num) {
 	q_ptr->kwreplies = num + 1;
 
 	/* done, return the new, requested one */
-	return(&q_ptr->kwreply[num]);
+	return &q_ptr->kwreply[num];
 }
 
 /* Allocate/initialise a kill goal, or return it if already existing.
@@ -5727,7 +5576,7 @@ qi_kill *init_quest_kill(int q_idx, int stage, int q_info_goal) {
 	int i;
 
 	/* we already have this existing one */
-	if (q_goal->kill) return(q_goal->kill);
+	if (q_goal->kill) return q_goal->kill;
 
 	/* allocate a new one */
 	p = (qi_kill*)malloc(sizeof(qi_kill));
@@ -5752,7 +5601,7 @@ qi_kill *init_quest_kill(int q_idx, int stage, int q_info_goal) {
 		p->reidx[i] = -1;//accept all egos (incl. 0)
 
 	/* done, return the new, requested one */
-	return(p);
+	return p;
 }
 
 /* Allocate/initialise a kill goal, or return it if already existing.
@@ -5764,7 +5613,7 @@ qi_retrieve *init_quest_retrieve(int q_idx, int stage, int q_info_goal) {
 	int i;
 
 	/* we already have this existing one */
-	if (q_goal->retrieve) return(q_goal->retrieve);
+	if (q_goal->retrieve) return q_goal->retrieve;
 
 	/* allocate a new one */
 	p = (qi_retrieve*)malloc(sizeof(qi_retrieve));
@@ -5792,7 +5641,7 @@ qi_retrieve *init_quest_retrieve(int q_idx, int stage, int q_info_goal) {
 	}
 
 	/* done, return the new, requested one */
-	return(p);
+	return p;
 }
 
 /* Allocate/initialise a kill goal, or return it if already existing.
@@ -5803,7 +5652,7 @@ qi_deliver *init_quest_deliver(int q_idx, int stage, int q_info_goal) {
 	qi_deliver *p;
 
 	/* we already have this existing one */
-	if (q_goal->deliver) return(q_goal->deliver);
+	if (q_goal->deliver) return q_goal->deliver;
 
 	/* allocate a new one */
 	p = (qi_deliver*)malloc(sizeof(qi_deliver));
@@ -5819,7 +5668,7 @@ qi_deliver *init_quest_deliver(int q_idx, int stage, int q_info_goal) {
 	p->return_to_questor = 255;
 
 	/* done, return the new, requested one */
-	return(p);
+	return p;
 }
 
 /* Allocate/initialise a kill goal, or return it if already existing.
@@ -5841,7 +5690,7 @@ qi_goal *init_quest_goal(int q_idx, int stage, int q_info_goal) {
 	q_info_goal--; /* unhack it to represent internal goal index now */
 
 	/* we already have this existing one */
-	if (q_stage->goals > q_info_goal) return(&q_stage->goal[q_info_goal]);
+	if (q_stage->goals > q_info_goal) return &q_stage->goal[q_info_goal];
 
 	/* allocate all missing instances up to the requested index */
 	p = (qi_goal*)realloc(q_stage->goal, sizeof(qi_goal) * (q_info_goal + 1));
@@ -5865,7 +5714,7 @@ qi_goal *init_quest_goal(int q_idx, int stage, int q_info_goal) {
 	p->optional = opt; /* permanent forever! */
 
 	/* done, return the new, requested one */
-	return(&q_stage->goal[q_info_goal]);
+	return &q_stage->goal[q_info_goal];
 }
 
 /* Allocate/initialise a quest reward, or return it if already existing. */
@@ -5874,7 +5723,7 @@ qi_reward *init_quest_reward(int q_idx, int stage, int num) {
 	qi_reward *p;
 
 	/* we already have this existing one */
-	if (q_stage->rewards > num) return(&q_stage->reward[num]);
+	if (q_stage->rewards > num) return &q_stage->reward[num];
 
 	/* allocate all missing instances up to the requested index */
 	p = (qi_reward*)realloc(q_stage->reward, sizeof(qi_reward) * (num + 1));
@@ -5891,7 +5740,7 @@ qi_reward *init_quest_reward(int q_idx, int stage, int num) {
 	q_stage->rewards = num + 1;
 
 	/* done, return the new, requested one */
-	return(&q_stage->reward[num]);
+	return &q_stage->reward[num];
 }
 
 /* Allocate/initialise a custom quest item, or return it if already existing. */
@@ -5900,7 +5749,7 @@ qi_questitem *init_quest_questitem(int q_idx, int stage, int num) {
 	qi_questitem *p;
 
 	/* we already have this existing one */
-	if (q_stage->qitems > num) return(&q_stage->qitem[num]);
+	if (q_stage->qitems > num) return &q_stage->qitem[num];
 
 	/* allocate a new one */
 	p = (qi_questitem*)realloc(q_stage->qitem, sizeof(qi_questitem) * (q_stage->qitems + 1));
@@ -5920,7 +5769,7 @@ qi_questitem *init_quest_questitem(int q_idx, int stage, int num) {
 	q_stage->qitems++;
 
 	/* done, return the new one */
-	return(&q_stage->qitem[q_stage->qitems - 1]);
+	return &q_stage->qitem[q_stage->qitems - 1];
 }
 
 /* Allocate/initialise a cave feature to be built in a stage,
@@ -5931,7 +5780,7 @@ qi_feature *init_quest_feature(int q_idx, int stage, int num) {
 
 
 	/* we already have this existing one */
-	if (q_stage->feats > num) return(&q_stage->feat[num]);
+	if (q_stage->feats > num) return &q_stage->feat[num];
 
 	/* allocate a new one */
 	p = (qi_feature*)realloc(q_stage->feat, sizeof(qi_feature) * (q_stage->feats + 1));
@@ -5947,7 +5796,7 @@ qi_feature *init_quest_feature(int q_idx, int stage, int num) {
 	q_stage->feats++;
 
 	/* done, return the new one */
-	return(&q_stage->feat[q_stage->feats - 1]);
+	return &q_stage->feat[q_stage->feats - 1];
 }
 
 /* Allocate/initialise a monster spawn event in a stage,
@@ -5958,7 +5807,7 @@ qi_monsterspawn *init_quest_monsterspawn(int q_idx, int stage, int num) {
 
 
 	/* we already have this existing one */
-	if (q_stage->mspawns > num) return(&q_stage->mspawn[num]);
+	if (q_stage->mspawns > num) return &q_stage->mspawn[num];
 
 	/* allocate a new one */
 	p = (qi_monsterspawn*)realloc(q_stage->mspawn, sizeof(qi_monsterspawn) * (q_stage->mspawns + 1));
@@ -5974,7 +5823,7 @@ qi_monsterspawn *init_quest_monsterspawn(int q_idx, int stage, int num) {
 	q_stage->mspawns++;
 
 	/* done, return the new one */
-	return(&q_stage->mspawn[q_stage->mspawns - 1]);
+	return &q_stage->mspawn[q_stage->mspawns - 1];
 }
 
 /* Hack: if a quest was disabled in q_info, this will have set the
@@ -6008,8 +5857,7 @@ void quest_handle_disabled_on_startup() {
 				s_printf(" o_idx %d of q_idx %d (questor=%d)\n", q_ptr->questor[j].mo_idx, k, questor);
 				if (k == i && questor) {
 					s_printf("..ok.\n");
-					o_list[q_ptr->questor[j].mo_idx].questor = FALSE;
-					o_list[q_ptr->questor[j].mo_idx].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
+					o_list[q_ptr->questor[j].mo_idx].questor = o_list[q_ptr->questor[j].mo_idx].quest = 0; //prevent questitem_d() check from triggering when deleting it!..
 					q_ptr->objects_registered--; //..and count down manually
 					delete_object_idx(q_ptr->questor[j].mo_idx, TRUE);
 				} else s_printf("..failed: Questor does not exist.\n");
@@ -6119,7 +5967,6 @@ void questor_drop_specific(int Ind, int q_idx, int questor_idx, struct worldpos 
 			o_ptr->owner = Players[Ind]->id;
 			o_ptr->mode = Players[Ind]->mode;
 			o_ptr->iron_trade = Players[Ind]->iron_trade;
-			o_ptr->iron_turn = turn;
 			if (true_artifact_p(o_ptr)) determine_artifact_timeout(o_ptr->name1, wpos);
 #endif
 		} else {
@@ -6135,11 +5982,10 @@ void questor_drop_specific(int Ind, int q_idx, int questor_idx, struct worldpos 
 			o_ptr->owner = Players[Ind]->id;
 			o_ptr->mode = Players[Ind]->mode;
 			o_ptr->iron_trade = Players[Ind]->iron_trade;
-			o_ptr->iron_turn = turn;
 			if (true_artifact_p(o_ptr)) determine_artifact_timeout(o_ptr->name1, wpos);
 #endif
 		}
-		drop_near(TRUE, 0, o_ptr, 0, wpos, y, x);
+		drop_near(0, o_ptr, 0, wpos, y, x);
 	}
 	/* instead use create_reward() like for events? */
 	else if (q_questor->drops_reward) {
@@ -6151,14 +5997,14 @@ void questor_drop_specific(int Ind, int q_idx, int questor_idx, struct worldpos 
 		case 5: break; /* 'allow randarts' */
 		}
 		create_reward(Ind, o_ptr, 95, 95, TRUE, TRUE, resf, 3000);
-		drop_near(TRUE, 0, o_ptr, 0, wpos, y, x);
+		drop_near(0, o_ptr, 0, wpos, y, x);
 	}
 
 	/* drop gold too? */
 	if (q_questor->drops_gold) {
 		invcopy(o_ptr, gold_colour(q_questor->drops_gold, TRUE, FALSE));
 		o_ptr->pval = q_questor->drops_gold;
-		drop_near(TRUE, 0, o_ptr, 0, wpos, y, x);
+		drop_near(0, o_ptr, 0, wpos, y, x);
 	}
 }
 
@@ -6240,8 +6086,7 @@ void quest_questor_reverts(int q_idx, int questor_idx, struct worldpos *wpos) {
 	monster_type *m_ptr = &m_list[q_questor->mo_idx];
 	monster_race *r_ptr = m_ptr->r_ptr;
 
-	r_ptr->flags2 |= (RF2_NEVER_ACT);
-	r_ptr->flags7 |= (RF7_NO_TARGET);//| RF7_NO_DEATH; --done in quest_questor_morph() actually
+	r_ptr->flags7 |= (RF7_NO_TARGET | RF7_NEVER_ACT);//| RF7_NO_DEATH; --done in quest_questor_morph() actually
 	m_ptr->questor_hostile = 0x0;
 
 	/* change stage? */

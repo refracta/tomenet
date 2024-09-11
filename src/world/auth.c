@@ -19,7 +19,6 @@ char *rpgen(char *dest);
 void initrand(){
 	time_t now;
 	unsigned int x;
-
 	time(&now);
 	x = now;
 	srandom(x);
@@ -29,7 +28,6 @@ void initrand(){
 void initauth(struct client *ccl) {
 	struct wpacket spk;
 	int len = sizeof(struct wpacket);
-
 	spk.type = WP_AUTH;
 	rpgen(spk.d.auth.pass);
 	send(ccl->fd, &spk, len, 0);
@@ -39,7 +37,6 @@ void initauth(struct client *ccl) {
 char *rpgen(char *dest) {
 	int i = 0;
 	int x;
-
 	for (i = 0; i < 20; i++) {
 		x = random();
 		salt[i] = 58 + (x & 0x3f);
@@ -58,12 +55,11 @@ char *rpgen(char *dest) {
 /* return server number, or -1 on failure */
 short pwcheck(char *cpasswd, uint32_t val) {
 	int i;
-
 	fprintf(stderr, "authing..\n");
 	for (i = 0; i < snum; i++) {
 		if (val == chk((unsigned char *)slist[i].pass, (unsigned char *)cpasswd)) {
-			printf("auth success\n");
-			return(slist[i].static_index + 1);
+			printf("auth success\n"); 
+			return(i + 1);
 		}
 	}
 	fprintf(stderr, "server failed authentication\n");
@@ -75,7 +71,6 @@ uint32_t chk(unsigned char *s1, unsigned char *s2) {
 	unsigned int i, j = 0;
 	int m1, m2;
 	static uint32_t rval[2] = {0, 0};
-
 	rval[0] = 0L;
 	rval[1] = 0L;
 	m1 = strlen((char *)s1);

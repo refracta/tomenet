@@ -39,11 +39,10 @@ pern_dofile(Ind, "update.lua")
 -- Init !
 pern_dofile(Ind, "player.lua")
 pern_dofile(Ind, "s_aux.lua")
---pern_dofile(Ind, "powers.lua")
+pern_dofile(Ind, "powers.lua")
 
 -- Add the schools of magic
 pern_dofile(Ind, "spells.lua")
-pern_dofile(Ind, "runecraft.lua")
 
 -- Initialize audio
 pern_dofile(Ind, "audio.lua")
@@ -57,9 +56,6 @@ __audio_mus_max = getn(audio_bgm)
 pern_dofile(Ind, "races.lua")
 pern_dofile(Ind, "classes.lua")
 pern_dofile(Ind, "traits.lua")
-pern_dofile(Ind, "bpr.lua")
-pern_dofile(Ind, "mimicry.lua")
-pern_dofile(Ind, "activations.lua")
 
 -- Put whatever is needed here
 
@@ -87,9 +83,6 @@ pern_dofile(Ind, "mikaelh.lua")
 -- 9) every hour: cron_1h(string time, int h, int m, int s)
 -- 10) every 24 hours: cron_24h(string time, int h, int m, int s)
 pern_dofile(Ind, "custom.lua")
-
--- Super-experimental: Special lua functions called by the quests framework in q_info.txt.
-pern_dofile(Ind, "quests.lua")
 
 
 -- Restore a good neat handler

@@ -22,8 +22,8 @@ extern char pass[40];
 extern bool server_shutdown;
 extern bool force_cui;
 
-extern term *ang_term[ANGBAND_TERM_MAX];
-extern u32b window_flag[ANGBAND_TERM_MAX];
+extern term *ang_term[8];
+extern u32b window_flag[8];
 
 extern cptr ANGBAND_SYS;
 
@@ -76,8 +76,6 @@ extern void prt_num(cptr header, int num, int row, int col, byte color);
 extern void prt_lnum(cptr header, s32b num, int row, int col, byte color);
 
 /* common/common.c */
-extern char os_temp_path[1024];
-extern void init_temp_path(void);
 extern cptr longVersion;
 extern cptr shortVersion;
 extern void version_build(void);

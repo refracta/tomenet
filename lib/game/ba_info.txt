@@ -87,7 +87,7 @@ I:13:0:r:0
 
 N:14:Research item
 C:3000:2500:2000
-I:1:0:a:10
+I:1:0:a:2
 
 N:15:Town history
 C:0:0:0
@@ -180,12 +180,12 @@ I:6:0:x:0
 # Restrict to liked/normal
 N:36:Get an extermination order
 C:0:0:0
-I:47:1:x:0
+I:46:1:x:0
 
 #	--unused
 N:37:Get an extermination order
 C:0:0:0
-I:48:0:x:0
+I:47:0:x:0
 
 #	--unused
 N:38:Get an extermination order
@@ -218,12 +218,12 @@ I:42:0:v:0
 #for The Mirror
 N:44:Research item
 C:3500:3500:3500
-I:1:0:a:10
+I:1:0:a:2
 
 #for library in gondol
 N:45:Research item
 C:5000:5000:5000
-I:1:0:a:10
+I:1:0:a:2
 
 #for Star-Dome
 N:46:Identify possessions
@@ -361,27 +361,3 @@ I:69:0:g:4
 N:76:Send item for payment
 C:0:0:0
 I:70:0:a:2
-
-N:77:Repair weapon
-C:0:0:0
-I:71:0:r:2
-
-N:78:Repair armour
-C:0:0:0
-I:72:0:r:2
-
-N:79:The strongest known
-C:0:0:0
-I:73:0:s:0
-
-#RESET_SKILL
-N:80:Lose memories I
-C:0:0:0
-I:74:0:l:0
-N:81:Lose memories II
-C:0:0:0
-I:75:0:L:0
-
-N:82:Contact house owner
-C:0:0:0
-I:76:0:o:0

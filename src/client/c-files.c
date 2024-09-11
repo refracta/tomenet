@@ -9,18 +9,13 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-#ifdef REGEX_SEARCH
- #include <regex.h>
-#endif
-
 
 /* Does WINDOWS client use the user's home folder instead of the TomeNET folder for 'scpt' and 'user' subfolders?
    This may be required in Windows 7 and higher, where access rights could cause problems when writing to these folders. - C. Blue */
 #define WINDOWS_USER_HOME
 
 
-static int MACRO_WAIT = 96; //hack: see c-util.c and keep consistent
-static int MACRO_XWAIT = 30; //hack: see c-util.c and keep consistent
+static int MACRO_WAIT = 96; //hack: ASCII 96 ("`") is unused in the game's key layout
 
 /*
  * Extract the first few "tokens" from a buffer
@@ -38,59 +33,65 @@ static int MACRO_XWAIT = 30; //hack: see c-util.c and keep consistent
  *
  * Hack -- We will always extract at least one token
  */
-static s16b tokenize(char *buf, s16b num, char **tokens) {
-	int i = 0;
-	char *s = buf;
+static s16b tokenize(char *buf, s16b num, char **tokens)
+{
+        int i = 0;
 
-	/* Process */
-	while (i < num - 1) {
-		char *t;
+        char *s = buf;
 
-		/* Scan the string */
-		for (t = s; *t; t++) {
-			/* Found a delimiter */
-			if ((*t == ':') || (*t == '/')) break;
 
-			/* Handle single quotes */
-			if (*t == '\'') {
-				/* Advance */
-				t++;
+        /* Process */
+        while (i < num - 1)
+        {
+                char *t;
 
-				/* Handle backslash */
-				if (*t == '\\') t++;
+                /* Scan the string */
+                for (t = s; *t; t++)
+                {
+                        /* Found a delimiter */
+                        if ((*t == ':') || (*t == '/')) break;
 
-				/* Require a character */
-				if (!*t) break;
+                        /* Handle single quotes */
+                        if (*t == '\'')
+                        {
+                                /* Advance */
+                                t++;
 
-				/* Advance */
-				t++;
+                                /* Handle backslash */
+                                if (*t == '\\') t++;
 
-				/* Hack -- Require a close quote */
-				if (*t != '\'') *t = '\'';
-			}
+                                /* Require a character */
+                                if (!*t) break;
 
-			/* Handle back-slash */
-			if (*t == '\\') t++;
-		}
+                                /* Advance */
+                                t++;
 
-		/* Nothing left */
-		if (!*t) break;
+                                /* Hack -- Require a close quote */
+                                if (*t != '\'') *t = '\'';
+                        }
 
-		/* Nuke and advance */
-		*t++ = '\0';
+                        /* Handle back-slash */
+                        if (*t == '\\') t++;
+                }
 
-		/* Save the token */
-		tokens[i++] = s;
+                /* Nothing left */
+                if (!*t) break;
 
-		/* Advance */
-		s = t;
-	}
+                /* Nuke and advance */
+                *t++ = '\0';
 
-	/* Save the token */
-	tokens[i++] = s;
+                /* Save the token */
+                tokens[i++] = s;
 
-	/* Number found */
-	return(i);
+                /* Advance */
+                s = t;
+        }
+
+        /* Save the token */
+        tokens[i++] = s;
+
+        /* Number found */
+        return (i);
 }
 
 
@@ -98,19 +99,21 @@ static s16b tokenize(char *buf, s16b num, char **tokens) {
 /*
  * Convert a octal-digit into a decimal
  */
-static int deoct(char c) {
-	if (isdigit(c)) return(D2I(c));
-	return(0);
+static int deoct(char c)
+{
+        if (isdigit(c)) return (D2I(c));
+        return (0);
 }
 
 /*
  * Convert a hexidecimal-digit into a decimal
  */
-static int dehex(char c) {
-	if (isdigit(c)) return(D2I(c));
-	if (islower(c)) return(A2I(c) + 10);
-	if (isupper(c)) return(A2I(tolower(c)) + 10);
-	return(0);
+static int dehex(char c)
+{
+        if (isdigit(c)) return (D2I(c));
+        if (islower(c)) return (A2I(c) + 10);
+        if (isupper(c)) return (A2I(tolower(c)) + 10);
+        return (0);
 }
 
 
@@ -121,91 +124,128 @@ static int dehex(char c) {
  * parsing "\xFF" into a (signed) char.  Whoever thought of making
  * the "sign" of a "char" undefined is a complete moron.  Oh well.
  */
-void text_to_ascii(char *buf, cptr str) {
-	char *s = buf;
+void text_to_ascii(char *buf, cptr str)
+{
+        char *s = buf;
 
-	/* Analyze the "ascii" string */
-	while (*str) {
-		/* Backslash codes */
-		if (*str == '\\') {
-			/* Skip the backslash */
-			str++;
+        /* Analyze the "ascii" string */
+        while (*str)
+        {
+                /* Backslash codes */
+                if (*str == '\\')
+                {
+                        /* Skip the backslash */
+                        str++;
 
-			/* Hex-mode XXX */
-			if (*str == 'x') {
-				*s = 16 * dehex(*++str);
-				*s++ += dehex(*++str);
-			}
+                        /* Hex-mode XXX */
+                        if (*str == 'x')
+                        {
+                                *s = 16 * dehex(*++str);
+                                *s++ += dehex(*++str);
+                        }
 
-			/* Specialty: Asynchronous delay for usage in complex macros - C. Blue */
-			else if (*str == 'w') *s++ = MACRO_WAIT;
-			/* Specialty: Asynchronous delay for usage in complex macros - C. Blue */
-			else if (*str == 'W') *s++ = MACRO_XWAIT;
+                        /* Specialty: Asynchronous delay for usage in complex macros - C. Blue */
+                        else if (*str == 'w')
+                        {
+                                *s++ = MACRO_WAIT;
+                        }
 
-			/* Hack -- simple way to specify "backslash" */
-			else if (*str == '\\') *s++ = '\\';
+                        /* Hack -- simple way to specify "backslash" */
+                        else if (*str == '\\')
+                        {
+                                *s++ = '\\';
+                        }
 
-			/* Hack -- simple way to specify "caret" */
-			else if (*str == '^') *s++ = '^';
+                        /* Hack -- simple way to specify "caret" */
+                        else if (*str == '^')
+                        {
+                                *s++ = '^';
+                        }
 
-			/* Hack -- simple way to specify "space" */
-			else if (*str == 's') *s++ = ' ';
+                        /* Hack -- simple way to specify "space" */
+                        else if (*str == 's')
+                        {
+                                *s++ = ' ';
+                        }
 
-			/* Hack -- simple way to specify Escape */
-			else if (*str == 'e') *s++ = ESCAPE;
+                        /* Hack -- simple way to specify Escape */
+                        else if (*str == 'e')
+                        {
+                                *s++ = ESCAPE;
+                        }
 
-			/* Backspace */
-			else if (*str == 'b') *s++ = '\b';
+                        /* Backspace */
+                        else if (*str == 'b')
+                        {
+                                *s++ = '\b';
+                        }
 
-			/* Newline */
-			else if (*str == 'n') *s++ = '\n';
+                        /* Newline */
+                        else if (*str == 'n')
+                        {
+                                *s++ = '\n';
+                        }
 
-			/* Return */
-			else if (*str == 'r') *s++ = '\r';
+                        /* Return */
+                        else if (*str == 'r')
+                        {
+                                *s++ = '\r';
+                        }
 
-			/* Tab */
-			else if (*str == 't') *s++ = '\t';
+                        /* Tab */
+                        else if (*str == 't')
+                        {
+                                *s++ = '\t';
+                        }
 
-			/* Octal-mode */
-			else if (*str == '0') {
-				*s = 8 * deoct(*++str);
-				*s++ += deoct(*++str);
-			}
+                        /* Octal-mode */
+                        else if (*str == '0')
+                        {
+                                *s = 8 * deoct(*++str);
+                                *s++ += deoct(*++str);
+                        }
 
-			/* Octal-mode */
-			else if (*str == '1') {
-				*s = 64 + 8 * deoct(*++str);
-				*s++ += deoct(*++str);
-			}
+                        /* Octal-mode */
+                        else if (*str == '1')
+                        {
+                                *s = 64 + 8 * deoct(*++str);
+                                *s++ += deoct(*++str);
+                        }
 
-			/* Octal-mode */
-			else if (*str == '2') {
-				*s = 64 * 2 + 8 * deoct(*++str);
-				*s++ += deoct(*++str);
-			}
+                        /* Octal-mode */
+                        else if (*str == '2')
+                        {
+                                *s = 64 * 2 + 8 * deoct(*++str);
+                                *s++ += deoct(*++str);
+                        }
 
-			/* Octal-mode */
-			else if (*str == '3') {
-				*s = 64 * 3 + 8 * deoct(*++str);
-				*s++ += deoct(*++str);
-			}
+                        /* Octal-mode */
+                        else if (*str == '3')
+                        {
+                                *s = 64 * 3 + 8 * deoct(*++str);
+                                *s++ += deoct(*++str);
+                        }
 
-			/* Skip the final char */
-			str++;
-		}
+                        /* Skip the final char */
+                        str++;
+                }
 
-		/* Normal Control codes */
-		else if (*str == '^') {
-			str++;
-			*s++ = (*str++ & 037);
-		}
+                /* Normal Control codes */
+                else if (*str == '^')
+                {
+                        str++;
+                        *s++ = (*str++ & 037);
+                }
 
-		/* Normal chars */
-		else *s++ = *str++;
-	}
+                /* Normal chars */
+                else
+                {
+                        *s++ = *str++;
+                }
+        }
 
-	/* Terminate */
-	*s = '\0';
+        /* Terminate */
+        *s = '\0';
 }
 
 /*
@@ -215,70 +255,72 @@ void text_to_ascii(char *buf, cptr str) {
  * Replace "~user/" by the home directory of the user named "user"
  * Replace "~/" by the home directory of the current user
  */
-static errr path_parse(char *buf, cptr file) {
+static errr path_parse(char *buf, cptr file)
+{
 #ifndef WIN32
 #ifndef AMIGA
-	cptr	    u, s;
-	struct passwd   *pw;
-	char	    user[128];
+        cptr            u, s;
+        struct passwd   *pw;
+        char            user[128];
 #endif
 #endif /* WIN32 */
 
 
-	/* Assume no result */
-	buf[0] = '\0';
+        /* Assume no result */
+        buf[0] = '\0';
 
-	/* No file? */
-	if (!file) return(-1);
+        /* No file? */
+        if (!file) return (-1);
 
-	/* File needs no parsing */
-	if (file[0] != '~') {
-		strcpy(buf, file);
-		return(0);
-	}
+        /* File needs no parsing */
+        if (file[0] != '~')
+        {
+                strcpy(buf, file);
+                return (0);
+        }
 
 	/* Windows should never have ~ in filename */
 #ifndef WIN32
 #ifndef AMIGA
 
-	/* Point at the user */
-	u = file + 1;
+        /* Point at the user */
+        u = file+1;
 
-	/* Look for non-user portion of the file */
-	s = strstr(u, PATH_SEP);
+        /* Look for non-user portion of the file */
+        s = strstr(u, PATH_SEP);
 
-	/* Hack -- no long user names */
-	if (s && (s >= u + sizeof(user))) return(1);
+        /* Hack -- no long user names */
+        if (s && (s >= u + sizeof(user))) return (1);
 
-	/* Extract a user name */
-	if (s) {
-		int i;
+        /* Extract a user name */
+        if (s)
+        {
+                int i;
+                for (i = 0; u < s; ++i) user[i] = *u++;
+                user[i] = '\0';
+                u = user;
+        }
 
-		for (i = 0; u < s; ++i) user[i] = *u++;
-		user[i] = '\0';
-		u = user;
-	}
+        /* Look up the "current" user */
+        if (u[0] == '\0') u = getlogin();
 
-	/* Look up the "current" user */
-	if (u[0] == '\0') u = getlogin();
+        /* Look up a user (or "current" user) */
+        if (u) pw = getpwnam(u);
+        else pw = getpwuid(getuid());
 
-	/* Look up a user (or "current" user) */
-	if (u) pw = getpwnam(u);
-	else pw = getpwuid(getuid());
+        /* Nothing found? */
+        if (!pw) return (1);
 
-	/* Nothing found? */
-	if (!pw) return(2);
+        /* Make use of the info */
+        (void)strcpy(buf, pw->pw_dir);
 
-	/* Make use of the info */
-	(void)strcpy(buf, pw->pw_dir);
-
-	/* Append the rest of the filename, if any */
-	if (s) (void)strcat(buf, s);
+        /* Append the rest of the filename, if any */
+        if (s) (void)strcat(buf, s);
 
 #endif
 #endif /* WIN32 */
-	/* Success */
-	return(0);
+        /* Success */
+        return (0);
 }
 
 
@@ -286,46 +328,45 @@ static errr path_parse(char *buf, cptr file) {
 /*
  * Hack -- replacement for "fopen()"
  */
-FILE *my_fopen(cptr file, cptr mode) {
-	char		buf[1024];
-	int err;
+FILE *my_fopen(cptr file, cptr mode)
+{
+        char                buf[1024];
 
-	/* Hack -- Try to parse the path */
-	if ((err = path_parse(buf, file))) {
-		errno = 900 + err;
-		return(NULL);
-	}
+        /* Hack -- Try to parse the path */
+        if (path_parse(buf, file)) return (NULL);
 
-	/* Attempt to fopen the file anyway */
-	return(fopen(buf, mode));
+        /* Attempt to fopen the file anyway */
+        return (fopen(buf, mode));
 }
 
 
 /*
  * Hack -- replacement for "fclose()"
  */
-errr my_fclose(FILE *fff) {
-	/* Require a file */
-	if (!fff) return(-1);
+errr my_fclose(FILE *fff)
+{
+        /* Require a file */
+        if (!fff) return (-1);
 
-	/* Close, check for error */
-	if (fclose(fff) == EOF) return(1);
+        /* Close, check for error */
+        if (fclose(fff) == EOF) return (1);
 
-	/* Success */
-	return(0);
+        /* Success */
+        return (0);
 }
 
 /*
  * MetaHack -- check if the specified file already exists	- Jir -
  */
-bool my_freadable(cptr file) {
+bool my_freadable(cptr file)
+{
 	FILE *fff;
 	fff = my_fopen(file, "rb");
 
-	if (fff) return(FALSE);
+	if (fff) return (FALSE);
 
 	my_fclose(fff);
-	return(TRUE);
+	return (TRUE);
 }
 
 /*
@@ -335,52 +376,60 @@ bool my_freadable(cptr file) {
  *
  * Process tabs, strip internal non-printables
  */
-errr my_fgets(FILE *fff, char *buf, huge n) {
-	huge i = 0;
-	char *s;
-	char tmp[1024];
+errr my_fgets(FILE *fff, char *buf, huge n)
+{
+        huge i = 0;
 
-	/* Read a line */
-	if (fgets(tmp, 1024, fff)) {
-		/* Convert weirdness */
-		for (s = tmp; *s; s++) {
-			/* Handle newline */
-			if (*s == '\n') {
-				/* Terminate */
-				buf[i] = '\0';
+        char *s;
 
-				/* Success */
-				return(0);
-			}
+        char tmp[1024];
 
-			/* Handle tabs */
-			else if (*s == '\t') {
-				/* Hack -- require room */
-				if (i + 8 >= n) break;
+        /* Read a line */
+        if (fgets(tmp, 1024, fff))
+        {
+                /* Convert weirdness */
+                for (s = tmp; *s; s++)
+                {
+                        /* Handle newline */
+                        if (*s == '\n')
+                        {
+                                /* Terminate */
+                                buf[i] = '\0';
 
-				/* Append a space */
-				buf[i++] = ' ';
+                                /* Success */
+                                return (0);
+                        }
 
-				/* Append some more spaces */
-				while (!(i % 8)) buf[i++] = ' ';
-			}
+                        /* Handle tabs */
+                        else if (*s == '\t')
+                        {
+                                /* Hack -- require room */
+                                if (i + 8 >= n) break;
 
-			/* Handle printables */
-			else if (isprint(*s)) {
-				/* Copy */
-				buf[i++] = *s;
+                                /* Append a space */
+                                buf[i++] = ' ';
 
-				/* Check length */
-				if (i >= n) break;
-			}
-		}
-	}
+                                /* Append some more spaces */
+                                while (!(i % 8)) buf[i++] = ' ';
+                        }
 
-	/* Nothing */
-	buf[0] = '\0';
+                        /* Handle printables */
+                        else if (isprint(*s))
+                        {
+                                /* Copy */
+                                buf[i++] = *s;
 
-	/* Failure */
-	return(1);
+                                /* Check length */
+                                if (i >= n) break;
+                        }
+                }
+        }
+
+        /* Nothing */
+        buf[0] = '\0';
+
+        /* Failure */
+        return (1);
 }
 
 /*
@@ -391,7 +440,8 @@ errr my_fgets(FILE *fff, char *buf, huge n) {
 static char my_fgetc_buf[4096];
 static FILE *my_fgetc_fp;
 static long my_fgetc_pos = 4096, my_fgetc_len = 0;
-static int my_fgetc(FILE *fff) {
+static int my_fgetc(FILE *fff)
+{
 	/* Check if the file has changed */
 	if (my_fgetc_fp != fff) {
 		if (my_fgetc_fp) {
@@ -429,7 +479,8 @@ static int my_fgetc(FILE *fff) {
  * Return the next character without incrementing the internal counter.
  * - mikaelh
  */
-static int my_fpeekc(FILE *fff) {
+static int my_fpeekc(FILE *fff)
+{
 	if (my_fgetc_pos >= 4096) {
 		/* Fill the buffer */
 		my_fgetc_len = fread(my_fgetc_buf, 1, 4096, fff);
@@ -451,14 +502,13 @@ static int my_fpeekc(FILE *fff) {
  * the allocated memory.
  * - mikaelh
  */
-errr my_fgets2(FILE *fff, char **line, int *n, byte *fmt) {
+errr my_fgets2(FILE *fff, char **line, int *n)
+{
 	int c;
 	int done = FALSE;
 	long len = 0;
 	long alloc = 4096;
 	char *buf, *tmp;
-
-	*fmt = OS_UNKNOWN;
 
 	/* Allocate some memory for the line */
 	if ((tmp = buf = mem_alloc(alloc)) == NULL) {
@@ -470,95 +520,103 @@ errr my_fgets2(FILE *fff, char **line, int *n, byte *fmt) {
 		return 2;
 	}
 
-	while (TRUE) {
+	while (TRUE)
+	{
 		c = my_fgetc(fff);
 
 		switch (c) {
-		/* Handle EOF */
-		case EOF: {
-			/* Terminate */
-			buf[len] = '\0';
 
-			/* Check if nothing has been read */
-			if (len == 0) {
-				/* Free the memory */
-				mem_free(buf);
+			/* Handle EOF */
+			case EOF:
+			{
+				/* Terminate */
+				buf[len] = '\0';
 
-				/* Set the pointer to NULL and count to zero */
-				*line = NULL;
-				*n = 0;
-
-				/* Return 1 */
-				return(1);
-			}
-
-			/* Done */
-			done = TRUE;
-			break;
-		}
-
-		/* Handle newline */
-		case '\n':
-		case '\r': {
-			int c2;
-
-			/* Peek at the next character to eliminate a possible \n */
-			c2 = my_fpeekc(fff);
-
-			if (c2 == '\n') {
-				/* Skip the \n */
-				my_fgetc(fff);
-				/* File seems to be in 'DOS format' */
-				if (c == '\r') *fmt = OS_WIN32;
-			}
-
-			/* Terminate */
-			buf[len] = '\0';
-
-			/* Done */
-			done = TRUE;
-			break;
-		}
-
-		/* Handle tabs */
-		case '\t': {
-			int i;
-
-			/* Make sure that we have enough space */
-			if (len + 8 > alloc) {
-				buf = mem_realloc(buf, alloc + 4096);
-				alloc += 4096;
-
-				if (buf == NULL) {
-					/* Free the old memory */
-					mem_free(tmp);
+				/* Check if nothing has been read */
+				if (len == 0)
+				{
+					/* Free the memory */
+					mem_free(buf);
 
 					/* Set the pointer to NULL and count to zero */
 					*line = NULL;
 					*n = 0;
 
-					/* Grave error */
-					return 2;
+					/* Return 1 */
+					return 1;
 				}
-				tmp = buf;
+
+				/* Done */
+				done = TRUE;
+				break;
 			}
 
-			/* Add 8 spaces */
-			for (i = 0; i < 8; i++) buf[len++] = ' ';
+			/* Handle newline */
+			case '\n':
+			case '\r':
+			{
+				int c2;
 
-			break;
-		}
+				/* Peek at the next character to eliminate a possible \n */
+				c2 = my_fpeekc(fff);
 
-		/* Handle printables */
-		default:
-			if (isprint(c)) buf[len++] = c;
-			break;
+				if (c2 == '\n') {
+					/* Skip the \n */
+					my_fgetc(fff);
+				}
+
+				/* Terminate */
+				buf[len] = '\0';
+
+				/* Done */
+				done = TRUE;
+				break;
+			}
+
+			/* Handle tabs */
+			case '\t':
+			{
+				int i;
+
+				/* Make sure that we have enough space */
+				if (len + 8 > alloc) {
+					buf = mem_realloc(buf, alloc + 4096);
+					alloc += 4096;
+
+					if (buf == NULL) {
+						/* Free the old memory */
+						mem_free(tmp);
+
+						/* Set the pointer to NULL and count to zero */
+						*line = NULL;
+						*n = 0;
+
+						/* Grave error */
+						return 2;
+					}
+					tmp = buf;
+				}
+
+				/* Add 8 spaces */
+				for (i = 0; i < 8; i++) buf[len++] = ' ';
+
+				break;
+			}
+
+			/* Handle printables */
+			default:
+			{
+				if (isprint(c)) buf[len++] = c;
+
+				break;
+			}
 		}
 
 		if (done) break;
 
 		/* Make sure we have enough space for at least one more character */
-		if (len + 1 > alloc) {
+		if (len + 1 > alloc)
+		{
 			buf = mem_realloc(buf, alloc + 4096);
 			alloc += 4096;
 
@@ -582,7 +640,7 @@ errr my_fgets2(FILE *fff, char **line, int *n, byte *fmt) {
 	*n = len + 1;
 
 	/* Success */
-	return(0);
+	return 0;
 }
 
 
@@ -722,27 +780,8 @@ void init_file_paths(char *path) {
 #endif /* VM */
 }
 
-/* Convert a macro trigger key between Windows and Posix */
-static void key_autoconvert(char *tmp, byte fmt) {
-	//if (fmt == VERSION_OS || fmt == OS_UNKNOWN || VERSION_OS == OS_UNKNOWN) return;
-	if (fmt == VERSION_OS || (fmt == OS_UNKNOWN && VERSION_OS != OS_WIN32)) return;
 
-	/* DOS -> Unix */
-	else if (fmt == OS_WIN32) {
 
-//key_map_dos_unix[][][]
-
-//c_msg_format("<%s>", tmp);
-	}
-
-	/* Unix -> DOS */
-	else if (VERSION_OS == OS_WIN32) {
-
-//key_map_dos_unix[][][]
-
-//c_msg_format("<%s>", tmp);
-	}
-}
 
 
 /*
@@ -807,15 +846,8 @@ static void key_autoconvert(char *tmp, byte fmt) {
  *
  * Specify a use for a subwindow
  *   W:<num>:<use>
- *
- *
- * During char redefinitions (actions RKFU), the char value is increased by
- * "char_map_offset" value. This is to make graphic redefinitions more easier.
- * Only during graphical file parsing the "char_map_offset" has MAX_FONT_CHAR + 1
- * value, otherwise is 0. This will be usefull, if the MAX_FONT_CHAR constant
- * changes, there will be no need to update the graphical .prf files.
  */
-errr process_pref_file_aux(char *buf, byte fmt) {
+errr process_pref_file_aux(char *buf) {
 	int i, j, k;
 	int n1, n2;
 
@@ -825,109 +857,102 @@ errr process_pref_file_aux(char *buf, byte fmt) {
 	static char *macro__buf = NULL;
 
 	/* Skip "empty" lines */
-	if (!buf[0]) return(0);
+	if (!buf[0]) return (0);
 
 	/* Skip "blank" lines */
-	if (isspace(buf[0])) return(0);
+	if (isspace(buf[0])) return (0);
 
 	/* Skip comments */
-	if (buf[0] == '#') return(0);
+	if (buf[0] == '#') return (0);
+
 
 	/* Require "?:*" format */
-	if (buf[1] != ':') return(1);
+	if (buf[1] != ':') return (1);
+
 
 	/* Process "%:<fname>" */
 	if (buf[0] == '%') {
 		/* Attempt to Process the given file */
-		return(process_pref_file(buf + 2));
+		return (process_pref_file(buf + 2));
 	}
 
 	/* Necessary hack, otherwise 'options.prf' and 'window.prf' will also be
 	   loaded by 'pref.prf' and mess up the options and window flags. */
 	if (macro_processing_exclusive)
 		switch (buf[0]) {
-		case 'A': //macro action
-		case 'P': case 'H': case 'C': //normal/hybrid/command macro
-		case 'D': //delete macro
-			break;
-		default: return(0); //just discard all other lines
+		case 'A':
+		case 'P':
+		case 'H':
+		case 'C':
+		case 'D': break;
+		default: return 0;
 		}
 
 	/* Process "R:<num>:<a>/<c>" -- attr/char for monster races */
 	if (buf[0] == 'R') {
-		if (tokenize(buf + 2, 3, zz) == 3) {
+		if (tokenize(buf+2, 3, zz) == 3) {
 			i = (huge)strtol(zz[0], NULL, 0);
 			i += 12;	/* gfx-fix by Tanix */
 			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0) + char_map_offset;
-			if (i >= MAX_R_IDX) return(1);
-#ifdef USE_GRAPHICS
-			if (!use_graphics)
-#endif
-				if (n2 > MAX_FONT_CHAR) return(1);
+			n2 = strtol(zz[2], NULL, 0);
+			if (i >= MAX_R_IDX) return (1);
 			if (n1) Client_setup.r_attr[i] = n1;
 			if (n2) {
 				Client_setup.r_char[i] = n2;
-				monster_mapping_mod = u32b_char_dict_set(monster_mapping_mod, n2, monster_mapping_org[i]);
+				if (!monster_mapping_mod[n2]) {
+					if (n2 < 256) monster_mapping_mod[n2] = monster_mapping_org[i];
+					else printf("Warning - monster mapping exceeds 'char' data type range: %d->%d.", i, n2);
+				}
 			}
-			return(0);
+			return (0);
 		}
 	}
 
 
 	/* Process "K:<num>:<a>/<c>"  -- attr/char for object kinds */
 	else if (buf[0] == 'K') {
-		if (tokenize(buf + 2, 3, zz) == 3) {
+		if (tokenize(buf+2, 3, zz) == 3) {
 			i = (huge)strtol(zz[0], NULL, 0);
 			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0) + char_map_offset;
-			if (i >= MAX_K_IDX) return(1);
-#ifdef USE_GRAPHICS
-			if (!use_graphics)
-#endif
-				if (n2 > MAX_FONT_CHAR) return(1);
+			n2 = strtol(zz[2], NULL, 0);
+			if (i >= MAX_K_IDX) return (1);
 			if (n1) Client_setup.k_attr[i] = n1;
 			if (n2) Client_setup.k_char[i] = n2;
-			return(0);
+			return (0);
 		}
 	}
 
 
 	/* Process "F:<num>:<a>/<c>" -- attr/char for terrain features */
 	else if (buf[0] == 'F') {
-		if (tokenize(buf + 2, 3, zz) == 3) {
+		if (tokenize(buf+2, 3, zz) == 3) {
 			i = (huge)strtol(zz[0], NULL, 0);
 			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0) + char_map_offset;
-			if (i >= MAX_F_IDX) return(1);
-#ifdef USE_GRAPHICS
-			if (!use_graphics)
-#endif
-				if (n2 > MAX_FONT_CHAR) return(1);
+			n2 = strtol(zz[2], NULL, 0);
+			if (i >= MAX_F_IDX) return (1);
 			if (n1) Client_setup.f_attr[i] = n1;
 			if (n2) {
 				Client_setup.f_char[i] = n2;
-				floor_mapping_mod = u32b_char_dict_set(floor_mapping_mod, n2, floor_mapping_org[i]);
+				if (!floor_mapping_mod[n2]) {
+					if (n2 < 256) floor_mapping_mod[n2] = floor_mapping_org[i];
+					else printf("Warning - floor mapping exceeds 'char' data type range: %d->%d.", i, n2);
+				}
 			}
-			return(0);
+			return (0);
 		}
 	}
 
 
 	/* Process "U:<tv>:<a>/<c>" -- attr/char for unaware items */
 	else if (buf[0] == 'U') {
-		if (tokenize(buf + 2, 3, zz) == 3) {
+		if (tokenize(buf+2, 3, zz) == 3) {
 			j = (huge)strtol(zz[0], NULL, 0);
 			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0) + char_map_offset;
-			if (j > 100) return(0);
-#ifdef USE_GRAPHICS
-			if (!use_graphics)
-#endif
-				if (n2 > MAX_FONT_CHAR) return(1);
+			n2 = strtol(zz[2], NULL, 0);
+			if (j > 100) return 0;
 			if (n1) Client_setup.u_attr[j] = n1;
 			if (n2) Client_setup.u_char[j] = n2;
-			return(0);
+			return (0);
 		}
 	}
 
@@ -935,16 +960,16 @@ errr process_pref_file_aux(char *buf, byte fmt) {
 	/* Process "E:<tv>:<a>/<c>" -- attr/char for equippy chars */
 	else if (buf[0] == 'E') {
 		/* Do nothing */
-		return(0);
+		return (0);
 
 #if 0
-		if (tokenize(buf + 2, 3, zz) == 3) {
+		if (tokenize(buf+2, 3, zz) == 3) {
 			j = (byte)strtol(zz[0], NULL, 0) % 128;
 			n1 = strtol(zz[1], NULL, 0);
 			n2 = strtol(zz[2], NULL, 0);
 			if (n1) tval_to_attr[j] = n1;
 			if (n2) tval_to_char[j] = n2;
-			return(0);
+			return (0);
 		}
 #endif
 	}
@@ -957,76 +982,69 @@ errr process_pref_file_aux(char *buf, byte fmt) {
 		/* Allocate enough space for the ascii string - mikaelh */
 		macro__buf = mem_alloc(strlen(buf));
 
-		text_to_ascii(macro__buf, buf + 2);
-		return(0);
+		text_to_ascii(macro__buf, buf+2);
+		return (0);
 	}
 
 	/* Process "P:<str>" -- create normal macro */
 	else if (buf[0] == 'P') {
 		char tmp[1024];
-
-		text_to_ascii(tmp, buf + 2);
-		key_autoconvert(tmp, fmt);
+		text_to_ascii(tmp, buf+2);
 
 		//hack
-		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return(0);
+		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return 0;
 
 		macro_add(tmp, macro__buf, FALSE, FALSE);
-		return(0);
+		return (0);
 	}
 
 	/* Process "H:<str>" -- create hybrid macro */
 	else if (buf[0] == 'H') {
 		char tmp[1024];
-
-		text_to_ascii(tmp, buf + 2);
-		key_autoconvert(tmp, fmt);
+		text_to_ascii(tmp, buf+2);
 
 		//hack
-		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return(0);
+		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return 0;
 
 		macro_add(tmp, macro__buf, FALSE, TRUE);
-		return(0);
+		return (0);
 	}
 
 	/* Process "C:<str>" -- create command macro */
 	else if (buf[0] == 'C') {
 		char tmp[1024];
-
-		text_to_ascii(tmp, buf + 2);
-		key_autoconvert(tmp, fmt);
+		text_to_ascii(tmp, buf+2);
 
 		//hack
-		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return(0);
+		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return 0;
 
 		macro_add(tmp, macro__buf, TRUE, FALSE);
-		return(0);
+		return (0);
 	}
 
 	/* Process "D:<str>" -- delete a macro */
 	else if (buf[0] == 'D') {
 		char tmp[1024];
-
-		text_to_ascii(tmp, buf + 2);
+		text_to_ascii(tmp, buf+2);
 
 		//hack
-		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return(0);
+		if (macro_trigger_exclusive[0] && strcmp(macro_trigger_exclusive, tmp)) return 0;
 
 		macro_del(tmp);
-		return(0);
+		return 0;
 	}
 
 
 	/* Process "S:<key>:<key>:<dir>" -- keymap */
 	else if (buf[0] == 'S') {
-		if (tokenize(buf + 2, 3, zz) == 3) {
+		if (tokenize(buf+2, 3, zz) == 3) {
 			i = strtol(zz[0], NULL, 0) & 0x7F;
 			j = strtol(zz[0], NULL, 0) & 0x7F;
 			k = strtol(zz[0], NULL, 0) & 0x7F;
 			if ((k > 9) || (k == 5)) k = 0;
 			keymap_cmds[i] = j;
 			keymap_dirs[i] = k;
-			return(0);
+			return (0);
 		}
 	}
 
@@ -1034,15 +1052,15 @@ errr process_pref_file_aux(char *buf, byte fmt) {
 	/* Process "V:<num>:<kv>:<rv>:<gv>:<bv>" -- visual info */
 	else if (buf[0] == 'V') {
 		/* Do nothing */
-		return(0);
+		return (0);
 
-		if (tokenize(buf + 2, 5, zz) == 5) {
+		if (tokenize(buf+2, 5, zz) == 5) {
 			i = (byte)strtol(zz[0], NULL, 0);
 			color_table[i][0] = (byte)strtol(zz[1], NULL, 0);
 			color_table[i][1] = (byte)strtol(zz[2], NULL, 0);
 			color_table[i][2] = (byte)strtol(zz[3], NULL, 0);
 			color_table[i][3] = (byte)strtol(zz[4], NULL, 0);
-			return(0);
+			return (0);
 		}
 	}
 
@@ -1056,7 +1074,7 @@ errr process_pref_file_aux(char *buf, byte fmt) {
 				(*option_info[i].o_var) = FALSE;
 				Client_setup.options[i] = FALSE;
 				check_immediate_options(i, FALSE, in_game);
-				return(0);
+				return (0);
 			}
 		}
 	}
@@ -1070,24 +1088,23 @@ errr process_pref_file_aux(char *buf, byte fmt) {
 				(*option_info[i].o_var) = TRUE;
 				Client_setup.options[i] = TRUE;
 				check_immediate_options(i, TRUE, in_game);
-				return(0);
+				return (0);
 			}
 		}
 	}
 
 	/* Process "W:<num>:<use>" -- specify window action */
 	else if (buf[0] == 'W') {
-		if (tokenize(buf + 2, 2, zz) == 2) {
+		if (tokenize(buf+2, 2, zz) == 2) {
 			i = (byte)strtol(zz[0], NULL, 0);
 			window_flag[i] = 1L << ((byte)strtol(zz[1], NULL, 0));
-			check_for_playerlist();
-			return(0);
+			return (0);
 		}
 	}
 
 
 	/* Failure */
-	return(1);
+	return (1);
 }
 
 
@@ -1102,7 +1119,6 @@ errr process_pref_file(cptr name) {
 	char buf[1024];
 	char *buf2;
 	int n, err;
-	byte fmt;
 
 	/* Build the filename */
 	path_build(buf, 1024, ANGBAND_DIR_USER, name);
@@ -1111,12 +1127,12 @@ errr process_pref_file(cptr name) {
 	fp = my_fopen(buf, "r");
 
 	/* Catch errors */
-	if (!fp) return(-1);
+	if (!fp) return (-1);
 
 	/* Process the file */
-	while (0 == (err = my_fgets2(fp, &buf2, &n, &fmt))) {
+	while (0 == (err = my_fgets2(fp, &buf2, &n))) {
 		/* Process the line */
-		if (process_pref_file_aux(buf2, fmt)) {
+		if (process_pref_file_aux(buf2)) {
 			/* Useful error message */
 			printf("Error in '%s' parsing '%s'.\n", buf2, name);
 		}
@@ -1132,7 +1148,7 @@ errr process_pref_file(cptr name) {
 	my_fclose(fp);
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 
@@ -1182,22 +1198,10 @@ void show_motd(int delay) {
  */
 void peruse_file(void) {
 	char k = 0;
-	bool guide_hack = FALSE;
-	char tmp[80];
-	static char srcstr[80] = { 0 };
-	bool searching = FALSE, reverse = FALSE;
-#ifdef REGEX_SEARCH
-	static bool regexp = FALSE;
-	bool regexp_ok = is_atleast(&server_version, 4, 9, 0, 0, 0, 0);
-#endif
-	bool old_inkey_msg, old_inkey_interact_macros = inkey_interact_macros;
 
 	/* Initialize */
 	cur_line = 0;
-	cur_col = 0;
 	special_page_size = 20 + HGT_PLUS; /* assume 'non-odd_line' aka normal page size (vs 21 or --2) */
-
-	inkey_interact_macros = FALSE; //needed because we might be called here while we're waiting inside inkey() call in c-cmd.c, which just had this TRUE'd
 
 	/* Save the old screen */
 	Term_save();
@@ -1215,27 +1219,13 @@ void peruse_file(void) {
 		/* if (k != 1) Term_clear(); */
 
 		/* Send the command */
-		line_searching = searching;
-		if (searching) {
-			if (reverse) {
-				strcpy(tmp, "\373"); /* Hack: Marker for 'reverse' */
-				strcat(tmp, srcstr);
-				reverse = FALSE;
-			} else strcpy(tmp, srcstr);
-		}
-#ifdef REGEX_SEARCH
-		Send_special_line(special_line_type, cur_line + ((regexp && regexp_ok) ? 1000000000 : 0), searching ? tmp : ""); //+1000000000: not backwards compatible, requires 4.9.0+ server
-#else
-		Send_special_line(special_line_type, cur_line, searching ? tmp : "");
-#endif
-		searching = FALSE;
+		Send_special_line(special_line_type, cur_line);
 
 		/* Show a general "title" */
-#if 0
-	/* Don't just print the version as a title, better keep the line free in \
+#if 0 /* Don't just print the version as a title, better keep the line free in \
 	 that case - ideal for the new 21-lines feature (odd_line / div-3 lines). \
 	 This should be kept in sync with Receive_special_line() in nclient.c! */
-		//prt(format("[%s]", shortVersion), 0, 0);
+//		prt(format("[%s]", shortVersion), 0, 0);
 		prt(format("[TomeNET %d.%d.%d%s]",
 			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, CLIENT_VERSION_TAG), 0, 0);
 #endif
@@ -1243,89 +1233,25 @@ void peruse_file(void) {
 		/* Prompt. (Consistent with prompt in Receive_special_line() in nclient.c.) */
 		/* indicate EOF by different status line colour */
 		if (cur_line + special_page_size >= max_line)
-			c_prt(TERM_ORANGE, format("[Space/p/Enter/BkSpc/g/G/#%s navigate,%s ESC exit.] (%d-%d/%d)",
-			    //(p_ptr->admin_dm || p_ptr->admin_wiz) ? "/s/d/D" : "",
-#ifdef REGEX_SEARCH
-			    regexp_ok ? "/s/d/D/r" : "/s/d/D",
-#else
-			    "/s/d/D",
-#endif
-			    my_strcasestr(special_line_title, "unique monster") ? " ! best," : "",
+			c_prt(TERM_ORANGE, format("[Press Return, Space, -, b, or ESC to exit.] (%d-%d/%d)",
 			    cur_line + 1, max_line , max_line), 23 + HGT_PLUS, 0);
 		else
-			c_prt(TERM_L_WHITE, format("[Space/p/Enter/BkSpc/g/G/#%s navigate,%s ESC exit.] (%d-%d/%d)",
-			    //(p_ptr->admin_dm || p_ptr->admin_wiz) ? "/s/d/D" : "",
-#ifdef REGEX_SEARCH
-			    regexp_ok ? "/s/d/D/r" : "/s/d/D",
-#else
-			    "/s/d/D",
-#endif
-			    my_strcasestr(special_line_title, "unique monster") ? " ! best," : "",
+			c_prt(TERM_L_WHITE, format("[Press Return, Space, -, b, or ESC to exit.] (%d-%d/%d)",
 			    cur_line + 1, cur_line + special_page_size, max_line), 23 + HGT_PLUS, 0);
 		/* Get a keypress -
 		   hack: update max_line to its real value as soon as possible */
 		if (!max_line) inkey_max_line = TRUE;
-
-		/* Are we in the players list (cmd_players())? Special hack to
-		   auto-update the list if players join/leave meanwhile.. */
-		if (special_line_type == SPECIAL_FILE_PLAYER) {
-			within_cmd_player = TRUE;
-			within_cmd_player_ticks = ticks;
-			k = inkey();
-			within_cmd_player = FALSE;
-		} else
-
-		/* Enable macros, so navigation via arrow keys works. */
 		k = inkey();
 		if (k == 1) continue;
-		line_searching = FALSE;
+
 
 		/* Hack -- go to a specific line */
 		if (k == '#') {
+			char tmp[80];
 			prt(format("Goto Line(max %d): ", max_line), 23 + HGT_PLUS, 0);
 			strcpy(tmp, "0");
-			old_inkey_msg = inkey_msg;
-			inkey_msg = TRUE;
 			if (askfor_aux(tmp, 10, 0)) cur_line = atoi(tmp);
-			inkey_msg = old_inkey_msg;
 		}
-		/* Hack -- search for string */
-		if (k == 's') {
-			prt(format("Search for text: ", max_line), 23 + HGT_PLUS, 0);
-			//tmp[0] = 0;
-			strcpy(tmp, srcstr);
-			old_inkey_msg = inkey_msg;
-			inkey_msg = TRUE;
-			if (askfor_aux(tmp, 60, 0)) {
-				searching = TRUE;
-				strcpy(srcstr, tmp);
-			}
-			inkey_msg = old_inkey_msg;
-#ifdef REGEX_SEARCH
-			regexp = FALSE;
-#endif
-		}
-#ifdef REGEX_SEARCH
-		/* Hack -- search for regexp string */
-		if (k == 'r' && regexp_ok) {
-			prt(format("Search for regexp: ", max_line), 23 + HGT_PLUS, 0);
-			//tmp[0] = 0;
-			strcpy(tmp, srcstr);
-			old_inkey_msg = inkey_msg;
-			inkey_msg = TRUE;
-			if (askfor_aux(tmp, 60, 0)) {
-				searching = TRUE;
-				regexp = TRUE;
-				strcpy(srcstr, tmp);
-			}
-			inkey_msg = old_inkey_msg;
-			regexp = TRUE;
-		}
-#endif
-		/* Search for next occurance */
-		if (k == 'd' && srcstr[0]) searching = TRUE;
-		/* Search for previous occurance */
-		if (k == 'D' && srcstr[0]) searching = reverse = TRUE;
 
 		/* Hack -- Allow backing up */
 		if (k == '-') {
@@ -1358,8 +1284,7 @@ void peruse_file(void) {
 		/* Advance one page */
 		if (k == ' ' || k == KTRL('D')) {
 			cur_line += special_page_size;
-#if 1
-	/* take a break at end of list before wrapping around \
+#if 1 /* take a break at end of list before wrapping around \
 	 (consistent with behavior in nclient.c: Receive_special_line() \
 	 and with do_cmd_help_aux() in files.c.) */
 			if (cur_line > max_line - special_page_size &&
@@ -1377,25 +1302,10 @@ void peruse_file(void) {
 		if (k == 'G') cur_line = max_line - special_page_size;
 
 		/* Take a screenshot */
-		if (k == KTRL('T')) {
-			/* Hack: Screenshots of item inspections are only as long as needed, line-wise */
-			if (special_line_type == SPECIAL_FILE_OTHER && cur_line == 0 &&
-			    (strstr(special_line_title, "Item Details") || strstr(special_line_title, "Basic Item Information")))
-				xhtml_screenshot("screenshot????", 1);
-			else
-			/* Normal */
-			xhtml_screenshot("screenshot????", FALSE);
-		}
+		if (k == KTRL('T')) xhtml_screenshot("screenshot????");
 
 		/* allow chatting, as it's now also possible within stores */
 		if (k == ':') cmd_message();
-#ifdef USE_SOUND_2010
-		/* allow toggling music/master too */
-		else if (k == KTRL('C')) toggle_music(FALSE);
-		else if (k == KTRL('N')) toggle_master(FALSE);
-		else if (k == KTRL('X')) toggle_music(FALSE);//rl
-		else if (k == KTRL('V')) toggle_master(FALSE);//rl
-#endif
 		/* and very handy for *ID*ing: inscribe this item */
 		if (k == '{') cmd_inscribe(USE_INVEN | USE_EQUIP);
 		if (k == '}') cmd_uninscribe(USE_INVEN | USE_EQUIP);
@@ -1403,69 +1313,13 @@ void peruse_file(void) {
 		/* Exit on escape */
 		if (k == ESCAPE || k == KTRL('Q')) break;
 
-		/* Special functionality depending on information type */
-		if (k == '!') {
-			/* Unique monster list: Jump to strongest we slayed. */
-			if (my_strcasestr(special_line_title, "unique monster")) {
-				searching = TRUE;
-				strcpy(srcstr, "strongest unique monster");
-			}
-		}
-
-		/* Horizontal scroll */
-		if (k == '4' || k == '<' || k == 'h') {
-			/* Scroll left */
-			cur_col = (cur_col >= 40) ? (cur_col - 40) : 0;
-
-			/* Success */
-			continue;
-		}
-
-		/* Horizontal scroll */
-		if (k == '6' || k == '>' || k == 'l') {
-			/* Scroll right */
-			cur_col = cur_col + 40;
-			if (cur_col >= ONAME_LEN) { /* Prevent buffer overflow: buf[] in Receive_special_line(). */
-				cur_col -= 40;
-				if (cur_col < 0) cur_col = 0; /* Edge case, paranoia. */
-			}
-
-			/* Success */
-			continue;
-		}
-
-		/* Hack: Pressing ? while already in ? invokes the guide */
-		if (k == '?' && special_line_type == SPECIAL_FILE_HELP) {
-			guide_hack = TRUE;
-			break;
-		}
-
-#if 0 /* not useful :/ only very few items are practicably checkable this way */
-		/* Supahack: Pressing ? while looking at an item invokes the guide for that item's details if available */
-		if (k == '?' && special_line_type == SPECIAL_FILE_OTHER && cur_line == 0 &&
-		    (strstr(special_line_title, "Item Details") || strstr(special_line_title, "Basic Item Information"))) {
-			char uppercase[ONAME_LEN];
-			int i = 0, j = 4;
-
-			while (special_line_first[j] && special_line_first[j] != '{') {
-				uppercase[i] = toupper(special_line_first[j]);
-				i++;
-				j++;
-			}
-			uppercase[i] = 0;
-			if (uppercase[i - 1] == ' ') uppercase[i - 1] = 0;
-			if (!strncmp(uppercase, "AN ", 2)) cmd_the_guide(3, 0, uppercase + 3);
-			else if (!strncmp(uppercase, "A ", 2)) cmd_the_guide(3, 0, uppercase + 2);
-			else cmd_the_guide(3, 0, uppercase);
-			continue;
-		}
-#endif
-
 		/* Check maximum line */
-		/* don't allow 'empty lines' at end of list but wrap around immediately */
-		if (cur_line >= max_line) cur_line = 0;
-		/* Except when searching, or getting subsequent matches would become annoying.. */
-		else if (!searching && cur_line > max_line - special_page_size) cur_line = max_line - special_page_size;
+#if 1 /* don't allow 'empty lines' at end of list but wrap around immediately */
+		if (cur_line > max_line - special_page_size)
+#else
+		if (cur_line >= max_line)
+#endif
+			cur_line = 0;
 		/* ..and wrap around backwards too */
 		else if (cur_line < 0) {
 			cur_line = max_line - special_page_size;
@@ -1474,7 +1328,7 @@ void peruse_file(void) {
 	}
 
 	/* Tell the server we're done looking */
-	Send_special_line(SPECIAL_FILE_NONE, 0, "");
+	Send_special_line(SPECIAL_FILE_NONE, 0);
 
 	/* No longer using file perusal */
 	special_line_type = 0;
@@ -1489,14 +1343,6 @@ void peruse_file(void) {
 
 	/* Flush any events that came in */
 	Flush_queue();
-
-	/* Hack: ? + ? = Guide */
-	if (guide_hack) {
-		cmd_the_guide(0, 0, NULL);
-		Flush_queue();//needed?
-	}
-
-	inkey_interact_macros = old_inkey_interact_macros;
 }
 
 /*
@@ -1505,14 +1351,15 @@ void peruse_file(void) {
  * XXX XXX XXX Allow the "full" flag to dump additional info,
  * and trigger its usage from various places in the code.
  */
-errr file_character(cptr name, bool quiet) {
+errr file_character(cptr name, bool full) {
 	int		i, x, y;
 	byte		a;
-	char32_t		c;
+	char		c;
 	cptr		paren = ")";
 	int		fd = -1;
 	FILE		*fff = NULL;
-	char		buf[1024], *cp, linebuf[1024];
+	char		buf[1024], *cp;
+	(void) full; /* suppress compiler warning */
 
 	/* Build the filename */
 	path_build(buf, 1024, ANGBAND_DIR_USER, name);
@@ -1528,7 +1375,7 @@ errr file_character(cptr name, bool quiet) {
 		clear_topline_forced();
 
 		/* Error */
-		return(-1);
+		return (-1);
 	}
 
 	/* Save the old screen */
@@ -1551,10 +1398,8 @@ errr file_character(cptr name, bool quiet) {
 #endif
 			/* Get the attr/char */
 			(void)(Term_what(x, y, &a, &c));
-			/* Characters above MAX_FONT_CHAR are graphical and will reported as MAX_FONT_CHAR. */
-			if (c > MAX_FONT_CHAR) c = MAX_FONT_CHAR;
 			/* Dump it */
-			buf[x] = (char)c;
+			buf[x] = c;
 		}
 		/* Terminate */
 		buf[x] = '\0';
@@ -1575,34 +1420,8 @@ errr file_character(cptr name, bool quiet) {
 #endif
 			/* Get the attr/char */
 			(void)(Term_what(x, y, &a, &c));
-			/* Characters above MAX_FONT_CHAR are graphical and will reported as MAX_FONT_CHAR. */
-			if (c > MAX_FONT_CHAR) c = MAX_FONT_CHAR;
 			/* Dump it */
 			buf[x] = c;
-		}
-		/* Terminate */
-		buf[x] = '\0';
-		/* End the row */
-		fprintf(fff, "%s\n", buf);
-	}
-
-	/* Display mods/flags ('Chh' screen) */
-	display_player(2);
-
-	/* Dump part of the screen */
-	for (y = 1; y < 22; y++) {
-		/* Dump each row */
-#if 0 /* this is actually correct */
-		for (x = 0; x < Term->wid; x++) {
-#else /* bad hack actually, just to avoid spacer lines on oook.cz */
-		for (x = 0; x < 79; x++) {
-#endif
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-			/* Characters above MAX_FONT_CHAR are graphical and will reported as MAX_FONT_CHAR. */
-			if (c > MAX_FONT_CHAR) c = MAX_FONT_CHAR;
-			/* Dump it */
-			buf[x] = (char)c;
 		}
 		/* Terminate */
 		buf[x] = '\0';
@@ -1630,11 +1449,7 @@ errr file_character(cptr name, bool quiet) {
 		}
 		buf[x] = 0;
 
-		/* trim lines to 80 chars */
-		sprintf(linebuf, "%c%s %s\n", index_to_label(i), paren, buf);
-		//linebuf[80] = 0; --not for now
-
-		fprintf(fff, "%s", linebuf);
+		fprintf(fff, "%c%s %s\n", index_to_label(i), paren, buf);
 	}
 	fprintf(fff, "\n\n");
 
@@ -1642,12 +1457,7 @@ errr file_character(cptr name, bool quiet) {
 	fprintf(fff, "  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++) {
 		if (!strncmp(inventory_name[i], "(nothing)", 9)) continue;
-
-		/* trim lines to 80 chars */
-		sprintf(linebuf, "%c%s %s\n", index_to_label(i), paren, inventory_name[i]);
-		//linebuf[80] = 0; --not for now
-
-		fprintf(fff, "%s", linebuf);
+		fprintf(fff, "%c%s %s\n", index_to_label(i), paren, inventory_name[i]);
 	}
 	fprintf(fff, "\n\n");
 
@@ -1662,10 +1472,8 @@ errr file_character(cptr name, bool quiet) {
 	if (screen_icky) Term_switch(0);
 	/* skip top line, already in 'last messages' if any at all */
 	for (y = 1; y < Term->hgt; y++) {
-		for (x = 0; x < Term->wid - 1; x++) { /* -1: Hack for angband.oook.cz ladder: 80 chars would cause extra linebreaks there :/ So we just discard the final column.. */
+		for (x = 0; x < Term->wid; x++) {
 			(void)(Term_what(x, y, &a, &c));
-			/* Characters above MAX_FONT_CHAR are graphical and will reported as MAX_FONT_CHAR. */
-			if (c > MAX_FONT_CHAR) c = MAX_FONT_CHAR;
 
 			switch (c) {
 			/* Windows client uses ASCII char 31 for paths */
@@ -1673,10 +1481,10 @@ errr file_character(cptr name, bool quiet) {
 				c = '.';
 				break;
 			/* revert special characters from font_map_solid_walls */
-			case FONT_MAP_SOLID_WIN: case FONT_MAP_SOLID_X11:
+			case 127: case 2:
 				c = '#';
 				break;
-			case FONT_MAP_VEIN_WIN: //case FONT_MAP_VEIN_X11: --duplicate case atm (both are 1)
+			case 1:
 				c = '$';
 				break;
 			default:
@@ -1698,13 +1506,13 @@ errr file_character(cptr name, bool quiet) {
 	/* 1st pass - determine category existence: kill vs assist */
 	x = 0; /* count killing blows */
 	for (i = 0; i < MAX_UNIQUES; i++) if (r_unique[i] == 1) x++;
-	if (!x) fprintf(fff, "You have not slain any unique monsters yourself.\n");
+	if (!x) fprintf(fff,"You have not slain any unique monsters yourself.\n");
 	/* 2nd pass - list killed and assisted with monsters */
 	for (i = 0; i < MAX_UNIQUES; i++) {
 		if (r_unique[i] == 1)
-			fprintf(fff, "You have slain %s.\n", r_unique_name[i]);
+			fprintf(fff,"You have slain %s.\n", r_unique_name[i]);
 		else if (r_unique[i] == 2)
-			fprintf(fff, "You have assisted in slaying %s.\n", r_unique_name[i]);
+			fprintf(fff,"You have assisted in slaying %s.\n", r_unique_name[i]);
 	}
 	fprintf(fff, "\n\n");
 
@@ -1715,24 +1523,19 @@ errr file_character(cptr name, bool quiet) {
 	Term_load();
 
 	/* Message */
-	if (!quiet) c_msg_print("Character dump successful.");
+	c_msg_print("Character dump successful.");
 	clear_topline_forced();
 
 	/* Success */
-	return(0);
+	return (0);
 }
 
 /*
  * Make an xhtml screenshot - mikaelh
  * Some code borrowed from ToME
- * Mode 'redux' added (C. Blue):
- * 0/FALSE:	normal,
- * 1:		for item inspection, stop screenshot when two empty lines occur subsequently,
- * 2:		use non-bigmap screen in any case,
- * 3:		for monster/artifact lore aux - display only the relevant paragraph about the actual monster/item.
  */
-void xhtml_screenshot(cptr name, byte redux) {
-	static cptr color_table[16 + 1] = {
+void xhtml_screenshot(cptr name) {
+	static cptr color_table[17] = {
 		"#000000",	/* BLACK */
 		"#ffffff",	/* WHITE */
 		"#9d9d9d",	/* GRAY */
@@ -1753,7 +1556,7 @@ void xhtml_screenshot(cptr name, byte redux) {
 		//"#585858",	/* DARKGRAY */
 		"#666666",	/* DARKGRAY */
 #endif
-		"#cdcdcd",	/* LIGHTGRAY */
+		"#d7d7d7",	/* LIGHTGRAY */
 		"#af00ff",	/* PURPLE */
 		"#ffff00",	/* YELLOW */
 		"#ff3030",	/* PINK */
@@ -1762,103 +1565,83 @@ void xhtml_screenshot(cptr name, byte redux) {
 		"#c79d55",	/* LIGHTBROWN */
 		"#f0f0f0",	/* Invalid color */
 	};
-#ifdef EXTENDED_BG_COLOURS
-//todo: implement
-#endif
 
 	FILE *fp;
 	byte *scr_aa;
-	char32_t *scr_cc;
-	char unm_cc;
-	char *unm_cc_ptr;
-	char32_t unm_cc_idx;
+	char *scr_cc, unm_cc;
+	unsigned char unm_cc_idx;
 	byte cur_attr, prt_attr;
 	int i, x, y, max;
-	int y_start, y_end, ss_lines = 0;
 	char buf[1024];
 	char file_name[256];
 
 	x = strlen(name) - 4;
 
-	/* Replace "????" in the end */
+	/* Replace "????" in the end with numbers */
 	if (!strcmp("????", &name[x])) {
 		/* Paranoia */
 		if (x > 200) x = 200;
 
-		if (!c_cfg.screenshot_format) {
-			/* Replace '????' with a continuously increasing number */
- #ifdef WINDOWS
-			/* Windows implementation */
-			WIN32_FIND_DATA findFileData;
-			HANDLE hFind;
-			char buf2[1024];
+#ifdef WINDOWS
+		/* Windows implementation */
+		WIN32_FIND_DATA findFileData;
+		HANDLE hFind;
+		char buf2[1024];
 
-			/* Search for numbered screenshot files */
-			strncpy(buf2, name, x);
-			buf2[x] = '\0';
-			strcat(buf2, "*.xhtml");
-			path_build(buf, 1024, ANGBAND_DIR_USER, buf2);
+		/* Search for numbered screenshot files */
+		strncpy(buf2, name, x);
+		buf2[x] = '\0';
+		strcat(buf2, "*.xhtml");
+		path_build(buf, 1024, ANGBAND_DIR_USER, buf2);
 
-			max = 0;
+		max = 0;
 
-			hFind = FindFirstFile(buf, &findFileData);
+		hFind = FindFirstFile(buf, &findFileData);
 
-			if (hFind) {
+		if (hFind) {
+			if (isdigit(findFileData.cFileName[x])) {
+				i = atoi(&findFileData.cFileName[x]);
+				if (i > max) max = i;
+			}
+
+			while (FindNextFile(hFind, &findFileData)) {
 				if (isdigit(findFileData.cFileName[x])) {
 					i = atoi(&findFileData.cFileName[x]);
 					if (i > max) max = i;
 				}
-
-				while (FindNextFile(hFind, &findFileData)) {
-					if (isdigit(findFileData.cFileName[x])) {
-						i = atoi(&findFileData.cFileName[x]);
-						if (i > max) max = i;
-					}
-				}
-
-				FindClose(hFind);
-			}
- #else
-			/* UNIX implementation based on opendir */
-			DIR *dp;
-			struct dirent *entry;
-
-			dp = opendir(ANGBAND_DIR_USER);
-
-			if (!dp) {
-				c_msg_print("Couldn't open the user directory.");
-				return;
 			}
 
-			max = 0;
+			FindClose(hFind);
+		}
+#else
+		/* UNIX implementation based on opendir */
+		DIR *dp;
+		struct dirent *entry;
 
-			/* Find the file with the biggest number */
-			while ((entry = readdir(dp))) {
-				/* Check that the name matches the pattern */
-				if (strncmp(name, entry->d_name, x) == 0 && isdigit(entry->d_name[x])) {
-					i = atoi(&entry->d_name[x]);
-					if (i > max) max = i;
-				}
-			}
+		dp = opendir(ANGBAND_DIR_USER);
 
-			closedir(dp);
- #endif
-			/* Use the next number in the name */
-			strncpy(buf, name, x);
-			buf[x] = '\0';
-			snprintf(file_name, 256, "%s%04d.xhtml", buf, max + 1);
-		} else {
-			/* Replace '????' with the current date and time */
-			strncpy(buf, name, x);
-			buf[x] = '\0';
-			time_t ct = time(NULL);
-			//snprintf(file_name, 256, "%s%-.24s", buf, ctime(&ct));
-			struct tm* ctl = localtime(&ct);
-			snprintf(file_name, 256, "%s_%04d-%02d-%02d_%02d-%02d-%02d.xhtml", buf,
-			    1900 + ctl->tm_year, ctl->tm_mon + 1, ctl->tm_mday,
-			    ctl->tm_hour, ctl->tm_min, ctl->tm_sec);
+		if (!dp) {
+			c_msg_print("Couldn't open the user directory.");
+			return;
 		}
 
+		max = 0;
+
+		/* Find the file with the biggest number */
+		while ((entry = readdir(dp))) {
+			/* Check that the name matches the pattern */
+			if (strncmp(name, entry->d_name, x) == 0 && isdigit(entry->d_name[x])) {
+				i = atoi(&entry->d_name[x]);
+				if (i > max) max = i;
+			}
+		}
+
+		closedir(dp);
+#endif
+		/* Use the next number in the name */
+		strncpy(buf, name, x);
+		buf[x] = '\0';
+		snprintf(file_name, 256, "%s%04d.xhtml", buf, max + 1);
 		path_build(buf, 1024, ANGBAND_DIR_USER, file_name);
 	} else {
 		strncpy(file_name, name, 249);
@@ -1868,7 +1651,6 @@ void xhtml_screenshot(cptr name, byte redux) {
 		fp = fopen(buf, "rb");
 		if (fp) {
 			char buf2[1028];
-
 			fclose(fp);
 			strcpy(buf2, buf);
 			strcat(buf2, ".bak");
@@ -1898,77 +1680,30 @@ void xhtml_screenshot(cptr name, byte redux) {
 		     "<pre style=\"color: #ffffff; background-color: #000000; font-family: monospace\">\n");
 
 	cur_attr = Term->scr->a[0][0];
-#ifdef EXTENDED_COLOURS_PALANIM
-	if (cur_attr >= TERMA_DARK && cur_attr <= TERMA_L_UMBER) cur_attr = cur_attr - TERMA_OFFSET; /* Use the basic colours instead of the palette-animated ones */
-#endif
-	prt_attr = term2attr(cur_attr);
-	/* safe-fail: can happen if an EXTENDED_BG_COLOUR is used but not defined here (see color_table[] above): */
-	if (prt_attr > N_ELEMENTS(color_table) - 1) prt_attr = N_ELEMENTS(color_table) - 1;
+	prt_attr = flick_colour(cur_attr);
+	if (prt_attr > sizeof(color_table) - 1) {
+		prt_attr = sizeof(color_table) - 1;
+	}
 	fprintf(fp, "<span style=\"color: %s\">", color_table[prt_attr]);
 
 	size_t bytes = 0;
-	y_start = (redux == 1) ? 2 : ((redux == 3) ? 5 : 0);
-	y_end = (redux == 2) ? DEFAULT_TERM_HGT : Term->hgt;
-	for (y = y_start; y < y_end; y++) {
+	for (y = 0; y < Term->hgt; y++) {
 		scr_aa = Term->scr->a[y];
 		scr_cc = Term->scr->c[y];
-
-		if (redux == 1) {
-			bool more = FALSE;
-
-			/* Preparse two lines, if both are blank we stop right before the first one and are done, assuming that no more content will follow. */
-			for (x = 0; x < Term->wid; x++)
-				if (scr_cc[x] != ' ') {
-					more = TRUE;
-					break;
-				}
-			/* Try next line? */
-			if (!more) {
-				scr_cc = Term->scr->c[y + 1];
-				for (x = 0; x < Term->wid; x++)
-					if (scr_cc[x] != ' ') {
-						more = TRUE;
-						break;
-					}
-				/* Restore pointer for actual screenshot */
-				scr_cc = Term->scr->c[y];
-			}
-			if (!more) {
-				y = Term->hgt - 1;
-				continue;
-			}
-		}
-		if (redux == 3 && y >= 7) {
-			bool more = FALSE;
-
-			/* Preparse one lines, if it's blank we stop right before t and are done, assuming that no more relevant content will follow. */
-			for (x = 0; x < Term->wid; x++)
-				if (scr_cc[x] != ' ') {
-					more = TRUE;
-					break;
-				}
-			if (!more) {
-				y = Term->hgt - 1;
-				continue;
-			}
-		}
-		ss_lines++;
 
 		for (x = 0; x < Term->wid; x++) {
 			if (scr_aa[x] != cur_attr) {
 				cur_attr = scr_aa[x];
-#ifdef EXTENDED_COLOURS_PALANIM
-				if (cur_attr >= TERMA_DARK && cur_attr <= TERMA_L_UMBER) cur_attr = cur_attr - TERMA_OFFSET; /* Use the basic colours instead of the palette-animated ones */
-#endif
 
 				strcpy(&buf[bytes], "</span><span style=\"color: ");
 				bytes += 27;
 
 				/* right now just pick a random colour for flickering colours
 				 * maybe add some javascript for real flicker later */
-				prt_attr = term2attr(cur_attr);
-				/* safe-fail: can happen if an EXTENDED_BG_COLOUR is used but not defined here (see color_table[] above): */
-				if (prt_attr > N_ELEMENTS(color_table) - 1) prt_attr = N_ELEMENTS(color_table) - 1;
+				prt_attr = flick_colour(cur_attr);
+				if (prt_attr > sizeof(color_table) - 1) {
+					prt_attr = sizeof(color_table) - 1;
+				}
 				strcpy(&buf[bytes], color_table[prt_attr]);
 				bytes += 7;
 
@@ -1977,17 +1712,17 @@ void xhtml_screenshot(cptr name, byte redux) {
 			}
 
 			/* unmap custom fonts, so screenshot becomes readable */
-			unm_cc_idx = scr_cc[x];
-			if (NULL != (unm_cc_ptr = u32b_char_dict_get(monster_mapping_mod, unm_cc_idx))) unm_cc = *unm_cc_ptr;
-			else if (NULL != (unm_cc_ptr = u32b_char_dict_get(floor_mapping_mod, unm_cc_idx))) unm_cc = *unm_cc_ptr;
-			else unm_cc = (char) scr_cc[x]; /* no custom mapping found, take as is */
+			unm_cc_idx = (unsigned char)(scr_cc[x]);
+			if (monster_mapping_mod[unm_cc_idx]) unm_cc = monster_mapping_mod[unm_cc_idx];
+			else if (floor_mapping_mod[unm_cc_idx]) unm_cc = floor_mapping_mod[unm_cc_idx];
+			else unm_cc = scr_cc[x]; /* no custom mapping found, take as is */
 
 			switch (unm_cc) {
 			/* revert special characters from font_map_solid_walls */
-			case FONT_MAP_SOLID_WIN: case FONT_MAP_SOLID_X11:
+			case 127: case 2:
 				buf[bytes++] = '#';
 				break;
-			case FONT_MAP_VEIN_WIN: //case FONT_MAP_VEIN_X11: --duplicate case atm (both are 1)
+			case 1:
 				buf[bytes++] = '$';
 				break;
 			/* Windows client uses ASCII char 31 for paths */
@@ -2055,10 +1790,6 @@ void xhtml_screenshot(cptr name, byte redux) {
 
 	if (!silent_dump) c_msg_format("Screenshot saved to %s.xhtml", file_name);
 	else silent_dump = FALSE;
-
-	/* For PNG screenshot */
-	strcpy(screenshot_filename, file_name);
-	screenshot_height = ss_lines;
 }
 
 
@@ -2097,29 +1828,22 @@ void save_auto_inscriptions(cptr name) {
 
 	/* write inscriptions (2 lines each) */
 	for (i = 0; i < MAX_AUTO_INSCRIPTIONS; i++) {
-		fprintf(fp, "%s%s\n", auto_inscription_force[i] ? "!" : "", auto_inscription_match[i]);
+		fprintf(fp, "%s\n", auto_inscription_match[i]);
 		fprintf(fp, "%s\n", auto_inscription_tag[i]);
-		fprintf(fp, "%d\n", auto_inscription_autopickup[i]);
-		fprintf(fp, "%d\n", auto_inscription_autodestroy[i]);
 	}
 
 	fclose(fp);
 
-	c_msg_format("Auto-inscriptions saved to file '%s'.", name);
+	c_msg_print("Auto-inscriptions saved.");
 }
 
 /* Load Auto-Inscription file (*.ins) - C. Blue */
 void load_auto_inscriptions(cptr name) {
 	FILE *fp;
-	char buf[1024], *bufptr, dummy[1024], *rptr;
-	char file_name[256], vtag[5];
-	int i, c, j, c_eff, version, vmaj, vmin, vex;
-	bool replaced, force;
-#ifdef REGEX_SEARCH
-	int ires = -999;
-	regex_t re_src;
-	char *regptr;
-#endif
+	char buf[1024];
+	char file_name[256];
+	int i, c, j, c_eff;
+	bool replaced;
 
 	strncpy(file_name, name, 249);
 	file_name[249] = '\0';
@@ -2147,27 +1871,15 @@ void load_auto_inscriptions(cptr name) {
 		fclose(fp);
 		return;
 	}
-	/* extract version */
-	sscanf(buf, "Auto-Inscriptions file for TomeNET v%d.%d.%d%s\n", &vmaj, &vmin, &vex, vtag);
-//c_message_add(format("n='%s',v=%d,%d,%d,%s.", name,vmaj,vmin,vex,vtag));
-	if (vmaj < 4 || /* at most 4.7.1a */
-	    (vmaj == 4 && (vmin < 7 ||
-	    (vmin == 7 && (vex < 1 ||
-	    (vex == 1 && (streq(vtag, "") || streq(vtag, "a"))))))))
-		version = 1;
-	else if (vmaj == 4 && vmin == 7 && vex < 4) /* older than 4.7.4 */
-		version = 2;
-	else
-		version = 3;
 
 #if 0 /* completely overwrite/erase current auto-inscriptions */
 	/* load inscriptions (2 lines each) */
 	for (i = 0; i < MAX_AUTO_INSCRIPTIONS; i++) {
-		if (fgets(auto_inscription_match[i], AUTOINS_MATCH_LEN, fp) == NULL)
+		if (fgets(auto_inscription_match[i], 40, fp) == NULL)
 			strcpy(auto_inscription_match[i], "");
 		if (strlen(auto_inscription_match[i])) auto_inscription_match[i][strlen(auto_inscription_match[i]) - 1] = '\0';
 
-		if (fgets(auto_inscription_tag[i], AUTOINS_TAG_LEN, fp) == NULL)
+		if (fgets(auto_inscription_tag[i], 20, fp) == NULL)
 			strcpy(auto_inscription_tag[i], "");
 		if (strlen(auto_inscription_tag[i])) auto_inscription_tag[i][strlen(auto_inscription_tag[i]) - 1] = '\0';
 	}
@@ -2182,7 +1894,7 @@ void load_auto_inscriptions(cptr name) {
 		replaced = FALSE;
 
 		/* try to read a match */
-		if (fgets(buf, AUTOINS_MATCH_LEN + 1, fp) == NULL) {
+		if (fgets(buf, 40, fp) == NULL) {
 			fclose(fp);
 			return;
 		}
@@ -2191,7 +1903,7 @@ void load_auto_inscriptions(cptr name) {
 		/* skip empty matches */
 		if (buf[0] == '\0') {
 			/* try to read according tag */
-			if (fgets(buf, AUTOINS_TAG_LEN + 1, fp) == NULL) {
+			if (fgets(buf, 20, fp) == NULL) {
 				fclose(fp);
 				return;
 			}
@@ -2203,7 +1915,7 @@ void load_auto_inscriptions(cptr name) {
 		for (j = 0; j < MAX_AUTO_INSCRIPTIONS; j++) {
 			if (!strcmp(buf, auto_inscription_match[j])) {
 				/* try to read according tag */
-				if (fgets(buf, AUTOINS_TAG_LEN + 1, fp) == NULL) {
+				if (fgets(buf, 20, fp) == NULL) {
 					fclose(fp);
 					return;
 				}
@@ -2221,7 +1933,7 @@ void load_auto_inscriptions(cptr name) {
 		while (strlen(auto_inscription_match[c]) && c < MAX_AUTO_INSCRIPTIONS) c++;
 		if (c == MAX_AUTO_INSCRIPTIONS) {
 			/* give a warning maybe */
-			//c_msg_print("Auto-inscriptions partially loaded and merged.");
+//			c_msg_print("Auto-inscriptions partially loaded and merged.");
 			fclose(fp);
 			return;
 		}
@@ -2229,14 +1941,14 @@ void load_auto_inscriptions(cptr name) {
 		strcpy(auto_inscription_match[c], buf);
 
 		/* load according tag */
-		if (fgets(buf, AUTOINS_TAG_LEN + 1, fp) == NULL) {
+		if (fgets(buf, 20, fp) == NULL) {
 			fclose(fp);
 			return;
 		}
 		if (strlen(buf)) buf[strlen(buf) - 1] = '\0';
 		strcpy(auto_inscription_tag[c], buf);
 	}
-	//c_msg_print("Auto-inscriptions loaded/merged.");
+//	c_msg_print("Auto-inscriptions loaded/merged.");
 	fclose(fp);
 #endif
 #if 1 /* attempt to merge current auto-inscriptions, and give priority to those we want to load here */
@@ -2244,70 +1956,45 @@ void load_auto_inscriptions(cptr name) {
 	c = 0; /* current internal auto-inscription slot to set */
 	for (i = 0; i < MAX_AUTO_INSCRIPTIONS; i++) {
 		replaced = FALSE;
-		force = FALSE;
 
 		/* try to read a match */
-		if (fgets(buf, AUTOINS_MATCH_LEN + 2, fp) == NULL) break;
-		if (!strchr(buf, 10)) rptr = fgets(dummy, 1024, fp); /* read and discard overflow */
-		if (buf[0]) buf[strlen(buf) - 1] = 0;
-		bufptr = buf;
-		if (*bufptr == '!') {
-			force = TRUE;
-			bufptr++;
+		if (fgets(buf, 40, fp) == NULL) {
+			fclose(fp);
+			return;
 		}
-		bufptr[AUTOINS_MATCH_LEN - 1] = 0;
+		if (strlen(buf)) buf[strlen(buf) - 1] = '\0';
 
 		/* skip empty matches */
-		if (*bufptr == 0) {
+		if (buf[0] == '\0') {
 			/* try to read according tag */
-			if (fgets(buf, AUTOINS_TAG_LEN + 1, fp) == NULL) break;
-			if (!strchr(buf, 10)) rptr = fgets(dummy, 1024, fp); /* read and discard overflow */
-			if (buf[0]) buf[strlen(buf) - 1] = 0;
-			/* try to read automation flags */
-			if (version >= 3) {
-				if (fgets(buf, 5, fp) == NULL) break;
-				if (fgets(buf, 5, fp) == NULL) 	break;
+			if (fgets(buf, 20, fp) == NULL) {
+				fclose(fp);
+				return;
 			}
 			continue;
-		}
-
-		/* Old version (v1, before version tag was introduced): Convert '?' wildcard to new '*' wildcard automatically: */
-		if (version == 1) {
-			char *wc;
-
-			while ((wc = strchr(buf, '?'))) *wc = '#';
 		}
 
 		/* check for duplicate entry (if it already exists)
 		   and replace older entry simply */
 		for (j = 0; j < MAX_AUTO_INSCRIPTIONS; j++) {
-			if (strcmp(bufptr, auto_inscription_match[j])) continue;
+			if (!strcmp(buf, auto_inscription_match[j])) {
+				/* try to read according tag */
+				if (fgets(buf, 20, fp) == NULL) {
+					fclose(fp);
+					return;
+				}
+				if (strlen(buf)) buf[strlen(buf) - 1] = '\0';
+				strcpy(auto_inscription_tag[j], buf);
 
-			/* try to read according tag */
-			if (fgets(buf, AUTOINS_TAG_LEN + 1, fp) == NULL) break;
-			if (!strchr(buf, 10)) rptr = fgets(dummy, 1024, fp); /* read and discard overflow */
-			if (buf[0]) buf[strlen(buf) - 1] = 0;
-			strcpy(auto_inscription_tag[j], buf);
-			auto_inscription_force[j] = force;
-
-			/* try to read automation flags */
-			if (version >= 3) {
-				if (fgets(buf, 5, fp) == NULL) break;
-				auto_inscription_autopickup[j] = atoi(buf);
-				if (fgets(buf, 5, fp) == NULL) break;
-				auto_inscription_autodestroy[j] = atoi(buf);
+				replaced = TRUE;
+				break;
 			}
-
-			replaced = TRUE;
-			break;
 		}
 		if (replaced) continue;
 
-		if (j < MAX_AUTO_INSCRIPTIONS) break; //premature ending -> broken .ins file
-
 		/* search for free match-slot */
 		if (c >= 0) {
-			while (auto_inscription_match[c][0] && c < MAX_AUTO_INSCRIPTIONS) c++;
+			while (strlen(auto_inscription_match[c]) && c < MAX_AUTO_INSCRIPTIONS) c++;
 			if (c == MAX_AUTO_INSCRIPTIONS) {
 				c = -1;
 				c_eff = 0;
@@ -2318,56 +2005,25 @@ void load_auto_inscriptions(cptr name) {
 			c_eff = -c - 1;
 		}
 		/* set slot */
-		strcpy(auto_inscription_match[c_eff], bufptr);
-		auto_inscription_force[c_eff] = force;
-#ifdef REGEX_SEARCH
-		/* Actually test regexp for validity right away, so we can avoid spam/annoyance/searching later. */
-		/* Check for '$' prefix, forcing regexp interpretation */
-		regptr = auto_inscription_match[c_eff];
-		if (regptr[0] == '$') {
-			regptr++;
-			ires = regcomp(&re_src, regptr, REG_EXTENDED | REG_ICASE);
-			if (ires != 0) {
-				auto_inscription_invalid[c_eff] = TRUE;
-				c_msg_format("\377oInvalid regular expression in auto-inscription #%d.", c_eff + 1);
-			} else auto_inscription_invalid[c_eff] = FALSE;
-			regfree(&re_src);
-		}
-#endif
+		strcpy(auto_inscription_match[c_eff], buf);
 
-		/* try to read according tag */
-		if (fgets(buf, AUTOINS_TAG_LEN + 1, fp) == NULL) break;
-		if (!strchr(buf, 10)) rptr = fgets(dummy, 1024, fp); /* read and discard overflow */
-		if (buf[0]) buf[strlen(buf) - 1] = 0;
+		/* load according tag */
+		if (fgets(buf, 20, fp) == NULL) {
+			fclose(fp);
+			return;
+		}
+		if (strlen(buf)) buf[strlen(buf) - 1] = '\0';
 		strcpy(auto_inscription_tag[c_eff], buf);
 
-		/* try to read automation flags */
-		if (version >= 3) {
-			if (fgets(buf, 5, fp) == NULL) break;
-			auto_inscription_autopickup[c_eff] = atoi(buf);
-			if (fgets(buf, 5, fp) == NULL) break;
-			auto_inscription_autodestroy[c_eff] = atoi(buf);
-		}
-
 		if (c >= 0) c++;
-		(void)rptr; /*stfu already, compiler O_O*/
 	}
-	//c_msg_print("Auto-inscriptions loaded/merged.");
+//	c_msg_print("Auto-inscriptions loaded/merged.");
 	fclose(fp);
-
-	/* Auto-convert old version files: Write new version back to disk. */
-	if (version == 1) {
-		c_message_add("Old auto-inscription wildcards ('?') have been converted to new version ('#').");
-		save_auto_inscriptions(name);
-	} else if (version == 2) {
-		c_message_add("Old auto-inscriptions were converted to new version supporting autopick/destroy."); //welllll, not exactly :-s
-		save_auto_inscriptions(name);
-	}
 #endif
 }
 
 /* Save Character-Birth file (*.dna) */
-void save_birth_file(cptr name, bool touch) {
+void save_birth_file(cptr name) {
 	FILE *fp;
 	char buf[1024];
 	char file_name[256];
@@ -2399,27 +2055,15 @@ void save_birth_file(cptr name, bool touch) {
 	fprintf(fp, "Character birth file for TomeNET v%d.%d.%d%s\n",
 		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, CLIENT_VERSION_TAG);
 
-	if (!touch) {
-		/* Info */
-		fprintf(fp, "%d\n", sex); //Sex/Body/Mode
-		fprintf(fp, "%d\n", class); //Class
-		fprintf(fp, "%d\n", race); //Race
-		fprintf(fp, "%d\n", trait); //Trait
+	/* Info */
+	fprintf(fp, "%d\n", sex); //Sex/Body/Mode
+	fprintf(fp, "%d\n", class); //Class
+	fprintf(fp, "%d\n", race); //Race
+	fprintf(fp, "%d\n", trait); //Trait
 
-		/* Stats */
-		for (i = 0; i < 6; i++)
-			fprintf(fp, "%d\n", stat_order[i]);
-	} else {
-		/* Info */
-		fprintf(fp, "%d\n", dna_sex); //Sex/Body/Mode
-		fprintf(fp, "%d\n", dna_class); //Class
-		fprintf(fp, "%d\n", dna_race); //Race
-		fprintf(fp, "%d\n", dna_trait); //Trait
-
-		/* Stats */
-		for (i = 0; i < 6; i++)
-			fprintf(fp, "%d\n", dna_stat_order[i]);
-	}
+	/* Stats */
+	for (i = 0; i < 6; i++)
+		fprintf(fp, "%d\n", stat_order[i]);
 
 	/* Done */
 	fclose(fp);
@@ -2431,13 +2075,13 @@ void load_birth_file(cptr name) {
 	char buf[1024];
 	char file_name[256];
 
+#if 0 /* for future enhancements */
 	int vm = 0, vi = 0, vp = 0;
 	char vt = '%', *p;
-	bool update = FALSE;
+#endif
 
 	strncpy(file_name, name, 249);
 	file_name[249] = '\0';
-	int tmp, i, r;
 
 	/* add '.dna' extension if not already existing */
 	if (strlen(name) > 4) {
@@ -2463,6 +2107,7 @@ void load_birth_file(cptr name) {
 		return;
 	}
 
+#if 0 /* for future enhancements */
 	/* scan header for version */
 	if ((p = strstr(buf, "TomeNET v"))) {
 		vm = atoi(p + 9);
@@ -2470,37 +2115,16 @@ void load_birth_file(cptr name) {
 		vp = atoi(p + 13);
 		vt = *(p + 14);
 		if (!vt) vt = '-';//note: '-' > '%'
-	} else {
-		fclose(fp);
-		return; //error reading file format
 	}
+#endif
 
 	/* Info */
+	int tmp, i, r;
 	r = fscanf(fp, "\n%d", &tmp); //Sex/Body/Mode
-	if (r == EOF || r == 0) {
-		fclose(fp);
-		return; // Failed to read from file
-	}
+	if (r == EOF || r == 0) return; // Failed to read from file
 	dna_sex = (s16b)tmp;
-
-	/* Translate outdated flags */
-	if (vm < 4 || (vm == 4 && vi < 7) || (vm == 4 && vi == 7 && vp < 1) || (vm == 4 && vi == 7 && vp == 1 && vt < 'b')) { //note that '-' and '%' are also < 'b'
-		update = TRUE;
-		if (dna_sex & MODE_MALE_OLD) {
-			dna_sex &= ~MODE_MALE_OLD;
-			dna_sex |= MODE_MALE;
-		}
-		if (dna_sex & MODE_FRUIT_BAT_OLD) {
-			dna_sex &= ~MODE_FRUIT_BAT_OLD;
-			dna_sex |= MODE_FRUIT_BAT;
-		}
-	}
-
 	r = fscanf(fp, "\n%d", &tmp); //Class
-	if (r == EOF || r == 0) {
-		fclose(fp);
-		return; // Failed to read from file
-	}
+	if (r == EOF || r == 0) return; // Failed to read from file
 	dna_class = (s16b)tmp;
 
 	dna_class_title = class_info[dna_class].title;
@@ -2511,25 +2135,16 @@ void load_birth_file(cptr name) {
 	} else if (class_info[dna_class].hidden) dna_class = class_info[dna_class].base_class;
 
 	r = fscanf(fp, "\n%d", &tmp); //Race
-	if (r == EOF || r == 0) {
-		fclose(fp);
-		return; // Failed to read from file
-	}
+	if (r == EOF || r == 0) return; // Failed to read from file
 	dna_race = (s16b)tmp;
 	r = fscanf(fp, "\n%d", &tmp); //Trait
-	if (r == EOF || r == 0) {
-		fclose(fp);
-		return; // Failed to read from file
-	}
+	if (r == EOF || r == 0) return; // Failed to read from file
 	dna_trait = (s16b)tmp;
 
 	/* Stats */
 	for (i = 0; i < 6; i++) {
 		r = fscanf(fp, "\n%d", &tmp);
-		if (r == EOF || r == 0) {
-			fclose(fp);
-			return; // Failed to read from file
-		}
+		if (r == EOF || r == 0) return; // Failed to read from file
 		dna_stat_order[i] = (s16b)tmp;
 	}
 
@@ -2544,7 +2159,4 @@ void load_birth_file(cptr name) {
 
 	/* Done */
 	fclose(fp);
-
-	/* Update an outdated dna file version? */
-	if (update) save_birth_file(name, TRUE);
 }

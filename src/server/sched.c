@@ -135,7 +135,7 @@ static fd_set		output_mask;
  */
 static void clear_mask(void) {
 	FD_ZERO(&input_mask);
-
+	
 	/* HACK - Clear the output mask - mikaelh */
 	FD_ZERO(&output_mask);
 }
@@ -186,7 +186,6 @@ void remove_input(int fd) {
 		FD_CLR(fd, &input_mask);
 		if (fd == (max_fd - 1)) {
 			int i;
-
 			max_fd = 0;
 			for (i = fd; --i >= 0; ) {
 				if (FD_ISSET(i, &input_mask) || FD_ISSET(i, &output_mask)) {
@@ -244,7 +243,6 @@ void remove_output(int fd) {
 		FD_CLR(fd, &output_mask);
 		if (fd == (max_fd - 1)) {
 			int i;
-
 			max_fd = 0;
 			for (i = fd; --i >= 0; ) {
 				if (FD_ISSET(i, &input_mask) || FD_ISSET(i, &output_mask)) {
@@ -281,7 +279,6 @@ void sched(void) {
 		n = select(max_fd, &readmask, &writemask, NULL, NULL);
 		if (n < 0) {
 			int errval = errno;
-
 			if (errval != EINTR) {
 				save_game_panic();
 				fprintf(stderr, "sched select failed, errno = %d\n", errval);
@@ -293,23 +290,18 @@ void sched(void) {
 			/* Do nothing */
 		} else {
 			int i;
-
 			for (i = max_fd; i >= 0; i--) {
 				if (FD_ISSET(i, &readmask)) {
-					if (input_handlers[i].func) {
-						(*input_handlers[i].func)(i, input_handlers[i].arg);
-					}
+					(*input_handlers[i].func)(i, input_handlers[i].arg);
 					if (--n == 0) {
 						break;
 					}
 				}
 			}
-
+			
 			for (i = max_fd; i >= 0; i--) {
 				if (FD_ISSET(i, &writemask)) {
-					if (output_handlers[i].func) {
-						(*output_handlers[i].func)(i, output_handlers[i].arg);
-					}
+					(*output_handlers[i].func)(i, output_handlers[i].arg);
 					if (--n == 0) {
 						break;
 					}

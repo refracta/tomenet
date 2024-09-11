@@ -15,9 +15,8 @@ int store_top = 0;
  */
 void display_store_action() {
 	int i;
-
 	/* BIG_MAP leads to big shops */
-	int spacer = (screen_hgt == MAX_SCREEN_HGT) ? 14 : 0;
+	int spacer = (screen_hgt > SCREEN_HGT) ? 14 : 0;
 
 	for (i = 0; i < 6; i++) {
 		if (!c_store.actions[i]) continue;
@@ -29,8 +28,7 @@ void display_store_action() {
 
 static void display_entry(int pos, int entries) {
 	object_type *o_ptr;
-	int i;
-	s32b x;
+	int i, x;
 	char o_name[ONAME_LEN];
 	char out_val[MSG_LEN];
 
@@ -48,7 +46,7 @@ static void display_entry(int pos, int entries) {
 	if (wgt >= 0 || store_num == STORE_HOME || store_num == STORE_HOME_DUN) { /* <0: player store hack */
 		(void)sprintf(out_val, "%c) ", I2A(i));
 		prt(out_val, i + 6, 0);
-	} else prt("", i + 6, 0); /* Just clear the line (for pieces of wood used as labels) */
+	}
 
 	/* Describe an item in the home */
 	if (store_num == STORE_HOME || store_num == STORE_HOME_DUN) {
@@ -66,7 +64,6 @@ static void display_entry(int pos, int entries) {
 		if (c_cfg.show_weights) {
 			/* Only show the weight of an individual item */
 			int wgt = o_ptr->weight;
-
 			(void)sprintf(out_val, "%3d.%d lb", wgt / 10, wgt % 10);
 			put_str(out_val, i + 6, 68);
 		}
@@ -101,20 +98,10 @@ static void display_entry(int pos, int entries) {
 			}
 
 			x = store_prices[pos];
-			if (x >= 0) { /* <0: player store hack and mathom-house hack */
+			if (x >= 0) { /* <0: player store hack */
 				/* Actually draw the price (not fixed) */
-				if (!c_cfg.colourize_bignum) {
-					/* Normal display of the price */
-					(void)sprintf(out_val, "%9d  ", x);
-				} else {
-					if (p_ptr->au >= x && x >= 0) colour_bignum(x, -1, out_val, 0, TRUE);
-					//else (void)sprintf(out_val, "%9d  ", x); //will be coloured uniformly dark aka unaffordable
-					else colour_bignum(x, -1, out_val, 0, FALSE);
-				}
+				(void)sprintf(out_val, "%9d  ", x);
 				c_put_str(p_ptr->au < x ? TERM_L_DARK : TERM_WHITE, out_val, i + 6, 68);
-			} else if (x == -3) { /* @SB inscription and sold out: */
-				(void)sprintf(out_val, "\377D SOLD OUT  ");
-				c_put_str(TERM_L_DARK, out_val, i + 6, 68);
 			}
 		}
 	}
@@ -126,7 +113,7 @@ void display_inventory(void) {
 	int i, k, entries = 12;
 
 	/* BIG_MAP leads to big shops */
-	if (screen_hgt == MAX_SCREEN_HGT) entries = 26; /* we don't have 34 letters in the alphabet =p */
+	if (screen_hgt > SCREEN_HGT) entries = 26; /* we don't have 34 letters in the alphabet =p */
 
 	for (k = 0; k < entries; k++) {
 		/* Do not display "dead" items */
@@ -145,7 +132,7 @@ void display_inventory(void) {
 	/* Visual reminder of "more items" */
 	if (store.stock_num > entries) {
 		/* Show "more" reminder (after the last item) */
-		prt("-more (SPACE to flip page)-", k + 6, 3);
+		prt("-more-", k + 6, 3);
 
 		/* Indicate the "current page" */
 		put_str(format("(Page %d of %d)%s%s",
@@ -199,10 +186,10 @@ static int get_stock(int *com_val, cptr pmt, int i, int j) {
 	clear_topline();
 
 	/* Cancel */
-	if (command == ESCAPE) return(FALSE);
+	if (command == ESCAPE) return (FALSE);
 
 	/* Success */
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -217,7 +204,7 @@ static void store_examine(void) {
 	char            out_val[160];
 
 	/* BIG_MAP leads to big shops */
-	int entries = (screen_hgt == MAX_SCREEN_HGT) ? 26 : 12;
+	int entries = (screen_hgt > SCREEN_HGT) ? 26 : 12;
 
 
 	/* Empty? */
@@ -241,7 +228,7 @@ static void store_examine(void) {
 		sprintf(out_val, "Which item do you want to examine? ");
 
 	/* Get the item number to be bought */
-	if (!get_stock(&item, out_val, 0, i - 1)) return;
+	if (!get_stock(&item, out_val, 0, i-1)) return;
 
 	/* Get the actual index */
 	item = item + store_top;
@@ -266,7 +253,7 @@ static void store_purchase(bool one) {
 	char out_val[160];
 
 	/* BIG_MAP leads to big shops */
-	int entries = (screen_hgt == MAX_SCREEN_HGT) ? 26 : 12;
+	int entries = (screen_hgt > SCREEN_HGT) ? 26 : 12;
 
 
 	/* Empty? */
@@ -291,7 +278,7 @@ static void store_purchase(bool one) {
 		sprintf(out_val, "Which item are you interested in? ");
 
 	/* Get the item number to be bought */
-	if (!get_stock(&item, out_val, 0, i - 1)) return;
+	if (!get_stock(&item, out_val, 0, i-1)) return;
 
 	/* Get the actual index */
 	item = item + store_top;
@@ -311,7 +298,7 @@ static void store_purchase(bool one) {
 	/* Find out how many the player wants */
 	if (o_ptr->number > 1 && !one) {
 		/* Hack -- note cost of "fixed" items */
-		if (store_num != STORE_HOME && store_num != STORE_HOME_DUN) {
+		if (store_num != STORE_HOME || store_num == STORE_HOME_DUN) {
 			c_msg_print(format("That costs %d gold per item.", store_prices[item]));
 
 			if (store_prices[item] > 0) amt_afford = p_ptr->au / store_prices[item];
@@ -350,110 +337,27 @@ void store_paste_where(char *where) {
 	    color_attr_to_char(c_store.store_attr),
 	    c_store.store_char);
 }
-/* price, 2x colour code, " Au": */
-#define PRICE_LEN (16 + 4 + 3)
 void store_paste_item(char *out_val, int item) {
-	char price[PRICE_LEN];
+	char	price[16];
 
 	/* Get shop price if any */
 	/* Home doesn't price items */
 	if (store_num == STORE_HOME || store_num == STORE_HOME_DUN) {
 		sprintf(out_val, " %s", store_names[item]);
 	/* Player stores with '@S-' inscription neither (museum mode) */
-	} else if (store_prices[item] < 0 && store_prices[item] != -3) {
-		if (store_powers[item][0]) sprintf(out_val, " %s (%s)", store_names[item], store_powers[item]);
-		else sprintf(out_val, " %s", store_names[item]);
+	} else if (store_prices[item] < 0) {
+		sprintf(out_val, " %s", store_names[item]);
 	/* Normal [player-]store */
 	} else {
-		char price_col[3], price_col2[3];
-
-		/* Indicate blacklist pricing (40x) */
-		if (store_price_mul > 10) {  //we're blacklisted
-			strcpy(price_col, "\377r");
-			strcpy(price_col2, "\377s");
-		} else if (store_price_mul < 10) { //doesn't exist actually
-			strcpy(price_col, "\377g");
-			strcpy(price_col2, "\377s");
-		} else { //normal price
-			price_col[0] = 0;
-			price_col2[0] = 0;
-		}
-
-		/* @SB inscription and sold out: */
-		if (store_prices[item] == -3) snprintf(price, PRICE_LEN, "\377DSOLD OUT\377s");
 		/* Convert the price to more readable format */
-		else if (store_prices[item] >= 10000000)
-			snprintf(price, PRICE_LEN, "%s%dM Au%s", price_col, store_prices[item] / 1000000, price_col2);
+		if (store_prices[item] >= 10000000)
+			snprintf(price, 16, "%dM", store_prices[item] / 1000000);
 		else if (store_prices[item] >= 10000)
-			snprintf(price, PRICE_LEN, "%s%dk Au%s", price_col, store_prices[item] / 1000, price_col2);
+			snprintf(price, 16, "%dk", store_prices[item] / 1000);
 		else
-			snprintf(price, PRICE_LEN, "%s%d Au%s", price_col, store_prices[item], price_col2);
+			snprintf(price, 16, "%d", store_prices[item]);
 
-		/* Paste store_powers if available (randarts etc) or -specialty!- for books, their spells */
-		if (store.stock[item].tval == TV_BOOK) {
-			char powins[1024]; //even more than just MAX_CHARS_WIDE, let's play it safe..
-
-			powins[0] = 0;
-			if (is_custom_tome(store.stock[item].sval)) {
-				//if (redux) {
-				if (TRUE) {
-					if (store.stock[item].xtra1) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra1 - 1))));
-					if (store.stock[item].xtra2) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra2 - 1))));
-					if (store.stock[item].xtra3) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra3 - 1))));
-					if (store.stock[item].xtra4) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra4 - 1))));
-					if (store.stock[item].xtra5) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra5 - 1))));
-					if (store.stock[item].xtra6) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra6 - 1))));
-					if (store.stock[item].xtra7) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra7 - 1))));
-					if (store.stock[item].xtra8) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra8 - 1))));
-					if (store.stock[item].xtra9) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", store.stock[item].xtra9 - 1))));
-				} else {
-					if (store.stock[item].xtra1) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra1 - 1))));
-					if (store.stock[item].xtra2) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra2 - 1))));
-					if (store.stock[item].xtra3) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra3 - 1))));
-					if (store.stock[item].xtra4) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra4 - 1))));
-					if (store.stock[item].xtra5) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra5 - 1))));
-					if (store.stock[item].xtra6) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra6 - 1))));
-					if (store.stock[item].xtra7) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra7 - 1))));
-					if (store.stock[item].xtra8) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra8 - 1))));
-					if (store.stock[item].xtra9) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", store.stock[item].xtra9 - 1))));
-				}
-			} else if (store.stock[item].sval != SV_SPELLBOOK) { /* Predefined book (handbook or tome) */
-				int i, num = 0, spell;
-				char out_val[160];
-
-				/* Find amount of spells in this book */
-				sprintf(out_val, "return book_spells_num2(%d, %d)", -1, store.stock[item].sval);
-				num = exec_lua(0, out_val);
-
-				/* Iterate through them and display their [short] names */
-				for (i = 0; i < num; i++) {
-					/* Get the spell */
-					if (MY_VERSION < (4 << 12 | 4 << 8 | 1U << 4 | 8)) {
-						/* no longer supported! to make s_aux.lua slimmer */
-						spell = exec_lua(0, format("return spell_x(%d, %d, %d)", store.stock[item].sval, -1, i));
-					} else {
-						spell = exec_lua(0, format("return spell_x2(%d, %d, %d, %d)", -1, store.stock[item].sval, -1, i));
-					}
-
-					/* Book doesn't contain a spell in the selected slot */
-					if (spell == -1) continue;
-
-					/* Hack: For now, always use redux format because it'd become toooooo much */
-					//if (redux || TRUE) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", spell))));
-					if (TRUE) strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name2)", spell))));
-					else strcat(powins, format("%s,", string_exec_lua(0, format("return(__tmp_spells[%d].name)", spell))));
-				}
-			}
-
-			if (powins[0] && powins[strlen(powins) - 1] == ',') powins[strlen(powins) - 1] = 0;
-
-			if (powins[0]) sprintf(out_val, "%s (%s) (%s)", store_names[item], price, powins);
-			else sprintf(out_val, "%s (%s)", store_names[item], price);
-			return;
-		}
-
-		if (store_powers[item][0]) sprintf(out_val, "%s (%s) (%s)", store_names[item], price, store_powers[item]);
-		else sprintf(out_val, "%s (%s)", store_names[item], price);
+		sprintf(out_val, "%s (%s Au)", store_names[item], price);
 	}
 }
 
@@ -464,7 +368,7 @@ static void store_chat(void) {
 	char	where[17];
 
 	/* BIG_MAP leads to big shops */
-	int entries = (screen_hgt == MAX_SCREEN_HGT) ? 26 : 12;
+	int entries = (screen_hgt > SCREEN_HGT) ? 26 : 12;
 
 
 	/* Empty? */
@@ -546,10 +450,10 @@ static void store_do_command(int num, bool one) {
 	int                     item, item2;
 	u16b action = c_store.actions[num];
 	u16b bact = c_store.bact[num];
-	char            out_val[160];
 	/* BIG_MAP leads to big shops */
-	int entries = (screen_hgt == MAX_SCREEN_HGT) ? 26 : 12;
-	int get_item_mode = 0;
+	int entries = (screen_hgt > SCREEN_HGT) ? 26 : 12;
+
+	char            out_val[160];
 
 	i = amt = gold = item = item2 = 0;
 
@@ -596,17 +500,8 @@ static void store_do_command(int num, bool one) {
 	}
 
 	if (c_store.flags[num] & BACT_F_INVENTORY) {
-		get_item_mode = (USE_EQUIP | USE_INVEN);
-
-		if (c_store.flags[num] & BACT_F_STAR_ID) {
-			get_item_extra_hook = get_item_hook_find_obj;
-			item_tester_hook = item_tester_hook_starid;
-			get_item_hook_find_obj_what = "Which item? "; /* Seems it's not needed, but just in case */
-
-			get_item_mode |= USE_EXTRA;
-		}
-
-		if (!c_get_item(&item, "Which item? ", get_item_mode)) return;
+		if (!c_get_item(&item, "Which item? ", (USE_EQUIP | USE_INVEN)))
+			return;
 	}
 
 	if (c_store.flags[num] & BACT_F_GOLD) {
@@ -630,7 +525,7 @@ static void store_process_command(int cmd) {
 	bool allow_w_t = TRUE, allow_k = TRUE;
 
 	/* BIG_MAP leads to big shops */
-	int entries = (screen_hgt == MAX_SCREEN_HGT) ? 26 : 12;
+	int entries = (screen_hgt > SCREEN_HGT) ? 26 : 12;
 
 	for (i = 0; i < 6; i++) {
 		if (!c_store.actions[i]) continue;
@@ -724,12 +619,11 @@ static void store_process_command(int cmd) {
 		case ESCAPE:
 		case KTRL('Q'):
 			leave_store = TRUE;
-			clear_pstore_visuals();
 			break;
 
 		case KTRL('T'):
 			/* Take a screenshot */
-			xhtml_screenshot("screenshot????", FALSE);
+			xhtml_screenshot("screenshot????");
 			break;
 
 		/* Browse */
@@ -769,15 +663,15 @@ static void store_process_command(int cmd) {
 			break;
 
 		/* go to page n */
-		case '0': i++; __attribute__ ((fallthrough));
-		case '9': i++; __attribute__ ((fallthrough));
-		case '8': i++; __attribute__ ((fallthrough));
-		case '7': i++; __attribute__ ((fallthrough));
-		case '6': i++; __attribute__ ((fallthrough));
-		case '5': i++; __attribute__ ((fallthrough));
-		case '4': i++; __attribute__ ((fallthrough));
-		case '3': i++; __attribute__ ((fallthrough));
-		case '2': i++; __attribute__ ((fallthrough));
+		case '0': i++;
+		case '9': i++;
+		case '8': i++;
+		case '7': i++;
+		case '6': i++;
+		case '5': i++;
+		case '4': i++;
+		case '3': i++;
+		case '2': i++;
 		case '1':
 			if (store.stock_num > entries * i) {
 				store_top = entries * i;
@@ -821,11 +715,11 @@ static void store_process_command(int cmd) {
 #ifdef USE_SOUND_2010
 		case KTRL('C'):
 		case KTRL('X')://rl
-			toggle_music(FALSE);
+			toggle_music();
 			break;
 		case KTRL('N'):
 		case KTRL('V')://rl
-			toggle_master(FALSE);
+			toggle_audio();
 			break;
 #endif
 
@@ -876,21 +770,21 @@ static void store_process_command(int cmd) {
 void c_store_prt_gold(void) {
 	char out_val[64];
 	/* BIG_MAP leads to big shops */
-	int spacer = (screen_hgt == MAX_SCREEN_HGT) ? 14 : 0;
+	int spacer = (screen_hgt > SCREEN_HGT) ? 14 : 0;
 
 	prt("Gold Remaining: ", 19 + spacer, 53);
 
-	if (c_cfg.colourize_bignum) colour_bignum(p_ptr->au, -1, out_val, 0, TRUE);
-	else sprintf(out_val, "%10d", p_ptr->au);
-	put_str(out_val, 19 + spacer, 69);
+	sprintf(out_val, "%9d", p_ptr->au);
+	if (p_ptr->au < 1000000000) strcat(out_val, " "); //hack to correctly clear line for players moving huge amounts
+	prt(out_val, 19 + spacer, 68);
 
 	/* Hack -- show balance (if not 0) */
 	if (store_num == STORE_MERCHANTS_GUILD && p_ptr->balance) {
 		prt("Your balance  : ", 20 + spacer, 53);
 
-		if (c_cfg.colourize_bignum) colour_bignum(p_ptr->balance, -1, out_val, 0, TRUE);
-		else sprintf(out_val, "%10d", p_ptr->balance);
-		put_str(out_val, 20 + spacer, 69);
+		sprintf(out_val, "%9d", p_ptr->balance);
+		if (p_ptr->au < 1000000000) strcat(out_val, " ");
+		prt(out_val, 20 + spacer, 68);
 	} else {
 		/* Erase part of the screen */
 		Term_erase(0, 20 + spacer, 255);
@@ -907,7 +801,6 @@ void do_redraw_store(void) {
 		if ((store_num == STORE_HOME || store_num == STORE_HOME_DUN)
 		    && c_store.max_cost) {
 			char buf[1024];
-
 			sprintf(buf, "%s (Stock: %d/%d)", c_store.store_name, store.stock_num, c_store.max_cost);
 			prt(buf, 3, 50);
 		}
@@ -919,7 +812,7 @@ void display_store(void) {
 	int i;
 	char buf[1024];
 	/* BIG_MAP leads to big shops */
-	int spacer = (screen_hgt == MAX_SCREEN_HGT) ? 14 : 0;
+	int spacer = (screen_hgt > SCREEN_HGT) ? 14 : 0;
 
 	/* Save the term */
 	Term_save();
@@ -1007,18 +900,11 @@ void display_store(void) {
 		/* Browse if necessary */
 		if (store.stock_num > 12 + spacer) prt(" SPACE) Next page", 23 + spacer, 0);
 #else /* new: also show 1..n for jumping directly to a page */
- #if 0
-		prt("ESC) Exit store", 21 + spacer, 0);
+		prt("ESC)   Exit store", 21 + spacer, 0);
 		if (store.stock_num > 12 + spacer) {
 			prt("SPACE) Next page", 22 + spacer, 0);
 			prt(format("1-%d)%s  Go to page", (store.stock_num - 1) / (12 + spacer) + 1, (store.stock_num - 1) / (12 + spacer) + 1 >= 10 ? "" : " "), 23 + spacer, 0);
 		}
- #else /* display 'c' key */
-		prt(" ESC) Exit store", 21 + spacer, 0);
-		if (store.stock_num) prt("   c) Paste to chat", 22 + spacer, 0);
-		if (store.stock_num > 12 + spacer)
-			prt(format("%s1-%d) Go to page", (store.stock_num - 1) / (12 + spacer) + 1 >= 10 ? "" : " ", (store.stock_num - 1) / (12 + spacer) + 1), 23 + spacer, 0);
- #endif
 #endif
 
 #if 0
@@ -1068,7 +954,7 @@ void display_store_special(void) {
 	int i;
 	char buf[1024];
 	/* BIG_MAP leads to big shops */
-	int spacer = (screen_hgt == MAX_SCREEN_HGT) ? 14 : 0;
+	int spacer = (screen_hgt > SCREEN_HGT) ? 14 : 0;
 
 	/* Save the term */
 	Term_save();
@@ -1148,14 +1034,4 @@ void display_store_special(void) {
 
 	/* reload the term */
 	Term_load();
-}
-
-/* Fix visuals a bit: When entering a pstore after entering another pstore or npc store, the old contents might flicker
-   up for a moment until they get loaded from the new pstore. Clear them instead on leaving a pstore to prevent that. */
-void clear_pstore_visuals(void) {
-	int i;
-
-	if (store_num > -2) return;
-	for (i = 0; i < STORE_INVEN_MAX; i++)
-		store_names[i][0] = 0;
 }

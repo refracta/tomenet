@@ -1,5 +1,5 @@
 /* TomeNET account editor - evileye */
-/* Quick account editor for server admin
+/* Quick account editor for server admin 
    It can be made more visually attractive later maybe.
    I just didn't want to leave accounts unchangeable
    while testing. */
@@ -39,7 +39,7 @@ FILE *fp;
 WINDOW *listwin, *mainwin;
 
 char *fname = "tomenet.acc";
-char newpass[21];
+char newpass[20];
 char *crypass;
 
 int tfpos;
@@ -85,7 +85,7 @@ unsigned short recwrite(struct account *rec, long filepos) {
 	if (write(wfd, rec, sizeof(struct account)) == -1)
 		fprintf(stderr, "write error occurred.");
 #ifndef NETBSD
-	while ((flock(wfd, LOCK_UN)) != 0);
+	while((flock(wfd, LOCK_UN)) != 0);
 #endif
 	close(wfd);
 #ifdef NETBSD
@@ -120,7 +120,7 @@ int ListAccounts(int fpos) {
 	mvwaddstr(listwin, 0, 55, "Qui");
 	mvwaddstr(listwin, 0, 59, "Ban");
 	mvwaddstr(listwin, 0, 64, "Account ID");
-	if (fpos > LINES - 11) {
+	if (fpos > LINES-11) {
 		ifpos = fpos - (LINES - 11);
 	}
 	while (!quit) {
@@ -129,7 +129,7 @@ int ListAccounts(int fpos) {
 			for (i = 0; i < (LINES - 10); i++) {
 				x = fread(&c_acc, sizeof(struct account), 1, fp);
 				if (x == 0) break;
-				mvwprintw(listwin, i + 1, 5, "%-22s%-4c%-4c%-4c%-4c%-4c%-4c%-4c%-4c%-4c%.10d%10s", c_acc.name,
+				mvwprintw(listwin, i+1, 5, "%-22s%-4c%-4c%-4c%-4c%-4c%-4c%-4c%-4c%-4c%.10d%10s", c_acc.name,
 				c_acc.flags & ACC_TRIAL ? '.' : 'Y',
 				c_acc.flags & ACC_ADMIN ? 'Y' : '.',
 				c_acc.flags & ACC_NOSCORE ? '.' : 'Y',
@@ -289,7 +289,7 @@ int ListAccounts(int fpos) {
 				break;
 			case 'q':
 			case 'Q':
-				if (ask("Are you sure you want to quit?")) {
+				if(ask("Are you sure you want to quit?")) {
 					quit = 1;
 					fpos = -1;
 				}
@@ -660,8 +660,8 @@ int findacc(bool next) {
 		fseek(fp, 0L, SEEK_SET);
 		while ((x = fread(&c_acc, sizeof(struct account), 1, fp))) {
 			i++;
-			if (!strncmp(c_acc.name, sname, 30)) return(i - 1);
-		} while (x);
+			if (!strncmp(c_acc.name, sname, 30)) return (i - 1);
+		} while(x);
 
 		/* prepare for partial match search */
 		i = 0;
@@ -672,25 +672,25 @@ int findacc(bool next) {
 	l = strlen(sname);
 	while ((x = fread(&c_acc, sizeof(struct account), 1, fp))) {
 		i++;
-		if (!strncmp(c_acc.name, sname, l)) return(i - 1);
+		if (!strncmp(c_acc.name, sname, l)) return (i - 1);
 #ifdef PARTIAL_ANYWHERE
-		if (strstr(c_acc.name, sname2)) return(i - 1);
+		if (strstr(c_acc.name, sname2)) return (i - 1);
 #endif
-	} while (x);
+	} while(x);
 
 	status("Could not find that account");
-	return(-1);
+	return (-1);
 }
 
 void status(char *info) {
-	mvprintw(LINES - 1, 0, "%s", info);
+	mvprintw(LINES - 1, 0, info);
 	beep();
 }
 
 void statinput(char *prompt, char *string, int max) {
 	char ch;
 	int pos = 0;
-	mvprintw(LINES - 1, 0, "%s", prompt);
+	mvprintw(LINES - 1, 0, prompt);
 	do {
 		ch = getch();
 		if (ch == '\n') break;
@@ -720,7 +720,7 @@ void statinput(char *prompt, char *string, int max) {
 void getstring(const char *prompt, char *string, int max) {
 	char ch;
 	int i = 0;
-	mvprintw(LINES - 1, 0, "%s", prompt);
+	mvprintw(LINES - 1, 0, prompt);
 	do {
 		ch = getch();
 		if (ch == '\b' && i > 0)
@@ -741,7 +741,7 @@ void getstring(const char *prompt, char *string, int max) {
 				return;
 			}
 		}
-	} while (1);
+	} while(1);
 }
 
 /* our password encryptor */
@@ -763,47 +763,17 @@ static char *t_crypt(char *inbuf, const char *salt) {
 		strcpy(out, (char*)crypt(inbuf, setting));
 	} else
  #endif
- #if 0 /* 2021-12-22 - suddenly crypt() returns a null pointer if 3rd character is a space, wth */
-  #define ACCNAME_LEN 16
-	if (0) {
-		char fixed_name[ACCNAME_LEN];
-		int n;
-
-		strcpy(fixed_name, salt);
-		for (n = 0; n < strlen(fixed_name); n++) {
-			if (!fixed_name[n]) break;
-			if (!((fixed_name[n] >= 'A' && fixed_name[n] <= 'Z') ||
-			    (fixed_name[n] >= 'a' && fixed_name[n] <= 'z') ||
-			    (fixed_name[n] >= '0' && fixed_name[n] <= '9') ||
-			    fixed_name[n] == '.'))
-				fixed_name[n] = '.';
-		}
-		strcpy(out, (char*)crypt(inbuf, fixed_name));
-	} else
- #endif
  #if 1 /* SPACE _ ! - ' , and probably more as _2nd character_ cause crypt() to return a null pointer ('.' is ok) */
-  #define ACCNAME_LEN 16
+  #define ACCOUNTNAME_LEN 16
 	if (!((salt[1] >= 'A' && salt[1] <= 'Z') ||
 	    (salt[1] >= 'a' && salt[1] <= 'z') ||
 	    (salt[1] >= '0' && salt[1] <= '9') ||
 	    salt[1] == '.')) {
-		char fixed_name[ACCNAME_LEN];
-
+		char fixed_name[ACCOUNTNAME_LEN];
 		strcpy(fixed_name, salt);
 		fixed_name[1] = '.';
-  #if 1 /* 2021-12-22 - suddenly crypt() returns a null pointer if 3rd character is a space, wth */
-		fixed_name[2] = 0; //just terminate, as we only use 2 chars for salt anyway (!)
-  #endif
 		strcpy(out, (char*)crypt(inbuf, fixed_name));
 	} else
-  #if 1 /* 2021-12-22 - suddenly crypt() returns a null pointer if 3rd character is a space, wth */
-	if (TRUE) {
-		char fixed_name[ACCNAME_LEN];
-
-		strcpy(fixed_name, salt);
-		fixed_name[2] = 0; //just terminate, as we only use 2 chars for salt anyway (!)
-	} else
-  #endif
  #endif
 	strcpy(out, (char*)crypt(inbuf, salt));
 	return(out);
@@ -814,15 +784,15 @@ static char *t_crypt(char *inbuf, const char *salt) {
 
 unsigned short ask(char *prompt) {
 	char ch;
-	mvprintw(LINES - 1, 0, "%s", prompt);
+	mvprintw(LINES - 1, 0, prompt);
 	do {
 		ch = getch();
 		if (ch == 'Y' || ch == 'y') break;
 		if (ch == 'N' || ch == 'n') break;
-	} while (1);
+	} while(1);
 	move(LINES - 1, 0);
 	clrtoeol();
-	return((ch == 'Y' || ch == 'y'));
+	return ((ch == 'Y' || ch == 'y'));
 }
 
 void purge_duplicates(void) {

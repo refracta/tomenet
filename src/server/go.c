@@ -98,7 +98,7 @@
 
 /* # of buffer lines for GTP responses: 9 lines,2 coordinate lines, +1, +1 for msg hack.
    Could probably be reduced now that we have board_line..[] helper vars. */
-#define MAX_GTP_LINES (9 + 2 + 1 + 1)
+#define MAX_GTP_LINES (9+2+1+1)
 
 /* Screen absolute x,y coordinates of the Go board */
 #define GO_BOARD_X	34
@@ -171,7 +171,7 @@ bool go_game_up;		/* A game of Go is actually being played right now? */
 u32b go_engine_player_id;	/* Player ID of the player who plays a game of Go right now. */
 static char avatar_name[40];
 #if defined(ENGINE_GNUGO) || defined(HS_ENGINE_GNUGOMC) || defined(ENGINE_PACHI) || defined(HS_ENGINE_PACHI)
-static FILE *sgf = NULL;
+static FILE *sgf;
 static char sgf_name[1024];
 #endif
 
@@ -264,29 +264,29 @@ int go_engine_init(void) {
 
 	if (!gocmd) {
 		s_printf("GO_ERROR: No engine defined during compile.\n");
-		return(7);
+		return 7;
 	}
 
 	if (access(gocmd, X_OK) != 0) {
 		s_printf("GO_ERROR: Engine executable not found.\n");
-		return(8);
+		return 8;
 	}
 
 	/* Try to create pipes for STDIN and STDOUT */
 	if (pipe(pipeto) != 0) {
 		s_printf("GO_ERROR: pipe() to.\n");
-		return(1);
+		return 1;
 	}
 	if (pipe(pipefrom) != 0) {
 		s_printf("GO_ERROR: pipe() from.\n");
-		return(2);
+		return 2;
 	}
 
 	/* Try to create Go AI engine process */
 	nPid = fork();
 	if (nPid < 0) {
 		s_printf("GO_ERROR: fork().\n");
-		return(3);
+		return 3;
 	} else if (nPid == 0) {
 		//close(STDIN_FILENO); close(STDOUT_FILENO); close(STDERR_FILENO);
 		/* dup pipe read/write to stdin/stdout */
@@ -328,8 +328,8 @@ int go_engine_init(void) {
 #endif
 
 		/* We were unable to execute the engine? Game over! */
-		fprintf(stderr, "GO_ERROR: exec().\n");
-		//return(4);
+		fprintf(stderr,"GO_ERROR: exec().\n");
+		//return 4;
 
 		/* Cause SIGPIPE to parent so they know what's up */
 		close(pipeto[0]);
@@ -351,12 +351,12 @@ int go_engine_init(void) {
 
 	if ((fw = fdopen(pipeto[1], "w")) == NULL) {
 		s_printf("GO_ERROR: fdopen() w.\n");
-		return(5);
+		return 5;
 	}
 	if ((fr = fdopen(pipefrom[0], "r")) == NULL) {
 		fclose(fw);
 		s_printf("GO_ERROR: fdopen() r.\n");
-		return(6);
+		return 6;
 	}
 
 	/* Set stream for reading to non-blocking */
@@ -473,29 +473,29 @@ int go_engine_init(void) {
 
 	if (!gocmd) {
 		s_printf("GO_ERROR: No engine defined during compile (HS).\n");
-		return(7);
+		return 7;
 	}
 
 	if (access(gocmd, X_OK) != 0) {
 		s_printf("GO_ERROR: Engine executable not found (HS).\n");
-		return(8);
+		return 8;
 	}
 
 	/* Try to create pipes for STDIN and STDOUT */
 	if (pipe(hs_pipeto) != 0) {
 		s_printf("GO_ERROR: pipe() to (HS).\n");
-		return(1);
+		return 1;
 	}
 	if (pipe(hs_pipefrom) != 0) {
 		s_printf("GO_ERROR: pipe() from (HS).\n");
-		return(2);
+		return 2;
 	}
 
 	/* Try to create Go AI engine process */
 	hs_nPid = fork();
 	if (hs_nPid < 0) {
 		s_printf("GO_ERROR: fork() (HS).\n");
-		return(3);
+		return 3;
 	} else if (hs_nPid == 0) {
 		//close(STDIN_FILENO); close(STDOUT_FILENO); close(STDERR_FILENO);
 		/* dup pipe read/write to stdin/stdout */
@@ -537,8 +537,8 @@ int go_engine_init(void) {
  #endif
 
 		/* We were unable to execute the engine? Game over! */
-		fprintf(stderr, "GO_ERROR: exec().\n");
-		//return(4);
+		fprintf(stderr,"GO_ERROR: exec().\n");
+		//return 4;
 
 		/* Cause SIGPIPE to parent so they know what's up */
 		close(hs_pipeto[0]);
@@ -556,12 +556,12 @@ int go_engine_init(void) {
 
 	if ((hs_fw = fdopen(hs_pipeto[1], "w")) == NULL) {
 		s_printf("GO_ERROR: fdopen() w (HS).\n");
-		return(5);
+		return 5;
 	}
 	if ((hs_fr = fdopen(hs_pipefrom[0], "r")) == NULL) {
 		fclose(hs_fw);
 		s_printf("GO_ERROR: fdopen() r (HS).\n");
-		return(6);
+		return 6;
 	}
 
 	/* Set stream for reading to non-blocking */
@@ -665,7 +665,7 @@ int go_engine_init(void) {
 	/* ready for games */
 #endif
 
-	return(0);
+	return 0;
 }
 
 /* Terminate engine & kill pipes, on server shutdown usually */
@@ -1067,13 +1067,11 @@ void go_challenge_accept(int Ind, bool new_wager) {
 		p_ptr->go_level++;
 		if (p_ptr->go_level_top < p_ptr->go_level) {
 			p_ptr->go_level_top = p_ptr->go_level;
-#if 0 /* this code is in the wrong place? we just issue a challenge here, haven't won yet.. */
- #ifndef GO_BROADCAST_ALWAYS
+#ifndef GO_BROADCAST_ALWAYS
 			if (p_ptr->go_level_top == TOP_RANK * 2 + 4) msg_broadcast_format(0, "\377U%s has defeated a Go legend!", p_ptr->name);
- #endif
- #ifdef GO_LEGENDS_LOG
+#endif
+#ifdef GO_LEGENDS_LOG
 			if (p_ptr->go_level_top == TOP_RANK * 2 + 4) l_printf("%s \\{U%s has defeated a Go legend\n", showdate(), p_ptr->name);
- #endif
 #endif
 		}
 	}
@@ -1403,7 +1401,7 @@ void go_engine_process(void) {
 int go_engine_move_human(int Ind, char *py_move) {
 	char tmp[80];
 
-	if (go_err(DOWN, DOWN, "go_engine_move_human")) return(-1);
+	if (go_err(DOWN, DOWN, "go_engine_move_human")) return -1;
 
 	/* parse player move */
 	if (strlen(py_move) == 2) { /* Play a normal move on a board grid */
@@ -1424,7 +1422,7 @@ int go_engine_move_human(int Ind, char *py_move) {
 			last_white_move[2] = 0;
 		}
 		go_engine_next_action = NACT_MOVE_CPU;
-		return(0);
+		return 0;
 	} else if (!strcmp(py_move, "p") ||
 	    !strcmp(py_move, "")) { /* Pass */
 		if (CPU_has_white) writeToPipe("play black pass");
@@ -1437,7 +1435,7 @@ int go_engine_move_human(int Ind, char *py_move) {
 		last_move_was_pass = TRUE;
 		if (CPU_has_white) strcpy(last_black_move, "");
 		else strcpy(last_white_move, "");
-		return(0);
+		return 0;
 	} else if (!strcmp(py_move, "r") ||
 	    !strcmp(py_move, "\e")) { /* Resign */
 #if 0 /* there is no resign command */
@@ -1446,11 +1444,11 @@ int go_engine_move_human(int Ind, char *py_move) {
 		go_engine_next_action = NACT_MOVE_CPU;
 #endif
 		go_engine_move_result(3);
-		return(3); //resign
+		return 3; //resign
 	}
 
 	Send_request_str(Ind, RID_GO_MOVE, "Invalid move. Try again: ", "");
-	return(1); //invalid move
+	return 1; //invalid move
 }
 
 /* Display and countdown 'clocks' */
@@ -1465,7 +1463,7 @@ void go_engine_clocks(void) {
 	if (game_over || scoring) return;
 
 	/* Player still with us? */
-	if (!(Ind = find_player(go_engine_player_id))) {
+	if (!(Ind = lookup_player_ind(go_engine_player_id))) {
 		go_challenge_cleanup(FALSE);
 		return;
 	}
@@ -1513,7 +1511,7 @@ static void go_engine_move_CPU() {
 	if (go_err(DOWN, DOWN, "go_engine_move_CPU")) return;
 
 	/* Player still with us? */
-	if (!(Ind = find_player(go_engine_player_id))) {
+	if (!(Ind = lookup_player_ind(go_engine_player_id))) {
 		go_challenge_cleanup(FALSE);
 		return;
 	}
@@ -1628,17 +1626,12 @@ static int verify_move_human(void) {
 	int Ind;
 	char clock[6];
 
-	if (go_err(DOWN, DOWN, "verify_move_human")) return(-2);
+	if (go_err(DOWN, DOWN, "verify_move_human")) return -2;
 
 	/* Player still with us? */
-	if (!(Ind = find_player(go_engine_player_id))) {
+	if (!(Ind = lookup_player_ind(go_engine_player_id))) {
 		go_challenge_cleanup(FALSE);
-		return(-1);
-	}
-	/* Timing issue: See verify_move_CPU(). Putting it here too for paranoia. */
-	if (!sgf) {
-		s_printf("GO_GAME: verify_move_human() called after game was cancelled.\n");
-		return(-1);
+		return -1;
 	}
 
 	/* Catch timeout! Oops. */
@@ -1646,14 +1639,14 @@ static int verify_move_human(void) {
  #ifdef GO_DEBUGLOG
 		s_printf("GO_GAME: timeout %s\n", Players[Ind]->name);
  #endif
-		return(2); //time over (py)
+		return 2; //time over (py)
 	}
 
 	/* Catch illegal moves */
 //	if (strstr("? point outside board"))
 	if (pipe_buf[MAX_GTP_LINES - 1][0] == '?') {
 //		Send_request_str(Ind, RID_GO_MOVE, "Invalid move. Try again: ", "");
-		return(1); //invalid move
+		return 1; //invalid move
 	}
 
 	move_count++;
@@ -1662,7 +1655,6 @@ static int verify_move_human(void) {
 	if ((engine_api == EAPI_GNUGO || engine_api == EAPI_PACHI) && sgf) {
 		/* translate char/num coords into char/char coords */
 		char m[3];
-
 		if (CPU_has_white) {
 			if (strlen(last_black_move) == 2) {
 				m[0] = last_black_move[0];
@@ -1684,7 +1676,6 @@ static int verify_move_human(void) {
 	/* Test for game over by double-passe */
 	if (pass_count == 2) {
 		char buf[10];
-
 #ifdef GO_DEBUGPRINT
 		printf("Both players passed consecutively, so the game ends.\n");
 #endif
@@ -1696,7 +1687,7 @@ static int verify_move_human(void) {
 		writeToPipe(buf);
 
 		writeToPipe("final_score");
-		return(0);
+		return 0;
 	} else if (!last_move_was_pass) {
 		pass_count = 0;
 #ifdef USE_SOUND_2010
@@ -1742,7 +1733,7 @@ static int verify_move_human(void) {
 	}
 
 	/* continue playing */
-	return(0);
+	return 0;
 }
 
 /* Reads current pipe_buf[][] and assumes it contains the response
@@ -1752,26 +1743,19 @@ static int verify_move_CPU(void) {
 	char cpu_move[80], clock[6], tmp[20];
 
 	/* Player still with us? */
-	if (!(Ind = find_player(go_engine_player_id))) {
+	if (!(Ind = lookup_player_ind(go_engine_player_id))) {
 		go_challenge_cleanup(FALSE);
-		return(-1);
-	}
-	/* Timing issue: Player left the shop right when CPU move came in.
-	   Will try to write the CPU move to sgf which has already been fclose()'d,
-	   freezing the server in panic save. */
-	if (!sgf) {
-		s_printf("GO_GAME: verify_move_CPU() called after game was cancelled.\n");
-		return(-1);
+		return -1;
 	}
 
-	if (go_err(DOWN, DOWN, "verify_move_CPU")) return(-2);
+	if (go_err(DOWN, DOWN, "verify_move_CPU")) return -2;
 
 	/* Catch timeout! Oops. */
 	if (engine_api == EAPI_FUEGO && !strcmp(pipe_buf[MAX_GTP_LINES - 1], "SgTimeRecord: outOfTime")) {
  #ifdef GO_DEBUGPRINT
 		printf("Your opponent's time has run out, therefore you have won the match!\n");
  #endif
-		return(4);
+		return 4;
 	}
 
 	/* CPU resigns */
@@ -1779,7 +1763,7 @@ static int verify_move_CPU(void) {
 #ifdef GO_DEBUGPRINT
 		printf("Your opponent has resigned, you have won the match!\n");
 #endif
-		return(5);
+		return 5;
 	}
 	/* CPU passes */
 	else if (!strcmp(pipe_buf[MAX_GTP_LINES - 1], "= PASS")) {
@@ -1862,7 +1846,6 @@ static int verify_move_CPU(void) {
 	if ((engine_api == EAPI_GNUGO || engine_api == EAPI_PACHI) && sgf) {
 		/* translate char/num coords into char/char coords */
 		char m[3];
-
 		if (CPU_has_white) {
 			if (strlen(last_white_move) == 2) {
 				m[0] = last_white_move[0];
@@ -1884,7 +1867,6 @@ static int verify_move_CPU(void) {
 	/* Test for game over by double-passe */
 	if (pass_count == 2) {
 		char buf[10];
-
 #ifdef GO_DEBUGPRINT
 		printf("Both players passed consecutively, so the game ends.\n");
 #endif
@@ -1896,7 +1878,7 @@ static int verify_move_CPU(void) {
 		writeToPipe(buf);
 
 		writeToPipe("final_score");
-		return(0);
+		return 0;
 	}
 
 	player_timeleft_sec = player_timelimit_sec;
@@ -1912,7 +1894,7 @@ static int verify_move_CPU(void) {
 	}
 
 	/* continue playing */
-	return(0);
+	return 0;
 }
 
 static void go_engine_move_result(int move_result) {
@@ -1924,13 +1906,10 @@ static void go_engine_move_result(int move_result) {
 	if (go_err(DOWN, DOWN, "go_engine_move_result")) return;
 
 	/* Player still with us? */
-	if (!(Ind = find_player(go_engine_player_id))) {
+	if (!(Ind = lookup_player_ind(go_engine_player_id))) {
 		go_challenge_cleanup(FALSE);
 		return;
 	}
-
-	/* ... todo? catch -1 from verify_move..()? ... */
-
 	p_ptr = Players[Ind];
 
 	switch (move_result) {
@@ -2235,9 +2214,6 @@ static void go_engine_move_result(int move_result) {
 						p_ptr->go_level++;
  #ifdef GO_BROADCAST_ALWAYS
 						msg_broadcast_format(0, "\377U%s has defeated a Go legend!", p_ptr->name);
-  #ifdef TOMENET_WORLDS
-						if (cfg.worldd_events) world_msg(format("\377U%s has defeated a Go legend!", p_ptr->name));
-  #endif
  #endif
 					} else {
 						Send_store_special_str(Ind, 9, GO_BOARD_X + 13, TERM_ORANGE, "Wow! How can it be a draw");
@@ -2259,9 +2235,6 @@ static void go_engine_move_result(int move_result) {
 						p_ptr->go_level++;
  #ifdef GO_BROADCAST_ALWAYS
 						msg_broadcast_format(0, "\377U%s has defeated a Go legend!", p_ptr->name);
-  #ifdef TOMENET_WORLDS
-						if (cfg.worldd_events) world_msg(format("\377U%s has defeated a Go legend!", p_ptr->name));
-  #endif
  #endif
 					} else {
 						Send_store_special_str(Ind, 9, GO_BOARD_X + 13, TERM_ORANGE, "Just how unlikely is a draw?");
@@ -2281,9 +2254,6 @@ static void go_engine_move_result(int move_result) {
 						Send_store_special_str(Ind, 11, GO_BOARD_X + 13, TERM_ORANGE, "I'm really trying to learn from it!");
  #ifdef GO_BROADCAST_ALWAYS
 						msg_broadcast_format(0, "\377U%s has defeated a Go legend!", p_ptr->name);
-  #ifdef TOMENET_WORLDS
-						if (cfg.worldd_events) world_msg(format("\377U%s has defeated a Go legend!", p_ptr->name));
-  #endif
  #endif
 					} else {
 						Send_store_special_str(Ind, 9, GO_BOARD_X + 13, TERM_ORANGE, "Holy.. you're not causing a draw");
@@ -2316,12 +2286,7 @@ static void go_engine_move_result(int move_result) {
 		if (p_ptr->go_level_top < p_ptr->go_level) {
 			p_ptr->go_level_top = p_ptr->go_level;
 #ifndef GO_BROADCAST_ALWAYS
-			if (p_ptr->go_level_top == TOP_RANK * 2 + 4) {
-				msg_broadcast_format(0, "\377U%s has defeated a Go legend!", p_ptr->name);
- #ifdef TOMENET_WORLDS
-				if (cfg.worldd_events) world_msg(format("\377U%s has defeated a Go legend!", p_ptr->name));
- #endif
-			}
+			if (p_ptr->go_level_top == TOP_RANK * 2 + 4) msg_broadcast_format(0, "\377U%s has defeated a Go legend!", p_ptr->name);
 #endif
 #ifdef GO_LEGENDS_LOG
 			if (p_ptr->go_level_top == TOP_RANK * 2 + 4) l_printf("%s \\{U%s has defeated a Go legend\n", showdate(), p_ptr->name);
@@ -2377,15 +2342,15 @@ static int test_for_response() {
 	int i;
 	char tmp[80];//, *tptr = tmp + 79;
 	char pipe_line_buf[160];
-	int Ind = find_player(go_engine_player_id);
+	int Ind = lookup_player_ind(go_engine_player_id);
 
 #ifdef DISCARD_RESPONSES_WHEN_TERMINATING
 	/* we might not even want any responses (and them causing slowdown) here,
 	   in case we're doing a warm restart while TomeNET server keeps running! */
-	if (terminating) return(-1);
+	if (terminating) return -1;
 #endif
 
-	if (go_err(DOWN, NONE, "test_for_response")) return(-3);
+	if (go_err(DOWN, NONE, "test_for_response")) return -3;
 
 	/* paranoia: invalid file/pipe? */
 #ifdef HIDDEN_STAGE
@@ -2393,14 +2358,14 @@ static int test_for_response() {
 		if (!hs_fr) {
 			s_printf("GO_ENGINE: ERROR - fr is NULL (HS).\n");
 			go_engine_processing = 0;
-			return(-2);
+			return -2;
 		}
 	} else
 #endif
 	if (!fr) {
 		s_printf("GO_ENGINE: ERROR - fr is NULL.\n");
 		go_engine_processing = 0;
-		return(-2);
+		return -2;
 	}
 
 	strcpy(tmp, "");
@@ -2411,12 +2376,12 @@ static int test_for_response() {
 	readFromPipe(pipe_line_buf, &pipe_response_complete);
 
 	/* No data waiting to be read? */
-	if (!pipe_line_buf[0]) return(-1);
+	if (!pipe_line_buf[0]) return -1;
 
 	/* Process data: Build lines from it. Build whole response from several lines. */
 	if (strlen(pipe_buf[pipe_buf_current_line]) + strlen(pipe_line_buf) >= 240) {
 		s_printf("GO_ERROR: LINE TOO LONG\n");
-		return(1);
+		return 1;
 	} else strcat(pipe_buf[pipe_buf_current_line], pipe_line_buf);
 
 	/* Trim ending '\n' */
@@ -2425,7 +2390,7 @@ static int test_for_response() {
 
 
 	/* Not even got a while line? Exit now. ---------------------------- */
-	if (pipe_line_buf[strlen(pipe_line_buf) - 1] != '\n') return(0);
+	if (pipe_line_buf[strlen(pipe_line_buf) - 1] != '\n') return 0;
 
 	/* don't output just a single line feed */
 #ifdef GO_DEBUGPRINT
@@ -2502,7 +2467,7 @@ static int test_for_response() {
 
 
 	/* Not yet a whole response? Exit here. ---------------------------- */
-	if (pipe_response_complete != 2) return(0);
+	if (pipe_response_complete != 2) return 0;
 
 	/* If we read a complete response to a command,
 	   reduce amount of pending responses left,
@@ -2619,7 +2584,7 @@ static int test_for_response() {
 
 	/* exit normally, after having read a complete response,
 	   ready to proceed the next one on next call */
-	return(0);
+	return 0;
 }
 
 /* Get a response, blocking */
@@ -2630,15 +2595,15 @@ static int wait_for_response() {
 
 #ifdef HIDDEN_STAGE
 	if (hidden_stage_active) {
-		if (!hs_go_engine_up) return(2);
+		if (!hs_go_engine_up) return 2;
 	} else
 #endif
-	if (!go_engine_up) return(2);
+	if (!go_engine_up) return 2;
 
 #ifdef DISCARD_RESPONSES_WHEN_TERMINATING
 	/* we might not even want any responses (and them causing slowdown) here,
 	   in case we're doing a warm restart while TomeNET server keeps running! */
-	if (terminating) return(0);
+	if (terminating) return 0;
 #endif
 
 	/* paranoia: invalid file/pipe? */
@@ -2646,13 +2611,13 @@ static int wait_for_response() {
 	if (hidden_stage_active) {
 		if (!hs_fr) {
 			s_printf("GO_ENGINE: ERROR - fr is NULL (HS).\n");
-			return(1);
+			return 1;
 		}
 	} else
 #endif
 	if (!fr) {
 		s_printf("GO_ENGINE: ERROR - fr is NULL.\n");
-		return(1);
+		return 1;
 	}
 
 	/* reduce pending responses by one, which we are waiting for, in here */
@@ -2728,7 +2693,7 @@ static int wait_for_response() {
 	}
 	strcpy(pipe_buf[MAX_GTP_LINES - 1], tmp);
 
-	return(0);
+	return 0;
 }
 
 /* Write a line of data into the pipe */
@@ -2876,7 +2841,7 @@ static int handle_loading() {
 	/* its seems that fuego (svn) now outputs its startup replies to stderr, so we don't need to catch anything here anymore.
 	   fuego's '--quiet' parameter completely suppresses the stderr output too. */
 	//sleep(5); /* just make the log file live output prettier.. */
-	return(0);
+	return 0;
 #endif
 
 	strcpy(reply, "");
@@ -2889,7 +2854,7 @@ static int handle_loading() {
 //			printf("<%s>\n", lbuf);
 			if (strlen(reply) + strlen(lbuf) >= 240) {
 				s_printf("GO_ERROR: LINE TOO LONG\n");
-				return(1);
+				return 1;
 			}
 			strcat(reply, lbuf);
 			if (reply[0] && reply[strlen(reply) - 1] == '\n') {
@@ -2902,7 +2867,7 @@ static int handle_loading() {
 		/* wait till startup has been completed before proceeding */
 		if (strstr(reply, "... ok") != NULL) cont = 3;
 	} while (cont != 3);
-	return(0);
+	return 0;
 }
 #endif
 
@@ -2921,7 +2886,7 @@ static void go_challenge_cleanup(bool server_shutdown) {
 #endif
 
 	/* Cancel prompt for move */
-	if ((Ind = find_player(go_engine_player_id))) {
+	if ((Ind = lookup_player_ind(go_engine_player_id))) {
 		Send_request_abort(Ind);
 		Players[Ind]->request_id = RID_NONE;
 
@@ -2990,7 +2955,6 @@ static void go_challenge_cleanup(bool server_shutdown) {
 			}
 			fclose(fp);
 			fclose(sgf);
-			sgf = NULL;
 
 			remove("tmp$$$.sgf");
 		}
@@ -3004,7 +2968,6 @@ static void go_challenge_cleanup(bool server_shutdown) {
 		if (sgf) {
 			fprintf(sgf, ")\n");
 			fclose(sgf);
-			sgf = NULL;
 
 			/* Fix sgf displaying correct +1 bonus point on w 1st pass */
 			if (current_komi) {
@@ -3024,7 +2987,6 @@ static void go_challenge_cleanup(bool server_shutdown) {
 				}
 				fclose(fp);
 				fclose(sgf);
-				sgf = NULL;
 
 				remove("tmp$$$.sgf");
 			}
@@ -3050,7 +3012,7 @@ static void go_engine_board(void) {
 	if (go_err(DOWN, DOWN, "go_engine_board")) return;
 
 	/* Player still with us? */
-	if (!(Ind = find_player(go_engine_player_id))) {
+	if (!(Ind = lookup_player_ind(go_engine_player_id))) {
 		go_challenge_cleanup(FALSE);
 		return;
 	}
@@ -3079,51 +3041,51 @@ static bool go_err(int engine_status, int game_status, char *name) {
 		if (engine_status == DOWN) {
 			if (!hs_go_engine_up) {
 				s_printf("GO_ERR: go engine down in %s() (HS).\n", name);
-				return(TRUE);
+				return TRUE;
 			}
 		} else if (engine_status == UP) {
 			if (hs_go_engine_up) {
 				s_printf("GO_ERR: go engine up in %s() (HS).\n", name);
-				return(TRUE);
+				return TRUE;
 			}
 		}
 		if (game_status == DOWN) {
 			if (!go_game_up) {
 				s_printf("GO_ERR: go game down in %s().\n", name);
-				return(TRUE);
+				return TRUE;
 			}
 		} else if (game_status == UP) {
 			if (go_game_up) {
 				s_printf("GO_ERR: go game up in %s().\n", name);
-				return(TRUE);
+				return TRUE;
 			}
 		}
-		return(FALSE);
+		return FALSE;
 	}
 #endif
 	if (engine_status == DOWN) {
 		if (!go_engine_up) {
 			s_printf("GO_ERR: go engine down in %s().\n", name);
-			return(TRUE);
+			return TRUE;
 		}
 	} else if (engine_status == UP) {
 		if (go_engine_up) {
 			s_printf("GO_ERR: go engine up in %s().\n", name);
-			return(TRUE);
+			return TRUE;
 		}
 	}
 	if (game_status == DOWN) {
 		if (!go_game_up) {
 			s_printf("GO_ERR: go game down in %s().\n", name);
-			return(TRUE);
+			return TRUE;
 		}
 	} else if (game_status == UP) {
 		if (go_game_up) {
 			s_printf("GO_ERR: go game up in %s().\n", name);
-			return(TRUE);
+			return TRUE;
 		}
 	}
-	return(FALSE);
+	return FALSE;
 }
 
 /* Silently switch Go engine for special anti-Mirror-Go engine */

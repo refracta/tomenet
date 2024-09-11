@@ -62,9 +62,8 @@ struct ft_data {
 
 struct ft_data *fdata = NULL;	/* our pointer to the transfer data */
 
-static struct ft_data *getfile(int ind, unsigned short fnum) {
+static struct ft_data *getfile(int ind, unsigned short fnum){
 	struct ft_data *trav, *new_ft;
-
 	if (fnum == 0) {
 		new_ft = (struct ft_data*)malloc(sizeof(struct ft_data));
 		if (new_ft == (struct ft_data*)NULL) return(NULL);
@@ -75,7 +74,9 @@ static struct ft_data *getfile(int ind, unsigned short fnum) {
 	}
 	trav = fdata;
 	while (trav) {
-		if (trav->id == fnum && trav->ind == ind) return(trav);
+		if (trav->id == fnum && trav->ind == ind) {
+			return(trav);
+		}
 		trav = trav->next;
 	}
 	return(NULL);
@@ -83,7 +84,6 @@ static struct ft_data *getfile(int ind, unsigned short fnum) {
 
 static void remove_ft(struct ft_data *d_ft) {
 	struct ft_data *trav;
-
 	trav = fdata;
 	if (trav == d_ft) {
 		fdata = trav->next;
@@ -105,7 +105,6 @@ static void remove_ft(struct ft_data *d_ft) {
    so they can generate their own. */
 static int new_fileid() {
 	static int c_id = 0;
-
 	c_id++;
 	if (!c_id) c_id = 1;
 	return(c_id);
@@ -118,12 +117,12 @@ static int new_fileid() {
 static bool client_user_path(char *newpath, cptr oldpath) {
 #ifndef WINDOWS
 	strcpy(newpath, oldpath);
-	return(FALSE);
+	return FALSE;
 #endif
 
 	if (!is_client_side) {
 		strcpy(newpath, oldpath);
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* replace ANGBAND_DIR by ANGBAND_DIR_SCPT/USER, as those might be in the user's home folder on Windows, instead of in the TomeNET folder. */
@@ -131,25 +130,26 @@ static bool client_user_path(char *newpath, cptr oldpath) {
 		strcpy(newpath, ANGBAND_DIR_SCPT);
 		strcat(newpath, "\\");
 		strcat(newpath, oldpath + 5);
-		return(TRUE);
+		return TRUE;
 	} else if (!strncmp(oldpath, "user/", 5)) {
 		strcpy(newpath, ANGBAND_DIR_USER);
 		strcat(newpath, "\\");
 		strcat(newpath, oldpath + 5);
-		return(TRUE);
+		return TRUE;
 	}
 
 	strcpy(newpath, oldpath);
-	return(FALSE);
+	return FALSE;
 }
 
 /* acknowledge recipient ready to receive more */
 int local_file_ack(int ind, unsigned short fnum) {
 	struct ft_data *c_fd;
-
 	c_fd = getfile(ind, fnum);
 	if (c_fd == (struct ft_data*)NULL) return(0);
-	if (c_fd->state&FS_SEND) c_fd->state |= FS_READY;
+	if (c_fd->state&FS_SEND) {
+		c_fd->state |= FS_READY;
+	}
 	if (c_fd->state & FS_DONE) {
 		fclose(c_fd->fp);
 		remove_ft(c_fd);
@@ -160,7 +160,6 @@ int local_file_ack(int ind, unsigned short fnum) {
 /* for now, just kill the connection completely */
 int local_file_err(int ind, unsigned short fnum) {
 	struct ft_data *c_fd;
-
 	c_fd = getfile(ind, fnum);
 	if (c_fd == (struct ft_data*)NULL) return(0);
 	fclose(c_fd->fp);	/* close the file */
@@ -195,7 +194,6 @@ int local_file_send(int ind, char *fname, unsigned short chunksize) {
 /* request checksum of remote file */
 int remote_update(int ind, char *fname, unsigned short chunksize) {
 	struct ft_data *c_fd;
-
 	c_fd = getfile(ind, 0);
 	if (c_fd == (struct ft_data*)NULL) return(0);
 	c_fd->ind = ind;
@@ -219,11 +217,14 @@ int check_return(int ind, unsigned short fnum, u32b sum, int Ind) {
 	if (Ind) Players[Ind]->warning_lua_count--;
 
 	c_fd = getfile(ind, fnum);
-	if (c_fd == (struct ft_data*)NULL) return(0);
+	if (c_fd == (struct ft_data*)NULL) {
+		return(0);
+	}
 	//client_user_path(tmpname, c_fd->fname);
 	local_file_check(c_fd->fname, &lsum);
-	if (!(c_fd->state & FS_CHECK)) return(0);
-
+	if (!(c_fd->state & FS_CHECK)) {
+		return(0);
+	}
 	if (lsum != sum) {
 		/* Hack: Client 4.4.8.1 apparently was compiled by a MinGW version
 		   that broke lua updating, resulting in a client crash on logon.
@@ -238,7 +239,7 @@ int check_return(int ind, unsigned short fnum, u32b sum, int Ind) {
 				msg_format(Ind, "\377oLUA file %s is outdated.", c_fd->fname);
 			}
 
-			return(0);
+			return 0;
 		}
 
 		if (!client_user_path(buf, c_fd->fname))
@@ -272,11 +273,14 @@ int check_return_new(int ind, unsigned short fnum, const unsigned char digest[16
 	if (Ind) Players[Ind]->warning_lua_count--;
 
 	c_fd = getfile(ind, fnum);
-	if (c_fd == (struct ft_data*)NULL) return(0);
+	if (c_fd == (struct ft_data*)NULL) {
+		return(0);
+	}
 	//client_user_path(tmpname, c_fd->fname);
 	local_file_check_new(c_fd->fname, local_digest);
-	if (!(c_fd->state & FS_CHECK)) return(0);
-
+	if (!(c_fd->state & FS_CHECK)) {
+		return(0);
+	}
 	if (memcmp(digest, local_digest, 16) != 0) {
 		/* Hack: Client 4.4.8.1 apparently was compiled by a MinGW version
 		   that broke lua updating, resulting in a client crash on logon.
@@ -291,7 +295,7 @@ int check_return_new(int ind, unsigned short fnum, const unsigned char digest[16
 				msg_format(Ind, "\377oLUA file %s is outdated.", c_fd->fname);
 			}
 
-			return(0);
+			return 0;
 		}
 
 		if (!client_user_path(buf, c_fd->fname))
@@ -312,9 +316,8 @@ int check_return_new(int ind, unsigned short fnum, const unsigned char digest[16
 	return(1);
 }
 
-void kill_xfers(int ind) {
+void kill_xfers(int ind){
 	struct ft_data *trav, *next;
-
 	trav = fdata;
 	for (; trav; trav = next) {
 		next = trav->next;
@@ -328,11 +331,11 @@ void kill_xfers(int ind) {
 
 /* handle all current SEND type file transfers */
 /* laid out long like this for testing. DO NOT CHANGE */
-void do_xfers() {
+void do_xfers(){
 	int x;
-	struct ft_data *trav = fdata;
+	struct ft_data *trav;
+	trav = fdata;
 	unsigned short chunksize;
-
 	for (; trav; trav = trav->next) {
 		if (!trav->id) continue;	/* non existent */
 		if (!(trav->state & FS_SEND)) continue; /* wrong type */
@@ -347,11 +350,13 @@ void do_xfers() {
 		if (!(trav->state & FS_DONE)) {
 			if (x == 0) {
 				trav->state |= FS_DONE;
-			} else {
+			}
+			else {
 				Send_file_data(trav->ind, trav->id, trav->buffer, x);
 				trav->state &= ~(FS_READY);
 			}
-		} else {
+		}
+		else {
 			Send_file_end(trav->ind, trav->id);
 			trav->state &= ~(FS_READY);
 		}
@@ -365,9 +370,10 @@ void do_xfers() {
 int get_xfers_num() {
 	int num = 0;
 	struct ft_data *trav;
-
 	trav = fdata;
-	for (; trav; trav = trav->next) num++;
+	for (; trav; trav = trav->next) {
+		num++;
+	}
 	return num;
 }
 
@@ -439,12 +445,11 @@ int local_file_init(int ind, unsigned short fnum, char *fname) {
 /* Write received data to temporary file */
 int local_file_write(int ind, unsigned short fnum, unsigned long len) {
 	struct ft_data *c_fd;
-
 	c_fd = getfile(ind, fnum);
 	if (c_fd == (struct ft_data*) NULL) return(0);
 	if (Receive_file_data(ind, len, c_fd->buffer) == 0) {
 		/* Not enough data available */
-		return(-1);
+		return -1;
 	}
 	if (fwrite(&c_fd->buffer, 1, len, c_fd->fp) < len) {
 		fprintf(stderr, "Error: fwrite failed in local_file_write\n");
@@ -467,7 +472,7 @@ int local_file_close(int ind, unsigned short fnum) {
 	int success = 1;
 	FILE *wp;
 	c_fd = getfile(ind, fnum);
-	if (c_fd == (struct ft_data *) NULL) return(0);
+	if(c_fd == (struct ft_data *) NULL) return 0;
 
 	if (!client_user_path(buf, c_fd->fname))
 		path_build(buf, 4096, ANGBAND_DIR, c_fd->fname);
@@ -485,7 +490,9 @@ int local_file_close(int ind, unsigned short fnum) {
 		}
 
 		fclose(wp);
-	} else success = 0;
+	} else {
+		success = 0;
+	}
 
 	fclose(c_fd->fp);	/* close & remove temp file */
 #ifdef __MINGW32__
@@ -493,10 +500,10 @@ int local_file_close(int ind, unsigned short fnum) {
 #endif
 	remove_ft(c_fd);
 
-	return(success);
+	return success;
 }
 
-/*
+/* 
  * This is a broken version of Adler-32.
  */
 static void do_sum(const unsigned char *buffer, size_t bytes_read, u32b *total_ptr) {
@@ -513,8 +520,9 @@ static void do_sum(const unsigned char *buffer, size_t bytes_read, u32b *total_p
 	}
 #else
 	/* Optimized version of the broken implementation above - mikaelh */
-	for (idx = 0; idx < bytes_read; idx++)
+	for (idx = 0; idx < bytes_read; idx++) {
 		s1 += buffer[idx];
+	}
 
 	if (idx) {
 		s2 = (s1 + s1) % 65521;
@@ -541,18 +549,21 @@ int local_file_check(char *fname, u32b *sum) {
 	fp = fopen(pathbuf, "rb");	/* b for windows.. */
 	if (!fp) {
 		*sum = 0;
-		return(1);
+		return 1;
 	}
 
-	while ((bytes_read = fread(buffer, 1, sizeof(buffer), fp)) > 0)
+	while ((bytes_read = fread(buffer, 1, sizeof(buffer), fp)) > 0) {
 		do_sum((unsigned char *) buffer, bytes_read, &total);
+	}
 
 	/* Check for read failure */
-	if (!ferror(fp)) success = 1;
+	if (!ferror(fp)) {
+		success = 1;
+	}
 
 	fclose(fp);
 	*sum = total;
-	return(success);
+	return success;
 }
 
 /*
@@ -572,21 +583,24 @@ int local_file_check_new(char *fname, unsigned char digest_out[16]) {
 	fp = fopen(pathbuf, "rb");	/* b for windows.. */
 	if (!fp) {
 		memset(digest_out, 0, 16);
-		return(1);
+		return 1;
 	}
 
 	MD5Init(&ctx);
 
-	while ((bytes_read = fread(buffer, 1, sizeof(buffer), fp)) > 0)
+	while ((bytes_read = fread(buffer, 1, sizeof(buffer), fp)) > 0) {
 		MD5Update(&ctx, (unsigned char *) buffer, bytes_read);
+	}
 
 	MD5Final(digest_out, &ctx);
 
 	/* Check for read failure */
-	if (!ferror(fp)) success = 1;
+	if (!ferror(fp)) {
+		success = 1;
+	}
 
 	fclose(fp);
-	return(success);
+	return success;
 }
 
 /*
@@ -595,7 +609,6 @@ int local_file_check_new(char *fname, unsigned char digest_out[16]) {
  */
 void md5_digest_to_bigendian_uint(unsigned digest_out[4], const unsigned char digest[16]) {
 	const unsigned *digest_in = (const unsigned *) digest;
-
 	digest_out[0] = htonl(digest_in[0]);
 	digest_out[1] = htonl(digest_in[1]);
 	digest_out[2] = htonl(digest_in[2]);
@@ -607,7 +620,6 @@ void md5_digest_to_bigendian_uint(unsigned digest_out[4], const unsigned char di
  */
 void md5_digest_to_char_array(unsigned char digest_out[16], const unsigned digest[4]) {
 	unsigned *digest_out2 = (unsigned *) digest_out;
-
 	digest_out2[0] = ntohl(digest[0]);
 	digest_out2[1] = ntohl(digest[1]);
 	digest_out2[2] = ntohl(digest[2]);

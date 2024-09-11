@@ -29,16 +29,17 @@ static mem_realloc_hook realloc_aux;
 /*
  * Set the hooks for the memory system.
  */
-bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook realloc) {
+bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook realloc)
+{
 	/* Error-check */
-	if (!alloc || !free || !realloc) return(FALSE);
+	if (!alloc || !free || !realloc) return FALSE;
 
 	/* Set up hooks */
 	ralloc_aux = alloc;
 	rnfree_aux = free;
 	realloc_aux = realloc;
 
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -51,7 +52,8 @@ bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook re
  *
  * Doesn't return on out of memory.
  */
-void *mem_alloc(size_t len) {
+void *mem_alloc(size_t len)
+{
 	void *mem;
 
 	/* Allow allocation of "zero bytes" */
@@ -73,7 +75,8 @@ void *mem_alloc(size_t len) {
  *
  * Returns NULL.
  */
-void *mem_free(void *p) {
+void *mem_free(void *p)
+{
 	/* Easy to free nothing */
 	if (!p) return (NULL);
 
@@ -95,7 +98,8 @@ void *mem_free(void *p) {
  *
  * Doesn't return on out of memory.
  */
-void *mem_realloc(void *p, size_t len) {
+void *mem_realloc(void *p, size_t len)
+{
 	void *mem;
 
 	/* Fail gracefully */
@@ -115,12 +119,13 @@ void *mem_realloc(void *p, size_t len) {
 /*
  * Duplicates an existing string `str`, allocating as much memory as necessary.
  */
-char *string_make(const char *str) {
+char *string_make(const char *str)
+{
 	char *res;
 	size_t siz;
 
 	/* Error-checking */
-	if (!str) return(NULL);
+	if (!str) return NULL;
 
 	/* Allocate space for the string (including terminator) */
 	siz = strlen(str) + 1;
@@ -137,7 +142,8 @@ char *string_make(const char *str) {
  * Un-allocate a string allocated above.
  */
 #undef string_free
-char *string_free(char *str) {
+char *string_free(char *str)
+{
 	/* Kill the buffer of chars we must have allocated above */
 	return mem_free(str);
 }

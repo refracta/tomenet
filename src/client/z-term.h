@@ -28,13 +28,13 @@ typedef struct term_win term_win;
 struct term_win
 {
 	bool cu, cv;
-	int cx, cy;
+	byte cx, cy;
 
 	byte **a;
-	char32_t **c;
+	char **c;
 
 	byte *va;
-	char32_t *vc;
+	char *vc;
 };
 
 
@@ -165,20 +165,20 @@ struct term
 	bool no_total_erase_on_wipe;
 
 	byte attr_blank;
-	char32_t char_blank;
+	char char_blank;
 
 	key_queue *keys;
 	key_queue *keys_old;
 	s32b key_size_orig;
 
-	int wid;
-	int hgt;
+	byte wid;
+	byte hgt;
 
-	int y1;
-	int y2;
+	byte y1;
+	byte y2;
 
-	int *x1;
-	int *x2;
+	byte *x1;
+	byte *x2;
 
 	term_win *old;
 	term_win *scr;
@@ -190,10 +190,15 @@ struct term
 	void (*nuke_hook)(term *t);
 
 	errr (*user_hook)(int n);
+
 	errr (*xtra_hook)(int n, int v);
+
 	errr (*curs_hook)(int x, int y);
+
 	errr (*wipe_hook)(int x, int y, int n);
-	errr (*pict_hook)(int x, int y, byte a, char32_t c);
+
+	errr (*pict_hook)(int x, int y, byte a, char c);
+
 	errr (*text_hook)(int x, int y, int n, byte a, cptr s);
 };
 
@@ -237,8 +242,6 @@ struct term
 #define TERM_XTRA_LEVEL 12	/* Change the "soft" level (optional) */
 #define TERM_XTRA_DELAY 13	/* Delay some milliseconds (optional) */
 
-#define DEFAULT_TERM_WID 80
-#define DEFAULT_TERM_HGT 24
 
 /**** Available Variables ****/
 
@@ -247,15 +250,13 @@ extern term *Term;
 
 /**** Available Functions ****/
 
-extern byte term2attr(byte ta);
-
 extern errr Term_user(int n);
 extern errr Term_xtra(int n, int v);
 
 extern errr Term_fresh(void);
 extern errr Term_set_cursor(int v);
 extern errr Term_gotoxy(int x, int y);
-extern errr Term_draw(int x, int y, byte a, char32_t c);
+extern errr Term_draw(int x, int y, byte a, char c);
 extern errr Term_addch(byte a, char c);
 extern errr Term_addstr(int n, byte a, cptr s);
 extern errr Term_putch(int x, int y, byte a, char c);
@@ -268,7 +269,7 @@ extern errr Term_redraw_section(int x1, int y1, int x2, int y2);
 extern errr Term_get_cursor(int *v);
 extern errr Term_get_size(int *w, int *h);
 extern errr Term_locate(int *x, int *y);
-extern errr Term_what(int x, int y, byte *a, char32_t *c);
+extern errr Term_what(int x, int y, byte *a, char *c);
 
 extern errr Term_flush(void);
 extern errr Term_keypress_aux(key_queue *keys, int k);
@@ -294,6 +295,6 @@ extern errr term_init(term *t, int w, int h, int k);
 extern byte flick_colour(byte attr);
 extern void flicker(void);
 
-extern bool validate_term_screen_dimensions(int *cols, int *rows);
-extern bool validate_term_dimensions(int term_idx, int *cols, int *rows);
+
 #endif
+

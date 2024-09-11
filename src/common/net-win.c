@@ -145,7 +145,9 @@ int			sl_broadcast_enabled = 0;
  *
  * Originally coded by Arne Helme
  */
-void SetTimeout(int s, int us) {
+void
+SetTimeout(int s, int us)
+{
     sl_timeout_us = us;
     sl_timeout_s = s;
 } /* SetTimeout */
@@ -179,7 +181,9 @@ void SetTimeout(int s, int us) {
  *
  * Originally coded by Arne Helme
  */
-int GetPortNum(int fd) {
+int
+GetPortNum(int fd)
+{
     int			len;
     struct sockaddr_in	addr;
 
@@ -219,7 +223,9 @@ int GetPortNum(int fd) {
  *
  * Originally coded by Bert G sbers
  */
-int SetSocketReceiveBufferSize(int fd, int size) {
+int
+SetSocketReceiveBufferSize(int fd, int size)
+{
     return (setsockopt(fd, SOL_SOCKET, SO_RCVBUF,
 		       (void *)&size, sizeof(size)));
 } /* SetSocketReceiveBufferSize */
@@ -254,7 +260,9 @@ int SetSocketReceiveBufferSize(int fd, int size) {
  *
  * Originally coded by Bert G sbers
  */
-int SetSocketSendBufferSize(int fd, int size) {
+int
+SetSocketSendBufferSize(int fd, int size)
+{
     return (setsockopt(fd, SOL_SOCKET, SO_SNDBUF,
 		       (void *)&size, sizeof(size)));
 } /* SetSocketSendBufferSize */
@@ -289,7 +297,9 @@ int SetSocketSendBufferSize(int fd, int size) {
  *
  * Originally coded by Bert G sbers
  */
-int SetSocketNonBlocking(int fd, int flag) {
+int
+SetSocketNonBlocking(int fd, int flag)
+{
 /*
  * There are some problems on some particular systems (suns) with
  * getting sockets to be non-blocking.  Just try all possible ways
@@ -339,26 +349,30 @@ int SetSocketNonBlocking(int fd, int flag) {
     char buf[128];
 
 #ifdef USE_FCNTL_FNDELAY
-    if (fcntl(fd, F_SETFL, (flag != 0) ? FNDELAY : 0) != -1) return(0);
+    if (fcntl(fd, F_SETFL, (flag != 0) ? FNDELAY : 0) != -1)
+	return 0;
     sprintf(buf, "fcntl FNDELAY failed in socklib.c line %d", __LINE__);
     perror(buf);
 #endif
 
 #ifdef USE_IOCTL_FIONBIO
     u_long flag_long = flag;
-    if (ioctlsocket(fd, FIONBIO, &flag_long) != SOCKET_ERROR) return(0);
+    if (ioctlsocket(fd, FIONBIO, &flag_long) != SOCKET_ERROR)
+	return 0;
     sprintf(buf, "ioctl FIONBIO failed in socklib.c line %d", __LINE__);
     perror(buf);
 #endif
 
 #ifdef USE_FCNTL_O_NONBLOCK
-    if (fcntl(fd, F_SETFL, (flag != 0) ? O_NONBLOCK : 0) != -1) return(0);
+    if (fcntl(fd, F_SETFL, (flag != 0) ? O_NONBLOCK : 0) != -1)
+	return 0;
     sprintf(buf, "fcntl O_NONBLOCK failed in socklib.c line %d", __LINE__);
     perror(buf);
 #endif
 
 #ifdef USE_FCNTL_O_NDELAY
-    if (fcntl(fd, F_SETFL, (flag != 0) ? O_NDELAY : 0) != -1) return(0);
+    if (fcntl(fd, F_SETFL, (flag != 0) ? O_NDELAY : 0) != -1)
+	return 0;
     sprintf(buf, "fcntl O_NDELAY failed in socklib.c line %d", __LINE__);
     perror(buf);
 #endif
@@ -396,7 +410,9 @@ int SetSocketNonBlocking(int fd, int flag) {
  *
  * Originally coded by Bert G sbers
  */
-int SetSocketBroadcast(int fd, int flag) {
+int
+SetSocketBroadcast(int fd, int flag)
+{
     return setsockopt(fd, SOL_SOCKET, SO_BROADCAST,
 		      (void *)&flag, sizeof(flag));
 } /* SetSocketBroadcast */
@@ -431,16 +447,18 @@ int SetSocketBroadcast(int fd, int flag) {
  *
  * Originally coded by Bert G sbers
  */
-int GetSocketError(int fd) {
+int
+GetSocketError(int fd)
+{
     int	error, size;
 
     size = sizeof(error);
     if (getsockopt(fd, SOL_SOCKET, SO_ERROR,
 	(char *)&error, &size) == -1) {
-	return(-1);
+	return -1;
     }
     errno = error;
-    return(0);
+    return 0;
 } /* GetSocketError */
 
 
@@ -474,7 +492,9 @@ int GetSocketError(int fd) {
  * Originally coded by Arne Helme
  *
  */
-int SocketReadable(int fd) {
+int
+SocketReadable(int fd)
+{
     fd_set		readfds;
     struct timeval	timeout;
 
@@ -488,7 +508,7 @@ int SocketReadable(int fd) {
     if (select(fd, &readfds, NULL, NULL, &timeout) == SOCKET_ERROR)
 	return ((errno == EINTR) ? 0 : -1);
 /* I am not getting a readable socket. */
-    if (FD_ISSET(fd, &readfds))
+    if (FD_ISSET(fd, &readfds))  
 	return (1);
     return (0);
 } /* SocketReadable */
@@ -522,7 +542,8 @@ int SocketReadable(int fd) {
  *
  * Originally coded by Arne Helme
  */
-static void inthandler(int signum) {
+static void inthandler(int signum)
+{
     (void) longjmp(env, 1);
 } /* inthandler */
 
@@ -555,11 +576,16 @@ static void inthandler(int signum) {
  *
  * Originally coded by Arne Helme
  */
-int SocketClose(int fd) {
+int
+SocketClose(int fd)
+{
 	/*whether there was an error or not, we close the socket */
     (void)shutdown(fd, 2);
 
-    if (closesocket(fd) == -1) return (-1);
+    if (closesocket(fd) == -1)
+    {
+		return (-1);
+    }
     return (1);
 } /* SocketClose */
 /*
@@ -596,26 +622,32 @@ int SocketClose(int fd) {
  *	User applications.
  *
  */
-void CleanupDgramSocket(int sock) {
+void CleanupDgramSocket(int sock)
+{
 	char	ch;
 
-	if (sock > 2) {
+	if (sock > 2)
+	{
 		ch = PKT_QUIT;
-		if (DgramWrite(sock, &ch, 1) != 1) {
+		if (DgramWrite(sock, &ch, 1) != 1)
+		{
 			GetSocketError(sock);
 			DgramWrite(sock, &ch, 1);
 		}
 		Sleep(1000);
 	}
 
-	if (sock > 2) {
+	if (sock > 2)
+	{
 		ch = PKT_QUIT;
-		if (DgramWrite(sock, &ch, 1) != 1) {
+		if (DgramWrite(sock, &ch, 1) != 1)
+		{
 			GetSocketError(sock);
 			DgramWrite(sock, &ch, 1);
 		}
 		Sleep(1000);
-		if (DgramWrite(sock, &ch, 1) != 1) {
+		if (DgramWrite(sock, &ch, 1) != 1)
+		{
 			GetSocketError(sock);
 			DgramWrite(sock, &ch, 1);
 		}
@@ -656,13 +688,16 @@ void CleanupDgramSocket(int sock) {
  *
  * Originally coded by Arne Helme
  */
-int CreateDgramSocket(int port) {
+int
+CreateDgramSocket(int port)
+{
     struct sockaddr_in	addr_in;
     int			fd;
     int			retval;
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd == INVALID_SOCKET) {
+    if (fd == INVALID_SOCKET)
+    {
 	sl_errno = SL_ESOCKET;
 	return (-1);
     }
@@ -672,7 +707,8 @@ int CreateDgramSocket(int port) {
     addr_in.sin_addr.s_addr	= INADDR_ANY;
     addr_in.sin_port		= htons(port);
     retval = bind(fd, (struct sockaddr *)&addr_in, sizeof(struct sockaddr_in));
-    if (retval == SOCKET_ERROR) {
+    if (retval == SOCKET_ERROR)
+    {
 	sl_errno = SL_EBIND;
 	retval = errno;
 	(void) closesocket(fd);
@@ -717,13 +753,16 @@ int CreateDgramSocket(int port) {
  *
  * Originally coded by Bert G jsbers, adapted from CreateDgramSocket().
  */
-int CreateDgramAddrSocket(char *dotaddr, int port) {
+int
+CreateDgramAddrSocket(char *dotaddr, int port)
+{
     struct sockaddr_in	addr_in;
     int			fd;
     int			retval;
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd == INVALID_SOCKET) {
+    if (fd == INVALID_SOCKET)
+    {
 	sl_errno = SL_ESOCKET;
 	return (-1);
     }
@@ -733,7 +772,8 @@ int CreateDgramAddrSocket(char *dotaddr, int port) {
     addr_in.sin_addr.s_addr	= inet_addr(dotaddr);
     addr_in.sin_port		= htons(port);
     retval = bind(fd, (struct sockaddr *)&addr_in, sizeof(struct sockaddr_in));
-    if (retval == SOCKET_ERROR) {
+    if (retval == SOCKET_ERROR)
+    {
 	sl_errno = SL_EBIND;
 	retval = errno;
 	(void) closesocket(fd);
@@ -777,7 +817,9 @@ int CreateDgramAddrSocket(char *dotaddr, int port) {
  *
  * Originally coded by Bert G jsbers, adapted from CreateDgramAddrSocket().
  */
-int DgramBind(int fd, char *dotaddr, int port) {
+int
+DgramBind(int fd, char *dotaddr, int port)
+{
     struct sockaddr_in	addr_in;
     int			retval;
 
@@ -786,7 +828,8 @@ int DgramBind(int fd, char *dotaddr, int port) {
     addr_in.sin_addr.s_addr	= inet_addr(dotaddr);
     addr_in.sin_port		= htons(port);
     retval = bind(fd, (struct sockaddr *)&addr_in, sizeof(struct sockaddr_in));
-    if (retval == SOCKET_ERROR) {
+    if (retval == SOCKET_ERROR)
+    {
 	sl_errno = SL_EBIND;
 	return (-1);
     }
@@ -826,24 +869,32 @@ int DgramBind(int fd, char *dotaddr, int port) {
  *
  * Originally coded by Bert G sbers
  */
-int DgramConnect(int fd, char *host, int port) {
+int
+DgramConnect(int fd, char *host, int port)
+{
     struct sockaddr_in	addr_in;
     struct hostent	*hp;
     int			retval;
 
     memset((char *)&addr_in, 0, sizeof(addr_in));
     addr_in.sin_addr.s_addr 	= inet_addr(host);
-    if (addr_in.sin_addr.s_addr == (unsigned long)-1) {
+    if (addr_in.sin_addr.s_addr == (unsigned long)-1)
+    {
 	hp = gethostbyname(host);
-	if (hp == NULL) {
+	if (hp == NULL)
+	{
 	    sl_errno = SL_EHOSTNAME;
 	    return (-1);
-	} else addr_in.sin_addr.s_addr = ((struct in_addr*)(hp->h_addr))->s_addr;
+	}
+	else
+	    addr_in.sin_addr.s_addr =
+		((struct in_addr*)(hp->h_addr))->s_addr;
     }
     addr_in.sin_family		= AF_INET;
     addr_in.sin_port		= htons(port);
     retval = connect(fd, (struct sockaddr *)&addr_in, sizeof(addr_in));
-    if (retval == SOCKET_ERROR) {
+    if (retval == SOCKET_ERROR)
+    {
 	sl_errno = SL_ECONNECT;
 	return (-1);
     }
@@ -888,7 +939,10 @@ int DgramConnect(int fd, char *host, int port) {
  *
  * Originally coded by Arne Helme
  */
-int DgramSend(int fd, char *host, int port, char *sbuf, int size) {
+int
+DgramSend(int fd, char *host, int port,
+	  char *sbuf, int size)
+{
     int			retval;
     struct sockaddr_in	the_addr;
     struct hostent	*hp;
@@ -899,14 +953,20 @@ int DgramSend(int fd, char *host, int port, char *sbuf, int size) {
     the_addr.sin_port		= htons(port);
     if (sl_broadcast_enabled)
 	the_addr.sin_addr.s_addr	= INADDR_BROADCAST;
-    else {
+    else
+    {
 	the_addr.sin_addr.s_addr 	= inet_addr(host);
-	if (the_addr.sin_addr.s_addr == (int)-1) {
+	if (the_addr.sin_addr.s_addr == (int)-1)
+	{
 	    hp = gethostbyname(host);
-	    if (hp == NULL) {
+	    if (hp == NULL)
+	    {
 		sl_errno = SL_EHOSTNAME;
 		return (-1);
-	    } else the_addr.sin_addr.s_addr = ((struct in_addr*)(hp->h_addr))->s_addr;
+	    }
+	    else
+		the_addr.sin_addr.s_addr =
+		    ((struct in_addr*)(hp->h_addr))->s_addr;
 	}
     }
 
@@ -946,7 +1006,9 @@ int DgramSend(int fd, char *host, int port, char *sbuf, int size) {
  *
  * Originally coded by Arne Helme
  */
-int DgramReceiveAny(int fd, char *rbuf, int size) {
+int
+DgramReceiveAny(int fd, char *rbuf, int size)
+{
     int		retval;
     int		addrlen = sizeof(struct sockaddr_in);
 
@@ -993,21 +1055,30 @@ int DgramReceiveAny(int fd, char *rbuf, int size) {
  *
  * Originally coded by Arne Helme
  */
-int DgramReceive(int fd, char *from, char *rbuf, int size) {
+int
+DgramReceive(int fd, char *from, char *rbuf, int size)
+{
     struct sockaddr_in	tmp_addr;
     struct hostent	*hp;
     int			retval;
 
     tmp_addr.sin_addr.s_addr = inet_addr(from);
-    if (tmp_addr.sin_addr.s_addr == (int)-1) {
+    if (tmp_addr.sin_addr.s_addr == (int)-1)
+    {
 	hp = gethostbyname(from);
-	if (hp == NULL) {
+	if (hp == NULL)
+	{
 	    sl_errno = SL_EHOSTNAME;
 	    return (-1);
-	} else tmp_addr.sin_addr.s_addr = ((struct in_addr*)(hp->h_addr))->s_addr;
+	}
+	else
+	    tmp_addr.sin_addr.s_addr =
+		((struct in_addr*)(hp->h_addr))->s_addr;
     }
     retval = DgramReceiveAny(fd, rbuf, size);
-    if (retval == -1 || tmp_addr.sin_addr.s_addr != sl_dgram_lastaddr.sin_addr.s_addr) {
+    if (retval == -1 ||
+	tmp_addr.sin_addr.s_addr != sl_dgram_lastaddr.sin_addr.s_addr)
+    {
 	sl_errno = SL_EWRONGHOST;
 	return (-1);
     }
@@ -1046,13 +1117,16 @@ int DgramReceive(int fd, char *from, char *rbuf, int size) {
  *
  * Originally coded by Bert Gijsbers
  */
-int DgramReply(int fd, char *sbuf, int size) {
-	int retval;
+int
+DgramReply(int fd, char *sbuf, int size)
+{
+    int			retval;
 
-	retval = sendto(fd, sbuf, size, 0, (struct sockaddr *)&sl_dgram_lastaddr,
+
+    retval = sendto(fd, sbuf, size, 0, (struct sockaddr *)&sl_dgram_lastaddr,
 		   sizeof(struct sockaddr_in));
 
-	return retval;
+    return retval;
 } /* DgramReply */
 
 /*
@@ -1085,15 +1159,17 @@ int DgramReply(int fd, char *sbuf, int size) {
  *
  * Originally coded by Bert Gijsbers
  */
-int DgramRead(int fd, char *rbuf, int size) {
-	int retval;
+int
+DgramRead(int fd, char *rbuf, int size)
+{
+    int		retval;
 
-	retval = recv(fd, rbuf, size, 0);
 
+    retval = recv(fd, rbuf, size, 0);
 	/* if necessary, setup errno for calling function to check */
-	if (retval == SOCKET_ERROR) {
+	if (retval == SOCKET_ERROR){
 		errno = WSAGetLastError();
-		return(-1);
+		return -1;
 	}
 
     return retval;
@@ -1130,15 +1206,17 @@ int DgramRead(int fd, char *rbuf, int size) {
  *
  * Originally coded by Bert Gijsbers
  */
-int DgramWrite(int fd, char *wbuf, int size) {
-	int retval;
+int
+DgramWrite(int fd, char *wbuf, int size)
+{
+    int		retval;
 
-	retval = send(fd, wbuf, size, 0);
+    retval = send(fd, wbuf, size, 0);
 
 	/* if necessary, set errno */
-	if (retval == SOCKET_ERROR) {
+	if (retval == SOCKET_ERROR){
 		errno = WSAGetLastError();
-		return(-1);
+		return -1;
 	}
 
     return retval;
@@ -1173,7 +1251,9 @@ int DgramWrite(int fd, char *wbuf, int size) {
  *
  * Originally coded by Arne Helme
  */
-static void DgramInthandler(int signum) {
+static void
+DgramInthandler(int signum)
+{
     (void) signal(SIGALRM, DgramInthandler);
 } /* DgramInthandler */
 
@@ -1211,7 +1291,7 @@ static void DgramInthandler(int signum) {
  *	sl_default_retries
  *
  * External Calls
-
+ 
  *	signal
  *	DgramSend
  *	DgramReceive
@@ -1221,31 +1301,38 @@ static void DgramInthandler(int signum) {
  *
  * Originally coded by Arne Helme
  */
-int DgramSendRec(int fd, char *host, int port, char *sbuf,
-	     int sbuf_size, char *rbuf, int rbuf_size) {
+int
+DgramSendRec(int fd, char *host, int port, char *sbuf,
+	     int sbuf_size, char *rbuf, int rbuf_size)
+{
     int		retval = -1;
     int		retry = sl_default_retries;
 
     (void) signal(SIGALRM, DgramInthandler);
-    while (retry > 0) {
+    while (retry > 0)
+    {
 	if (DgramSend(fd, host, port, sbuf, sbuf_size) == -1)
 	    return (-1);
 
 
 	retval = DgramReceive(fd, host, rbuf, rbuf_size);
-	if (retval == -1) {
-	    if (errno == EINTR || sl_errno == SL_EWRONGHOST) {
+	if (retval == -1)
+	    if (errno == EINTR || sl_errno == SL_EWRONGHOST)
 		/* We have a timeout or a message from wrong host */
-		if (--retry) continue;	/* Try one more time */
-		else {
+		if (--retry)
+		    continue;	/* Try one more time */
+		else
+		{
 		    sl_errno = SL_ENORESP;
 		    break;	/* Unable to get response */
 		}
-	    } else {
+	    else
+	    {
 		sl_errno = SL_ERECEIVE;
 		break;		/* Unable to receive response */
 	    }
-	} else break;		/* Datagram from <host> arrived */
+	else
+	    break;		/* Datagram from <host> arrived */
     }
 
     (void) signal(SIGALRM, SIG_DFL);
@@ -1283,12 +1370,13 @@ int DgramSendRec(int fd, char *host, int port, char *sbuf,
  *
  * Originally coded by Arne Helme
  */
-char *DgramLastaddr(int fd) {
+char *
+DgramLastaddr(int fd)
+{
 #ifdef UNIX_SOCKETS
     return "localhost";
 #else
     int len = sizeof(struct sockaddr_in);
-
     getpeername(fd, (struct sockaddr*)&sl_dgram_lastaddr, &len);
     return (inet_ntoa(sl_dgram_lastaddr.sin_addr));
 #endif
@@ -1327,19 +1415,24 @@ char *DgramLastaddr(int fd) {
  *
  * Originally coded by Bert Gijsbers
  */
-char *DgramLastname(int fd) {
+char *
+DgramLastname(int fd)
+{
 #ifdef UNIX_SOCKETS
     return "localhost";
 #else
     struct hostent	*he;
     char		*str;
     int len = sizeof(struct sockaddr_in);
-
     getpeername(fd, (struct sockaddr*)&sl_dgram_lastaddr, &len);
+
     he = gethostbyaddr((char *)&sl_dgram_lastaddr.sin_addr,
 		       sizeof(struct in_addr), AF_INET);
-    if (he == NULL) str = inet_ntoa(sl_dgram_lastaddr.sin_addr);
-    else str = (char *) he->h_name;
+    if (he == NULL) {
+	str = inet_ntoa(sl_dgram_lastaddr.sin_addr);
+    } else {
+	str = (char *) he->h_name;
+    }
     return str;
 #endif
 } /* DgramLastname */
@@ -1373,7 +1466,9 @@ char *DgramLastname(int fd) {
  *
  * Originally coded by Arne Helme
  */
-int DgramLastport(int fd) {
+int
+DgramLastport(int fd)
+{
 #ifdef UNIX_SOCKETS
     int port;
 
@@ -1382,7 +1477,6 @@ int DgramLastport(int fd) {
     return port;
 #else
     int len = sizeof(struct sockaddr_in);
-
     getpeername(fd, (struct sockaddr*)&sl_dgram_lastaddr, &len);
     return (ntohs((int)sl_dgram_lastaddr.sin_port));
 #endif
@@ -1417,12 +1511,16 @@ int DgramLastport(int fd) {
  *
  * Originally coded by Bert Gijsbers
  */
-void DgramClose(int fd) {
+void
+DgramClose(int fd)
+{
 	int retval;
 	/* clean up the socket */
 	retval = shutdown(fd, 2);
 
-	if (retval == 0) retval = closesocket(fd);
+	if (retval == 0) {
+		retval = closesocket(fd);
+	}
 } /* DgramClose */
 
 /*
@@ -1455,11 +1553,14 @@ void DgramClose(int fd) {
  *
  * Originally coded by Bert Gijsbers
  */
-void GetLocalHostName(char *name, unsigned size) {
+void GetLocalHostName(char *name, unsigned size)
+{
     struct hostent	*he;
 
     gethostname(name, size);
-    if ((he = gethostbyname(name)) == NULL) return;
+    if ((he = gethostbyname(name)) == NULL) {
+	return;
+    }
     strncpy(name, he->h_name, size);
     name[size - 1] = '\0';
 
@@ -1507,13 +1608,16 @@ void GetLocalHostName(char *name, unsigned size) {
  *
  * Originally coded by Arne Helme
  */
-int CreateServerSocket(int port) {
+int
+CreateServerSocket(int port)
+{
     struct sockaddr_in	addr_in;
     int			fd;
     int			retval;
 
     fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd == INVALID_SOCKET) {
+    if (fd == INVALID_SOCKET)
+    {
 	sl_errno = SL_ESOCKET;
 	return (-1);
     }
@@ -1523,14 +1627,16 @@ int CreateServerSocket(int port) {
     addr_in.sin_port		= htons(port);
 
     retval = bind(fd, (struct sockaddr *)&addr_in, sizeof(struct sockaddr_in));
-    if (retval == SOCKET_ERROR) {
+    if (retval == SOCKET_ERROR)
+    {
 	sl_errno = SL_EBIND; /*  WSAGetLastError*/
 	(void) closesocket(fd);
 	return (-1);
     }
 
     retval = listen(fd, 5);
-    if (retval ==  SOCKET_ERROR) {
+    if (retval ==  SOCKET_ERROR)
+    {
 	sl_errno = SL_ELISTEN;
 	(void) closesocket(fd);
 	return (-1);
@@ -1572,7 +1678,9 @@ int CreateServerSocket(int port) {
  *
  * Originally coded by Bert Gijsbers
  */
-char *GetSockAddr(int fd) {
+char *
+GetSockAddr(int fd)
+{
     int			len;
     struct sockaddr_in	addr;
 
@@ -1615,7 +1723,9 @@ char *GetSockAddr(int fd) {
  *
  * Originally coded by Bert G sbers
  */
-int SLGetPeerName(int fd, char *name, int namelen) {
+int
+SLGetPeerName(int fd, char *name, int namelen)
+{
     int			len;
     struct sockaddr_in	addr;
     struct hostent	*hp;
@@ -1625,8 +1735,14 @@ int SLGetPeerName(int fd, char *name, int namelen) {
 	return (-1);
 
     hp = gethostbyaddr((char *)&addr.sin_addr.s_addr, 4, AF_INET);
-    if (hp != NULL) strncpy(name, hp->h_name, namelen);
-    else strncpy(name, inet_ntoa(addr.sin_addr), namelen);
+    if (hp != NULL)
+    {
+	strncpy(name, hp->h_name, namelen);
+    }
+    else
+    {
+	strncpy(name, inet_ntoa(addr.sin_addr), namelen);
+    }
     name[namelen - 1] = '\0';
 
     return (0);
@@ -1668,7 +1784,9 @@ int SLGetPeerName(int fd, char *name, int namelen) {
  *
  * Originally coded by Arne Helme
  */
-int CreateClientSocket(char *host, int port) {
+int
+CreateClientSocket(char *host, int port)
+{
     struct sockaddr_in	peer;
     struct hostent	*hp;
     int			fd;
@@ -1678,21 +1796,27 @@ int CreateClientSocket(char *host, int port) {
     peer.sin_port   = htons(port);
 
     peer.sin_addr.s_addr = inet_addr(host);
-    if (peer.sin_addr.s_addr == (int)-1) {
+    if (peer.sin_addr.s_addr == (int)-1)
+    {
 	hp = gethostbyname(host);
-	if (hp == NULL) {
+	if (hp == NULL)
+	{
 	    sl_errno = SL_EHOSTNAME;
 	    return (-1);
-	} else peer.sin_addr.s_addr = ((struct in_addr*)(hp->h_addr))->s_addr;
+	}
+	else
+	    peer.sin_addr.s_addr = ((struct in_addr*)(hp->h_addr))->s_addr;
     }
 
     fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd == INVALID_SOCKET) {
+    if (fd == INVALID_SOCKET)
+    {
 	sl_errno = SL_ESOCKET;
 	return (-1);
     }
 
-    if (connect(fd, (struct sockaddr *)&peer, sizeof(struct sockaddr_in)) == SOCKET_ERROR) {
+    if (connect(fd, (struct sockaddr *)&peer, sizeof(struct sockaddr_in)) == SOCKET_ERROR)
+    {
 	sl_errno = SL_ECONNECT;
 	(void) closesocket(fd);
 	return (-1);
@@ -1732,7 +1856,9 @@ int CreateClientSocket(char *host, int port) {
  *
  * Originally coded by Arne Helme.
  */
-int SocketAccept(int fd) {
+int
+SocketAccept(int fd)
+{
     int		retval;
 
     retval = accept(fd, NULL, 0);
@@ -1770,7 +1896,9 @@ int SocketAccept(int fd) {
  *
  * Originally coded by Arne Helme, but moved out of SocketAccept by Bert.
  */
-int SocketLinger(int fd) {
+int
+SocketLinger(int fd)
+{
     static struct linger	linger = {1, 300};
     int				lsize  = sizeof(struct linger);
 
@@ -1809,7 +1937,9 @@ int SocketLinger(int fd) {
  * Originally coded by Bert G sbers
  */
 #ifdef TCP_NODELAY
-int SetSocketNoDelay(int fd, int flag) {
+int
+SetSocketNoDelay(int fd, int flag)
+{
     /*
      * The fcntl(O_NDELAY) option has nothing to do
      * with the setsockopt(TCP_NODELAY) option.
@@ -1845,7 +1975,7 @@ int SetSocketNoDelay(int fd, int flag) {
  *
  * External Calls
  *	setjmp
-
+ 
  *	signal
  *	read
  *
@@ -1854,23 +1984,28 @@ int SetSocketNoDelay(int fd, int flag) {
  *
  * Originally coded by Arne Helme
  */
-int SocketRead(int fd, char *buf, int size) {
+int
+SocketRead(int fd, char *buf, int size)
+{
     int	ret, ret1;
 
-    if (setjmp(env)) {
+    if (setjmp(env))
+    {
 	(void) signal(SIGALRM, SIG_DFL);
 	return (-1);
     }
     ret = 0;
 
-    while (ret < size) {
+    while (ret < size)
+    {
 	(void) signal(SIGALRM, inthandler);
 
 	ret1 = recv(fd, &buf[ret], size - ret, 0);
 
 	(void) signal(SIGALRM, SIG_DFL);
 	ret += ret1;
-	if (ret1 <= 0) return (ret);
+	if (ret1 <= 0)
+	    return (ret);
     }
 
     return (ret);
@@ -1907,13 +2042,17 @@ int SocketRead(int fd, char *buf, int size) {
  *
  * Originally coded by Arne Helme
  */
-int SocketWrite(int fd, char *buf, int size) {
+int
+SocketWrite(int fd, char *buf, int size)
+{
     int		retval;
+
 
     /*
      * A SIGPIPE exception may occur if the peer entity has disconnected.
      */
     retval = write(fd, buf, size);
+
 
     return retval;
 } /* SocketWrite */

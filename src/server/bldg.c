@@ -34,35 +34,36 @@ static int building_loc = 0;
 /*
  * A helper function for is_state
  */
-static bool is_state_aux(int Ind, store_type *s_ptr, int state) {
+static bool is_state_aux(int Ind, store_type *s_ptr, int state)
+{
 	player_type *p_ptr = Players[Ind];
 	owner_type *ot_ptr = &ow_info[s_ptr->owner];
 
 
 	/* Check race */
 	if (ot_ptr->races[state][p_ptr->prace / 32] & (1U << (p_ptr->prace % 32)))
-		return(TRUE);
+		return (TRUE);
 
 	/* Check class */
 	if (ot_ptr->classes[state][p_ptr->pclass / 32] & (1U << (p_ptr->pclass % 32)))
-		return(TRUE);
+		return (TRUE);
 
 #if 0
 	/* Check realms */
 	if ((ot_ptr->realms[state][p_ptr->realm1 / 32] & (1U << (p_ptr->realm1 % 32))) ||
 	    (ot_ptr->realms[state][p_ptr->realm2 / 32] & (1U << (p_ptr->realm2 % 32))))
-		return(TRUE);
+		return (TRUE);
 #endif	// 0
 
 	/* All failed */
-	return(FALSE);
+	return (FALSE);
 }
 
 /* Display a list of 'achievements' in chronological order - C. Blue */
 static void race_legends(int Ind) {
 	char path[MAX_PATH_LENGTH];
-	//cptr name = "legends.log";
-	//(void)do_cmd_help_aux(Ind, name, NULL, line, FALSE, 0);
+//	cptr name = "legends.log";
+//	(void)do_cmd_help_aux(Ind, name, NULL, line, FALSE, 0);
 	path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_DATA, "legends-rev.log");
 	do_cmd_check_other_prepare(Ind, path, "Latest Occurances");
 }
@@ -70,13 +71,14 @@ static void race_legends(int Ind) {
 /*
  * Test if the state accords with the player
  */
-bool is_state(int Ind, store_type *s_ptr, int state) {
+bool is_state(int Ind, store_type *s_ptr, int state)
+{
 	if (state == STORE_NORMAL) {
-		if (is_state_aux(Ind, s_ptr, STORE_LIKED)) return(FALSE);
-		if (is_state_aux(Ind, s_ptr, STORE_HATED)) return(FALSE);
-		return(TRUE);
+		if (is_state_aux(Ind, s_ptr, STORE_LIKED)) return (FALSE);
+		if (is_state_aux(Ind, s_ptr, STORE_HATED)) return (FALSE);
+		return (TRUE);
 	} else {
-		return(is_state_aux(Ind, s_ptr, state));
+		return (is_state_aux(Ind, s_ptr, state));
 	}
 }
 
@@ -86,7 +88,6 @@ bool is_state(int Ind, store_type *s_ptr, int state) {
 /*
  * Display a building.
  */
-//#define NEUTRAL_COLOURS /* don't use green/yellow/red colours for different pricing depending on shop owner's hate/like */
 void show_building(int Ind, store_type *s_ptr) {
 	char buff[20];
 	int i, cost = 0;
@@ -94,7 +95,6 @@ void show_building(int Ind, store_type *s_ptr) {
 	char tmp_str[80];
 	store_info_type *st_ptr = &st_info[s_ptr->st_idx];
 	store_action_type *ba_ptr;
-	player_type *p_ptr = Players[Ind];
 
 	for (i = 0; i < 6; i++) {
 		ba_ptr = &ba_info[st_ptr->actions[i]];
@@ -117,28 +117,8 @@ void show_building(int Ind, store_type *s_ptr) {
 		}
 #endif
 
-#ifdef PLAYER_STORES
-		/* player store: cannot contact the owner if we're the owner */
-		if (st_ptr->actions[i] == 82 && p_ptr->store_num <= -2) { //BACT_CONTACT_OWNER
-			/* s_ptr is actually the fake townstore template, we need to access the actual store info behind it */
-			store_type *sp_ptr = &fake_store[-2 - p_ptr->store_num];
-
-			if (p_ptr->account == lookup_player_account(sp_ptr->player_owner)) {
-				Send_store_action(Ind, i, 0, 0, "", TERM_DARK, '.', 0, 0);
-				continue;
-			}
-		}
-#else
-		/* no player stores enabled: cannot contact any owner of it */
-		if (st_ptr->actions[i] == 82) {
-			Send_store_action(Ind, i, 0, 0, "", TERM_DARK, '.', 0, 0);
-			continue;
-		}
-#endif
-
 		if (ba_ptr->letter != '.') {
 			if (ba_ptr->action_restr == 0) {
-#ifndef NEUTRAL_COLOURS /* different colour for actions that cost money, depending on shop owner like/hate'ness? */
 				if ((is_state(Ind, s_ptr, STORE_LIKED) && (ba_ptr->costs[STORE_LIKED] == 0)) ||
 				    (is_state(Ind, s_ptr, STORE_HATED) && (ba_ptr->costs[STORE_HATED] == 0)) ||
 				    (is_state(Ind, s_ptr, STORE_NORMAL) && (ba_ptr->costs[STORE_NORMAL] == 0)))
@@ -158,21 +138,6 @@ void show_building(int Ind, store_type *s_ptr) {
 					cost = ba_ptr->costs[STORE_NORMAL];
 					strnfmt(buff, 20, "(%dgp)", cost);
 				}
-#else /* just use neutral white for everything? */
-				action_color = TERM_WHITE;
-				if (ba_ptr->costs[STORE_LIKED] == 0 && ba_ptr->costs[STORE_HATED] == 0 && ba_ptr->costs[STORE_NORMAL] == 0) {
-					buff[0] = '\0';
-				} else if (is_state(Ind, s_ptr, STORE_LIKED)) {
-					cost = ba_ptr->costs[STORE_LIKED];
-					strnfmt(buff, 20, "(%dgp)", cost);
-				} else if (is_state(Ind, s_ptr, STORE_HATED)) {
-					cost = ba_ptr->costs[STORE_HATED];
-					strnfmt(buff, 20, "(%dgp)", cost);
-				} else {
-					cost = ba_ptr->costs[STORE_NORMAL];
-					strnfmt(buff, 20, "(%dgp)", cost);
-				}
-#endif
 			} else if (ba_ptr->action_restr == 1) {
 				if ((is_state(Ind, s_ptr, STORE_LIKED) && (ba_ptr->costs[STORE_LIKED] == 0)) ||
 				    (is_state(Ind, s_ptr, STORE_NORMAL) && (ba_ptr->costs[STORE_NORMAL] == 0)))
@@ -180,22 +145,14 @@ void show_building(int Ind, store_type *s_ptr) {
 					action_color = TERM_WHITE;
 					buff[0] = '\0';
 				} else if (is_state(Ind, s_ptr, STORE_LIKED)) {
-#ifndef NEUTRAL_COLOURS
 					action_color = TERM_L_GREEN;
-#else
-					action_color = TERM_WHITE;
-#endif
 					cost = ba_ptr->costs[STORE_LIKED];
 					strnfmt(buff, 20, "(%dgp)", cost);
 				} else if (is_state(Ind, s_ptr, STORE_HATED)) {
 					action_color = TERM_L_DARK;
 					strnfmt(buff, 20, "(closed)");
 				} else {
-#ifndef NEUTRAL_COLOURS
 					action_color = TERM_YELLOW;
-#else
-					action_color = TERM_WHITE;
-#endif
 					cost = ba_ptr->costs[STORE_NORMAL];
 					strnfmt(buff, 20, "(%dgp)", cost);
 				}
@@ -204,11 +161,7 @@ void show_building(int Ind, store_type *s_ptr) {
 					action_color = TERM_WHITE;
 					buff[0] = '\0';
 				} else if (is_state(Ind, s_ptr, STORE_LIKED)) {
-#ifndef NEUTRAL_COLOURS
 					action_color = TERM_L_GREEN;
-#else
-					action_color = TERM_WHITE;
-#endif
 					cost = ba_ptr->costs[STORE_LIKED];
 					strnfmt(buff, 20, "(%dgp)", cost);
 				} else {
@@ -218,7 +171,7 @@ void show_building(int Ind, store_type *s_ptr) {
 			}
 
 			strnfmt(tmp_str, 80, " %c) %s %s", ba_ptr->letter, ba_ptr->name + ba_name, buff);
-			//c_put_str(action_color, tmp_str, 21 + (i / 2), 17 + (30 * (i % 2)));
+//			c_put_str(action_color, tmp_str, 21 + (i / 2), 17 + (30 * (i % 2)));
 #if 0
 			Send_store_action(Ind, j, ba_ptr->action, ba_name + ba_ptr->name,
 					ba_ptr->letter, ba_ptr->costs[STORE_LIKED], ba_ptr->flags);
@@ -234,39 +187,39 @@ void show_building(int Ind, store_type *s_ptr) {
 
 #if 0
 
-static void reset_tim_flags() {
-	p_ptr->fast = 0;	/* Timed -- Fast */
-	p_ptr->slow = 0;	/* Timed -- Slow */
-	p_ptr->blind = 0;	/* Timed -- Blindness */
-	p_ptr->paralyzed = 0;	/* Timed -- Paralysis */
-	p_ptr->confused = 0;	/* Timed -- Confusion */
-	p_ptr->afraid = 0;	/* Timed -- Fear */
-	p_ptr->image = 0;	/* Timed -- Hallucination */
-	p_ptr->poisoned = 0;	/* Timed -- Poisoned */
-	p_ptr->diseased = 0;	/* Timed -- Poisoned */
-	p_ptr->cut = 0;		/* Timed -- Cut */
-	p_ptr->stun = 0;	/* Timed -- Stun */
+static void reset_tim_flags()
+{
+	p_ptr->fast = 0;            /* Timed -- Fast */
+	p_ptr->slow = 0;            /* Timed -- Slow */
+	p_ptr->blind = 0;           /* Timed -- Blindness */
+	p_ptr->paralyzed = 0;       /* Timed -- Paralysis */
+	p_ptr->confused = 0;        /* Timed -- Confusion */
+	p_ptr->afraid = 0;          /* Timed -- Fear */
+	p_ptr->image = 0;           /* Timed -- Hallucination */
+	p_ptr->poisoned = 0;        /* Timed -- Poisoned */
+	p_ptr->cut = 0;             /* Timed -- Cut */
+	p_ptr->stun = 0;            /* Timed -- Stun */
 
-	p_ptr->protevil = 0;	/* Timed -- Protection */
-	p_ptr->protgood = 0;	/* Timed -- Protection */
-	p_ptr->invuln = 0;	/* Timed -- Invulnerable */
-	p_ptr->hero = 0;	/* Timed -- Heroism */
-	p_ptr->shero = 0;	/* Timed -- Berserk */
-	p_ptr->fury = 0;	/* Timed -- Fury */
-	p_ptr->shield = 0;	/* Timed -- Shield Spell */
-	p_ptr->blessed = 0;	/* Timed -- Blessed */
-	p_ptr->tim_invis = 0;	/* Timed -- Invisibility */
-	p_ptr->tim_infra = 0;	/* Timed -- Infra Vision */
+	p_ptr->protevil = 0;        /* Timed -- Protection */
+	p_ptr->protgood = 0;        /* Timed -- Protection */
+	p_ptr->invuln = 0;          /* Timed -- Invulnerable */
+	p_ptr->hero = 0;            /* Timed -- Heroism */
+	p_ptr->shero = 0;           /* Timed -- Berserk */
+	p_ptr->fury = 0;            /* Timed -- Fury */
+	p_ptr->shield = 0;          /* Timed -- Shield Spell */
+	p_ptr->blessed = 0;         /* Timed -- Blessed */
+	p_ptr->tim_invis = 0;       /* Timed -- Invisibility */
+	p_ptr->tim_infra = 0;       /* Timed -- Infra Vision */
 
-	p_ptr->oppose_acid = 0;	/* Timed -- oppose acid */
-	p_ptr->oppose_elec = 0;	/* Timed -- oppose lightning */
-	p_ptr->oppose_fire = 0;	/* Timed -- oppose heat */
-	p_ptr->oppose_cold = 0;	/* Timed -- oppose cold */
-	p_ptr->oppose_pois = 0;	/* Timed -- oppose poison */
+	p_ptr->oppose_acid = 0;     /* Timed -- oppose acid */
+	p_ptr->oppose_elec = 0;     /* Timed -- oppose lightning */
+	p_ptr->oppose_fire = 0;     /* Timed -- oppose heat */
+	p_ptr->oppose_cold = 0;     /* Timed -- oppose cold */
+	p_ptr->oppose_pois = 0;     /* Timed -- oppose poison */
 
-	p_ptr->confusing = 0;	/* Touch of Confusion */
-	p_ptr->zeal = 0;	/* Holy +EA */
-	p_ptr->martyr = 0;	/* Holy martyr / invulnerability */
+	p_ptr->confusing = 0;       /* Touch of Confusion */
+	p_ptr->zeal = 0;	    /* Holy +EA */
+	p_ptr->martyr = 0;	    /* Holy martyr / invulnerability */
 	p_ptr->martyr_timeout = 0;
 
 	p_ptr->sh_fire_tim = 0;
@@ -278,64 +231,74 @@ static void reset_tim_flags() {
 /*
  * arena commands
  */
-static void arena_comm(int cmd) {
+static void arena_comm(int cmd)
+{
 	char tmp_str[80];
 	monster_race *r_ptr;
 	cptr name;
 
-	switch (cmd) {
-	case BACT_ARENA:
-		if (p_ptr->arena_number == MAX_ARENA_MONS) {
-			clear_bldg(5,19);
-			prt("               Arena Victor!", 5, 0);
-			prt("Congratulations!  You have defeated all before you.", 7, 0);
-			prt("For that, receive the prize: 10,000 gold pieces", 8, 0);
-			prt("",10,0);
-			prt("", 11, 0);
+	switch(cmd) {
+		case BACT_ARENA:
+		{
+			if (p_ptr->arena_number == MAX_ARENA_MONS) {
+				clear_bldg(5,19);
+				prt("               Arena Victor!", 5, 0);
+				prt("Congratulations!  You have defeated all before you.", 7, 0);
+				prt("For that, receive the prize: 10,000 gold pieces", 8, 0);
+				prt("",10,0);
+				prt("", 11, 0);
 
-			gain_au(Ind, 10000, FALSE, FALSE);
+				gain_au(Ind, 10000, FALSE, FALSE);
 
-			msg_print("Press the space bar to continue");
-			msg_print(NULL);
-			p_ptr->arena_number++;
-		} else if (p_ptr->arena_number > MAX_ARENA_MONS) {
-			msg_print("You enter the arena briefly and bask in your glory.");
-			msg_print(NULL);
-		} else {
-			p_ptr->inside_arena = TRUE;
-			p_ptr->exit_bldg = FALSE;
-			reset_tim_flags();
-			p_ptr->leaving = TRUE;
-			p_ptr->oldpx = px;
-			p_ptr->oldpy = py;
-			leave_bldg = TRUE;
+				msg_print("Press the space bar to continue");
+				msg_print(NULL);
+				p_ptr->arena_number++;
+			} else if (p_ptr->arena_number > MAX_ARENA_MONS) {
+				msg_print("You enter the arena briefly and bask in your glory.");
+				msg_print(NULL);
+			} else {
+				p_ptr->inside_arena = TRUE;
+				p_ptr->exit_bldg = FALSE;
+				reset_tim_flags();
+				p_ptr->leaving = TRUE;
+				p_ptr->oldpx = px;
+				p_ptr->oldpy = py;
+				leave_bldg = TRUE;
+			}
+
+			break;
 		}
-		break;
 
-	case BACT_POSTER:
-		if (p_ptr->arena_number == MAX_ARENA_MONS)
-			msg_print("You are victorious. Enter the arena for the ceremony.");
-		else if (p_ptr->arena_number > MAX_ARENA_MONS)
-			msg_print("You have won against all foes.");
-		else {
-			r_ptr = &r_info[arena_monsters[p_ptr->arena_number]];
-			name = (r_name + r_ptr->name);
-			strnfmt(tmp_str, 80, "Do I hear any challenges against: %s", name);
-			msg_print(tmp_str);
-			msg_print(NULL);
+		case BACT_POSTER:
+		{
+			if (p_ptr->arena_number == MAX_ARENA_MONS)
+				msg_print("You are victorious. Enter the arena for the ceremony.");
+			else if (p_ptr->arena_number > MAX_ARENA_MONS)
+				msg_print("You have won against all foes.");
+			else {
+				r_ptr = &r_info[arena_monsters[p_ptr->arena_number]];
+				name = (r_name + r_ptr->name);
+				strnfmt(tmp_str, 80, "Do I hear any challenges against: %s", name);
+				msg_print(tmp_str);
+				msg_print(NULL);
+			}
+
+			break;
 		}
-		break;
 
-	case BACT_ARENA_RULES:
-		/* Save screen */
-		screen_save();
+		case BACT_ARENA_RULES:
+		{
+			/* Save screen */
+			screen_save();
 
-		/* Peruse the arena help file */
-		(void)show_file("arena.txt", NULL, 0, 0, 0, NULL);
+			/* Peruse the arena help file */
+			(void)show_file("arena.txt", NULL, 0, 0, 0);
 
-		/* Load screen */
-		screen_load();
-		break;
+			/* Load screen */
+			screen_load();
+
+			break;
+		}
 	}
 }
 
@@ -343,79 +306,99 @@ static void arena_comm(int cmd) {
 /*
  * display fruit for dice slots
  */
-static void display_fruit(int row, int col, int fruit) {
-	switch (fruit) {
-	case 0: /* lemon */
-		c_put_str(TERM_YELLOW, "   ####.", row, col);
-		c_put_str(TERM_YELLOW, "  #    #", row + 1, col);
-		c_put_str(TERM_YELLOW, " #     #", row + 2, col);
-		c_put_str(TERM_YELLOW, "#      #", row + 3, col);
-		c_put_str(TERM_YELLOW, "#      #", row + 4, col);
-		c_put_str(TERM_YELLOW, "#     # ", row + 5, col);
-		c_put_str(TERM_YELLOW, "#    #  ", row + 6, col);
-		c_put_str(TERM_YELLOW, ".####   ", row + 7, col);
-		prt(" Lemon  ", row + 8, col);
-		break;
+static void display_fruit(int row, int col, int fruit)
+{
+	switch(fruit)
+	{
+		case 0: /* lemon */
+		{
+			c_put_str(TERM_YELLOW,"   ####.",row,col);
+			c_put_str(TERM_YELLOW,"  #    #",row+1,col);
+			c_put_str(TERM_YELLOW," #     #",row+2,col);
+			c_put_str(TERM_YELLOW,"#      #",row+3,col);
+			c_put_str(TERM_YELLOW,"#      #",row+4,col);
+			c_put_str(TERM_YELLOW,"#     # ",row+5,col);
+			c_put_str(TERM_YELLOW,"#    #  ",row+6,col);
+			c_put_str(TERM_YELLOW,".####   ",row+7,col);
+			prt(" Lemon  ",row+8,col);
 
-	case 1: /* orange */
-		c_put_str(TERM_ORANGE, "   ##   ", row, col);
-		c_put_str(TERM_ORANGE, "  #..#  ", row + 1, col);
-		c_put_str(TERM_ORANGE, " #....# ", row + 2, col);
-		c_put_str(TERM_ORANGE, "#......#", row + 3, col);
-		c_put_str(TERM_ORANGE, "#......#", row + 4, col);
-		c_put_str(TERM_ORANGE, " #....# ", row + 5, col);
-		c_put_str(TERM_ORANGE, "  #..#  ", row + 6, col);
-		c_put_str(TERM_ORANGE, "   ##   ", row + 7, col);
-		prt(" Orange ", row + 8, col);
-		break;
+			break;
+		}
 
-	case 2: /* sword */
-		c_put_str(TERM_SLATE, "   /\\   ", row, col);
-		c_put_str(TERM_SLATE, "   ##   ", row + 1, col);
-		c_put_str(TERM_SLATE, "   ##   ", row + 2, col);
-		c_put_str(TERM_SLATE, "   ##   ", row + 3, col);
-		c_put_str(TERM_SLATE, "   ##   ", row + 4, col);
-		c_put_str(TERM_SLATE, "   ##   ", row + 5, col);
-		c_put_str(TERM_UMBER, " ###### ", row + 6, col);
-		c_put_str(TERM_UMBER, "   ##   ", row + 7, col);
-		prt(" Sword  ", row + 8, col);
-		break;
+		case 1: /* orange */
+		{
+			c_put_str(TERM_ORANGE,"   ##   ",row,col);
+			c_put_str(TERM_ORANGE,"  #..#  ",row+1,col);
+			c_put_str(TERM_ORANGE," #....# ",row+2,col);
+			c_put_str(TERM_ORANGE,"#......#",row+3,col);
+			c_put_str(TERM_ORANGE,"#......#",row+4,col);
+			c_put_str(TERM_ORANGE," #....# ",row+5,col);
+			c_put_str(TERM_ORANGE,"  #..#  ",row+6,col);
+			c_put_str(TERM_ORANGE,"   ##   ",row+7,col);
+			prt(" Orange ",row+8,col);
 
-	case 3: /* shield */
-		c_put_str(TERM_SLATE, " ###### ", row, col);
-		c_put_str(TERM_SLATE, "#      #", row + 1, col);
-		c_put_str(TERM_SLATE, "# ++++ #", row + 2, col);
-		c_put_str(TERM_SLATE, "# +==+ #", row + 3, col);
-		c_put_str(TERM_SLATE, "#  ++  #", row + 4, col);
-		c_put_str(TERM_SLATE, " #    # ", row + 5, col);
-		c_put_str(TERM_SLATE, "  #  #  ", row + 6, col);
-		c_put_str(TERM_SLATE, "   ##   ", row + 7, col);
-		prt(" Shield ", row + 8, col);
-		break;
+			break;
+		}
 
-	case 4: /* plum */
-		c_put_str(TERM_VIOLET, "   ##   ", row, col);
-		c_put_str(TERM_VIOLET, " ###### ", row + 1, col);
-		c_put_str(TERM_VIOLET, "########", row + 2, col);
-		c_put_str(TERM_VIOLET, "########", row + 3, col);
-		c_put_str(TERM_VIOLET, "########", row + 4, col);
-		c_put_str(TERM_VIOLET, " ###### ", row + 5, col);
-		c_put_str(TERM_VIOLET, "  ####  ", row + 6, col);
-		c_put_str(TERM_VIOLET, "   ##   ", row + 7, col);
-		prt("  Plum  ", row + 8, col);
-		break;
+		case 2: /* sword */
+		{
+			c_put_str(TERM_SLATE,"   /\\   ",row,col);
+			c_put_str(TERM_SLATE,"   ##   ",row+1,col);
+			c_put_str(TERM_SLATE,"   ##   ",row+2,col);
+			c_put_str(TERM_SLATE,"   ##   ",row+3,col);
+			c_put_str(TERM_SLATE,"   ##   ",row+4,col);
+			c_put_str(TERM_SLATE,"   ##   ",row+5,col);
+			c_put_str(TERM_UMBER," ###### ",row+6,col);
+			c_put_str(TERM_UMBER,"   ##   ",row+7,col);
+			prt(" Sword  ",row+8,col);
 
-	case 5: /* cherry */
-		c_put_str(TERM_RED, "      ##", row, col);
-		c_put_str(TERM_RED, "   ###  ", row + 1, col);
-		c_put_str(TERM_RED, "  #..#  ", row + 2, col);
-		c_put_str(TERM_RED, "  #..#  ", row + 3, col);
-		c_put_str(TERM_RED, " ###### ", row + 4, col);
-		c_put_str(TERM_RED, "#..##..#", row + 5, col);
-		c_put_str(TERM_RED, "#..##..#", row + 6, col);
-		c_put_str(TERM_RED, " ##  ## ", row + 7, col);
-		prt(" Cherry ", row + 8, col);
-		break;
+			break;
+		}
+
+		case 3: /* shield */
+		{
+			c_put_str(TERM_SLATE," ###### ",row,col);
+			c_put_str(TERM_SLATE,"#      #",row+1,col);
+			c_put_str(TERM_SLATE,"# ++++ #",row+2,col);
+			c_put_str(TERM_SLATE,"# +==+ #",row+3,col);
+			c_put_str(TERM_SLATE,"#  ++  #",row+4,col);
+			c_put_str(TERM_SLATE," #    # ",row+5,col);
+			c_put_str(TERM_SLATE,"  #  #  ",row+6,col);
+			c_put_str(TERM_SLATE,"   ##   ",row+7,col);
+			prt(" Shield ",row+8,col);
+
+			break;
+		}
+
+		case 4: /* plum */
+		{
+			c_put_str(TERM_VIOLET,"   ##   ",row,col);
+			c_put_str(TERM_VIOLET," ###### ",row+1,col);
+			c_put_str(TERM_VIOLET,"########",row+2,col);
+			c_put_str(TERM_VIOLET,"########",row+3,col);
+			c_put_str(TERM_VIOLET,"########",row+4,col);
+			c_put_str(TERM_VIOLET," ###### ",row+5,col);
+			c_put_str(TERM_VIOLET,"  ####  ",row+6,col);
+			c_put_str(TERM_VIOLET,"   ##   ",row+7,col);
+			prt("  Plum  ",row+8,col);
+
+			break;
+		}
+
+		case 5: /* cherry */
+		{
+			c_put_str(TERM_RED,"      ##",row,col);
+			c_put_str(TERM_RED,"   ###  ",row+1,col);
+			c_put_str(TERM_RED,"  #..#  ",row+2,col);
+			c_put_str(TERM_RED,"  #..#  ",row+3,col);
+			c_put_str(TERM_RED," ###### ",row+4,col);
+			c_put_str(TERM_RED,"#..##..#",row+5,col);
+			c_put_str(TERM_RED,"#..##..#",row+6,col);
+			c_put_str(TERM_RED," ##  ## ",row+7,col);
+			prt(" Cherry ",row+8,col);
+
+			break;
+		}
 	}
 }
 
@@ -428,7 +411,8 @@ static void display_fruit(int row, int col, int fruit) {
  * Well it does work, but I want gambles playable 'between players'..
  * - Jir -
  */
-static bool gamble_comm(int Ind, int cmd, int gold) {
+static bool gamble_comm(int Ind, int cmd, int gold)
+{
 	player_type *p_ptr = Players[Ind];
 	int roll1, roll2, roll3;
 	int choice, odds, win;
@@ -450,16 +434,13 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 
 	if (cmd == BACT_GAMBLE_RULES) {
 		/* Peruse the gambling help file */
-		//(void)show_file(Ind, "gambling.txt", NULL, 0, 0, 0, NULL);
+		//(void)show_file(Ind, "gambling.txt", NULL, 0, 0, 0);
 
 		/* Get the filename */
 		char    path[MAX_PATH_LENGTH];
 
 		path_build(path, MAX_PATH_LENGTH, ANGBAND_DIR_TEXT, "gambling.txt");
 		do_cmd_check_other_prepare(Ind, path, "Gambling Rules");
-#ifdef USE_SOUND_2010
-		sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 	} else {
 		//clear_bldg(5, 23);
 
@@ -508,7 +489,7 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 #endif	// 0
 
 		do {
-			switch (cmd) {
+			switch(cmd) {
 			case BACT_IN_BETWEEN: /* Game of In-Between */
 				//c_put_str(TERM_GREEN, "In Between",5,2);
 				msg_print(Ind, "\377GIn Between");
@@ -518,7 +499,7 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 				roll2 = randint(10);
 				choice = randint(10);
 #ifdef USE_SOUND_2010
-				sound(Ind, "store_inbetween", NULL, SFX_TYPE_MISC, FALSE);//same for 'draw' and 'deal' actually
+				sound(Ind, "dice_roll", NULL, SFX_TYPE_MISC, FALSE);//same for 'draw' and 'deal' actually
 #endif
 				msg_format(Ind, "Black die: \377s%d\377w     Black Die: \377s%d",
 				    roll1, roll2);
@@ -540,7 +521,7 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 				roll3 = roll1 +  roll2;
 				choice = roll3;
 #ifdef USE_SOUND_2010
-				sound(Ind, "store_craps", NULL, SFX_TYPE_MISC, FALSE);//same for 'draw' and 'deal' actually
+				sound(Ind, "dice_roll", NULL, SFX_TYPE_MISC, FALSE);//same for 'draw' and 'deal' actually
 #endif
 				msg_format(Ind, "First roll:   \377s%d %d\377w   Total: \377y%d", roll1,
 				    roll2, roll3);
@@ -555,14 +536,16 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 						msg_print(Ind, "Rerolling..");
 						roll1 = randint(6);
 						roll2 = randint(6);
-						roll3 = roll1 + roll2;
+						roll3 = roll1 +  roll2;
 
 						msg_format(Ind, "Roll result:  \377s%d %d\377w   Total: \377s%d",
 						    roll1, roll2, roll3);
 
-						if (roll3 == choice) win = TRUE;
-						else if (roll3 == 7) win = FALSE;
-						else {
+						if (roll3 == choice) {
+							win = TRUE;
+						} else if (roll3 == 7) {
+							win = FALSE;
+						} else {
 							/* reroll */
 						}
 					} while ((win != TRUE) && (win != FALSE));
@@ -576,7 +559,7 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 			case BACT_SPIN_WHEEL:  /* Spin the Wheel Game */
 				win = FALSE;
 				odds = 10;
-				c_put_str(TERM_GREEN, "Wheel", 5, 2);
+				c_put_str(TERM_GREEN,"Wheel", 5, 2);
 				prt("0  1  2  3  4  5  6  7  8  9", 7, 5);
 				prt("--------------------------------", 8, 3);
 				strcpy(out_val, "");
@@ -591,13 +574,10 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 					choice = 9;
 				}
 				msg_print(Ind, NULL);
-#ifdef USE_SOUND_2010
-				sound(Ind, "store_wheel", NULL, SFX_TYPE_MISC, FALSE);//same for 'draw' and 'deal' actually
-#endif
 				roll1 = randint(10) - 1;
 				strnfmt(tmp_str, 80, "The wheel spins to a stop and the winner is %d",
 				    roll1);
-				prt(tmp_str, 13, 3);
+				prt(tmp_str,13,3);
 				prt("", 9, 0);
 				prt("*", 9, (3 * roll1 + 5));
 				if (roll1 == choice)
@@ -608,23 +588,20 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 				break;
 
 			case BACT_DICE_SLOTS: /* The Dice Slots */
-				c_put_str(TERM_GREEN, "Dice Slots",5,2);
-#ifdef USE_SOUND_2010
-				sound(Ind, "store_slots", NULL, SFX_TYPE_MISC, FALSE);//same for 'draw' and 'deal' actually
-#endif
+				c_put_str(TERM_GREEN,"Dice Slots",5,2);
 				win = FALSE;
 				roll1 = randint(6);
 				roll2 = randint(6);
 				choice = randint(6);
 				strnfmt(tmp_str, 80, "%s %s %s",
-					    fruit[roll1 - 1], fruit[roll2 - 1],
-					    fruit[choice - 1]);
+					    fruit[roll1-1], fruit[roll2-1],
+					    fruit[choice-1]);
 				prt(tmp_str,15,37);
-				prt("/--------------------------\\", 7, 2);
-				prt("\\--------------------------/", 17, 2);
-				display_fruit(8,  3, roll1 - 1);
-				display_fruit(8, 12, roll2 - 1);
-				display_fruit(8, 21, choice - 1);
+				prt("/--------------------------\\",7,2);
+				prt("\\--------------------------/",17,2);
+				display_fruit(8,  3, roll1-1);
+				display_fruit(8, 12, roll2-1);
+				display_fruit(8, 21, choice-1);
 				if ((roll1 == roll2) && (roll2 == choice)) {
 					win = TRUE;
 					if (roll1 == 1)
@@ -647,8 +624,8 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
 			if (win) {
 				msg_print(Ind, "YOU WON");
 				/* hack: prevent s32b overflow */
-				if (PY_MAX_GOLD - (odds * wager) < p_ptr->au) {
-					msg_format(Ind, "\377yYou cannot carry more than %d gold!", PY_MAX_GOLD);
+				if (2000000000 - (odds * wager) < p_ptr->au) {
+					msg_format(Ind, "\377yYou cannot carry more than 2 billion worth of gold!");
 				} else {
 					p_ptr->au = p_ptr->au + (odds * wager);
 					/* Prevent a very far-fetched IDDC/Highlander exploit ^^ */
@@ -705,28 +682,29 @@ static bool gamble_comm(int Ind, int cmd, int gold) {
  * ghost code does become a reality again. Does help to avoid filthy urchins.
  * Resting at night is also a quick way to restock stores -KMW-
  */
-static bool inn_comm(int Ind, int cmd) {
+static bool inn_comm(int Ind, int cmd)
+{
 	player_type *p_ptr = Players[Ind];
 	bool vampire = FALSE;
+
 
 #if 0
 	/* Extract race info */
 	vampire = ((PRACE_FLAG(PR1_VAMPIRE)) || (p_ptr->mimic_form == MIMIC_VAMPIRE));
 #endif	// 0
-	vampire = p_ptr->prace == RACE_VAMPIRE;
+	vampire = p_ptr->suscep_life;
 
-	switch (cmd) {
+	switch(cmd)
+	{
 		case BACT_FOOD: /* Buy food & drink */
 		{
-			if (!vampire) {
-				if (p_ptr->prace == RACE_ENT) msg_print(Ind, "The barkeep gives you a bowl of water.");
-				else msg_print(Ind, "The barkeep gives you some gruel and a beer.");
+			if (!vampire)
+			{
+				msg_print(Ind, "The barkeep gives you some gruel and a beer.");
 				// msg_print(Ind, NULL);
-				(void)set_food(Ind, PY_FOOD_MAX - 1);
-#ifdef USE_SOUND_2010
-				sound(Ind, "store_food_and_drink", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-			} else {
+				(void) set_food(Ind, PY_FOOD_MAX - 1);
+			}
+			else {
 				msg_print(Ind, "You're a vampire and I don't have any food for you!");
 				return(FALSE);
 			}
@@ -750,14 +728,16 @@ static bool inn_comm(int Ind, int cmd) {
 			nighttime = ((bst(HOUR, turn) < SUNRISE) || (bst(HOUR, turn) >= NIGHTFALL));
 
 			/* Normal races rest at night */
-			if (!vampire && !nighttime) {
+			if (!vampire && !nighttime)
+			{
 				msg_print(Ind, "The rooms are available only at night.");
 				msg_print(Ind, NULL);
 				return(FALSE);
 			}
 
 			/* Vampires rest during daytime */
-			if (vampire && nighttime) {
+			if (vampire && nighttime)
+			{
 				msg_print(Ind, "The rooms are available only at daylight for the Undeads.");
 				msg_print(Ind, NULL);
 				return(FALSE);
@@ -765,7 +745,8 @@ static bool inn_comm(int Ind, int cmd) {
 #endif	// 0
 
 			/* Must cure HP draining status first */
-			if ((p_ptr->poisoned > 0) || (p_ptr->diseased > 0) || (p_ptr->cut > 0)) {
+			if ((p_ptr->poisoned > 0) || (p_ptr->cut > 0))
+			{
 				msg_print(Ind, "You need a healer, not a room.");
 				// msg_print(Ind, NULL);
 				msg_print(Ind, "Sorry, but don't want anyone dying in here.");
@@ -774,20 +755,27 @@ static bool inn_comm(int Ind, int cmd) {
 
 #if 0
 			/* Let the time pass XXX XXX XXX */
-			if (vampire) {
+			if (vampire)
+			{
 				/* Wait for sunset */
 				while ((bst(HOUR, turn) >= SUNRISE) && (bst(HOUR, turn) < NIGHTFALL))
+				{
 					turn += (10L * MINUTE);
-			} else {
+				}
+			}
+			else
+			{
 				/* Wait for sunrise */
 				while ((bst(HOUR, turn) < SUNRISE) || (bst(HOUR, turn) >= NIGHTFALL))
+				{
 					turn += (10L * MINUTE);
+				}
 			}
 #endif	// 0
 
 			/* Regen */
 			p_ptr->chp = p_ptr->mhp;
-			p_ptr->cmp = p_ptr->mmp;
+			p_ptr->csp = p_ptr->msp;
 
 			/* Restore status */
 			set_blind(Ind, 0);
@@ -796,9 +784,6 @@ static bool inn_comm(int Ind, int cmd) {
 			//p_ptr->stun = 0;
 
 			/* Message */
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_rest", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 			if (vampire) msg_print(Ind, "You awake refreshed for the new night.");
 			else msg_print(Ind, "You awake refreshed for the new day.");
 
@@ -820,16 +805,12 @@ static bool inn_comm(int Ind, int cmd) {
 		case BACT_RUMORS: /* Listen for rumors */
 		{
 			char rumor[MAX_CHARS_WIDE];
-
 #if 0 /* why this RNG stuff? also, it doesn't work (always same val) */
 			/* Set the RNG seed. */
-			//Rand_value = turn / (HOUR * 10);
+//			Rand_value = turn / (HOUR * 10);
 			Rand_value = time(NULL) / 600;
 			Rand_quick = TRUE;
 
- #ifdef USE_SOUND_2010
-			sound(Ind, "store_listen", NULL, SFX_TYPE_MISC, FALSE);
- #endif
 			get_rnd_line("rumors.txt", 0, rumor, MAX_CHARS_WIDE);
 			bracer_ff(rumor);	/* colour it */
 			msg_format(Ind, "%s", rumor);
@@ -855,7 +836,8 @@ static bool inn_comm(int Ind, int cmd) {
 /*
  * share gold for thieves
  */
-static void share_gold(void) {
+static void share_gold(void)
+{
 	int i;
 
 	i = (p_ptr->lev * 2) * 10;
@@ -870,8 +852,10 @@ static void share_gold(void) {
 /*
  * Display quest information
  */
-static void get_questinfo(int questnum) {
+static void get_questinfo(int questnum)
+{
 	int i;
+
 
 	/* Print the quest info */
 	prt(format("Quest Information (Danger level: %d)", quest[questnum].level), 5, 0);
@@ -888,9 +872,12 @@ static void get_questinfo(int questnum) {
 /*
  * Request a quest from the Lord.
  */
-static bool castle_quest(int y, int x) {
+static bool castle_quest(int y, int x)
+{
 	int             plot = 0;
+
 	quest_type      *q_ptr;
+
 
 	clear_bldg(7,18);
 
@@ -900,7 +887,7 @@ static bool castle_quest(int y, int x) {
 	/* Is there a quest available at the building? */
 	if ((!plot) || (plots[plot] == QUEST_NULL)) {
 		put_str("I don't have a quest for you at the moment.",8,0);
-		return(FALSE);
+		return FALSE;
 	}
 
 	q_ptr = &quest[plots[plot]];
@@ -912,7 +899,7 @@ static bool castle_quest(int y, int x) {
 
 		process_hooks(HOOK_QUEST_FINISH, "(d)", plots[plot]);
 
-		return(TRUE);
+		return (TRUE);
 	}
 
 	/* Quest is still unfinished */
@@ -922,7 +909,7 @@ static bool castle_quest(int y, int x) {
 		put_str("Use CTRL-Q to check the status of your quest.",9,0);
 		put_str("Return when you have completed your quest.",12,0);
 
-		return(FALSE);
+		return (FALSE);
 	}
 	/* Failed quest */
 	else if (q_ptr->status == QUEST_STATUS_FAILED) {
@@ -931,11 +918,11 @@ static bool castle_quest(int y, int x) {
 
 		process_hooks(HOOK_QUEST_FAIL, "(d)", plots[plot]);
 
-		return(FALSE);
+		return (FALSE);
 	}
 	/* No quest yet */
 	else if (q_ptr->status == QUEST_STATUS_UNTAKEN) {
-		if (process_hooks(HOOK_INIT_QUEST, "(d)", plots[plot])) return(FALSE);
+		if (process_hooks(HOOK_INIT_QUEST, "(d)", plots[plot])) return (FALSE);
 
 		q_ptr->status = QUEST_STATUS_TAKEN;
 
@@ -945,24 +932,22 @@ static bool castle_quest(int y, int x) {
 		/* Add the hooks */
 		if (quest[plots[plot]].type ==  HOOK_TYPE_C) quest[plots[plot]].init(plots[plot]);
 
-		return(TRUE);
+		return (TRUE);
 	}
 
-	return(FALSE);
+	return FALSE;
 }
 
 /*
  * Displaying town history -KMW-
  */
-static void town_history(void) {
+static void town_history(void)
+{
 	/* Save screen */
 	screen_save();
 
 	/* Peruse the building help file */
-	(void)show_file("bldg.txt", NULL, 0, 0, 0, NULL);
-#ifdef USE_SOUND_2010
-	sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
+	(void)show_file("bldg.txt", NULL, 0, 0, 0);
 
 	/* Load screen */
 	screen_load();
@@ -972,21 +957,22 @@ static void town_history(void) {
 /*
  * compare_weapon_aux2 -KMW-
  */
-static void compare_weapon_aux2(object_type *o_ptr, int numblows, int r, int c, int mult, int bonus, char attr[80], u32b f1, u32b f2, u32b f3, byte color) {
+static void compare_weapon_aux2(object_type *o_ptr, int numblows, int r, int c, int mult, int bonus, char attr[80], u32b f1, u32b f2, u32b f3, byte color)
+{
 	char tmp_str[80];
 
-	c_put_str(color, attr, r, c);
+	c_put_str(color,attr,r,c);
 
 	if (o_ptr->tval == TV_BOW || is_ammo(o_ptr->tval))
 		strnfmt(tmp_str, 80, "Attack: %d-%d damage",
 		    numblows * (((o_ptr->dd * mult) / FACTOR_MULT) + o_ptr->to_d),
-		    numblows * (((o_ptr->ds * o_ptr->dd * mult) / FACTOR_MULT) + o_ptr->to_d));
+	    	    numblows * (((o_ptr->ds * o_ptr->dd * mult) / FACTOR_MULT) + o_ptr->to_d));
 	else
 		strnfmt(tmp_str, 80, "Attack: %d-%d damage",
 		    numblows * (((o_ptr->dd * mult) / FACTOR_MULT) + o_ptr->to_d + bonus),
-		    numblows * (((o_ptr->ds * o_ptr->dd * mult) / FACTOR_MULT) + o_ptr->to_d + bonus));
+	    	    numblows * (((o_ptr->ds * o_ptr->dd * mult) / FACTOR_MULT) + o_ptr->to_d + bonus));
 
-	put_str(tmp_str, r, c + 8);
+	put_str(tmp_str,r,c+8);
 	r++;
 }
 
@@ -994,98 +980,125 @@ static void compare_weapon_aux2(object_type *o_ptr, int numblows, int r, int c, 
 /*
  * compare_weapon_aux1 -KMW-
  */
-static void compare_weapon_aux1(object_type *o_ptr, int col, int r) {
+static void compare_weapon_aux1(object_type *o_ptr, int col, int r)
+{
 	u32b f1, f2, f3, f4, f5, f6, esp;
+
 	object_flags(o_ptr, &f1, &f2, &f3, &f4, &f5, &f6, &esp);
 
 
-	if (f1 & (TR1_SLAY_ANIMAL))
+	if (f1 & (TR1_SLAY_ANIMAL)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_HURT, FLAT_HURT_BONUS, "Animals:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_SLAY_ORC))
+	}
+	if (f1 & (TR1_SLAY_ORC)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_SLAY, FLAT_SLAY_BONUS, "Orcs:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_SLAY_TROLL))
+	}
+	if (f1 & (TR1_SLAY_TROLL)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_SLAY, FLAT_SLAY_BONUS, "Trolls:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_SLAY_GIANT))
+	}
+	if (f1 & (TR1_SLAY_GIANT)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_SLAY, FLAT_SLAY_BONUS, "Giants:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_SLAY_EVIL))
+	}
+	if (f1 & (TR1_SLAY_EVIL)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_HURT, FLAT_HURT_BONUS, "Evil:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_KILL_UNDEAD))
+	}
+	if (f1 & (TR1_KILL_UNDEAD)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_KILL, FLAT_KILL_BONUS, "Undead:",
 		                    f1, f2, f3, TERM_YELLOW);
-	else if (f1 & (TR1_SLAY_UNDEAD))
+	}
+	else if (f1 & (TR1_SLAY_UNDEAD)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_SLAY, FLAT_SLAY_BONUS, "Undead:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_KILL_DEMON))
+	}
+	if (f1 & (TR1_KILL_DEMON)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_KILL, FLAT_KILL_BONUS, "Demons:",
 		                    f1, f2, f3, TERM_YELLOW);
-	else if (f1 & (TR1_SLAY_DEMON))
+	}
+	else if (f1 & (TR1_SLAY_DEMON)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_SLAY, FLAT_SLAY_BONUS, "Demons:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_KILL_DRAGON))
+	}
+	if (f1 & (TR1_KILL_DRAGON)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_KILL, FLAT_KILL_BONUS, "Dragons:",
 		                    f1, f2, f3, TERM_YELLOW);
-	else if (f1 & (TR1_SLAY_DRAGON))
+	}
+	else if (f1 & (TR1_SLAY_DRAGON)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_SLAY, FLAT_SLAY_BONUS, "Dragons:",
 		                    f1, f2, f3, TERM_YELLOW);
-	if (f1 & (TR1_BRAND_ACID))
+	}
+	if (f1 & (TR1_BRAND_ACID)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_BRAND, FLAT_BRAND_BONUS, "Acid:",
 		                    f1, f2, f3, TERM_RED);
-	if (f1 & (TR1_BRAND_ELEC))
+	}
+	if (f1 & (TR1_BRAND_ELEC)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_BRAND, FLAT_BRAND_BONUS, "Elec:",
 		                    f1, f2, f3, TERM_RED);
-	if (f1 & (TR1_BRAND_FIRE))
+	}
+	if (f1 & (TR1_BRAND_FIRE)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_BRAND, FLAT_BRAND_BONUS, "Fire:",
 		                    f1, f2, f3, TERM_RED);
-	if (f1 & (TR1_BRAND_COLD))
+	}
+	if (f1 & (TR1_BRAND_COLD)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_BRAND, FLAT_BRAND_BONUS, "Cold:",
 		                    f1, f2, f3, TERM_RED);
-	if (f1 & (TR1_BRAND_POIS))
+	}
+	if (f1 & (TR1_BRAND_POIS)) {
 		compare_weapon_aux2(o_ptr, p_ptr->num_blow, r++, col, FACTOR_BRAND, FLAT_BRAND_BONUS, "Poison:",
 		                    f1, f2, f3, TERM_RED);
+	}
 }
 
 
 /*
  * list_weapon -KMW-
  */
-static void list_weapon(object_type *o_ptr, int row, int col) {
+static void list_weapon(object_type *o_ptr, int row, int col)
+{
 	char o_name[ONAME_LEN];
+
 	char tmp_str[80];
 
+
 	object_desc(o_name, o_ptr, TRUE, 0);
-	c_put_str(TERM_YELLOW, o_name, row, col);
-	strnfmt(tmp_str, 80, "To Hit: %d   To Damage: %d", o_ptr->to_h, o_ptr->to_d);
-	put_str(tmp_str, row + 1, col);
-	strnfmt(tmp_str, 80, "Dice: %d   Sides: %d", o_ptr->dd, o_ptr->ds);
-	put_str(tmp_str, row + 2, col);
+	c_put_str(TERM_YELLOW,o_name,row,col);
+	strnfmt(tmp_str, 80, "To Hit: %d   To Damage: %d",o_ptr->to_h, o_ptr->to_d);
+	put_str(tmp_str,row+1,col);
+	strnfmt(tmp_str, 80, "Dice: %d   Sides: %d",o_ptr->dd, o_ptr->ds);
+	put_str(tmp_str,row+2,col);
 	strnfmt(tmp_str, 80, "Number of Blows: %d", p_ptr->num_blow);
-	put_str(tmp_str, row + 3, col);
-	c_put_str(TERM_YELLOW, "Possible Damage:", row + 5, col);
-	strnfmt(tmp_str, 80, "One Strike: %d-%d damage", o_ptr->dd + o_ptr->to_d,
-	        (o_ptr->ds * o_ptr->dd) + o_ptr->to_d);
-	put_str(tmp_str, row + 6, col + 1);
-	strnfmt(tmp_str, 80, "One Attack: %d-%d damage", p_ptr->num_blow * (o_ptr->dd + o_ptr->to_d),
-	        p_ptr->num_blow * (o_ptr->ds * o_ptr->dd + o_ptr->to_d));
-	put_str(tmp_str, row + 7, col + 1);
+	put_str(tmp_str,row+3,col);
+	c_put_str(TERM_YELLOW, "Possible Damage:",row+5,col);
+	strnfmt(tmp_str, 80, "One Strike: %d-%d damage",o_ptr->dd + o_ptr->to_d,
+	        (o_ptr->ds*o_ptr->dd) + o_ptr->to_d);
+	put_str(tmp_str,row+6,col+1);
+	strnfmt(tmp_str, 80, "One Attack: %d-%d damage",p_ptr->num_blow*(o_ptr->dd + o_ptr->to_d),
+	        p_ptr->num_blow*(o_ptr->ds*o_ptr->dd + o_ptr->to_d));
+	put_str(tmp_str,row+7,col+1);
 }
 
 
 /*
  * compare_weapons -KMW-
  */
-static bool compare_weapons(void) {
+static bool compare_weapons(void)
+{
 	int item, item2, i;
+
 	object_type *o1_ptr, *o2_ptr, *orig_ptr;
+
 	object_type *i_ptr;
+
 	cptr q, s;
-	o1_ptr = NULL; o2_ptr = NULL; i_ptr = NULL;
+
 
 	clear_bldg(6,18);
+
+	o1_ptr = NULL; o2_ptr = NULL; i_ptr = NULL;
 
 	/* Store copy of original wielded weapon in pack slot */
 	i_ptr = &inventory[INVEN_WIELD];
@@ -1096,18 +1109,21 @@ static bool compare_weapons(void) {
 	/* Get an item */
 	q = "What is your first weapon? ";
 	s = "You have nothing to compare.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN))) {
+	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN)))
+	{
 		inven_item_increase(INVEN_PACK, -1);
 		inven_item_optimize(INVEN_PACK);
 		return(FALSE);
 	}
 
 	/* Get the item (in the pack) */
-	if (item >= 0) o1_ptr = &inventory[item];
+	if (item >= 0)
+		o1_ptr = &inventory[item];
 
 	/* To remove a warning */
 	if (((o1_ptr->tval < TV_BOW) || (o1_ptr->tval > TV_AXE)) &&
-	    (o1_ptr->tval != TV_MSTAFF)) {
+	    (o1_ptr->tval != TV_MSTAFF))
+	{
 		msg_print("Not a weapon! Try again.");
 		msg_print(NULL);
 		inven_item_increase(INVEN_PACK, -1);
@@ -1118,7 +1134,8 @@ static bool compare_weapons(void) {
 	/* Get an item */
 	q = "What is your second weapon? ";
 	s = "You have nothing to compare.";
-	if (!get_item(&item2, q, s, (USE_EQUIP | USE_INVEN))) {
+	if (!get_item(&item2, q, s, (USE_EQUIP | USE_INVEN)))
+	{
 		inven_item_increase(INVEN_PACK, -1);
 		inven_item_optimize(INVEN_PACK);
 		return(FALSE);
@@ -1129,7 +1146,8 @@ static bool compare_weapons(void) {
 
 	/* To remove a warning */
 	if (((o2_ptr->tval < TV_BOW) || (o2_ptr->tval > TV_AXE)) &&
-	    (o2_ptr->tval != TV_MSTAFF)) {
+	    (o2_ptr->tval != TV_MSTAFF))
+	{
 		msg_print("Not a weapon! Try again.");
 		msg_print(NULL);
 		inven_item_increase(INVEN_PACK, -1);
@@ -1144,15 +1162,17 @@ static bool compare_weapons(void) {
 	calc_boni();
 
 	list_weapon(o1_ptr,i,2);
-	compare_weapon_aux1(o1_ptr, 2, i + 8);
+	compare_weapon_aux1(o1_ptr, 2, i+8);
 
 	i_ptr = &inventory[INVEN_WIELD];
-	if (item2 == INVEN_WIELD) object_copy(i_ptr, orig_ptr);
-	else object_copy(i_ptr, o2_ptr);
+	if (item2 == INVEN_WIELD)
+		object_copy(i_ptr, orig_ptr);
+	else
+		object_copy(i_ptr, o2_ptr);
 	calc_boni();
 
 	list_weapon(o2_ptr,i,40);
-	compare_weapon_aux1(o2_ptr, 40, i + 8);
+	compare_weapon_aux1(o2_ptr, 40, i+8);
 
 	i_ptr = &inventory[INVEN_WIELD];
 	object_copy(i_ptr, orig_ptr);
@@ -1191,7 +1211,7 @@ static bool fix_item(int Ind, int istart, int iend, int ispecific, bool iac, int
 		msg_print("You already have been rewarded today.");
 		msg_print(NULL);
 
-		return(FALSE);
+		return (FALSE);
 	}
 #endif
 
@@ -1253,340 +1273,19 @@ static bool fix_item(int Ind, int istart, int iend, int ispecific, bool iac, int
 
 	if (i > iend) {
 		msg_print(Ind, "You don't have anything appropriate.");
-		return(FALSE);
+		return (FALSE);
 	}
-	s_printf("BACT_ENCHANT: %s enchanted %s\n", p_ptr->name, tmp_str);
+s_printf("BACT_ENCHANT: %s enchanted %s\n", p_ptr->name, tmp_str);
 #if 0
 	if (set_reward) p_ptr->rewards[ireward] = TRUE;
 #endif
 
-#ifdef USE_SOUND_2010
-	sound(Ind, "store_enchant", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-
 	/* We might be wearing/wielding the item */
 	p_ptr->update |= PU_BONUS;
 
 	/* Window stuff */
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
-	return(TRUE);
-}
-
-static int repair_cost(int k_idx, int to_x) {
-	int cost = (k_info[k_idx].cost >> 3) + 10;
-	//dagger:11, cutlass:23, broad sword/war maul:28, zweihander:46
-	return((((to_x - 3) * (to_x - 3)) / 8 - 1) * cost / 2); //increase slightly superlinearly, ie earlier repair is cheaper
-	//-1:1, -2:2, -3:3, -4:5, -5:7, -6:9, -7:11, -8:14, -9:17, -10:20
-}
-
-/* Repair an item (no enchantment!) */
-/* Don't allow repairing if item is damaged more than this, to prevent money-cheezing by uncursing heavily negative items: */
-#define REPAIR_ITEM_EXPLOIT_LIMIT -5
-static bool repair_item(int Ind, int i, bool iac) {
-	player_type *p_ptr = Players[Ind];
-
-	int minenchant, cost;
-
-	object_type *o_ptr;
-	char tmp_str[ONAME_LEN];
-	u32b f1, f2, f3, f4, f5, f6, esp;
-
-	o_ptr = &p_ptr->inventory[i];
-	if (!o_ptr->tval) return(FALSE);
-
-	/* eligible item in this equipment slot? */
-	if (iac) {
-		if (!is_armour(o_ptr->tval)) {
-			if (is_weapon(o_ptr->tval)) msg_print(Ind, "'I only repair armour. For weapons go see the weaponsmith, next door.'");
-			else msg_print(Ind, "'That is not a piece of armour.'");
-			return(FALSE);
-		}
-
-		if (o_ptr->tval == TV_SHIELD)
-#ifdef NEW_SHIELDS_NO_AC
-		{
-			msg_print(Ind, "'That item isn't damaged.'");
-			return(FALSE);
-		}
-#else
- #ifdef USE_NEW_SHIELDS
-			minenchant = -o_ptr->ac / 2;
- #else
-			minenchant = -o_ptr->ac;
- #endif
-#endif
-		else minenchant = -o_ptr->ac;
-
-		/* Don't allow too excessive repairing of (uncursed) items */
-		if (minenchant < REPAIR_ITEM_EXPLOIT_LIMIT) minenchant = REPAIR_ITEM_EXPLOIT_LIMIT;
-
-		/* Allow repairing crowns, and give more leeway for cloaks and very light armour */
-		if (minenchant > -3) minenchant = -3;
-
-		if (o_ptr->to_a >= 0) {
-			msg_print(Ind, "'That looks pretty fine already.'");
-			return(FALSE);
-		}
-		if (o_ptr->to_a < minenchant) {
-			msg_print(Ind, "'Sorry, but that piece of armour is beyond repair.'");
-			return(FALSE);
-		}
-		cost = repair_cost(o_ptr->k_idx, o_ptr->to_a);
-	} else {
-		if (!is_weapon(o_ptr->tval)) {
-			if (is_armour(o_ptr->tval)) msg_print(Ind, "'I only repair weapons. For armour go to the armoury, next door.'");
-			else msg_print(Ind, "'That is not a weapon.'");
-			return(FALSE);
-		}
-
-		/* Easteregg, well, or not: Repair Narsil to create Anduril - C. Blue */
-		if (o_ptr->name1 == ART_NARSIL) {
-			/* Requires Elven smith in Lothlorien or Gondolin */
-			store_type *st_ptr;
-			owner_type *ot_ptr;
-			int t;
-
-			t = gettown(Ind);
-			if (t != 1 && t != 3) {
-				msg_print(Ind, "\374'Hmm, this broken sword seems special..");
-				msg_print(Ind, "\374 I have to admit it is beyond my abilities to repair this item!");
-				msg_print(Ind, "\374 You might try to seek out a famed elven smith in one of their cities.'");
-				return(FALSE);
-			}
-
-			st_ptr = &town[t].townstore[p_ptr->store_num];
-			ot_ptr = &ow_info[st_ptr->owner];
-			if (!strstr(ow_name + ot_ptr->name, "Elf)")) {
-				msg_print(Ind, "\374'Hmm, I must admit it is beyond my ability to repair this sword.");
-				msg_print(Ind, "\374 But fret not, you have come to the right place!");
-				msg_print(Ind, "\374 Just wait for an elven smith I share shifts with, to look at this.'");
-				return(FALSE);
-			}
-
-			msg_print(Ind, "'That is a quite special broken sword you have there!'");
-
-			/* Cost should be the a_info.txt cost diff between those two! [70000] */
-			Send_request_cfr(Ind, RID_REPAIR_WEAPON, format("'That'll cost %d Au to repair, accept?'", a_info[ART_ANDURIL].cost - a_info[ART_NARSIL].cost), 0);
-			p_ptr->request_extra = i + 1;
-			return(TRUE);
-		}
-
-		minenchant = -(o_ptr->dd * o_ptr->ds + 1) / 2;
-		if (minenchant < -10) minenchant = -10; /* Prevent silly values for top dice weapons */
-		/* Don't allow too excessive repairing of (uncursed) items */
-		if (minenchant < REPAIR_ITEM_EXPLOIT_LIMIT) minenchant = REPAIR_ITEM_EXPLOIT_LIMIT;
-
-		if (o_ptr->to_d >= 0) {
-			msg_print(Ind, "'That looks pretty fine already.'");
-			return(FALSE);
-		}
-		if (o_ptr->to_d < minenchant) {
-			msg_print(Ind, "'Sorry, but that weapon is beyond repair.'");
-			return(FALSE);
-		}
-		cost = repair_cost(o_ptr->k_idx, o_ptr->to_d);
-	}
-
-	if (!is_enchantable(o_ptr)) {
-		msg_print(Ind, "'Sorry, but that item cannot be repaired.'");
-		return(FALSE);
-	}
-
-	/* Artifacts cannot be repaired. */
-	if (artifact_p(o_ptr)) {
-		msg_print(Ind, "'Sorry, but artifacts cannot be repaired.'");
-		return(FALSE);
-	}
-
-	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3, &f4, &f5, &f6, &esp);
-
-	/* Unenchantable items always fail */
-	if (f5 & TR5_NO_ENCHANT) {
-		msg_print(Ind, "'Sorry, but that item cannot be repaired.'");
-		return(FALSE);
-	}
-
-	/* No easy fix for nothingness/morgul items */
-	if (cursed_p(o_ptr)) {
-		msg_print(Ind, "'Cursed items cannot be repaired!'");
-		return(FALSE);
-	}
-
-	object_desc(Ind, tmp_str, o_ptr, FALSE, 1);
-
-	if (iac) Send_request_cfr(Ind, RID_REPAIR_ARMOUR, format("'That'll cost %d Au to repair, accept?'", cost), 0);
-	else Send_request_cfr(Ind, RID_REPAIR_WEAPON, format("'That'll cost %d Au to repair, accept?'", cost), 0);
-	p_ptr->request_extra = i + 1;
-	return(TRUE);
-}
-bool repair_item_aux(int Ind, int i, bool iac) {
-	player_type *p_ptr = Players[Ind];
-
-	int minenchant, cost;
-
-	object_type *o_ptr;
-	char tmp_str[ONAME_LEN];
-	u32b f1, f2, f3, f4, f5, f6, esp;
-
-	if (!i) return(FALSE); //paranoia
-	i--;
-	o_ptr = &p_ptr->inventory[i];
-	if (!o_ptr->tval) return(FALSE);
-
-	/* eligible item in this equipment slot? */
-	if (iac) {
-		if (!is_armour(o_ptr->tval)) {
-			msg_print(Ind, "'That is not a piece of armour.'");
-			return(FALSE);
-		}
-
-		if (o_ptr->tval == TV_SHIELD)
-#ifdef NEW_SHIELDS_NO_AC
-		{
-			msg_print(Ind, "'That item isn't damaged.'");
-			return(FALSE);
-		}
-#else
- #ifdef USE_NEW_SHIELDS
-			minenchant = -o_ptr->ac / 2;
- #else
-			minenchant = -o_ptr->ac;
- #endif
-#endif
-		else minenchant = -o_ptr->ac;
-
-		/* Allow repairing crowns, and give more leeway for cloaks and very light armour */
-		if (minenchant > -3) minenchant = -3;
-		/* Don't allow too excessive repairing of (uncursed) items */
-		if (minenchant < REPAIR_ITEM_EXPLOIT_LIMIT) minenchant = REPAIR_ITEM_EXPLOIT_LIMIT;
-
-		if (o_ptr->to_a >= 0) {
-			msg_print(Ind, "A-'That looks pretty fine already.'");
-			return(FALSE);
-		}
-		if (o_ptr->to_a < minenchant) {
-			msg_print(Ind, "'Sorry, but that piece of armour is beyond repair.'");
-			return(FALSE);
-		}
-		cost = repair_cost(o_ptr->k_idx, o_ptr->to_a);
-	} else {
-		if (!is_weapon(o_ptr->tval)) {
-			msg_print(Ind, "W-'That is not a weapon.'");
-			return(FALSE);
-		}
-
-		if (o_ptr->name1 == ART_NARSIL) {
-			bool id = (o_ptr->ident & ID_KNOWN) != 0;
-
-			cost = a_info[ART_ANDURIL].cost - a_info[ART_NARSIL].cost;
-
-			object_desc(Ind, tmp_str, o_ptr, FALSE, 1);
-			if (p_ptr->au < cost) {
-				msg_print(Ind, "You do not have enough money!");
-				return(FALSE);
-			}
-			p_ptr->au -= cost;
-			p_ptr->redraw |= PR_GOLD;
-
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_repair", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-			msg_format(Ind, "Your sword looks as good as new again!");
-
-			s_printf("BACT_REPAIR: %s reforged Narsil into Anduril\n", p_ptr->name);
-
-			handle_art_d(ART_NARSIL);
-			invcopy(o_ptr, lookup_kind(TV_SWORD, SV_CLAYMORE));
-			o_ptr->name1 = ART_ANDURIL;
-			handle_art_inum(ART_ANDURIL);
-			apply_magic(&p_ptr->wpos, o_ptr, -1, TRUE, TRUE, TRUE, FALSE, make_resf(p_ptr));
-			o_ptr->level = 30; //a little bonus - Anduril/Claymore have base level 40 actually
-			if (id) {
-				o_ptr->ident |= ID_KNOWN;
-				/* One-time imprint "*identifyability*" for client's ITH_STARID/item_tester_hook_starid: */
-				if (!maybe_hidden_powers(Ind, o_ptr, FALSE)) o_ptr->ident |= ID_NO_HIDDEN;
-			}
-			can_use(Ind, o_ptr);
-			determine_artifact_timeout(ART_ANDURIL, &o_ptr->wpos); //reset duration, effectively, hm
-			a_info[ART_ANDURIL].winner = p_ptr->total_winner || (cfg.fallenkings_etiquette && p_ptr->once_winner); //double timeout speed for winners
-
-			/* We might be wearing/wielding the item */
-			p_ptr->update |= PU_BONUS;
-			p_ptr->redraw |= (PR_PLUSSES | PR_ARMOR);
-
-			/* Window stuff */
-			p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
-			return(TRUE);
-		}
-
-		minenchant = -(o_ptr->dd * o_ptr->ds + 1) / 2;
-		if (minenchant < -10) minenchant = -10; /* Prevent silly values for top dice weapons */
-		/* Don't allow too excessive repairing of (uncursed) items */
-		if (minenchant < REPAIR_ITEM_EXPLOIT_LIMIT) minenchant = REPAIR_ITEM_EXPLOIT_LIMIT;
-
-		if (o_ptr->to_d >= 0) {
-			msg_print(Ind, "'That looks pretty fine already.'");
-			return(FALSE);
-		}
-		if (o_ptr->to_d < minenchant) {
-			msg_print(Ind, "'Sorry, but that weapon is beyond repair.'");
-			return(FALSE);
-		}
-		cost = repair_cost(o_ptr->k_idx, o_ptr->to_d);
-	}
-
-	if (!is_enchantable(o_ptr)) {
-		msg_print(Ind, "'Sorry, but that item cannot be repaired.'");
-		return(FALSE);
-	}
-
-	/* Artifacts cannot be repaired. */
-	if (artifact_p(o_ptr)) {
-		msg_print(Ind, "'Sorry, but artifacts cannot be repaired.'");
-		return(FALSE);
-	}
-
-	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3, &f4, &f5, &f6, &esp);
-
-	/* Unenchantable items always fail */
-	if (f5 & TR5_NO_ENCHANT) {
-		msg_print(Ind, "'Sorry, but that item cannot be repaired.'");
-		return(FALSE);
-	}
-
-	/* No easy fix for nothingness/morgul items */
-	if (cursed_p(o_ptr)) {
-		msg_print(Ind, "'Cursed items cannot be repaired!'");
-		return(FALSE);
-	}
-
-	object_desc(Ind, tmp_str, o_ptr, FALSE, 1);
-
-	if (p_ptr->au < cost) {
-		msg_print(Ind, "You do not have enough money!");
-		return(FALSE);
-	}
-	p_ptr->au -= cost;
-	p_ptr->redraw |= PR_GOLD;
-
-	if (iac) o_ptr->to_a = 0;
-	else o_ptr->to_d = 0;
-	msg_format(Ind, "Your %s looks as good as new again!", tmp_str);
-
-	s_printf("BACT_REPAIR: %s enchanted %s\n", p_ptr->name, tmp_str);
-#ifdef USE_SOUND_2010
-	sound(Ind, "store_repair", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-
-	/* We might be wearing/wielding the item */
-	p_ptr->update |= PU_BONUS;
-	p_ptr->redraw |= (PR_PLUSSES | PR_ARMOR);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
-	return(TRUE);
+	return (TRUE);
 }
 
 
@@ -1594,25 +1293,22 @@ bool repair_item_aux(int Ind, int i, bool iac) {
 /*
  * Research Item
  */
-static bool research_item(void) {
+static bool research_item(void)
+{
 	clear_bldg(5,18);
 	identify_fully();
-#ifdef USE_SOUND_2010
-	sound(Ind, "store_id", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-	return(TRUE);
+	return (TRUE);
 }
 
 
 /*
  * Show the current quest monster.
  */
-static void show_quest_monster(void) {
+static void show_quest_monster(void)
+{
 	monster_race* r_ptr = &r_info[bounties[0][0]];
 
-#ifdef USE_SOUND_2010
-	sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
+
 	msg_format("Quest monster: %s. "
 	           "Need to turn in %d corpse%s to receive reward.",
 	           r_name + r_ptr->name, bounties[0][1],
@@ -1624,16 +1320,14 @@ static void show_quest_monster(void) {
 /*
  * Show the current bounties.
  */
-static void show_bounties(void) {
+static void show_bounties(void)
+{
 	int i, j = 6;
 	monster_race* r_ptr;
 	char buff[80];
 
 	clear_bldg(7,18);
 	c_prt(TERM_YELLOW, "Currently active bounties:", 4, 2);
-#ifdef USE_SOUND_2010
-	sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 
 	for (i = 1; i < MAX_BOUNTIES; i++, j++) {
 		r_ptr = &r_info[bounties[i][0]];
@@ -1654,23 +1348,26 @@ static void show_bounties(void) {
 /*
  * Filter for corpses that currently have a bounty on them.
  */
-static bool item_tester_hook_bounty(object_type* o_ptr) {
+static bool item_tester_hook_bounty(object_type* o_ptr)
+{
 	int i;
+
 
 	if (o_ptr->tval == TV_CORPSE) {
 		for (i = 1; i < MAX_BOUNTIES; i++) {
-			if (bounties[i][0] == o_ptr->pval2) return(TRUE);
+			if (bounties[i][0] == o_ptr->pval2) return (TRUE);
 		}
 	}
 
-	return(FALSE);
+	return (FALSE);
 }
 
 /* Filter to match the quest monster's corpse. */
-static bool item_tester_hook_quest_monster(object_type* o_ptr) {
+static bool item_tester_hook_quest_monster(object_type* o_ptr)
+{
 	if ((o_ptr->tval == TV_CORPSE) &&
-		(o_ptr->pval2 == bounties[0][0])) return(TRUE);
-	return(FALSE);
+		(o_ptr->pval2 == bounties[0][0])) return (TRUE);
+	return (FALSE);
 }
 
 
@@ -1678,21 +1375,23 @@ static bool item_tester_hook_quest_monster(object_type* o_ptr) {
  * Return the boost in the corpse's value depending on how rare the body
  * part is.
  */
-static int corpse_value_boost(int sval) {
+static int corpse_value_boost(int sval)
+{
 	switch (sval) {
 		case SV_CORPSE_HEAD:
 		case SV_CORPSE_SKULL:
-			return(1);
+			return (1);
 		/* Default to no boost. */
 		default:
-			return(0);
+			return (0);
 	}
 }
 
 /*
  * Sell a corpse, if there's currently a bounty on it.
  */
-static void sell_corpses(void) {
+static void sell_corpses(void)
+{
 	object_type* o_ptr;
 	int i, boost = 0;
 	s16b value;
@@ -1716,9 +1415,6 @@ static void sell_corpses(void) {
 			value = bounties[i][1] + boost*(r_info[o_ptr->pval2].level);
 
 			if (!gain_au(Ind, value, FALSE, FALSE)) return;
-#ifdef USE_SOUND_2010
-			sound(Ind, "pickup_gold", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 
 			msg_format("Sold for %d gold pieces.", value);
 			msg_print(NULL);
@@ -1743,12 +1439,14 @@ static void sell_corpses(void) {
 /*
  * Hook for bounty monster selection.
  */
-static bool mon_hook_bounty(int r_idx) {
-	return(lua_moon_hook_bounty(r_idx));
+static bool mon_hook_bounty(int r_idx)
+{
+	return (lua_moon_hook_bounty(r_idx));
 }
 
 
-static void select_quest_monster(void) {
+static void select_quest_monster(void)
+{
 	monster_race* r_ptr;
 	int amt;
 
@@ -1789,7 +1487,8 @@ static void select_quest_monster(void) {
 /*
  * Sell a corpse for a reward.
  */
-static void sell_quest_monster(void) {
+static void sell_quest_monster(void)
+{
 	object_type* o_ptr;
 	int item;
 
@@ -1819,9 +1518,6 @@ static void sell_quest_monster(void) {
 		msg_format("Well done! As a reward I'll teach you everything "
 		                 "about the %s, (check your recall)",
 		                 r_name + r_ptr->name);
-#ifdef USE_SOUND_2010
-		sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 
 #ifdef OLD_MONSTER_LORE
 		r_ptr->r_wake = r_ptr->r_ignore = MAX_UCHAR;
@@ -1840,9 +1536,9 @@ static void sell_quest_monster(void) {
 			(((r_ptr->flags1 & (RF1_DROP_4D2)) ? 8 : 0) +
 			 ((r_ptr->flags1 & (RF1_DROP_3D2)) ? 6 : 0) +
 			 ((r_ptr->flags1 & (RF1_DROP_2D2)) ? 4 : 0) +
-			 ((r_ptr->flagsA & (RFA_DROP_2))   ? 2 : 0) +
+			 ((r_ptr->flags0 & (RF0_DROP_2))   ? 2 : 0) +
 			 ((r_ptr->flags1 & (RF1_DROP_1D2)) ? 2 : 0) +
-			 ((r_ptr->flagsA & (RFA_DROP_1))   ? 1 : 0) +
+			 ((r_ptr->flags0 & (RF0_DROP_1))   ? 1 : 0) +
 			 ((r_ptr->flags1 & (RF1_DROP_90))  ? 1 : 0) +
 			 ((r_ptr->flags1 & (RF1_DROP_60))  ? 1 : 0));
 
@@ -1868,6 +1564,7 @@ static void sell_quest_monster(void) {
 
 		msg_print(NULL);
 		select_quest_monster();
+
 	} else {
 		msg_format("Well done, only %d more to go.", bounties[0][1]);
 		msg_print(NULL);
@@ -1883,8 +1580,10 @@ static void sell_quest_monster(void) {
 /*
  * Fill the bounty list with monsters.
  */
-void select_bounties(void) {
+void select_bounties(void)
+{
 	int i, j;
+
 
 	select_quest_monster();
 
@@ -1902,7 +1601,7 @@ void select_bounties(void) {
 		s16b val;
 
 		if (lev < 1) lev = 1;
-		if (lev >= MAX_DEPTH) lev = MAX_DEPTH - 1;
+		if (lev >= MAX_DEPTH) lev = MAX_DEPTH-1;
 
 		/* We don't want to duplicate entries in the list */
 		while (TRUE) {
@@ -1942,7 +1641,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 
 	if (p_ptr->store_action) {
 		msg_print(Ind, "You are currently busy.");
-		return(FALSE);
+		return FALSE;
 	}
 
 	if (is_state(Ind, st_ptr, STORE_LIKED))
@@ -1958,7 +1657,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 	{
 		msg_print(Ind, "You have no right to choose that!");
 		//msg_print(NULL);
-		return(FALSE);
+		return FALSE;
 	}
 
 	/* If player has loan and the time is out, few things work in stores */
@@ -1973,7 +1672,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 		{
 			msg_print(Ind, "You are not allowed to do that until you have paid back your loan.");
 			msg_print(Ind, NULL);
-			return(FALSE);
+			return FALSE;
 		}
 	}
 #endif	// 0
@@ -1987,7 +1686,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 		    (bact != BACT_PAY_BACK_LOAN) && (bact != BACT_BUY))
 		{
 			msg_print(Ind, "The owner refuses it.");
-			return(FALSE);
+			return FALSE;
 		}
 	}
 
@@ -1995,7 +1694,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 	if (bcost > p_ptr->au) {
 		msg_print(Ind, "You do not have the gold!");
 //		msg_print(NULL);
-		return(FALSE);
+		return FALSE;
 	}
 
 	if (!bcost) set_reward = TRUE;
@@ -2009,33 +1708,21 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			//store_prt_gold(Ind);
 			Send_gold(Ind, p_ptr->au, p_ptr->balance);
 
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_id", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 //			paid = research_item(Ind, item);
 			paid = identify_fully_item(Ind, item);
 
-			return(FALSE);//..and to complete the Send_gold() hack, return here
+			return FALSE;//..and to complete the Send_gold() hack, return here
 			//break;
 #if 0
 		case BACT_TOWN_HISTORY:
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 			town_history();
 			break;
 #endif
 		case BACT_RACE_LEGENDS:
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 			race_legends(Ind);
 			break;
 #if 1
 		case BACT_GREET_KING:
-#ifdef USE_SOUND_2010
-//			sound(Ind, "store_paperwork", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 //			castle_greet();
 			break;
 		case BACT_QUEST1:
@@ -2060,14 +1747,13 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				x++;
 			}
 
-			if (ok) recreate = castle_quest(y - 1, x - 1);
+			if (ok) recreate = castle_quest(y - 1, x - 1);;
 			else msg_format(Ind, "ERROR: no quest info feature found: %d", bact - BACT_QUEST1 + FEAT_QUEST1);
 #else
 			/* get an extermination order */
 			u16b flags = QUEST_MONSTER | QUEST_RANDOM | QUEST_RACE;
 			int lev = p_ptr->lev;
 			u16b type, num;
-
 			if (prepare_xorder(Ind, Ind, flags, &lev, &type, &num))
 				add_xorder(Ind, Ind, type, num, flags);
 #endif
@@ -2137,9 +1823,6 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				//get_item(Ind);
 			} else {
 				//if (recharge(80)) paid = TRUE;
-#ifdef USE_SOUND_2010
-				sound(Ind, "store_recharge", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 				recharge_aux(Ind, item, 80);
 				paid = TRUE;
 			}
@@ -2147,9 +1830,6 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 		}
 		/* needs work */
 		case BACT_IDENTS:
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_id", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 			identify_pack(Ind);
 			msg_print(Ind, "Your posessions have been identified.");
 			//msg_print(Ind, NULL);
@@ -2163,12 +1843,8 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 
 		/* needs work */
 		case BACT_STAR_HEAL:
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_curing", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-			hp_player(Ind, 200, FALSE, FALSE);
+			hp_player(Ind, 200);
 			set_poisoned(Ind, 0, 0);
-			set_diseased(Ind, 0, 0);
 			set_blind(Ind, 0);
 			set_confused(Ind, 0);
 			set_cut(Ind, 0, 0);
@@ -2181,12 +1857,8 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			break;
 		/* needs work */
 		case BACT_HEALING:
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_prayer", NULL, SFX_TYPE_MISC, FALSE);
-#endif
-			hp_player(Ind, 200, FALSE, FALSE);
+			hp_player(Ind, 200);
 			set_poisoned(Ind, 0, 0);
-			//set_diseased(Ind, 0, 0);
 			set_blind(Ind, 0);
 			set_confused(Ind, 0);
 			set_cut(Ind, 0, 0);
@@ -2195,16 +1867,12 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			break;
 		/* needs work */
 		case BACT_RESTORE:
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_curing", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 			if (do_res_stat(Ind, A_STR)) paid = TRUE;
 			if (do_res_stat(Ind, A_INT)) paid = TRUE;
 			if (do_res_stat(Ind, A_WIS)) paid = TRUE;
 			if (do_res_stat(Ind, A_DEX)) paid = TRUE;
 			if (do_res_stat(Ind, A_CON)) paid = TRUE;
 			if (do_res_stat(Ind, A_CHR)) paid = TRUE;
-			if (restore_level(Ind)) paid = TRUE;
 			break;
 		/* set timed reward flag */
 		case BACT_GOLD:
@@ -2227,55 +1895,32 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			paid = fix_item(Ind, INVEN_BOW, INVEN_BOW, 0, FALSE, BACT_ENCHANT_BOW, set_reward);
 			break;
 #if 0
-		case BACT_RECALL: {
-			struct dun_level *l_ptr = getfloor(&p_ptr->wpos);
-
-			if ((l_ptr && (l_ptr->flags2 & LF2_NO_TELE)) ||
+		case BACT_RECALL:
  #ifdef ANTI_TELE_CHEEZE
-			    p_ptr->anti_tele ||
-  #ifdef ANTI_TELE_CHEEZE_ANCHOR
-			    check_st_anchor(&p_ptr->wpos, p_ptr->py, p_ptr->px)
-  #endif
-			    ) {
+			if (p_ptr->anti_tele) {
 				msg_print(Ind, "\377oThere is some static discharge in the air around you, but nothing happens.");
 				break;
 			}
  #endif
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_recall", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 			p_ptr->word_recall = 1;
 			msg_print(Ind, "\377oThe air about you becomes charged...");
 			paid = TRUE;
-			break; }
-		case BACT_TELEPORT_LEVEL: {
+			break;
+		case BACT_TELEPORT_LEVEL:
 			break;//disabled
-			struct dun_level *l_ptr = getfloor(&p_ptr->wpos);
-
-			if ((l_ptr && (l_ptr->flags2 & LF2_NO_TELE)) ||
- #ifdef ANTI_TELE_CHEEZE
-			    p_ptr->anti_tele ||
-  #ifdef ANTI_TELE_CHEEZE_ANCHOR
-			    check_st_anchor(&p_ptr->wpos, p_ptr->py, p_ptr->px)
-  #endif
-			    ) {
-				msg_print(Ind, "\377oThere is some static discharge in the air around you, but nothing happens.");
-				break;
-			}
- #endif
 			if (reset_recall(FALSE)) {
 				p_ptr->word_recall = 1;
 				msg_print(Ind, "\377oThe air about you becomes charged...");
 				paid = TRUE;
 			}
-			break; }
+			break;
 		case BACT_BUYFIRESTONE:
 			amt = get_quantity("How many firestones (2000 gold each)? ", 10);
 			if (amt > 0) {
 				bcost = amt * 2000;
-				if (p_ptr->au >= bcost) {
+				if(p_ptr->au >= bcost) {
 					paid = TRUE;
-					msg_print(Ind, "You have bought some firestones!");
+					msg_print(Ind, "You have bought some firestones !");
 
 					/* Hack -- Give the player Firestone! */
 					q_ptr = &forge;
@@ -2283,7 +1928,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 					q_ptr->number = amt;
 					object_aware(q_ptr);
 					object_known(q_ptr);
-					drop_near(TRUE, 0, q_ptr, -1, py, px);
+					drop_near(0, q_ptr, -1, py, px);
 				}
 				else msg_print(Ind, "You do not have the gold!");
 			}
@@ -2300,15 +1945,12 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				if (p_ptr->chp <= 0) p_ptr->chp = 1;
 			} else {
 				msg_print(Ind, "Hum .. you are NOT a DragonRider, "
-						"you need a dragon to go between!");
+						"you need a dragon to go between !");
 			}
 			break;
 #endif	// 0
 
 		case BACT_MIMIC_NORMAL:
-#ifdef USE_SOUND_2010
-			sound(Ind, "store_curing", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 			if (set_mimic(Ind, 0, 0)) paid = TRUE;	/* Undo temporary mimicry (It's Shadow mimicry)*/
 			if (p_ptr->fruit_bat == 2) { /* Undo fruit bat form from chauve-souris potion */
 				p_ptr->fruit_bat = 0;
@@ -2354,11 +1996,11 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			int i, count = 0;
 			bool something = FALSE;
 
-			while (count < 1000) {
+			while(count < 1000) {
 				count++;
 				i = rand_int(MAX_FATES);
-				if (!fates[i].fate) continue;
-				if (fates[i].know) continue;
+				if(!fates[i].fate) continue;
+				if(fates[i].know) continue;
 				msg_print(Ind, "You know a little more of your fate.");
 
 				fates[i].know = TRUE;
@@ -2366,9 +2008,9 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				break;
 			}
 
-			if (!something) msg_print(Ind, "Well, you have no fate, anyway I'll keep your money!");
+			if(!something) msg_print(Ind, "Well, you have no fate, anyway I'll keep your money!");
 #else /* fortune cookies for now, lol */
-			fortune(Ind, 1);
+			fortune(Ind, FALSE);
 #endif
 			paid = TRUE;
 			break;
@@ -2396,16 +2038,16 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 		case BACT_GET_LOAN:
 			s64b i, price, req;
 
-			if (p_ptr->loan) {
+			if(p_ptr->loan) {
 				msg_print(Ind, "You already have a loan!");
 				break;
 			}
 			for (i = price = 0; i < INVEN_TOTAL; i++)
-				price += object_value_real(&inventory[i]); //missing "* inventory[i].number"?
+				price += object_value_real(&inventory[i]);
 
 			/* hack: prevent s32b overflow */
-			if (PY_MAX_GOLD - p_ptr->au < price) {
-				price = PY_MAX_GOLD;
+			if (2000000000 - p_ptr->au < price) {
+				price = 2000000000;
 			} else
 				price += p_ptr->au;
 
@@ -2416,20 +2058,18 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			req = get_quantity("How much would you like to get? ", price);
 			if (req > 100000) req = 100000;
 
-			if (PY_MAX_GOLD - req < p_ptr->loan) {
-				msg_format(Ind, "\377yYou cannot have a greater loan than %d gold!", PY_MAX_GOLD);
+			if (2000000000 - req < p_ptr->loan) {
+				msg_format(Ind, "\377yYou cannot have a greater loan than 2 billion worth of gold!");
 				break;
 			}
 
 			if (!gain_au(Ind, req, FALSE, FALSE)) break;
 
 			p_ptr->loan += req;
+			//? if (p_ptr->au > PY_MAX_GOLD) p_ptr->au = PY_MAX_GOLD;
 			p_ptr->loan_time += req;
 
 			msg_format(Ind, "You receive %i gold pieces", req);
-#ifdef USE_SOUND_2010
-			sound(Ind, "pickup_gold", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 
 			paid = TRUE;
 			break;
@@ -2452,9 +2092,6 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			if (!p_ptr->loan) p_ptr->loan_time = 0;
 
 			msg_format(Ind, "You pay back %i gold pieces", req);
-#ifdef USE_SOUND_2010
-			sound(Ind, "drop_gold", NULL, SFX_TYPE_MISC, FALSE);
-#endif
 
 			paid = TRUE;
 			break;
@@ -2465,8 +2102,8 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			if (gold < 1) break;
 
 			/* hack: prevent s32b overflow */
-			if (PY_MAX_GOLD - gold < p_ptr->balance) {
-				msg_format(Ind, "\377yYou cannot deposit more than %d gold!", PY_MAX_GOLD);
+			if (2000000000 - gold < p_ptr->balance) {
+				msg_format(Ind, "\377yYou cannot deposit more than 2 billion worth of gold!");
 				break;
 			}
 
@@ -2486,8 +2123,8 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			if (gold < 1) break;
 
 			/* hack: prevent s32b overflow */
-			if (PY_MAX_GOLD - gold < p_ptr->au) {
-				msg_format(Ind, "\377yYou cannot carry more than %d gold!", PY_MAX_GOLD);
+			if (2000000000 - gold < p_ptr->au) {
+				msg_format(Ind, "\377yYou cannot carry more than 2 billion worth of gold!");
 				break;
 			}
 
@@ -2530,11 +2167,8 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 					p_ptr->insta_res = FALSE;
 					msg_print(Ind, "\377rYou decide that you do not require the Instant Resurrection service!");
 				} else {
-					//int instant_res_cost = p_ptr->lev * p_ptr->lev * 10 + 10;
-
 					p_ptr->insta_res = TRUE;
 					msg_print(Ind, "\377GYou engage the Instant Resurrection service.");
-					//msg_format(Ind, "(At depth %d it would cost \377%c%d\377- Au.)", p_ptr->lev, (instant_res_cost > p_ptr->au + p_ptr->balance) ? 'R' : 'w', instant_res_cost);
 				}
 			} else {
 				msg_print(Ind, "\377oInstant Resurrection is only available to everlasting characters.");
@@ -2558,9 +2192,10 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			}
 			Send_request_cfr(Ind, RID_GUILD_RENAME, format("Renaming your guild costs %d Au. Are you sure?", GUILD_PRICE), 2);
 			break;
-#if 1
 		case BACT_STATIC:
-			if (is_admin(p_ptr)) {
+#if 1
+if (is_admin(p_ptr))
+			{
 				int x, y, i, j, k;
 				struct dungeon_type *d_ptr;
 				worldpos tpos;
@@ -2675,15 +2310,15 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				fff = my_fopen(p_ptr->infofile, "rb");
 				if (my_fgets(fff, buf, 1024, FALSE)) {
 					my_fclose(fff);
-					return(FALSE);
+					return (FALSE);
 				}
 				my_fclose(fff);
 				/* Let the client know it's about to get some info */
 				strcpy(p_ptr->cur_file_title, "Static floor records");
 				Send_special_other(Ind);
 
+				break;
 			}
-			break;
 #endif
 #ifdef SOLO_REKING
 		case BACT_SR_DONATE:
@@ -2700,14 +2335,16 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				msg_print(Ind, "You need an up-to-date client to order an item.");
 				break;
 			}
-			Send_request_str(Ind, RID_ITEM_ORDER, "Which item would you like to order? (Or \"cancel\") ", "");
+			Send_request_str(Ind, RID_ITEM_ORDER, "Which item would you like to order? ", "");
 			break;
 #endif
 #ifdef ENABLE_MERCHANT_MAIL
 		case BACT_SEND_ITEM:
 		case BACT_SEND_ITEM_PAY: {
 			int i;
-			object_type *o_ptr = &p_ptr->inventory[item]; /* Get the item (in the pack) */
+			object_type *o_ptr;
+			/* Get the item (in the pack) */
+			o_ptr = &p_ptr->inventory[item];
 			u32b fee;
 
 			if (!o_ptr->k_idx) {
@@ -2719,18 +2356,16 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				msg_print(Ind, "\377oYou need an up-to-date client to send an item.");
 				break;
 			}
-			if (!object_known_p(Ind, o_ptr)) {
+			if (!(o_ptr->ident & ID_KNOWN)) {
 				msg_print(Ind, "\377yItems must be identified before you can send them.");
 				break;
 			}
 
 			for (i = 0; i < MAX_MERCHANT_MAILS; i++) {
 				if (!mail_sender[i][0]) break;
-
-				if (admin_p(Ind)) continue;
 				if (!strcmp(mail_sender[i], p_ptr->name)) {
 					msg_print(Ind, "\377yYou can only have one active shipment at a time.");
-					return(FALSE);
+					return FALSE;
 				}
 			}
 			if (i == MAX_MERCHANT_MAILS) {
@@ -2738,7 +2373,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 				break;
 			}
 
-			fee = (object_value_real(0, o_ptr) * o_ptr->number) / 20;
+			fee = object_value_real(0, o_ptr) / 20;
 			if (fee < 5) fee = 5;
 
 			p_ptr->mail_item = item;
@@ -2758,11 +2393,9 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 
 			for (i = 0; i < MAX_MERCHANT_MAILS; i++) {
 				if (!mail_sender[i][0]) break;
-
-				if (admin_p(Ind)) continue;
 				if (!strcmp(mail_sender[i], p_ptr->name)) {
 					msg_print(Ind, "\377yYou can only have one active shipment at a time.");
-					return(FALSE);
+					return FALSE;
 				}
 			}
 			if (i == MAX_MERCHANT_MAILS) {
@@ -2781,54 +2414,6 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 			Send_request_cfr(Ind, RID_SEND_GOLD, format("The fee for sending %d Au is %d Au, accept?", gold, fee), 2);
 			break; }
 #endif
-		case BACT_REPAIR_WEAPON:
-			paid = repair_item(Ind, item, FALSE);
-			break;
-		case BACT_REPAIR_ARMOR:
-			paid = repair_item(Ind, item, TRUE);
-			break;
-		case BACT_HIGHEST_LEVELS:
-			view_highest_levels(Ind);
-			break;
-#ifdef RESET_SKILL
-		case BACT_LOSE_MEMORIES_I:
-		case BACT_LOSE_MEMORIES_II:
-			if (is_older_than(&p_ptr->version, 4, 4, 6, 2, 0, 0)) {
-				msg_print(Ind, "\377yYou need an up-to-date client to do this.");
-				break;
-			}
-			if (p_ptr->mode & MODE_PVP) {
-				msg_print(Ind, "\377yThis spell does not work on PVP-mode characters.");
-				break;
-			}
-			if (p_ptr->reskill_possible & RESKILL_F_RESET) {
-				msg_print(Ind, "\377yThis spell will never work twice on the same brain.");
-				break;
-			}
-			if (p_ptr->max_plv != RESET_SKILL) {
-				msg_format(Ind, "\377yThis spell only works on minds that have freshly attained level %d.", RESET_SKILL);
-				break;
-			}
-			if (bact == BACT_LOSE_MEMORIES_I)
-				Send_request_str(Ind, RID_LOSE_MEMORIES_I_SKILL, "Which skill do you wish to reset? ", "");
-			else {
-				if (p_ptr->au < RESET_SKILL_FEE) {
-					msg_format(Ind, "\377yYou need to carry %d Au to donate it for this advanced spell!", RESET_SKILL_FEE);
-					break;
-				}
-				Send_request_str(Ind, RID_LOSE_MEMORIES_II_SKILL, "Which skill do you wish to reset? ", "");
-			}
-			break;
-#endif
-#ifdef PLAYER_STORES
-		case BACT_CONTACT_OWNER:
-			if (is_older_than(&p_ptr->version, 4, 4, 6, 2, 0, 0)) {
-				msg_print(Ind, "\377yYou need an up-to-date client to do this.");
-				break;
-			}
-			Send_request_str(Ind, RID_CONTACT_OWNER, "Your note: ", "");
-			break;
-#endif
 		default:
 #if 0
 			if (process_hooks_ret(HOOK_BUILDING_ACTION, "d", "(d)", bact)) {
@@ -2846,7 +2431,7 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 		Send_gold(Ind, p_ptr->au, p_ptr->balance);
 	}
 
-	return(recreate);
+	return (recreate);
 }
 
 
@@ -2854,11 +2439,15 @@ bool bldg_process_command(int Ind, store_type *st_ptr, int action, int item, int
 /*
  * Enter quest level
  */
-void enter_quest(void) {
-	if (!(cave[py][px].feat == FEAT_QUEST_ENTER)) {
+void enter_quest(void)
+{
+	if (!(cave[py][px].feat == FEAT_QUEST_ENTER))
+	{
 		msg_print("You see no quest level here.");
 		return;
-	} else {
+	}
+	else
+	{
 		/* Player enters a new quest */
 		p_ptr->oldpy = py;
 		p_ptr->oldpx = px;
@@ -2877,7 +2466,8 @@ void enter_quest(void) {
 /*
  * Do building commands
  */
-void do_cmd_bldg(void) {
+void do_cmd_bldg(void)
+{
 	int i,which, x = px, y = py;
 	char command;
 	bool validcmd;
@@ -2886,7 +2476,8 @@ void do_cmd_bldg(void) {
 	store_action_type *ba_ptr;
 
 
-	if (cave[py][px].feat != FEAT_SHOP) {
+	if (cave[py][px].feat != FEAT_SHOP)
+	{
 		msg_print("You see no building here.");
 		return;
 	}
@@ -2916,22 +2507,27 @@ void do_cmd_bldg(void) {
 	show_building(s_ptr);
 	leave_bldg = FALSE;
 
-	while (!leave_bldg) {
+	while (!leave_bldg)
+	{
 		validcmd = FALSE;
 		prt("",1,0);
 		command = inkey();
 
-		if (command == ESCAPE) {
+		if (command == ESCAPE)
+		{
 			leave_bldg = TRUE;
 			p_ptr->inside_arena = FALSE;
 			break;
 		}
 
-		for (i = 0; i < 6; i++) {
+		for (i = 0; i < 6; i++)
+		{
 			ba_ptr = &ba_info[st_info->actions[i]];
 
-			if (ba_ptr->letter) {
-				if (ba_ptr->letter == command) {
+			if (ba_ptr->letter)
+			{
+				if (ba_ptr->letter == command)
+				{
 					validcmd = TRUE;
 					break;
 				}

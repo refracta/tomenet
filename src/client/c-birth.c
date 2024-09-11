@@ -31,11 +31,6 @@
 /* For character parameter list [15] */
 #define CHAR_COL 9
 
-/* Stat order limits (new way) for setting reduced/boosted stats (10 = unmodified base stat) */
-#define STAT_MOD_BASE	10
-#define STAT_MOD_MIN	8
-#define STAT_MOD_MAX	17
-
 /* Login screen text placement */
 #ifdef ATMOSPHERIC_INTRO
  #define LOGIN_ROW 9 /*1*/
@@ -53,18 +48,11 @@
  #define LOGIN_ROW 2
 #endif
 
-/* Use Windows TEMP folder (acquired from environment variable) for pinging the servers in the meta server list.
-   KEEP CONSISTENT WITH nclient.c!
-   Note: We actually use the user's home folder still, not the os_temp_path. TODO maybe: Change that. */
-#define WINDOWS_USE_TEMP
-
-
-
 /*
  * Choose the character's name
  */
 static void choose_name(void) {
-	char tmp[ACCNAME_LEN], fmt[ACCNAME_LEN], *cp;
+	char tmp[ACCOUNTNAME_LEN], fmt[ACCOUNTNAME_LEN], *cp;
 
 	/* Prompt and ask */
 #ifndef SIMPLE_LOGIN
@@ -127,15 +115,9 @@ static void choose_name(void) {
 		if (rl_password) rl_password = FALSE;
 		else
 #endif
-		if (askfor_aux(tmp, ACCNAME_LEN - 1, 0)) strcpy(nick, tmp);
+		if (askfor_aux(tmp, ACCOUNTNAME_LEN - 1, 0)) strcpy(nick, tmp);
 		/* at this point: ESC = quit game */
-		else {
-			/* Nuke each term before exit. */
-			for (int j = ANGBAND_TERM_MAX - 1; j >= 0; j--) {
-				if (ang_term[j]) term_nuke(ang_term[j]);
-			}
-			exit(0);
-		}
+		else exit(0);
 
 		/* All done */
 		break;
@@ -162,7 +144,7 @@ static void choose_name(void) {
 	nick[0] = toupper(nick[0]);
 
 	/* Pad the name (to clear junk) */
-	sprintf(fmt, "%%-%d.%ds", ACCNAME_LEN - 1, ACCNAME_LEN - 1);
+	sprintf(fmt, "%%-%d.%ds", ACCOUNTNAME_LEN - 1, ACCOUNTNAME_LEN - 1);
 	sprintf(tmp, fmt, nick);
 
 	/* Re-Draw the name (in light blue) */
@@ -204,7 +186,7 @@ static bool enter_password(void) {
 		/* Get an input, ignore "Escape" */
 		if (askfor_aux(tmp, PASSWORD_LEN - 1, ASKFOR_PRIVATE)) strcpy(pass, tmp);
 		/* abort and jump back to name prompt? */
-		else return(FALSE);
+		else return FALSE;
 
 		/* Don't allow empty password */
 		if (!pass[0]) continue;
@@ -219,14 +201,14 @@ static bool enter_password(void) {
 	 /* Re-Draw the password as 'x's (in light blue) */
 	for (c = 0; c < strlen(pass); c++)
 #ifndef SIMPLE_LOGIN
-		Term_putch(15 + c, 3, TERM_L_BLUE, 'x');
+		Term_putch(15+c, 3, TERM_L_BLUE, 'x');
 #else
-		Term_putch(15 + c, LOGIN_ROW + 5, TERM_L_BLUE, 'x');
+		Term_putch(15+c, LOGIN_ROW + 5, TERM_L_BLUE, 'x');
 #endif
 
 	/* Erase the prompt, etc */
 	clear_from(20);
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -234,18 +216,15 @@ static bool enter_password(void) {
  * Choose the character's sex				-JWT-
  */
 static bool choose_sex(void) {
-	char c = '\0';		/* pfft redesign while (1) */
+	char c = '\0';		/* pfft redesign while(1) */
 	bool hazard = FALSE;
 	bool parity = magik(50);
-
-	/* Note: 'sex' also contains all 'mode' information. This is split up and processed on server-side. */
-	sex = 0x0000;
 
 	put_str("m) Male", 21, parity ? 2 : 17);
 	put_str("f) Female", 21, parity ? 17 : 2);
 	put_str("      ", 4, CHAR_COL);
 	if (valid_dna) {
-		if (dna_sex & MODE_MALE) c_put_str(TERM_SLATE, "Male", 4, CHAR_COL);
+		if (dna_sex % 2) c_put_str(TERM_SLATE, "Male", 4, CHAR_COL);
 		else c_put_str(TERM_SLATE, "Female", 4, CHAR_COL);
 	}
 
@@ -259,8 +238,8 @@ static bool choose_sex(void) {
 #endif
 
 	while (1) {
-		if (valid_dna) c_put_str(TERM_SLATE, "Choose sex (* for random, \377B#\377s/\377B%\377s to reincarnate, Q to quit): ", 20, 0);
-		else c_put_str(TERM_SLATE, "Choose sex (* for random, Q to quit): ", 20, 0);
+		if (valid_dna) c_put_str(TERM_SLATE, "Choose a sex (* for random, \377B#\377s/\377B%\377s to reincarnate, Q to quit): ", 20, 2);
+		else c_put_str(TERM_SLATE, "Choose a sex (* for random, Q to quit): ", 20, 2);
 
 		Term->scr->cx = Term->wid;
 		Term->scr->cu = 1;
@@ -268,14 +247,15 @@ static bool choose_sex(void) {
 		if (!hazard) c = inkey();
 		if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-		if (rl_connection_destroyed) return(FALSE);
+		if (rl_connection_destroyed) return FALSE;
 #endif
 		if (c == 'm') {
-			sex |= MODE_MALE;
+			sex = 1;
 			put_str("      ", 4, CHAR_COL);
 			c_put_str(TERM_L_BLUE, "Male", 4, CHAR_COL);
 			break;
 		} else if (c == 'f') {
+			sex = 0;
 			put_str("      ", 4, CHAR_COL);
 			c_put_str(TERM_L_BLUE, "Female", 4, CHAR_COL);
 			break;
@@ -294,7 +274,7 @@ static bool choose_sex(void) {
 		}
 		else if (c == '#') {
 			if (valid_dna) {
-				if (dna_sex & MODE_MALE) c = 'm';
+				if (dna_sex % 2) c = 'm';
 				else c = 'f';
 				hazard = TRUE;
 			} else {
@@ -311,13 +291,13 @@ static bool choose_sex(void) {
 	}
 
 	clear_from(19);
-	return(TRUE);
+	return TRUE;
 }
 
 
 static void clear_diz(void) {
 	int i;
-
+	//c_put_str(TERM_UMBER, "                              ", DIZ_ROW, DIZ_COL);
 	for (i = 0; i < 12; i++)
 		c_put_str(TERM_L_UMBER, "                                                  ", DIZ_ROW + i, DIZ_COL);
 }
@@ -326,8 +306,9 @@ static void display_race_diz(int r) {
 	int i = 0;
 
 	clear_diz();
-	if (!race_diz[r][i][0]) return; /* server !newer_than 4.5.1.2 */
+	if (!race_diz[r][i]) return; /* server !newer_than 4.5.1.2 */
 
+//	c_put_str(TERM_UMBER, format("--- %s ---", race_info[r].title), DIZ_ROW, DIZ_COL);
 	while (i < 12 && race_diz[r][i][0]) {
 		c_put_str(TERM_L_UMBER, race_diz[r][i], DIZ_ROW + i, DIZ_COL);
 		i++;
@@ -405,8 +386,8 @@ race_redraw:
 #endif
 
 	while (1) {
-		if (valid_dna) c_put_str(TERM_SLATE, "Choose race (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, ? guide):", n, 0);
-		else c_put_str(TERM_SLATE, "Choose race (* random, Q quit, BACKSPACE back, 2/4/6/8, ? guide):", n, 0);
+		if (valid_dna) c_put_str(TERM_SLATE, "Choose a race (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, 2/4/6/8): ", n, 2);
+		else c_put_str(TERM_SLATE, "Choose a race (* for random, Q to quit, BACKSPACE to go back, 2/4/6/8): ", n, 2);
 		display_race_diz(sel);
 
 		Term->scr->cx = Term->wid;
@@ -416,17 +397,12 @@ race_redraw:
 
 		if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-		if (rl_connection_destroyed) return(FALSE);
+		if (rl_connection_destroyed) return FALSE;
 #endif
 		if (c == '\b') {
 			clear_diz();
 			clear_from(n);
-			return(FALSE);
-		}
-
-		if (c == '?') {
-			cmd_the_guide(3, 0, "races");
-			continue;
+			return FALSE;
 		}
 
 		/* Allow 'navigating', to highlight and display the descriptive text */
@@ -461,11 +437,11 @@ race_redraw:
 			goto race_redraw;
 		}
 		if (c == '\r' || c == '\n') c = 'a' + sel;
-
+		
 		if (c == '*') hazard = TRUE;
 		if (hazard) j = rand_int(Setup.max_race);
 		else j = (islower(c) ? A2I(c) : -1);
-
+		
 		if (c == '#') {
 			if (valid_dna && (dna_race >= 0 && dna_race < Setup.max_race)) j = dna_race;
 			else {
@@ -534,7 +510,7 @@ race_redraw:
 
 	clear_diz();
 	clear_from(n);
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -547,8 +523,9 @@ static void display_trait_diz(int r) {
 
 	i = 0;
 	clear_diz();
-	if (!trait_diz[r][i][0]) return; /* server !newer_than 4.5.1.2 */
+	if (!trait_diz[r][i]) return; /* server !newer_than 4.5.1.2 */
 
+//	c_put_str(TERM_UMBER, format("--- %s ---", trait_info[r].title), DIZ_ROW, DIZ_COL);
 	while (i < 12 && trait_diz[r][i][0]) {
 		c_put_str(TERM_L_UMBER, trait_diz[r][i], DIZ_ROW + i, DIZ_COL);
 		i++;
@@ -572,32 +549,24 @@ static bool choose_trait(void) {
 
 
 	/* Absolutely no traits, not even #0 'N/A' */
-	if (Setup.max_trait == 0) return(TRUE);
+	if (Setup.max_trait == 0) return TRUE;
 
 #ifdef HIDE_UNAVAILABLE_TRAIT
 	/* If server doesn't support traits, or we only have the
 	   dummy 'N/A' trait available in general, skip trait choice */
-	if (Setup.max_trait == 1) return(TRUE);
+	if (Setup.max_trait == 1) return TRUE;
 #endif
 
 	/* Prepare to list, skip trait #0 'N/A' */
 	for (j = 1; j < Setup.max_trait; j++) {
 		tp_ptr = &trait_info[j];
-
-		/* Super-hacky: s_PVP_MAIA. Since choose_trait() is usually called before choose_mode()
-		   we'll have to get called twice for this occassion as shown_traits will be 0 on first run. */
-		if ((sex & (MODE_PVP | MODE_DED_PVP)) && race == RACE_MAIA && s_PVP_MAIA && (j == TRAIT_ENLIGHTENED || j == TRAIT_CORRUPTED)) tp_ptr->choice |= BITS(race);
-
 		if (!(tp_ptr->choice & BITS(race))) continue;
 		shown_traits++;
 	}
-	/* Super-hacky: s_PVP_MAIA. We also have to disable trait #0 (N/A) because it is an indicator that there are no available traits, overriding that there are actually available ones. */
-	if ((sex & (MODE_PVP | MODE_DED_PVP)) && race == RACE_MAIA && s_PVP_MAIA) trait_info[0].choice = 0x0;
-
 	/* No traits available? */
 	if (shown_traits == 0) {
 		/* Paranoia - server bug (not even 'N/A' "available") */
-		if (!(trait_info[0].choice & BITS(race))) return(TRUE);
+		if (!(trait_info[0].choice & BITS(race))) return TRUE;
 	}
 
 	/* No traits available for this race (except for 'N/A')? Skip forward then.
@@ -612,7 +581,7 @@ static bool choose_trait(void) {
 		c_put_str(TERM_L_BLUE, trait_info[0].title, 6, CHAR_COL);
  #endif
 #endif
-		return(TRUE);
+		return TRUE;
 	}
 
 	/* If we have traits available for the race chose, prepare to display them */
@@ -667,8 +636,8 @@ trait_redraw:
 
 	/* Get a trait */
 	while (1) {
-		if (valid_dna) c_put_str(TERM_SLATE, "Choose trait (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, ? guide):", n, 0);
-		else c_put_str(TERM_SLATE, "Choose trait (* for random, Q to quit, BACKSPACE to go back, 2/4/6/8, ? guide):", n, 0);
+		if (valid_dna) c_put_str(TERM_SLATE, "Choose a trait (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, 2/4/6/8): ", n, 2);
+		else c_put_str(TERM_SLATE, "Choose a trait (* for random, Q to quit, BACKSPACE to go back, 2/4/6/8):  ", n, 2);
 		display_trait_diz(sel);
 
 		Term->scr->cx = Term->wid;
@@ -678,14 +647,8 @@ trait_redraw:
 
 		if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-		if (rl_connection_destroyed) return(FALSE);
+		if (rl_connection_destroyed) return FALSE;
 #endif
-
-		if (c == '?') {
-			cmd_the_guide(3, 0, "traits");
-			continue;
-		}
-
 		if (c == '\b') {
 			clear_diz();
 			clear_from(n);
@@ -702,7 +665,7 @@ trait_redraw:
 				c_put_str(TERM_SLATE, trait_info[dna_trait].title, 6, CHAR_COL);
 			}
 #endif
-			return(FALSE);
+			return FALSE;
 		}
 
 		/* Allow 'navigating', to highlight and display the descriptive text */
@@ -749,10 +712,8 @@ trait_redraw:
 				if (!(trait_info[i].choice & BITS(race))) j++;
 		}
 
-#if 0 /* Wrong - we might have eg traits 14 and 15 available, which amounts to 2 shown_traits, but 14 > 2 and 15 > 2 so they won't pass.. */
 		/* Paranoia */
 		if (j > shown_traits) continue;
-#endif
 
 		/* Verify if legal */
 		if ((j < Setup.max_trait) && (j >= 0)) {
@@ -780,7 +741,7 @@ trait_redraw:
 #endif
 	clear_from(n);
 
-	return(TRUE);
+	return TRUE;
 }
 
 
@@ -788,8 +749,9 @@ static void display_class_diz(int r) {
 	int i = 0;
 
 	clear_diz();
-	if (!class_diz[r][i][0]) return; /* server !newer_than 4.5.1.2 */
+	if (!class_diz[r][i]) return; /* server !newer_than 4.5.1.2 */
 
+	//c_put_str(TERM_UMBER, format("--- %s ---", class_info[r].title), DIZ_ROW, DIZ_COL);
 	while (i < 12 && class_diz[r][i][0]) {
 		c_put_str(TERM_L_UMBER, class_diz[r][i], DIZ_ROW + i, DIZ_COL);
 		i++;
@@ -889,8 +851,8 @@ class_redraw:
 
 	/* Get a class */
 	while (1) {
-		if (valid_dna) c_put_str(TERM_SLATE, "Choose class (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, ? guide):", n, 0);
-		else c_put_str(TERM_SLATE, "Choose class (* for random, Q to quit, BACKSPACE to go back, 2/4/6/8, ? guide):", n, 0);
+		if (valid_dna) c_put_str(TERM_SLATE, "Choose a class (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, 2/4/6/8):  ", n, 2);
+		else c_put_str(TERM_SLATE, "Choose a class (* for random, Q to quit, BACKSPACE to go back, 2/4/6/8):  ", n, 2);
 		display_class_diz(sel);
 
 		Term->scr->cx = Term->wid;
@@ -900,17 +862,12 @@ class_redraw:
 
 		if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-		if (rl_connection_destroyed) return(FALSE);
+		if (rl_connection_destroyed) return FALSE;
 #endif
 		if (c == '\b') {
 			clear_diz();
 			clear_from(n - 3);
-			return(FALSE);
-		}
-
-		if (c == '?') {
-			cmd_the_guide(3, 0, "classes");
-			continue;
+			return FALSE;
 		}
 
 		/* Allow 'navigating', to highlight and display the descriptive text */
@@ -978,7 +935,7 @@ class_redraw:
 		if (c == '*') hazard = TRUE;
 		if (hazard) j = rand_int(Setup.max_class);
 		else j = (islower(c) ? A2I(c) : -1);
-
+		
 		if (c == '#') {
 			if (valid_dna && (dna_class >= 0 && dna_class < Setup.max_class + hidden)) {
 #if 0
@@ -1034,14 +991,13 @@ class_redraw:
 
 	clear_diz();
 	clear_from(n - 3); /* -3 so beginner-warnings are also cleared */
-	return(TRUE);
+	return TRUE;
 }
 
 
 /*
  * Get the desired stat order.
  */
-#define SHOW_BPR
 static bool choose_stat_order(void) {
 	int i, j, k, avail[6], crb, maxed_stats = 0;
 	char c = '\0';
@@ -1091,7 +1047,7 @@ static bool choose_stat_order(void) {
 
 			/* Get a stat */
 			while (1) {
-				put_str("Choose your stat order (* for random, Q to quit): ", 20, 0);
+				put_str("Choose your stat order (* for random, Q to quit): ", 20, 2);
 				if (hazard) {
 					j = rand_int(6);
 				} else {
@@ -1101,7 +1057,7 @@ static bool choose_stat_order(void) {
 					c = inkey();
 					if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-					if (rl_connection_destroyed) return(FALSE);
+					if (rl_connection_destroyed) return FALSE;
 #endif
 					if (c == '*') hazard = TRUE;
 
@@ -1126,49 +1082,6 @@ static bool choose_stat_order(void) {
 	else if (char_creation_flags == 1) {
 		int col1 = 3, col2 = 35, col3 = 54, tmp_stat, rowA = 12;
 
-#ifdef SHOW_BPR
-		int tablesize = 0, *bpr_str = NULL, *bpr_dex = NULL, *bpr = NULL, mbpr = 0;
-		char lua[MAX_CHARS], *cbpr;
-		bool show_bpr = FALSE, use_formula = TRUE;
-
-		/* Check if we have an actual formula available */
-		sprintf(out_val, "return get_class_bpr2(\"%s\", 0, 0, 0)", class_info[class].title);
-		strcpy(lua, string_exec_lua(0, out_val));
-		if (lua[0] == 'X') { /* No. We have to fall back to using a static table. */
-			use_formula = FALSE;
-
-			/* Find out size of our str/dex/bpr table and create it */
-			sprintf(out_val, "return get_class_bpr_tablesize()");
-			tablesize = atoi(string_exec_lua(0, out_val));
-			if (tablesize) {
-				C_MAKE(bpr_str, tablesize, int);
-				C_MAKE(bpr_dex, tablesize, int);
-				C_MAKE(bpr, tablesize, int);
-
-				/* Display potential BpR for super-light weapons */
-				for (i = 0; i < tablesize; i++) {
-					sprintf(out_val, "return get_class_bpr(\"%s\", %d)", class_info[class].title, i);
-					strcpy(lua, string_exec_lua(0, out_val));
-					bpr_str[i] = atoi(lua + 1);
-					/* Paranoia: Make this robust, so people's clients arent suddenly broken */
-					cbpr = strchr(lua, 'D');
-					if (!cbpr) break;
-					bpr_dex[i] = atoi(cbpr + 1);
-					cbpr = strchr(lua, 'B');
-					if (!cbpr) break;
-					bpr[i] = atoi(cbpr + 1);
-				}
-
-				/* Finished populating the table without errors? */
-				if (i == tablesize) {
-					show_bpr = TRUE; /* no errors, we're able to display projected BpR just fine */
-					/* Hack: For some classes BpR has no significant meaning, so we won't display it */
-					if (!bpr[0]) show_bpr = FALSE;
-				}
-			}
-		} else if (lua[0] != 'N') show_bpr = TRUE; /* Hack: For some classes BpR has no significant meaning, so we won't display it */
-#endif
-
 		j = 0; /* current stat to be modified */
 		k = 30; /* free points left */
 
@@ -1178,14 +1091,9 @@ static bool choose_stat_order(void) {
 		c_put_str(TERM_L_GREEN, format("%2d", k), rowA, col3);
 		c_put_str(TERM_SLATE, "If any values are shown under 'recommended minimum', try to reach those.", rowA + 1, col1);
 		if (valid_dna) c_put_str(TERM_SLATE, "Current:   (Base) (Prev) Recommended min:", 15, col2);
-#ifndef SHOW_BPR
-		else c_put_str(TERM_SLATE, "Current:   (Base)        Recommended min:", 15, col2);
-#else
-		else c_put_str(TERM_L_WHITE, "Current:   (Base)        Recommended min:", 15, col2);
-#endif
+		else c_put_str(TERM_SLATE, "Current:   (Base)        Recommended min::", 15, col2);
 
-		//if (valid_dna) c_put_str(TERM_SLATE, "Press \377B#\377s/\377B%\377s to reincarnate.", 15, col1);
-		if (valid_dna) c_put_str(TERM_SLATE, "Press \377B#\377s/\377B%\377s to reincarnate.", 16, col1);
+		if (valid_dna) c_put_str(TERM_SLATE, "Press \377B#\377s/\377B%\377s to reincarnate.", 15, col1);
 #if 0
 		c_put_str(TERM_SLATE, "Use keys '+', '-', 'RETURN'", 16, col1);
 		c_put_str(TERM_SLATE, "or 8/2/4/6 or arrow keys to", 17, col1);
@@ -1194,38 +1102,29 @@ static bool choose_stat_order(void) {
 		c_put_str(TERM_SLATE, "points, press ESC to proceed.", 20, col1);
 		c_put_str(TERM_SLATE, "'Q' = quit, BACKSPACE = back.", 21, col1);
 #else
-		c_put_str(TERM_WHITE, "\377w8\377s/\377w2\377s/\377wUp\377s/\377wDown\377s: Select a stat.", 17, col1);
-		//c_put_str(TERM_SLATE, " Select a stat.", 17, col1);
-		c_put_str(TERM_WHITE, "-\377s/\377w+\377s/\377w4\377s/\377w6\377s/\377wLeft\377s/\377wRight\377s: Modify.", 18, col1);
-		//c_put_str(TERM_SLATE, " Modify the selected stat.", 19, col1);
-		c_put_str(TERM_WHITE, "RETURN\377s/\377wESC\377s: Proceed when done.", 19, col1);
-		c_put_str(TERM_WHITE, "Q\377s quit, \377wBACKSPC\377s back, \377w?\377s guide.", 20, col1);
+		c_put_str(TERM_WHITE, "RETURN\377s/\377w8\377s/\377w2\377s/\377wUp\377s/\377wDown\377s:", 16, col1);
+		c_put_str(TERM_SLATE, " Select a stat.", 17, col1);
+		c_put_str(TERM_WHITE, "-\377s/\377w+\377s/\377w4\377s/\377w6\377s/\377wLeft\377s/\377wRight\377s:", 18, col1);
+		c_put_str(TERM_SLATE, " Modify the selected stat.", 19, col1);
+		c_put_str(TERM_WHITE, "ESC\377s to proceed when done.", 20, col1);
+		c_put_str(TERM_WHITE, "Q\377s quits, \377wBACKSPACE\377s goes back.", 21, col1);
 #endif
 
-#ifndef SHOW_BPR
 		c_put_str(TERM_SLATE, "No more than 1 attribute out of the 6 is allowed to be maximised.", 23, col1);
-#else
-		c_put_str(TERM_SLATE, "No more than 1 attribute out of the 6 is allowed to be maximised.", 14, col1);
- #if 0 /* Just query best weapon type? */
-		if (show_bpr) c_put_str(TERM_L_WHITE, "BpR this character gets with extremely light weapons (up to 3.0 lbs):", 23, col1);
- #else /* Actually query and display ALL four weapon types */
-		if (show_bpr) c_put_str(TERM_L_WHITE, "BpR this character gets with lightest sword/blunt/axe/polearm:", 23, col1 - 1);
- #endif
-#endif
 
 		c_put_str(TERM_L_UMBER,"   - Strength -    ", DIZ_ROW, 30);
-		c_put_str(TERM_YELLOW, "   How quickly you can strike with weapons.", DIZ_ROW + 1, 30);
-		c_put_str(TERM_YELLOW, "   How much you can carry and wear/wield.", DIZ_ROW + 2, 30);
+		c_put_str(TERM_YELLOW, "   How quickly you can strike.", DIZ_ROW + 1, 30);
+		c_put_str(TERM_YELLOW, "   How much you can carry and wield.", DIZ_ROW + 2, 30);
 		c_put_str(TERM_YELLOW, "   How much damage your strikes inflict.", DIZ_ROW + 3, 30);
 		c_put_str(TERM_YELLOW, "   How easily you can bash, throw and dig.", DIZ_ROW + 4, 30);
 		c_put_str(TERM_YELLOW, "   Slightly improves your swimming.", DIZ_ROW + 5, 30);
 
 		for (i = 0; i < 6; i++) {
-			stat_order[i] = STAT_MOD_BASE;
+			stat_order[i] = 10;
 			strncpy(stats[i], stat_names[i], 3);
 			stats[i][3] = '\0';
 			if (valid_dna) {
-				if (dna_stat_order[i] >= STAT_MOD_MIN && dna_stat_order[i] <= STAT_MOD_MAX) {
+				if (dna_stat_order[i] > 7 || dna_stat_order[i] < 18) {
 					sprintf(buf3, "(%2d)", dna_stat_order[i]);
 					c_put_str(TERM_SLATE, buf3, 16 + i, col2 + 19);
 				}
@@ -1241,49 +1140,7 @@ static bool choose_stat_order(void) {
 #endif
 
 		while (1) {
-			/* Display remaining skill points */
 			c_put_str(TERM_L_GREEN, format("%2d", k), rowA, col3);
-
-#ifdef SHOW_BPR
-			/* Display projected BpR with <= 3.0lbs weapons */
-			if (show_bpr) {
-				if (use_formula) {
- #if 0 /* Just query best weapon type? */
-					/* Assume fixed weight of 3.0 lbs (lowest breakpoint for BpR) -
-					   Note that spears and cleavers weigh 6.0 and 5.0 though. */
-					sprintf(out_val, "return get_class_bpr2(\"%s\", 30, %d, %d)",
-					    class_info[class].title,
-					    stat_order[0] + cp_ptr->c_adj[0] + rp_ptr->r_adj[0],
-					    stat_order[3] + cp_ptr->c_adj[3] + rp_ptr->r_adj[3]);
-					strcpy(lua, string_exec_lua(0, out_val));
-					mbpr = atoi(lua);
-					if (mbpr) { //paranoia
-						sprintf(out_val, "%d", mbpr);
-						c_put_str(mbpr == 1 ? TERM_ORANGE : (mbpr == 2 ? TERM_YELLOW : TERM_L_GREEN), out_val, 23, 73);
-					} else c_put_str(TERM_ORANGE, "  ", 23, 73); //paranoia
- #else /* Actually query and display ALL four weapon types */
-					sprintf(out_val, "return get_class_bpr3(\"%s\", %d, %d)",
-					    class_info[class].title,
-					    stat_order[0] + cp_ptr->c_adj[0] + rp_ptr->r_adj[0],
-					    stat_order[3] + cp_ptr->c_adj[3] + rp_ptr->r_adj[3]);
-					strcpy(lua, string_exec_lua(0, out_val));
-					if (lua[0] == '\377') //paranoia
-						c_put_str(TERM_L_GREEN, lua, 23, 73 - 8);
-					else c_put_str(TERM_ORANGE, "? / ? / ? / ?", 23, 73 - 8); //paranoia
- #endif
-				} else {
-					mbpr = 1;
-					for (i = 0; i < tablesize; i++)
-						if (bpr[i] /* Check that this particular entry isn't disabled */
-						    && stat_order[0] + cp_ptr->c_adj[0] + rp_ptr->r_adj[0] >= bpr_str[i]
-						    && stat_order[3] + cp_ptr->c_adj[3] + rp_ptr->r_adj[3] >= bpr_dex[i])
-							mbpr = bpr[i];
-					//sprintf(out_val, "%d%s", mbpr, mbpr == 3 ? "+" : " ");
-					sprintf(out_val, "%d", mbpr);
-					c_put_str(mbpr == 1 ? TERM_ORANGE : (mbpr == 2 ? TERM_YELLOW : TERM_L_GREEN), out_val, 23, 73);
-				}
-			}
-#endif
 
 			for (i = 0; i < 6; i++) {
 				crb = stat_order[i] + cp_ptr->c_adj[i] + rp_ptr->r_adj[i];
@@ -1308,16 +1165,16 @@ static bool choose_stat_order(void) {
 				}
 
 				if (j == i) {
-					if (stat_order[i] == STAT_MOD_MIN)
+					if (stat_order[i] == 10-2)
 						c_put_str(TERM_L_RED, out_val, 16 + i, col2);
-					else if (stat_order[i] == STAT_MOD_MAX)
+					else if (stat_order[i] == 17)
 						c_put_str(TERM_L_BLUE, out_val, 16 + i, col2);
 					else
 						c_put_str(TERM_ORANGE, out_val, 16 + i, col2);
 				} else {
-					if (stat_order[i] == STAT_MOD_MIN)
+					if (stat_order[i] == 10-2)
 						c_put_str(TERM_RED, out_val, 16 + i, col2);
-					else if (stat_order[i] == STAT_MOD_MAX)
+					else if (stat_order[i] == 17)
 						c_put_str(TERM_VIOLET, out_val, 16 + i, col2);
 					else
 						c_put_str(TERM_L_UMBER, out_val, 16 + i, col2);
@@ -1328,31 +1185,25 @@ static bool choose_stat_order(void) {
 			Term->scr->cu = 1;
 
 			if (!auto_reincarnation) c = inkey();
-
-			if (c == '?') {
-				cmd_the_guide(3, 0, "attributes");
-				continue;
-			}
-
 			crb = cp_ptr->c_adj[j] + rp_ptr->r_adj[j];
 			if (c == '-' || c == '4' || c == 'h') {
-				if (stat_order[j] > STAT_MOD_MIN &&
+				if (stat_order[j] > 10-2 &&
 				    /* exception: allow going below 3 if we initially were below 3 too */
-				    (stat_order[j] > STAT_MOD_BASE || stat_order[j]+crb > 3)) {
-					if (stat_order[j] <= STAT_MOD_BASE + 2) {
+				    (stat_order[j] > 10 || stat_order[j]+crb > 3)) {
+					if (stat_order[j] <= 12) {
 						/* intermediate */
 						stat_order[j]--;
 						k++;
-					} else if (stat_order[j] <= STAT_MOD_BASE + 4) {
+					} else if (stat_order[j] <= 14) {
 						/* high */
 						stat_order[j]--;
 						k += 2;
-					} else if (stat_order[j] <= STAT_MOD_MAX - 1) {
+					} else if (stat_order[j] <= 16) {
 						/* nearly max */
 						stat_order[j]--;
 						k += 3;
 					} else {
-						/* max! (STAT_MOD_MAX) */
+						/* max! */
 						stat_order[j]--;
 						k += 4;
 						maxed_stats--;
@@ -1360,33 +1211,33 @@ static bool choose_stat_order(void) {
 				}
 			}
 			if (c == '+' || c == '6' || c == 'l') {
-				if (stat_order[j] < STAT_MOD_MAX) {
-					if (stat_order[j] < STAT_MOD_BASE + 2 && k >= 1) {
+				if (stat_order[j] < 17) {
+					if (stat_order[j] < 12 && k >= 1) {
 						/* intermediate */
 						stat_order[j]++;
 						k--;
-					} else if (stat_order[j] < STAT_MOD_BASE + 4 && k >= 2) {
+					} else if (stat_order[j] < 14 && k >= 2) {
 						/* high */
 						stat_order[j]++;
 						k -= 2;
-					} else if (stat_order[j] < STAT_MOD_MAX - 1 && k >= 3) {
+					} else if (stat_order[j] < 16 && k >= 3) {
 						/* nearly max */
 						stat_order[j]++;
 						k -= 3;
 					} else if (k >= 4 && !maxed_stats) { /* only 1 maxed stat is allowed */
-						/* max! (STAT_MOD_MAX) */
+						/* max! */
 						stat_order[j]++;
 						k -= 4;
 						maxed_stats++;
 					}
 				}
 			}
-			if (c == '2' || c == 'j') j = (j + 1) % 6;
-			if (c == '8' || c == 'k') j = (j + 5) % 6;
-			if (c == '2' || c == '8' || c == 'j' || c == 'k') {
+			if (c == '\r' || c == '2' || c == 'j') j = (j+1) % 6;
+			if (c == '8' || c == 'k') j = (j+5) % 6;
+			if (c == '\r' || c == '2' || c == '8' || c == 'j' || c == 'k') {
 				switch (j) {
 				case 0:	c_put_str(TERM_L_UMBER,"   - Strength -    ", DIZ_ROW, 30);
-					c_put_str(TERM_YELLOW, "   How quickly you can strike with weapons.     ", DIZ_ROW + 1, 30);
+					c_put_str(TERM_YELLOW, "   How quickly you can strike.                  ", DIZ_ROW + 1, 30);
 					c_put_str(TERM_YELLOW, "   How much you can carry and wear/wield.       ", DIZ_ROW + 2, 30);
 					c_put_str(TERM_YELLOW, "   How much damage your strikes inflict.        ", DIZ_ROW + 3, 30);
 					c_put_str(TERM_YELLOW, "   How easily you can bash, throw and dig.      ", DIZ_ROW + 4, 30);
@@ -1416,7 +1267,7 @@ static bool choose_stat_order(void) {
 					c_put_str(TERM_YELLOW, "                                                ", DIZ_ROW + 8, 30);
 					break;
 				case 3:	c_put_str(TERM_L_UMBER,"   - Dexterity -   ", DIZ_ROW, 30);
-					c_put_str(TERM_YELLOW, "   How quickly you can strike with weapons.     ", DIZ_ROW + 1, 30);
+					c_put_str(TERM_YELLOW, "   How quickly you can strike.                  ", DIZ_ROW + 1, 30);
 					c_put_str(TERM_YELLOW, "   Reduces your chance to miss.                 ", DIZ_ROW + 2, 30);
 					c_put_str(TERM_YELLOW, "   Opponents will miss very slightly more often.", DIZ_ROW + 3, 30);
 					c_put_str(TERM_YELLOW, "   Helps your stealing skills (if any).         ", DIZ_ROW + 4, 30);
@@ -1436,18 +1287,18 @@ static bool choose_stat_order(void) {
 					c_put_str(TERM_YELLOW, "   Helps your character not to drown too easily.", DIZ_ROW + 8, 30);
 					break;
 				case 5:	c_put_str(TERM_L_UMBER,"   - Charisma -    ", DIZ_ROW, 30);
-					c_put_str(TERM_YELLOW, "   Shops will buy and sell at better prices.    ", DIZ_ROW + 1, 30);
+					c_put_str(TERM_YELLOW, "   Shops will offer you wares at better prices. ", DIZ_ROW + 1, 30);
 					c_put_str(TERM_YELLOW, "    (Note that shop keepers are also influenced ", DIZ_ROW + 2, 30);
 					c_put_str(TERM_YELLOW, "    by your character's race.)                  ", DIZ_ROW + 3, 30);
-					c_put_str(TERM_YELLOW, "   Also affects house prices.                   ", DIZ_ROW + 4, 30);
-					c_put_str(TERM_YELLOW, "   Helps you to resist seducing attacks.        ", DIZ_ROW + 5, 30);
-					c_put_str(TERM_YELLOW, "   Affects mindcrafters' mana pool somewhat.    ", DIZ_ROW + 6, 30);
+					c_put_str(TERM_YELLOW, "   Helps you to resist seducing attacks.        ", DIZ_ROW + 4, 30);
+					c_put_str(TERM_YELLOW, "                                                ", DIZ_ROW + 5, 30);
+					c_put_str(TERM_YELLOW, "                                                ", DIZ_ROW + 6, 30);
 					c_put_str(TERM_YELLOW, "                                                ", DIZ_ROW + 7, 30);
 					c_put_str(TERM_YELLOW, "                                                ", DIZ_ROW + 8, 30);
 					break;
 				}
 			}
-			if (c == '\e' || c == '\r') {
+			if (c == '\e') {
 				if (k > 0) {
 					c_put_str(TERM_NUKE, format("%2d", k), rowA, col3);
 					if (get_check2(format("You still have %d stat points left to distribute! Really continue?", k), FALSE)) break;
@@ -1456,25 +1307,25 @@ static bool choose_stat_order(void) {
 			}
 			if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-			if (rl_connection_destroyed) return(FALSE);
+			if (rl_connection_destroyed) return FALSE;
 #endif
 			if (c == '\b') {
 				for (i = 0; i < 6; i++) stat_order[i] = stat_order_tmp[i];
 
-				for (i = DIZ_ROW; i <= DIZ_ROW + 8; i++) Term_erase(30, i, 255);
+				for (i = 3; i < 12; i++) Term_erase(30, i, 255);
 				clear_from(rowA);
 
-				return(FALSE);
+				return FALSE;
 			}
 			if (c == '#') {
 				if (valid_dna) {
 					for (i = 0; i < 6; i++) {
-						if (dna_stat_order[i] >= STAT_MOD_MIN && dna_stat_order[i] <= STAT_MOD_MAX) stat_order[i] = dna_stat_order[i];
-						else stat_order[i] = STAT_MOD_MIN;
+						if (dna_stat_order[i] > 7 || dna_stat_order[i] < 18) stat_order[i] = dna_stat_order[i];
+						else stat_order[i] = 8;
 					}
-					for (i = DIZ_ROW; i <= DIZ_ROW + 8; i++) Term_erase(30, i, 255);
+					for (i = 3; i < 12; i++) Term_erase(30, i, 255);
 					clear_from(rowA);
-					return(TRUE);
+					return TRUE;
 				} else {
 					auto_reincarnation = FALSE;
 					hazard = FALSE;
@@ -1488,10 +1339,10 @@ static bool choose_stat_order(void) {
 			}
 		}
 
-		for (i = DIZ_ROW; i <= DIZ_ROW + 8; i++) Term_erase(30, i, 255);
+		for (i = 3; i < 12; i++) Term_erase(30, i, 255);
 		clear_from(rowA);
 	}
-	return(TRUE);
+	return TRUE;
 }
 
 /* Quick hack!		- Jir -
@@ -1500,44 +1351,23 @@ static bool choose_mode(void) {
 	char c = '\0';
 	bool hazard = FALSE;
 
-	/* Note: Currently, RPG server (s_RPG) does not allow PvP/Everlasting/Normal modes. */
-
 	/* specialty: slot-exclusive-mode char? */
 	if (dedicated) {
 		put_str("i) Ironman Deep Dive Challenge", 16, 2);
 		c_put_str(TERM_SLATE, "(Unworldly - one life only.)", 16, 33);
-		put_str("s) Ironman Deep Dive Challenge Soloist", 17, 2);
-		c_put_str(TERM_SLATE, "(Cannot trade with other players)", 17, 41);
-		put_str("H) Hellish Ironman Deep Dive Challenge", 18, 2);
-		c_put_str(TERM_SLATE, "(Extra hard, sort of ridiculous)", 18, 41);
-		if (!s_RPG) {
-			put_str("p) PvP", 19, 2);
-			c_put_str(TERM_SLATE, "(Can't beat the game, instead special 'player vs player' rules apply)", 19, 9);
-		}
+		put_str("H) Hellish Ironman Deep Dive Challenge", 17, 2);
+		c_put_str(TERM_SLATE, "(Extra hard, sort of ridiculous)", 17, 41);
+		put_str("p) PvP", 18, 2);
+		c_put_str(TERM_SLATE, "(Can't beat the game, instead special 'player vs player' rules apply)", 18, 9);
 
 		c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 		if (valid_dna) {
-#if 1
 			if (((dna_sex & MODE_HARD) == MODE_HARD) && ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST)) c_put_str(TERM_SLATE, "Hellish", 9, CHAR_COL);
-			else if (((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) && ((dna_sex & MODE_SOLO) == MODE_SOLO)) c_put_str(TERM_SLATE, "Soloist", 9, CHAR_COL);
-			else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c_put_str(TERM_SLATE, "No Ghost", 9, CHAR_COL);// -- redundant wording, instead:
+			else if ((dna_sex & MODE_HARD) == MODE_HARD) c_put_str(TERM_SLATE, "Hard", 9, CHAR_COL);
+			else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c_put_str(TERM_SLATE, "No Ghost", 9, CHAR_COL);
 			else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING) c_put_str(TERM_SLATE, "Everlasting", 9, CHAR_COL);
 			else if ((dna_sex & MODE_PVP) == MODE_PVP) c_put_str(TERM_SLATE, "PvP", 9, CHAR_COL);
 			else c_put_str(TERM_SLATE, "Normal", 9, CHAR_COL);
-#else
-			if (dna_sex & MODE_DED_IDDC) {
-				if (((dna_sex & MODE_HARD) == MODE_HARD) && ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST)) c_put_str(TERM_SLATE, "Hellish", 9, CHAR_COL);
-				else if (((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) && ((dna_sex & MODE_SOLO) == MODE_SOLO)) c_put_str(TERM_SLATE, "Soloist", 9, CHAR_COL);
-				else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c_put_str(TERM_SLATE, "No Ghost", 9, CHAR_COL);// -- redundant wording, instead:
-				else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c_put_str(TERM_SLATE, "IDDC", 9, CHAR_COL);
-				//invalid -- else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING) c_put_str(TERM_SLATE, "Everlasting", 9, CHAR_COL);
-				//invalid -- must be in ded-pvp bracket below -- else if ((dna_sex & MODE_PVP) == MODE_PVP) c_put_str(TERM_SLATE, "PvP", 9, CHAR_COL);
-				//invalid -- else c_put_str(TERM_SLATE, "Normal", 9, CHAR_COL);
-				else c_put_str(TERM_SLATE, "IDDC", 9, CHAR_COL); //paranoia
-			} else { /* MODE_DED_PVP */
-				c_put_str(TERM_SLATE, "PvP", 9, CHAR_COL); //must be MODE_PVP
-			}
-#endif
 		}
 
 		if (auto_reincarnation) {
@@ -1550,8 +1380,8 @@ static bool choose_mode(void) {
 #endif
 
 		while (1) {
-			if (valid_dna) c_put_str(TERM_SLATE, "Choose mode (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, ? guide): ", 15, 0);
-			else c_put_str(TERM_SLATE, "Choose mode (* for random, Q to quit, BACKSPACE to go back, ? guide): ", 15, 0);
+			if (valid_dna) c_put_str(TERM_SLATE, "Choose a mode (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back): ", 15, 2);
+			else c_put_str(TERM_SLATE, "Choose a mode (* for random, Q to quit, BACKSPACE to go back): ", 15, 2);
 
 			Term->scr->cx = Term->wid;
 			Term->scr->cu = 1;
@@ -1560,76 +1390,52 @@ static bool choose_mode(void) {
 
 			if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-			if (rl_connection_destroyed) return(FALSE);
+			if (rl_connection_destroyed) return FALSE;
 #endif
-
-			if (c == '?') {
-				cmd_the_guide(3, 0, "modes");
-				continue;
-			}
-
 			if (c == '\b') {
 				clear_from(15);
-				return(FALSE);
-			} else if (c == 'p' && !s_RPG) {
-				sex |= MODE_PVP | MODE_DED_PVP;
+				return FALSE;
+			}
+			else if (c == 'p') {
+				sex += MODE_PVP;
 				c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 				c_put_str(TERM_L_BLUE, "PvP", 9, CHAR_COL);
 				break;
 			} else if (c == 'i') {
-				sex |= MODE_NO_GHOST | MODE_DED_IDDC;
+				sex += MODE_NO_GHOST;
 				c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 				c_put_str(TERM_L_BLUE, "No Ghost", 9, CHAR_COL);
 				break;
-			} else if (c == 'H') {
-				sex |= (MODE_NO_GHOST | MODE_HARD | MODE_DED_IDDC);
+			}
+			else if (c == 'H') {
+				sex += (MODE_NO_GHOST + MODE_HARD);
 				c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 				c_put_str(TERM_L_BLUE, "Hellish", 9, CHAR_COL);
-				break;
-			} else if (c == 's') {
-				sex |= (MODE_NO_GHOST | MODE_SOLO | MODE_DED_IDDC);
-				c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
-				c_put_str(TERM_L_BLUE, "Soloist", 9, CHAR_COL);
 				break;
 			} else if (c == '?') {
 				/*do_cmd_help("help.hlp");*/
 			} else if (c == '*') {
-				switch (rand_int(s_RPG ? 3 : 4)) {
-				case 0:
-					c = 'i';
-					break;
-				case 1:
-					c = 's';
-					break;
-				case 2:
-					c = 'H';
-					break;
-				case 3:
-					c = 'p';
-					break;
+				switch (rand_int(3 - 1)) {
+					case 0:
+						c = 'i';
+						break;
+					case 1:
+						c = 'p';
+						break;
+					case 2:
+						c = 'H';
+						break;
 				}
 				hazard = TRUE;
 			} else if (c == '#') {
 				if (valid_dna) {
 					if (((dna_sex & MODE_HARD) == MODE_HARD) && ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST)) c = 'H';
 					else if ((dna_sex & MODE_HARD) == MODE_HARD) c = 'H';
-					else if (((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) && ((dna_sex & MODE_SOLO) == MODE_SOLO)) c = 's';
 					else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c = 'i';
 					else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING) c = 'i';
-					else if ((dna_sex & MODE_PVP) == MODE_PVP && !s_RPG) c = 'p';
+					else if ((dna_sex & MODE_PVP) == MODE_PVP) c = 'p';
 					else c = 'i';
-					/* Fix dedicated modes */
-					if (!(dna_sex & (MODE_PVP | MODE_DED_PVP))) dna_sex |= MODE_DED_IDDC;
-					else dna_sex |= MODE_DED_PVP;
-
 					hazard = TRUE;
-					//prevent endless loop on RPG server
-					if (s_RPG && (c == 'p')) {
-						bell();
-						hazard = FALSE;
-						auto_reincarnation = FALSE;
-						continue;
-					}
 				} else {
 					auto_reincarnation = FALSE;
 					hazard = FALSE;
@@ -1643,41 +1449,37 @@ static bool choose_mode(void) {
 		}
 
 		clear_from(15);
-		return(TRUE);
+		return TRUE;
 	}
 
-	if (!s_RPG) {
-		put_str("n) Normal", 16, 2);
-		c_put_str(TERM_SLATE, "(3 lives)", 16, 12);
-	}
+	put_str("n) Normal", 16, 2);
+	c_put_str(TERM_SLATE, "(3 lifes)", 16, 12);
 	put_str("g) No Ghost", 17, 2);
 	c_put_str(TERM_SLATE, "('Unworldly' - One life only. The traditional rogue-like way)", 17, 14);
-	put_str("s) Soloist", 18, 2);
-	c_put_str(TERM_SLATE, "(Same as 'No Ghost' but cannot exchange gold/items with anybody)", 18, 14);
-	if (!s_RPG) {
-		put_str("e) Everlasting", 19, 2);
-		c_put_str(TERM_SLATE, "(You may resurrect infinite times but cannot enter highscore)", 19, 17);
-	}
+	put_str("e) Everlasting", 18, 2);
+	c_put_str(TERM_SLATE, "(You may resurrect infinite times, but cannot enter highscore)", 18, 17);
 	/* hack: no weird modi on first client startup!
-	   To find out whether it's 1st or not we check firstrun and # of existing characters.
-	   However, we just don't display the choices, they're still choosable except for firstrun! */
-	if (!firstrun || existing_characters) {
-		put_str("H) Hellish", 20, 2);
-		c_put_str(TERM_SLATE, "(Like 'Unworldly' mode but extra hard - sort of ridiculous)", 20, 13);
-		if (!s_RPG) {
-			put_str("p) PvP", 21, 2);
-			c_put_str(TERM_SLATE, "(Can't beat the game, instead special 'player vs player' rules apply)", 21, 9);
-		}
+	   To find out whether it's 1st or not we check bigmap_hint and # of existing characters.
+	   However, we just don't display the choices, they're still choosable! */
+	if (!bigmap_hint || existing_characters) {
+#if 0
+		put_str("h) Hard", 19, 2);
+		c_put_str(TERM_SLATE, "('Purgatorial' - like normal, with nasty additional penalties)", 19, 10);
+#endif
+		put_str("H) Hellish", 20 - 1, 2);
+		c_put_str(TERM_SLATE, "(Like 'unworldly' mode, but extra hard - sort of ridiculous)", 20 - 1, 13);
+		put_str("p) PvP", 21 - 1, 2);
+		c_put_str(TERM_SLATE, "(Can't beat the game, instead special 'player vs player' rules apply)", 21 - 1, 9);
 	}
 
 	c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 	if (valid_dna) {
 		if (((dna_sex & MODE_HARD) == MODE_HARD) && ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST)) c_put_str(TERM_SLATE, "Hellish", 9, CHAR_COL);
-		else if (((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) && ((dna_sex & MODE_SOLO) == MODE_SOLO)) c_put_str(TERM_SLATE, "Soloist", 9, CHAR_COL);
+		else if ((dna_sex & MODE_HARD) == MODE_HARD) c_put_str(TERM_SLATE, "Hard", 9, CHAR_COL);
 		else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c_put_str(TERM_SLATE, "No Ghost", 9, CHAR_COL);
-		else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING && !s_RPG) c_put_str(TERM_SLATE, "Everlasting", 9, CHAR_COL);
-		else if ((dna_sex & MODE_PVP) == MODE_PVP && !s_RPG) c_put_str(TERM_SLATE, "PvP", 9, CHAR_COL);
-		else if (!s_RPG) c_put_str(TERM_SLATE, "Normal", 9, CHAR_COL);
+		else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING) c_put_str(TERM_SLATE, "Everlasting", 9, CHAR_COL);
+		else if ((dna_sex & MODE_PVP) == MODE_PVP) c_put_str(TERM_SLATE, "PvP", 9, CHAR_COL);
+		else c_put_str(TERM_SLATE, "Normal", 9, CHAR_COL);
 	}
 
 	if (auto_reincarnation) {
@@ -1690,38 +1492,24 @@ static bool choose_mode(void) {
 #endif
 
 	while (1) {
-		if (valid_dna) c_put_str(TERM_SLATE, "Choose mode (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back, ? guide): ", 15, 0);
-		else c_put_str(TERM_SLATE, "Choose mode (* for random, Q to quit, BACKSPACE to go back, ? guide): ", 15, 0);
+		if (valid_dna) c_put_str(TERM_SLATE, "Choose a mode (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back): ", 15, 2);
+		else c_put_str(TERM_SLATE, "Choose a mode (* for random, Q to quit, BACKSPACE to go back): ", 15, 2);
 
 		Term->scr->cx = Term->wid;
 		Term->scr->cu = 1;
 
 		if (!hazard) c = inkey();
 
-		if (s_RPG) switch (c) {
-			case 'n': //normal
-			case 'p': //pvp
-			case 'e': //everlasting
-				bell();
-				continue;
-		}
-
 		if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-		if (rl_connection_destroyed) return(FALSE);
+		if (rl_connection_destroyed) return FALSE;
 #endif
-
-		if (c == '?') {
-			cmd_the_guide(3, 0, "modes");
-			continue;
-		}
-
 		if (c == '\b') {
 			clear_from(15);
-			return(FALSE);
+			return FALSE;
 		}
-		else if (c == 'p' && !firstrun) {
-			sex |= MODE_PVP;
+		else if (c == 'p') {
+			sex += MODE_PVP;
 			c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 			c_put_str(TERM_L_BLUE, "PvP", 9, CHAR_COL);
 			break;
@@ -1730,66 +1518,64 @@ static bool choose_mode(void) {
 			c_put_str(TERM_L_BLUE, "Normal", 9, CHAR_COL);
 			break;
 		} else if (c == 'g') {
-			sex |= MODE_NO_GHOST;
+			sex += MODE_NO_GHOST;
 			c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 			c_put_str(TERM_L_BLUE, "No Ghost", 9, CHAR_COL);
 			break;
-		} else if (c == 's') {
-			sex |= MODE_NO_GHOST | MODE_SOLO;
+		}
+#if 0
+		else if (c == 'h') {
+			sex += (MODE_HARD);
 			c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
-			c_put_str(TERM_L_BLUE, "Soloist", 9, CHAR_COL);
+			c_put_str(TERM_L_BLUE, "Hard", 9, CHAR_COL);
 			break;
 		}
-		else if (c == 'H' && !firstrun) {
-			sex |= (MODE_NO_GHOST | MODE_HARD);
+#endif
+		else if (c == 'H') {
+			sex += (MODE_NO_GHOST + MODE_HARD);
 			c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 			c_put_str(TERM_L_BLUE, "Hellish", 9, CHAR_COL);
 			break;
 		} else if (c == 'e') {
-			sex |= MODE_EVERLASTING;
+			sex += MODE_EVERLASTING;
 			c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 			c_put_str(TERM_L_BLUE, "Everlasting", 9, CHAR_COL);
 			break;
 		} else if (c == '?') {
 			/*do_cmd_help("help.hlp");*/
 		} else if (c == '*') {
-			switch (rand_int(s_RPG ? 3 : 6)) {
-			case 0:
-				c = 'g';
-				break;
-			case 1:
-				c = 'H';
-				break;
-			case 2:
-				c = 's';
-				break;
-			case 3:
-				c = 'p';
-				break;
-			case 4:
-				c = 'e';
-				break;
-			case 5:
-				c = 'n';
-				break;
+			switch (rand_int(5 - 1)) {
+				case 0:
+					c = 'n';
+					break;
+				case 1:
+					c = 'p';
+					break;
+				case 2:
+					c = 'g';
+					break;
+#if 0
+				case 3:
+					c = 'h';
+					break;
+#endif
+				case 4 - 1:
+					c = 'H';
+					break;
+				case 5 - 1:
+					c = 'e';
+					break;
 			}
 			hazard = TRUE;
 		} else if (c == '#') {
 			if (valid_dna) {
 				if (((dna_sex & MODE_HARD) == MODE_HARD) && ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST)) c = 'H';
-				else if (((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) && ((dna_sex & MODE_SOLO) == MODE_SOLO)) c = 's';
+				else if ((dna_sex & MODE_HARD) == MODE_HARD) c = 'h';
 				else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c = 'g';
-				else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING && !s_RPG) c = 'e';
-				else if ((dna_sex & MODE_PVP) == MODE_PVP && !s_RPG) c = 'p';
-				else if (!s_RPG) c = 'n';
+				else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING) c = 'e';
+				else if ((dna_sex & MODE_PVP) == MODE_PVP) c = 'p';
+				else c = 'n';
 				hazard = TRUE;
-				//prevent endless loop on RPG server
-				if (s_RPG && (c == 'n' || c == 'p' || c == 'e')) {
-					bell();
-					hazard = FALSE;
-					auto_reincarnation = FALSE;
-					continue;
-				}
 			} else {
 				auto_reincarnation = FALSE;
 				hazard = FALSE;
@@ -1804,7 +1590,7 @@ static bool choose_mode(void) {
 	}
 
 	clear_from(15);
-	return(TRUE);
+	return TRUE;
 }
 
 /* Fruit bat is now a "body modification" that can be applied to all "modes" - C. Blue */
@@ -1817,14 +1603,11 @@ static bool choose_body_modification(void) {
 
 	put_str("n) Normal body", 20, 2);
 	/* hack: no weird modi on first client startup!
-	   To find out whether it's 1st or not we check firstrun and # of existing characters.
-	   However, we just don't display the choices, they're still choosable except on firstrun! */
-	if (!firstrun || existing_characters) {
+	   To find out whether it's 1st or not we check bigmap_hint and # of existing characters.
+	   However, we just don't display the choices, they're still choosable! */
+	if (!bigmap_hint || existing_characters) {
 		put_str("f) Fruit bat", 21, 2);
-		if (class == CLASS_ARCHER) {
-			c_put_str(TERM_L_DARK, "f) Fruit bat", 21, 2);
-			c_put_str(TERM_L_DARK, "(WARNING: Do not pick this as Archer, as bats cannot use bows!)", 21, 15);
-		} else if (class == CLASS_MIMIC || class == CLASS_DRUID || class == CLASS_SHAMAN)
+		if (class == CLASS_MIMIC || class == CLASS_DRUID || class == CLASS_SHAMAN)
 			c_put_str(TERM_SLATE, "(not recommended for shapeshifters: Mimics, Druids, Shamans!)", 21, 15);
 		else
 			c_put_str(TERM_SLATE, "(Bats are faster and vampiric, but can't wear certain items)", 21, 15);
@@ -1846,8 +1629,8 @@ static bool choose_body_modification(void) {
 #endif
 
 	while (1) {
-		if (valid_dna) c_put_str(TERM_SLATE, "Choose body mod (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPC back, ? guide):", 19, 0);
-		else c_put_str(TERM_SLATE, "Choose body modification (* for random, Q quit, BACKSPACE to go back, ? guide): ", 19, 0);
+		if (valid_dna) c_put_str(TERM_SLATE, "Choose body modification (* random, \377B#\377s/\377B%\377s reincarnate, Q quit, BACKSPACE back): ", 19, 2);
+		else c_put_str(TERM_SLATE, "Choose body modification (* for random, Q to quit, BACKSPACE to go back): ", 19, 2);
 
 		Term->scr->cx = Term->wid;
 		Term->scr->cu = 1;
@@ -1856,20 +1639,14 @@ static bool choose_body_modification(void) {
 
 		if (c == 'Q' || c == KTRL('Q')) quit(NULL);
 #ifdef RETRY_LOGIN
-		if (rl_connection_destroyed) return(FALSE);
+		if (rl_connection_destroyed) return FALSE;
 #endif
-
-		if (c == '?') {
-			cmd_the_guide(3, 0, "body mod");
-			continue;
-		}
-
 		if (c == '\b') {
 			clear_from(19);
-			return(FALSE);
+			return FALSE;
 		}
-		else if (c == 'f' && !firstrun) {
-			sex |= MODE_FRUIT_BAT;
+		else if (c == 'f') {
+			sex += MODE_FRUIT_BAT;
 			c_put_str(TERM_L_BLUE, "                    ", 8, CHAR_COL);
 			c_put_str(TERM_L_BLUE, "Fruit bat", 8, CHAR_COL);
 			break;
@@ -1910,7 +1687,7 @@ static bool choose_body_modification(void) {
 	}
 
 	clear_from(19);
-	return(TRUE);
+	return TRUE;
 }
 
 /*
@@ -1925,7 +1702,6 @@ void get_char_name(void) {
 	if (use_sound) {
 		/* Play back a fitting, non-common music piece, abused as 'intro theme'.. */
 		if (!music(exec_lua(0, "return get_music_index(\"title\")")))
-			//music(exec_lua(0, "return get_music_index(\"generic\")"));
 			music(exec_lua(0, "return get_music_index(\"town_generic\")"));
 		/* Play background ambient sound effect (if enabled) */
 		sound_ambient(exec_lua(0, "return get_sound_index(\"ambient_fire\")"));
@@ -1961,13 +1737,11 @@ void get_char_name(void) {
 		if (enter_password()) break;
 	}
 
-#if 0 /* let's only store crecedentials after an actually successful login instead, ie in nclient.c */
 //#ifdef WINDOWS
 	/* erase crecedentials? */
 	if (!strlen(nick) || !strlen(pass))
 		store_crecedentials();
 //#endif
-#endif
 
 	/* Message */
 	put_str("Connecting to server....", 21, 1);
@@ -1999,7 +1773,7 @@ void get_char_name(void) {
 void get_char_info(void) {
 	int i, j;
 	char out_val[160];
-	dedicated = (sex & (MODE_DED_PVP | MODE_DED_IDDC)) != 0;
+	dedicated = sex & (MODE_DED_PVP | MODE_DED_IDDC);
 	sex &= ~(MODE_DED_PVP | MODE_DED_IDDC);
 
 	/* Hack -- display the nick */
@@ -2038,7 +1812,7 @@ void get_char_info(void) {
 	/* Title everything */
 	put_str("Sex   :", 4, 1);
 	if (valid_dna) {
-		if (dna_sex & MODE_MALE) c_put_str(TERM_SLATE, "Male", 4, CHAR_COL);
+		if (dna_sex % 2) c_put_str(TERM_SLATE, "Male", 4, CHAR_COL);
 		else c_put_str(TERM_SLATE, "Female", 4, CHAR_COL);
 	}
 #ifndef CLASS_BEFORE_RACE
@@ -2090,7 +1864,6 @@ void get_char_info(void) {
 	if (valid_dna) {
 		if (((dna_sex & MODE_HARD) == MODE_HARD) && ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST)) c_put_str(TERM_SLATE, "Hellish", 9, CHAR_COL);
 		else if ((dna_sex & MODE_HARD) == MODE_HARD) c_put_str(TERM_SLATE, "Hard", 9, CHAR_COL);
-		else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST && (dna_sex & MODE_SOLO) == MODE_SOLO) c_put_str(TERM_SLATE, "Soloist", 9, CHAR_COL);
 		else if ((dna_sex & MODE_NO_GHOST) == MODE_NO_GHOST) c_put_str(TERM_SLATE, "No Ghost", 9, CHAR_COL);
 		else if ((dna_sex & MODE_EVERLASTING) == MODE_EVERLASTING) c_put_str(TERM_SLATE, "Everlasting", 9, CHAR_COL);
 		else if ((dna_sex & MODE_PVP) == MODE_PVP) c_put_str(TERM_SLATE, "PvP", 9, CHAR_COL);
@@ -2218,19 +1991,12 @@ cstats:
 
 
 	/* Choose character mode */
-#if 0 /* RPG server now supports the new 'Soloist' mode too, instead of just 'Unworldly' so far. Also should allow 'Hellish' actually. */
 	if (!s_RPG || s_RPG_ADMIN) {
 		if (!choose_mode()) goto cstats;
 	} else {
 		c_put_str(TERM_L_BLUE, "                    ", 9, CHAR_COL);
 		c_put_str(TERM_L_BLUE, "No Ghost", 9, CHAR_COL);
 	}
-#else
-	if (!choose_mode()) goto cstats;
-#endif
-	/* Super-hacky: PvP-Mode Maiar of starter level 20+ need to pick a trait! So we have to do it after choosing the mode: */
-	if ((sex & (MODE_PVP | MODE_DED_PVP)) && race == RACE_MAIA && s_PVP_MAIA && !choose_trait()) goto cstats;
-
 #ifdef RETRY_LOGIN
 	if (rl_connection_destroyed) return;
 #endif
@@ -2252,7 +2018,7 @@ cstats:
 	}
 
 	/* Save Birth DNA */
-	save_birth_file(cname, FALSE);
+	save_birth_file(cname);
 
 	/* Message */
 	put_str("Entering game...  [Hit any key]", 21, 1);
@@ -2287,90 +2053,7 @@ static bool enter_server_name(void) {
 	strcpy(server_name, "europe.tomenet.eu");
 
 	/* Ask for server name */
-	return askfor_aux(server_name, 79, 0);
-}
-
-#ifdef EXPERIMENTAL_META
-void display_experimental_meta(void) {
- #ifndef META_DISPLAYPINGS_LATER // -- now that GCU has a weird glitch where we have to redraw meta() after each getch() call from Term_inkey(), we don't want to clear because it also clears ping times display, blinking annoyingly.
-	Term_clear();
- #else
-  #if 0 /* We only really need this once: When refresh_meta_once is triggered. */
-	/* This is the one line of code inside Term_clear() that actually "enables" the screen again to get written on again, making the meta_display visible again oO - wtf */
-	Term->total_erase = TRUE;
-  #endif
- #endif
-	call_lua(0, "meta_display", "(s)", "d", meta_buf, &meta_i);
-	Term_fresh();//added to try and debug WinXP partially-black meta screen problem
-}
-#endif
-bool meta_read_and_close(void) {
-	int retries, bytes = 0;
-
-	/* Wipe the buffer so valgrind doesn't complain - mikaelh */
-	C_WIPE(meta_buf, 80192, char);
-
-	/* Listen for reply (try ten times in ten seconds) */
-	for (retries = 0; retries < 10; retries++) {
-		/* Set timeout */
-		SetTimeout(1, 0);
-
-		/* Wait for info */
-		if (!SocketReadable(meta_socket)) continue;
-
-		/* Read */
-		bytes = SocketRead(meta_socket, meta_buf, 80192);
-		break;
-	}
-
-	/* Close the socket */
-	SocketClose(meta_socket);
-	meta_socket = -1;
-	meta_i = 0;
-
-	/* Check for error while reading */
-	if (bytes <= 0) return(FALSE);
-
-	return(TRUE);
-}
-bool meta_connect(void) {
-	if (strlen(meta_address) > 0) {
-		/* Metaserver in config file */
-		meta_socket = CreateClientSocket(meta_address, 8801);
-	}
-
-	/* Failed to connect to metaserver in config file, connect to hard-coded address */
-	if (meta_socket == -1) {
-		Term_erase(0, 0, 80);
-		Term_erase(1, 0, 80);
-		prt("Failed to connect to user-specified meta server.", 0, 0);
-		prt("Trying to connect to default metaserver instead....", 1, 0);
-
-		/* Connect to metaserver */
-		meta_socket = CreateClientSocket(META_ADDRESS, 8801);
-	}
-
-#ifdef META_ADDRESS_2
-	/* Check for failure */
-	if (meta_socket == -1) {
-		Term_erase(0, 0, 80);
-		Term_erase(1, 0, 80);
-		prt("Failed to connect to meta server.", 0, 0);
-		prt("Trying to connect to default alternate metaserver instead....", 1, 0);
-		/* Hack -- Connect to metaserver #2 */
-		meta_socket = CreateClientSocket(META_ADDRESS_2, 8801);
-	}
-#endif
-
-	/* Check for failure */
-	if (meta_socket == -1) {
-		Term_erase(0, 0, 80);
-		Term_erase(1, 0, 80);
-		prt("Failed to connect to meta server.", 0, 0);
-		return(FALSE);
-	}
-
-	return(TRUE);
+	return askfor_aux(server_name, 80, 0);
 }
 
 /*
@@ -2381,31 +2064,17 @@ bool meta_connect(void) {
  * - wrap the words using strtok
  * - allow to scroll the screen in case
  * */
+
 bool get_server_name(void) {
 	s32b i;
 	cptr tmp;
 
 #ifdef EXPERIMENTAL_META
-	int j;
-	char buf[1024], response[1024], c;
- #ifdef META_PINGS
-	int k, v, r;
-	FILE *fff;
-  #if 0
-	char path[1024];
-  #endif
-  #ifdef WINDOWS
-	char xpath[1024];
-  #endif
- #endif
-
-	meta_socket = -1;
+	int j, bytes, socket = -1;
+	char buf[80192], c;
 #else
-	int j, k, l, bytes = 0, socket = -1, offsets[20], lines = 0;
-	char buf[1024], *ptr, c, out_val[260];
-#endif
-#ifdef META_PINGS
-	int tmpport;
+	int j, k, l, bytes, socket = -1, offsets[20], lines = 0;
+	char buf[80192], *ptr, c, out_val[260];
 #endif
 
 	/* We NEED lua here, so if it aint initialized yet, do it */
@@ -2417,83 +2086,60 @@ bool get_server_name(void) {
 	/* Make sure message is shown */
 	Term_fresh();
 
-	/* Connect to meta, and then read server list and then close the connection again!
-	   If anything fails, call manual server name input request instead. */
-	if (!meta_connect() || !meta_read_and_close()) return enter_server_name();
+	if (strlen(meta_address) > 0) {
+		/* Metaserver in config file */
+		socket = CreateClientSocket(meta_address, 8801);
+	}
 
-#ifdef META_PINGS
-	/* Test for 'ping' command availability (should always be there though).
-	   Temporarily abuse meta_pings_servers as marker (-1 = ping disabled). */
- #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-	/* Use official Windows TEMP folder instead? */
-	if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-		strcpy(buf, getenv("HOMEDRIVE"));
-		strcat(buf, getenv("HOMEPATH"));
-		strcat(buf, "\\__ping.tmp");
-	} else
- #endif
-	path_build(buf, 1024, ANGBAND_DIR_USER, "__ping.tmp");
- #ifdef WINDOWS
-	meta_pings_xpath[0] = 0;
-	r = system(format("ping /? > %s 2>&1", buf));
- #else /* assume POSIX */
-	r = system(format("ping -h > %s 2>&1", buf)); // (returns 2 on success)
- #endif
-	(void)r; //slay compiler warning;
+	/* Failed to connect to metaserver in config file, connect to hard-coded address */
+	if (socket == -1) {
+		prt("Failed to connect to used-specified meta server.", 2, 1);
+		prt("Trying to connect to default metaserver instead....", 3, 1);
 
-	fff = my_fopen(buf, "r");
-	if (!fff) meta_pings_servers = -1;
-	else {
-		meta_pings_servers = -1;
-		while (my_fgets(fff, response, sizeof(buf)) == 0) {
-			if (!strstr(response, "Usage")) continue; /* Same for all OS :) */
-			meta_pings_servers = 0;
-			break;
-		}
-		my_fclose(fff);
-		remove(buf);
+		/* Connect to metaserver */
+		socket = CreateClientSocket(META_ADDRESS, 8801);
+	}
 
- #ifdef WINDOWS /* Try Win XP workaround */
-		if (meta_pings_servers == -1) {
-			strcpy(xpath, getenv("SYSTEMROOT"));
-			strcat(xpath, "\\system32");
-			r = system(format("%s\\ping /? > %s 2>&1", xpath, buf));
-			(void)r; //slay compiler warning;
-
-			/* second (and final) chance.. */
-			fff = my_fopen(buf, "r");
-			if (!fff) meta_pings_servers = -1;
-			else {
-				meta_pings_servers = -1;
-				while (my_fgets(fff, response, sizeof(buf)) == 0) {
-					if (!strstr(response, "Usage")) continue; /* Same for all OS :) */
-					meta_pings_servers = 0;
-					sprintf(meta_pings_xpath, " %s", xpath);
-					break;
-				}
-				my_fclose(fff);
-				remove(buf);
-			}
-		}
- #endif
+#ifdef META_ADDRESS_2
+	/* Check for failure */
+	if (socket == -1) {
+		prt("Failed to connect to meta server.", 2, 1);
+		prt("Trying to connect to default alternate metaserver instead....", 3, 1);
+		/* Hack -- Connect to metaserver #2 */
+		socket = CreateClientSocket(META_ADDRESS_2, 8801);
 	}
 #endif
 
-	/* Finally display the meta server list which we read earlier into the global variable meta_buf. */
-#ifdef EXPERIMENTAL_META
- #ifdef META_DISPLAYPINGS_LATER
+	/* Check for failure */
+	if (socket == -1) {
+		prt("Failed to connect to meta server.", 2, 1);
+		return enter_server_name();
+	}
+
+	/* Wipe the buffer so valgrind doesn't complain - mikaelh */
+	C_WIPE(buf, 80192, char);
+
+	/* Read */
+	bytes = SocketRead(socket, buf, 80192);
+
+	/* Close the socket */
+	SocketClose(socket);
+
+	/* Check for error while reading */
+	if (bytes <= 0) return enter_server_name();
+
 	Term_clear();
- #endif
-	display_experimental_meta();
+
+#ifdef EXPERIMENTAL_META
+	call_lua(0, "meta_display", "(s)", "d", buf, &i);
 #else
+
 	/* Start at the beginning */
-	ptr = meta_buf;
+	ptr = buf;
 	i = 0;
 
-	Term_clear();
-
 	/* Print each server */
-	while (ptr - meta_buf < bytes) {
+	while (ptr - buf < bytes) {
 		/* Check for no entry */
 		if (strlen(ptr) <= 1) {
 			/* Increment */
@@ -2503,7 +2149,7 @@ bool get_server_name(void) {
 		}
 
 		/* Save offset */
-		offsets[i] = ptr - meta_buf;
+		offsets[i] = ptr - buf;
 
 		/* Format entry */
 		sprintf(out_val, "%c) %s", I2A(i), ptr);
@@ -2544,208 +2190,38 @@ bool get_server_name(void) {
 	prt("-- Choose a server to connect to (Q for manual entry): ", lines + 2, 1);
 #endif
 
-#ifdef META_PINGS
-	/* From the read metaserver list, initiate pinging all the game servers. */
-	if (!meta_pings_servers) {
-		/* Obtain all unique server names */
-		v = 0;
-		for (j = 0; j < meta_i; j++) {
-			call_lua(0, "meta_get", "(s,d)", "sd", meta_buf, j, &tmp, &tmpport);
-			if (!tmp[0]) continue; //paranoia
-
-			/* Check for duplicate names */
-			for (k = 0; k < v; k++)
-				if (streq(meta_pings_server_name[k], tmp)) break;
-			/* Mark duplicate and remember its first equivalent */
-			if (k != v) meta_pings_server_duplicate[v] = k;
-			else meta_pings_server_duplicate[v] = -1; /* We're the first of our name!~ */
-
-			/* Display "pinging.." status */
-			call_lua(0, "meta_add_ping", "(d,d)", "d", j, -2, &r);
-
-			/* Add server to list */
-			strcpy(meta_pings_server_name[v], tmp);
-			v++;
-			/* Limit of how many servers we can list */
-			if (v == META_PINGS) break;
-		}
-		/* Redraw 'pinging..' (paranoia) */
-		Term_fresh();
-		/* hack: hide cursor */
-		Term->scr->cx = Term->wid;
-		Term->scr->cu = 1;
-
-		(void)r; //slay compiler warning;
-		meta_pings_servers = v;
-
- #ifdef META_PINGS_CREATEFILE
-		/* Init global stuff for CreateFile()/CreateProcess() */
-		for (j = 0; j < meta_pings_servers; j++) {
-			ZeroMemory(&sa[j], sizeof(SECURITY_ATTRIBUTES));
-			sa[j].nLength = sizeof(SECURITY_ATTRIBUTES);
-			sa[j].lpSecurityDescriptor = NULL;
-			sa[j].bInheritHandle = TRUE;
-
-			ZeroMemory(&si[j], sizeof(STARTUPINFO));
-			si[j].cb = sizeof(STARTUPINFO);
-			si[j].dwFlags |= STARTF_USESTDHANDLES;
-
-  #if 0 /* done in nclient.c atm? */
-   #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-			/* Use official Windows TEMP folder instead? */
-			if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-				strcpy(path, getenv("HOMEDRIVE"));
-				strcat(path, getenv("HOMEPATH"));
-				strcat(path, format("\\__ping_%s.tmp", meta_pings_server_name[i]));
-			} else
-   #endif
-			path_build(path, 1024, ANGBAND_DIR_USER, format("__ping_%s.tmp", meta_pings_server_name[j]));
-			fhan[j] = CreateFile(path,
-			    FILE_WRITE_DATA, //FILE_APPEND_DATA,
-   #if 0
-			    0, //or:
-   #else
-			    FILE_SHARE_WRITE | FILE_SHARE_READ, // should be 0 tho
-   #endif
-			    &sa[j],
-			    OPEN_ALWAYS,
-			    FILE_ATTRIBUTE_NORMAL,
-			    NULL);
-
-			si[j].hStdInput = NULL;
-			si[j].hStdError = fhan[j];
-			si[j].hStdOutput = fhan[j];
-  #endif
-		}
- #endif
-	}
-#endif
-
-#ifdef META_DISPLAYPINGS_LATER
-	/* Crazy GCU bug workaround, for first call of inkey() below ->->-> 'i = getch();' will actually blank out the screen for unknown reason! */
-	refresh_meta_once = TRUE;
-#endif
-	/* Ask to choose a server until happy */
+	/* Ask until happy */
 	while (1) {
 		/* Get a key */
 		Term->scr->cx = Term->wid;
 		Term->scr->cu = 1;
 		c = inkey();
-#ifdef META_DISPLAYPINGS_LATER
-		/* Without this, choosing a server too quickly may result in the login screen being partially overwritten with the meta server again */
-		refresh_meta_once = FALSE;
-#endif
 
 		/* Check for quit */
-		if (c == 'Q' || c == KTRL('Q')) {
-#ifdef META_PINGS
-			char path[1024];
-
-			/* Disable pinging. */
-			for (i = 0; i < meta_pings_servers; i++) {
-				/* Clean up temp files */
- #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-				/* Use official Windows TEMP folder instead? */
-				if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-					strcpy(path, getenv("HOMEDRIVE"));
-					strcat(path, getenv("HOMEPATH"));
-					strcat(path, format("\\__ping_%s.tmp", meta_pings_server_name[i]));
-				} else
- #endif
-				path_build(path, 1024, ANGBAND_DIR_USER, format("__ping_%s.tmp", meta_pings_server_name[i]));
-				remove(path);
-			}
- #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-			/* Use official Windows TEMP folder instead? */
-			if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-				strcpy(path, getenv("HOMEDRIVE"));
-				strcat(path, getenv("HOMEPATH"));
-				strcat(path, "\\__ping.tmp");
-			} else
- #endif
-			path_build(path, 1024, ANGBAND_DIR_USER, "__ping.tmp");
-			remove(path);
-			meta_pings_servers = 0;
-#endif
-			return enter_server_name();
-		} else if (c == ESCAPE) {
-#ifdef META_PINGS
-			char path[1024];
-
-			/* Disable pinging. */
-			for (i = 0; i < meta_pings_servers; i++) {
-				/* Clean up temp files */
- #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-				/* Use official Windows TEMP folder instead? */
-				if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-					strcpy(path, getenv("HOMEDRIVE"));
-					strcat(path, getenv("HOMEPATH"));
-					strcat(path, format("\\__ping_%s.tmp", meta_pings_server_name[i]));
-				} else
- #endif
-				path_build(path, 1024, ANGBAND_DIR_USER, format("__ping_%s.tmp", meta_pings_server_name[i]));
-				remove(path);
-			}
- #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-			/* Use official Windows TEMP folder instead? */
-			if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-				strcpy(path, getenv("HOMEDRIVE"));
-				strcat(path, getenv("HOMEPATH"));
-				strcat(path, "\\__ping.tmp");
-			} else
- #endif
-			path_build(path, 1024, ANGBAND_DIR_USER, "__ping.tmp");
-			remove(path);
-			meta_pings_servers = 0;
-#endif
+		if (c == 'Q' || c == KTRL('Q')) return enter_server_name();
+		else if (c == ESCAPE) {
 			quit(NULL);
-			return(FALSE);
+			return FALSE;
 		}
 
 		/* Index */
 		j = (islower(c) ? A2I(c) : -1);
 
 		/* Check for legality */
-		if (j >= 0 && j < meta_i) break;
+		if (j >= 0 && j < i)
+			break;
 	}
-#ifdef META_PINGS
-	/* Disable pinging for the rest of the game again. */
-	for (i = 0; i < meta_pings_servers; i++) {
-		/* Clean up temp files */
- #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-		/* Use official Windows TEMP folder instead? */
-		if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-			strcpy(path, getenv("HOMEDRIVE"));
-			strcat(path, getenv("HOMEPATH"));
-			strcat(path, format("\\__ping_%s.tmp", meta_pings_server_name[i]));
-		} else
- #endif
-		path_build(path, 1024, ANGBAND_DIR_USER, format("__ping_%s.tmp", meta_pings_server_name[i]));
-		remove(path);
-	}
- #if defined(WINDOWS) && defined(WINDOWS_USE_TEMP)
-	/* Use official Windows TEMP folder instead? */
-	if (getenv("HOMEDRIVE") && getenv("HOMEPATH")) {
-		strcpy(path, getenv("HOMEDRIVE"));
-		strcat(path, getenv("HOMEPATH"));
-		strcat(path, "\\__ping.tmp");
-	} else
- #endif
-	path_build(path, 1024, ANGBAND_DIR_USER, "__ping.tmp");
-	remove(path);
-	meta_pings_servers = 0;
-#endif
 
 #ifdef EXPERIMENTAL_META
-	call_lua(0, "meta_get", "(s,d)", "sd", meta_buf, j, &tmp, &server_port);
+	call_lua(0, "meta_get", "(s,d)", "sd", buf, j, &tmp, &server_port);
 	strcpy(server_name, tmp);
 #else
 	/* Extract server name */
-	sscanf(meta_buf + offsets[j], "%s", server_name);
+	sscanf(buf + offsets[j], "%s", server_name);
 #endif
 
 	/* Success */
-	return(TRUE);
+	return TRUE;
 }
 
 /* Human */

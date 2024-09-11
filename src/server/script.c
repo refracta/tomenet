@@ -54,7 +54,7 @@ static int pern_errormessage(lua_State *L) {
 	buf[j] = '\0';
 	//msg_broadcast_format(0, "\377vLUA: %s", buf);
 	msg_admin("\377vLUA: %s", buf);
-	return(0);
+	return (0);
 }
 
 static struct luaL_reg pern_iolib[] = {
@@ -71,13 +71,13 @@ static struct luaL_reg pern_iolib[] = {
 #define DYADIC(name, op) \
     s32b name(s32b a, s32b b); \
     s32b name(s32b a, s32b b) { \
-		return(a op b); \
+		return (a op b); \
     }
 
 #define MONADIC(name, op) \
     s32b name(s32b b); \
     s32b name(s32b b) { \
-	return(op b); \
+	return (op b); \
     }
 
 
@@ -96,7 +96,7 @@ MONADIC(intBitNot,  ~ )
  */
 static int int_not(lua_State* L) {
 	lua_pushnumber(L, ~luaL_check_bit(L, 1));
-	return(1);
+	return 1;
 }
 
 
@@ -106,7 +106,7 @@ static int int_not(lua_State* L) {
  */
 static int int_mod(lua_State* L) {
 	lua_pushnumber(L, luaL_check_bit(L, 1) % luaL_check_bit(L, 2));
-	return(1);
+	return 1;
 }
 
 
@@ -121,7 +121,7 @@ static int int_and(lua_State *L) {
 	for (i = 2; i <= n; i++) w &= luaL_check_bit(L, i);
 	lua_pushnumber(L, w);
 
-	return(1);
+	return 1;
 }
 
 
@@ -136,7 +136,7 @@ static int int_or(lua_State *L) {
 	for (i = 2; i <= n; i++) w |= luaL_check_bit(L, i);
 	lua_pushnumber(L, w);
 
-	return(1);
+	return 1;
 }
 
 
@@ -151,7 +151,7 @@ static int int_xor(lua_State *L) {
 	for (i = 2; i <= n; i++) w ^= luaL_check_bit(L, i);
 	lua_pushnumber(L, w);
 
-	return(1);
+	return 1;
 }
 
 
@@ -161,7 +161,7 @@ static int int_xor(lua_State *L) {
  */
 static int int_lshift(lua_State* L) {
 	lua_pushnumber(L, luaL_check_bit(L, 1) << luaL_check_ubit(L, 2));
-	return(1);
+	return 1;
 }
 
 /*
@@ -170,7 +170,7 @@ static int int_lshift(lua_State* L) {
  */
 static int int_rshift(lua_State* L) {
 	lua_pushnumber(L, luaL_check_ubit(L, 1) >> luaL_check_ubit(L, 2));
-	return(1);
+	return 1;
 }
 
 /*
@@ -179,7 +179,7 @@ static int int_rshift(lua_State* L) {
  */
 static int int_arshift(lua_State* L) {
 	lua_pushnumber(L, luaL_check_bit(L, 1) >> luaL_check_ubit(L, 2));
-	return(1);
+	return 1;
 }
 
 
@@ -254,27 +254,37 @@ void set_server_features() {
 #endif
 	lua_settop(L, oldtop);
 
-	//sflags_TEMP |= 0x00000004;
+#ifdef ENABLE_OCCULT
+	sflags_TEMP |= 0x00000004;
+	lua_dostring(L, "TEMP2 = 1");
+	lua_settop(L, oldtop);
+#else
 	lua_dostring(L, "TEMP2 = 0");
 	lua_settop(L, oldtop);
+#endif
 
-	//sflags_TEMP |= 0x00000008;
+#ifdef ENABLE_OHERETICISM
+	sflags_TEMP |= 0x00000008;
+	lua_dostring(L, "TEMP3 = 1");
+	lua_settop(L, oldtop);
+#else
 	lua_dostring(L, "TEMP3 = 0");
 	lua_settop(L, oldtop);
+#endif
 
-	//sflags_TEMP |= 0x00000010;
+//	sflags_TEMP |= 0x00000010;
 	lua_dostring(L, "TEMP4 = 0");
 	lua_settop(L, oldtop);
 
-	//sflags_TEMP |= 0x00000020;
+//	sflags_TEMP |= 0x00000020;
 	lua_dostring(L, "TEMP5 = 0");
 	lua_settop(L, oldtop);
 
-	//sflags_TEMP |= 0x00000040;
+//	sflags_TEMP |= 0x00000040;
 	lua_dostring(L, "TEMP6 = 0");
 	lua_settop(L, oldtop);
 
-	//sflags_TEMP |= 0x00000080;
+//	sflags_TEMP |= 0x00000080;
 	lua_dostring(L, "TEMP7 = 0");
 	lua_settop(L, oldtop);
 }
@@ -332,9 +342,6 @@ void init_lua() {
  #ifdef ENABLE_OHERETICISM
 	SCHOOL_OHERETICISM = exec_lua(0, "return SCHOOL_OHERETICISM");
  #endif
- #ifdef ENABLE_OUNLIFE
-	SCHOOL_OUNLIFE = exec_lua(0, "return SCHOOL_OUNLIFE");
- #endif
 #endif
 
 	/* Finish up the spells */
@@ -354,12 +361,6 @@ void init_lua() {
 		    string_exec_lua(0, format("return get_sound_name(%d)", i)));
 
 		if (!strcmp(audio_sfx[i], "am_field")) __sfx_am = i;
-
-		if (!strcmp(audio_sfx[i], "bell")) __sfx_bell = i;
-		if (!strcmp(audio_sfx[i], "page")) __sfx_page = i;
-		if (!strcmp(audio_sfx[i], "warning")) __sfx_warning = i;
-
-		if (!strcmp(audio_sfx[i], "shriek")) __sfx_shriek = i;
 	}
 #endif
 
@@ -408,7 +409,7 @@ bool pern_dofile(int Ind, char *file) {
 	error = lua_dofile(L, buf);
 	lua_settop(L, oldtop);
 
-	return(error ? TRUE : FALSE);
+	return (error?TRUE:FALSE);
 }
 
 int exec_lua(int Ind, char *file) {
@@ -422,13 +423,16 @@ int exec_lua(int Ind, char *file) {
 
 	if (!lua_dostring(L, file)) {
 		int size = lua_gettop(L) - oldtop;
-
-		if (size != 0) res = tolua_getnumber(L, -size, 0);
-		else res = 0;
-	} else res = 0;
+		if (size != 0)
+			res = tolua_getnumber(L, -size, 0);
+		else
+			res = 0;
+	}
+	else
+		res = 0;
 
 	lua_settop(L, oldtop);
-	return(res);
+	return (res);
 }
 
 cptr string_exec_lua(int Ind, char *file) {
@@ -442,13 +446,14 @@ cptr string_exec_lua(int Ind, char *file) {
 
 	if (!lua_dostring(L, file)) {
 		int size = lua_gettop(L) - oldtop;
-
-		if (size != 0) res = tolua_getstring(L, -size, "");
-		else res = 0;
+		if (size != 0)
+			res = tolua_getstring(L, -size, "");
+		else
+			res = 0;
 	} else res = "";
 
 	lua_settop(L, oldtop);
-	return(res);
+	return (res);
 }
 
 static FILE *lua_file;

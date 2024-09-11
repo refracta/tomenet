@@ -8,11 +8,6 @@
  * (z-virt.h, z-util.h, z-form.h, term.h, random.h)
  */
 
-#define REGEX_SEARCH
-#ifdef REGEX_SEARCH
- /* Just for regex_t type in function parameters */
- #include <regex.h>
-#endif
 
 /*
  * Automatically generated "variable" declarations
@@ -128,19 +123,19 @@ extern bool can_be_wizard;
 extern u16b panic_save;
 extern bool scan_monsters;
 extern bool scan_objects;
-extern s16b m_top;
-extern s16b m_nxt;
-extern s16b m_max;
-extern s32b o_top;
-extern s32b o_nxt;
-extern s32b o_max;
 extern s16b inven_nxt;
+extern s16b o_nxt;
+extern s16b m_nxt;
+extern s16b o_max;
+extern s16b m_max;
+extern s16b o_top;
+extern s16b m_top;
 
 
 //deprecate: game options -- nowadays they're client options instead -- todo: clear
 extern player_type **Players;
 extern long GetInd[];
-extern s32b o_fast[MAX_O_IDX];
+extern s16b o_fast[MAX_O_IDX];
 extern s16b m_fast[MAX_M_IDX];
 extern object_type *o_list;
 extern monster_type *m_list;
@@ -329,7 +324,7 @@ extern void safe_setuid_grab(void);
 extern s16b tokenize(char *buf, s16b num, char **tokens);
 extern void display_player(int Ind, bool do_hist);
 extern errr file_character(cptr name, bool full);
-extern errr process_pref_file_aux(char *buf, byte fmt);
+extern errr process_pref_file_aux(char *buf);
 extern errr process_pref_file(cptr name);
 extern errr check_time_init(void);
 extern errr check_load_init(void);
@@ -343,7 +338,7 @@ extern void process_player_name(int Ind, bool sf);
 extern void get_name(int Ind);
 extern void do_cmd_suicide(int Ind);
 extern void do_cmd_save_game(int Ind);
-extern unsigned int total_points(int Ind);
+extern long total_points(int Ind);
 extern void display_scores(int from, int to);
 extern void close_game(void);
 extern void exit_game_panic(void);
@@ -401,7 +396,7 @@ extern bool place_monster_aux(int Depth, int y, int x, int r_idx, bool slp, bool
 extern bool place_monster(int Depth, int y, int x, bool slp, bool grp);
 extern bool alloc_monster(int Depth, int dis, int slp);
 extern bool multiply_monster(int m_idx);
-extern void update_smart_learn(int Ind, int m_idx, int what);
+extern void update_smart_learn(int m_idx, int what);
 
 /* netserver.c */
 /*extern void Contact(int fd, void *arg);*/
@@ -416,15 +411,12 @@ extern int Send_ac(int Ind, int base, int plus);
 extern int Send_experience(int Ind, int lev, int max_exp, int cur_exp, s32b adv_exp);
 extern int Send_gold(int Ind, s32b gold);
 extern int Send_hp(int Ind, int mhp, int chp);
-extern int Send_mp(int Ind, int mmp, int cmp);
+extern int Send_sp(int Ind, int msp, int csp);
 extern int Send_char_info(int Ind, int race, int class, int sex, int mode);
 extern int Send_various(int Ind, int height, int weight, int age, int sc);
-extern int Send_stat(int Ind, int stat);
+extern int Send_stat(int Ind, int stat, int max, int cur, int cur_base);
 extern int Send_history(int Ind, int line, cptr hist);
 extern int Send_inven(int Ind, char pos, byte attr, int wgt, int amt, byte tval, cptr name);
-#ifdef ENABLE_SUBINVEN
-extern int Send_subinven(int Ind, char ipos, char pos, byte attr, int wgt, int amt, byte tval, cptr name);
-#endif
 extern int Send_equip(int Ind, char pos, byte attr, int wgt, byte tval, cptr name);
 extern int Send_title(int Ind, cptr title);
 /*extern int Send_level(int Ind, int max, int cur);*/
@@ -434,7 +426,7 @@ extern int Send_food(int Ind, int food);
 extern int Send_blind(int Ind, bool blind);
 extern int Send_confused(int Ind, bool confused);
 extern int Send_fear(int Ind, bool afraid);
-extern int Send_poison(int Ind, char poisoned);
+extern int Send_poison(int Ind, bool poisoned);
 extern int Send_paralyzed(int Ind, bool paralyzed);
 extern int Send_searching(int Ind, bool searching);
 extern int Send_speed(int Ind, int speed);
@@ -445,7 +437,6 @@ extern int Send_direction(int Ind);
 extern int Send_message(int Ind, cptr msg);
 extern int Send_char(int Ind, int x, int y, byte a, char c);
 extern int Send_spell_info(int Ind, int i, cptr out_val);
-extern int Send_powers_info(int Ind);
 extern int Send_item_request(int Ind);
 extern int Send_state(int Ind, bool paralyzed, bool searching);
 extern int Send_beep(int Ind);
@@ -490,7 +481,7 @@ extern void delete_object_idx(int i, bool unfound_art);
 extern void delete_object(int Depth, int y, int x, bool unfound_art);
 extern void compact_objects(int size);
 extern void wipe_o_list(int Depth);
-extern int o_pop(void);
+extern s16b o_pop(void);
 extern errr get_obj_num_prep(void);
 extern s16b get_obj_num(int level);
 extern void object_known(object_type *o_ptr);
@@ -503,7 +494,8 @@ extern s16b lookup_kind(int tval, int sval);
 extern void invwipe(object_type *o_ptr);
 extern void invcopy(object_type *o_ptr, int k_idx);
 extern void apply_magic(int Depth, object_type *o_ptr, int lev, bool okay, bool good, bool great, bool verygreat, u16b resf);
-//extern void place_object(int Ind, struct worldpos *wpos, int y, int x, bool good, bool great, bool verygreat, u32b resf, obj_theme theme, int luck, byte removal_marker, bool preown);
+/*extern void place_object(int Depth, int y, int x, bool good, bool great, bool true_art, int luck);*/
+extern void place_object(struct worldpos *wpos, int y, int x, bool good, bool great, bool verygreat, u16b resf, obj_theme theme, int luck, byte removal_marker);
 extern void acquirement(int Depth, int y1, int x1, int num, bool great, bool verygreat, u16b resf);
 extern void place_trap(int Depth, int y, int x);
 extern void place_gold(int Depth, int y, int x);
@@ -531,7 +523,7 @@ extern void sched(void);
 extern s16b poly_r_idx(int r_idx);
 extern void teleport_away(int m_idx, int dis);
 extern void teleport_player(int Ind, int dis);
-extern void teleport_player_to(int Ind, int ny, int nx, bool forced);
+extern void teleport_player_to(int Ind, int ny, int nx);
 extern void teleport_player_level(int Ind);
 extern void take_hit(int Ind, int damage, cptr kb_str);
 extern void acid_dam(int Ind, int dam, cptr kb_str);
@@ -545,7 +537,7 @@ extern bool apply_disenchant(int Ind, int mode);
 extern bool project(int who, int rad, int Depth, int y, int x, int dam, int typ, int flg, char attacker[]);
 
 /* spells2.c */
-extern bool hp_player(int Ind, int num, bool quiet, bool auto_effect);
+extern bool hp_player(int Ind, int num);
 extern void warding_glyph(int Ind);
 extern bool do_dec_stat(int Ind, int stat);
 extern bool do_res_stat(int Ind, int stat);
@@ -653,8 +645,8 @@ extern void ascii_to_text(char *buf, cptr str);
 extern void keymap_init(void);
 extern void macro_add(cptr pat, cptr act, bool cmd_flag);
 extern char inkey(void);
-extern cptr quark_str(s32b num);
-extern s32b quark_add(cptr str);
+extern cptr quark_str(s16b num);
+extern s16b quark_add(cptr str);
 extern s16b message_num(void);
 extern cptr message_str(s16b age);
 extern void message_add(cptr msg);
@@ -676,6 +668,7 @@ extern s16b get_quantity(cptr prompt, int max);
 extern void pause_line(int row);
 extern void request_command(bool shopping);
 extern bool is_a_vowel(int ch);
+extern bool is_same_as(version_type *version, int major, int minor, int patch, int extra, int branch, int build);
 
 /* xtra1.c */
 extern void cnv_stat(int val, char *out_val);
@@ -691,7 +684,6 @@ extern void handle_stuff(int Ind);
 extern bool set_blind(int Ind, int v);
 extern bool set_confused(int Ind, int v);
 extern bool set_poisoned(int Ind, int v);
-extern bool set_diseased(int Ind, int v);
 extern bool set_afraid(int Ind, int v);
 extern bool set_paralyzed(int Ind, int v);
 extern bool set_image(int Ind, int v);
@@ -740,19 +732,7 @@ extern bool c_get_item(int *cp, cptr pmt, bool equip, bool inven, bool floor);
 /* common.c */
 extern int find_realm(int book);
 extern void version_build(void);
-extern char *my_strcasestr(const char *big, const char *little);
-extern char *my_strcasestr_skipcol(const char *big, const char *little, byte strict);
-extern char *my_strstr_skipcol(const char *big, const char *little, byte strict);
-#ifdef REGEX_SEARCH
-extern bool my_strregexp_skipcol(char *buf2, regex_t re_src, char *searchstr_re, char *withinsearch, int *next_start);
-#endif
-extern bool is_newer_than(version_type *version, int major, int minor, int patch, int extra, int branch, int build);
-extern bool is_older_than(version_type *version, int major, int minor, int patch, int extra, int branch, int build);
-extern bool is_same_as(version_type *version, int major, int minor, int patch, int extra, int branch, int build);
-#ifdef ENABLE_SUBINVEN
-//extern int get_subinven_size(int sval);
-#endif
-extern int distance(int y1, int x1, int y2, int x2);
+extern const char *my_strcasestr(const char *big, const char *little);
 
 /*
  * Hack -- conditional (or "bizarre") externs
@@ -783,10 +763,7 @@ extern int stricmp(cptr a, cptr b);
 /* extern int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, ...); */
 #endif
 
-extern char os_temp_path[1024];
-extern void init_temp_path(void);
-
-extern cptr longVersion, os_version;
+extern cptr longVersion;
 extern cptr shortVersion;
 
 /* Defined as TRUE in src/client/variable.c and FALSE in src/server/variable.c */

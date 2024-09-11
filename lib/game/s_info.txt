@@ -19,7 +19,8 @@
 
 # E:exclusive skill:exclusive skill
 # O:skill:opposing skill%percent
-# f:skill:friendly skill%percent
+# A:skill:friendly skill%percent
+# (NOTE: not A: but f: ?)
 
 # T:father:child
 
@@ -34,7 +35,7 @@ V:4.0.0
 
 N:1:Combat
 D:Improves fighting and allows wearing heavier armour (Martial Arts excepted).
-D:Pseudo-ID weapon/armour/food faster. Detailed at 11, ranged at 31, curses at 41.
+D:Pseudo-ID weapons/armour faster; more detailed at 11, ranged at 31, magic at 41.
 A:14:Check parry/block chance
 I:1000:0
 
@@ -52,7 +53,7 @@ I:1000:0
 
 N:4:Critical-strike
 D:Increases chance to land high-damage critical strikes.
-D:Only applies to sword/polearm-type weapons weighing up to 10.0 lbs.
+D:Only applies to sword-type weapons weighing up to 10.0 lbs.
 I:1000:0
 
 N:5:Polearm-mastery
@@ -90,16 +91,16 @@ D:Allows more skillful use of crossbows and reduces break chance of bolts.
 I:1000:0
 
 N:11:Backstabbing
-D:Backstab sleeping and fleeing monsters. Also increases Critical-strike skill.
-D:*** REQUIRES SWORD/POLEARM-TYPE WEAPONS OR MARTIAL ARTS***
+D:Ability to backstab sleeping and fleeing monsters.
+D:*** REQUIRES SWORD-TYPE WEAPONS OR MARTIAL ARTS***
+#D:*** REQUIRES SWORD-TYPE WEAPONS ***
 #D:Much more effective in the dark
 I:1000:0
 
 N:12:Magic
 D:Increases your max mana by +4 per point.
 #outdated (pre-lua): and spell-casting chance.
-D:Pseudo-ID magical items, curses and food faster and (at 11+) in more detail.
-#^not actually enchanted items (eg weapons), but items from treasure/magic classes mostly
+D:Allows you to pseudo-id magical items faster and (at 11+) in more detail.
 #A:4:Toggle fire-till-kill mode
 I:1000:0
 
@@ -139,7 +140,7 @@ A:3:Use innate power
 F:MKEY_HARDCODE
 I:1000:0
 
-N:17:Magic Device
+N:17:Magic device
 D:Increases chance to successfully use magic devices such as
 D:wands, rods, staves, artifacts. Also increases their power.
 I:1000:0
@@ -178,8 +179,8 @@ D:Ability to move without waking up monsters.
 I:1000:0
 
 N:24:Stealing
-D:Ability to steal items from stores, or items and money from other people.
-D:This knowledge also makes it harder for others to steal from you.
+D:Ability to steal objects from stores, or objects and money from
+D:other people. This knowledge also protects you from robbery.
 I:1000:0
 
 N:25:Necromancy
@@ -202,20 +203,20 @@ D:replenishing your mana. Requires living creatures who feel pain.
 I:1000:0
 
 N:28:Aura of Fear
-D:Aura that surrounds you and strikes fear in monsters that hit you in close
-D:combat. At 20 grants fear resistance and fear brand to your melee attacks.
+D:Aura that surrounds you and strikes fear in monsters that
+D:strike you in close combat, making them run away.
 A:15:Control your aura of fear
 I:1000:0
 
 N:29:Shivering Aura
-D:Aura that surrounds you and stuns monsters that strike you in close combat.
-D:At 30.000 it brands your melee attacks with frost and grants frost resistance.
+D:Aura that surrounds you and stuns monsters that strike you
+D:in close combat.
 A:16:Control your shivering aura
 I:1000:0
 
 N:30:Aura of Death
-D:Aura that surrounds you, creating waves of plasma or ice when struck in close
-D:combat. At 40.000 grants plasma and ice brand to and ice brands to your melee.
+D:Aura that surrounds you and creates alternating waves of plasma
+D:and ice when monsters strike you in close combat.
 A:17:Control your aura of death
 I:1000:0
 
@@ -247,7 +248,7 @@ F:HIDDEN
 
 N:35:Calmness
 D:Reduces chances of opponents to interfere with some of your actions
-D:such as firing ranged weapons, using void gates or setting up traps.
+D:most notably such as firing ranged weapons or entering void gates.
 I:1000:0
 
 N:36:Swimming
@@ -257,10 +258,9 @@ I:1000:0
 F:MAX_1
 
 N:37:Martial Arts
-D:Ability to fight bare-handed effectively. Also increases Dodging skill.
+D:Ability to fight bare-handed. Also provides some special abilities.
 D:You mustn't use weapons or heavy armour, or various penalties may apply.
 #D:This is a primary skill for melee fighters.
-A:9:Check intercept chance
 I:1000:0
 
 ## DELETEME
@@ -282,7 +282,6 @@ I:1000:0
 N:41:Interception
 D:Ability to interfere with certain actions of opponents next to you,
 D:such as casting spells or running away.
-A:9:Check intercept chance
 I:1000:0
 
 N:42:Dodging
@@ -292,13 +291,13 @@ A:8:Check dodge chance
 I:1000:0
 
 N:43:Health
-D:Increases base hit points by +2/point, speeds HP+ST regeneration and recovery
+D:Increases base hit points by +2 per point, speeds regeneration and recovery
 D:from malicious effects. Shows more detailed SN (sanity) status at 10/20/40.
 I:1000:0
 
 N:44:Digging
-D:Dig more easily, find more treasure, uncover special features. Increases Health.
-$ENABLE_DEMOLITIONIST$D:At 5 unlocks hidden 'Demolitionist' perk, to acquire chemicals and explosives.
+D:Allows you to tunnel through walls and obstacles faster.
+D:Also improves uncovering items, treasure, and special features by digging.
 I:1000:0
 
 ## DELETEME
@@ -308,16 +307,14 @@ I:1000:0
 #F:HIDDEN
 
 N:46:Trapping
-D:Ability to set and pseudo-ID traps (detailed at 11+), disarm traps, pick locks.
+D:Ability to set monster traps and to disarm various traps and pick locks.
 D:Increases chance to not get hindered by monsters when trying to lay a trap.
-#also improves chance to avoid traps on touching them
 A:10:Set trap
 I:1000:46
 F:MKEY_HARDCODE
 
 N:47:Axe-mastery
 D:Allows more skillful use of axe-type weapons.
-D:This is a primary skill for melee fighters.
 I:1000:0
 
 N:48:Conveyance
@@ -392,8 +389,6 @@ D:Ability to learn and use spells from the Mind school.
 D:Spells use the intelligence stat.
 A:11:Cast a spell
 I:1000:111
-#Mind school was removed, so hide this skill for transgression phase: (or indefinitely, yeah.. :p)
-F:HIDDEN
 
 N:60:Udun
 D:Ability to learn and use spells from the Udun school.
@@ -581,12 +576,6 @@ A:12:Draw a rune
 I:1000:105
 F:MKEY_HARDCODE
 
-$ENABLE_OUNLIFE$N:105:Unlife
-$ENABLE_OUNLIFE$D:Ability to learn and use spells from the Unlife school.
-$ENABLE_OUNLIFE$D:Spells use the wisdom stat.
-$ENABLE_OUNLIFE$A:11:Cast a spell
-$ENABLE_OUNLIFE$I:1000:111
-
 N:109:Blood Magic
 D:
 I:1000:0
@@ -595,13 +584,6 @@ F:DUMMY
 N:110:Breathe element
 D:Ability to breathe an element.
 A:18:Breathe element
-I:1000:0
-F:MKEY_HARDCODE
-F:HIDDEN
-
-N:111:Pick breath element
-D:Multi-coloured draconians can choose to breathe a specific element.
-A:19:Pick breath element
 I:1000:0
 F:MKEY_HARDCODE
 F:HIDDEN
@@ -623,8 +605,6 @@ f:Sword-mastery:Weaponmastery%15
 f:Axe-mastery:Weaponmastery%15
 f:Polearm-mastery:Weaponmastery%15
 f:Blunt-mastery:Weaponmastery%15
-f:Backstabbing:Critical-strike%15
-
 
 # Ranged: Specific masteries improve generic mastery
 #new feature: archery gives special abilities. -> reducing synergies
@@ -639,7 +619,6 @@ f:Crossbow-mastery:Archery%15
 #f:Hunting Lore:Archery%5
 #f:Ricochet:Archery%15
 #f:Sling-mastery:Ricochet%25
-
 
 # All combat skills improve Combat
 #f:Weaponmastery:Combat%50
@@ -667,7 +646,6 @@ f:Martial Arts:Combat%20
 #f:Ricochet:Combat%7
 #f:Fighting Technique:Combat%25
 
-
 # Sorcery and Weaponmastery arent exactly friendly to each other
 O:Sorcery:Weaponmastery%100
 O:Sorcery:Archery%100
@@ -676,9 +654,8 @@ O:Weaponmastery:Sorcery%100
 O:Archery:Sorcery%100
 O:Martial Arts:Sorcery%100
 
-
 # All magic skills affect magic skill
-f:Magic Device:Magic%7
+f:Magic device:Magic%7
 f:Spell-power:Magic%20
 f:Sorcery:Magic%20
 f:Mana:Magic%10
@@ -693,9 +670,7 @@ f:Temporal:Magic%10
 f:Meta:Magic%10
 f:Mind:Magic%10
 f:Udun:Magic%10
-
 f:Mimicry:Magic%7
-
 #f:Demonology:Magic%10
 #f:Necromancy:Magic%4
 #f:Thaumaturgy:Magic%6
@@ -708,85 +683,9 @@ f:Mimicry:Magic%7
 #f:Revelation:Prayer%10
 #f:Revelation:Magic%5
 
-
 # Anti-magic exclude all magic
-
-E:Magic:Anti-magic
-
-E:Wizardry:Anti-magic
-#E:Spell-learning:Anti-magic
-#E:Spell-power:Anti-magic
-E:Prayers:Anti-magic
-E:Druidism:Anti-magic
-$ENABLE_MCRAFT$E:Mindcraft:Anti-magic
-$ENABLE_OCCULT$E:Occultism:Anti-magic
-E:Runecraft:Anti-magic
-$ENABLE_MAIA$E:Astral Knowledge:Anti-magic
-E:Blood Magic:Anti-magic
-
+E:Magic device:Anti-magic
 E:Sorcery:Anti-magic
-E:Mana:Anti-magic
-E:Fire:Anti-magic
-E:Water:Anti-magic
-E:Air:Anti-magic
-E:Earth:Anti-magic
-E:Nature:Anti-magic
-E:Conveyance:Anti-magic
-E:Divination:Anti-magic
-E:Temporal:Anti-magic
-E:Udun:Anti-magic
-E:Mind:Anti-magic
-E:Meta:Anti-magic
-E:Spell-power:Anti-magic
-
-#E:Demonology:Anti-magic
-#E:Necromancy:Anti-magic
-#E:Thaumaturgy:Anti-magic
-#E:Alchemy:Anti-magic
-
-E:Holy Offense:Anti-magic
-E:Holy Defense:Anti-magic
-E:Holy Curing:Anti-magic
-E:Holy Support:Anti-magic
-
-E:Arcane Lore:Anti-magic
-E:Physical Lore:Anti-magic
-
-$ENABLE_MCRAFT$E:Psycho-power:Anti-magic
-$ENABLE_MCRAFT$E:Attunement:Anti-magic
-$ENABLE_MCRAFT$E:Mental Intrusion:Anti-magic
-
-$ENABLE_OCCULT$E:Shadow:Anti-magic
-$ENABLE_OCCULT$E:Spirit:Anti-magic
-$ENABLE_OHERETICISM$E:Hereticism:Anti-magic
-$ENABLE_OUNLIFE$E:Unlife:Anti-magic
-
-E:Light:Anti-magic
-E:Darkness:Anti-magic
-E:Nexus:Anti-magic
-E:Nether:Anti-magic
-E:Chaos:Anti-magic
-E:Mana :Anti-magic
-
-#E:Spirituality:Anti-magic
-#E:Prayer:Anti-magic
-#E:Druidistic:Anti-magic
-#E:Mindcraft:Anti-magic
-#E:Music:Anti-magic
-
-#E:Aura power:Anti-magic
-E:Necromancy:Anti-magic
-E:Traumaturgy:Anti-magic
-E:Aura of Fear:Anti-magic
-E:Shivering Aura:Anti-magic
-E:Aura of Death:Anti-magic
-
-E:Magic Device:Anti-magic
-
-#Implications if Mimicry is disabled by anti-magic:
-#-cannot learn new forms
-#-doesn't gain extra mana from mimicry skill (which doesn't matter as he cannot use mana)
-#-cannot change preferred immunity anymore
 E:Mimicry:Anti-magic
 
 ##E:Casting-speed:Anti-magic
@@ -796,7 +695,6 @@ E:Mimicry:Anti-magic
 #E:Prayer:Anti-magic
 ##E:Revelation:Anti-magic
 #E:Hunting Lore:Anti-magic
-
 
 f:Holy Offense:Magic%10
 f:Holy Defense:Magic%10
@@ -815,8 +713,6 @@ $ENABLE_MCRAFT$f:Mental Intrusion:Magic%10
 
 $ENABLE_OCCULT$f:Shadow:Magic%10
 $ENABLE_OCCULT$f:Spirit:Magic%10
-$ENABLE_OHERETICISM$f:Hereticism:Magic%10
-$ENABLE_OUNLIFE$f:Unlife:Magic%10
 
 f:Light:Magic%15
 f:Darkness:Magic%15
@@ -826,15 +722,18 @@ f:Chaos:Magic%15
 f:Mana :Magic%15
 
 f:Stealth:Sneakiness%15
-#f:Disarming:Sneakiness%10
-f:Trapping:Sneakiness%20
+f:Disarming:Sneakiness%10
+f:Trapping:Sneakiness%15
 #f:Trapping:Disarming%15
 f:Backstabbing:Sneakiness%5
-f:Stealing:Sneakiness%35
-f:Dodging:Sneakiness%15
-f:Calmness:Sneakiness%15
-#f:Interception:Sneakiness%7
+f:Stealing:Sneakiness%20
+f:Dodging:Sneakiness%10
 
+#f:Calmness:Dodging%20
+#f:Interception:Dodging%20
+#f:Calmness:Sneakiness%7
+f:Calmness:Sneakiness%10
+#f:Interception:Sneakiness%7
 f:Interception:Combat%10
 
 
@@ -850,7 +749,7 @@ f:Aura of Death:Magic%5
 #f:Training:Health%25
 f:Agility:Health%25
 f:Swimming:Health%25
-f:Digging:Health%35
+f:Digging:Health%25
 f:Climbing:Health%25
 #f:Levitation:Health%15
 #f:Free Action:Health%15
@@ -893,7 +792,7 @@ T:Magic:Runecraft
 $ENABLE_MAIA$T:Magic:Astral Knowledge
 T:Magic:Blood Magic
 T:Magic:Mimicry
-T:Magic:Magic Device
+T:Magic:Magic device
 
 T:Wizardry:Sorcery
 T:Wizardry:Mana
@@ -930,7 +829,6 @@ $ENABLE_MCRAFT$T:Mindcraft:Mental Intrusion
 $ENABLE_OCCULT$T:Occultism:Shadow
 $ENABLE_OCCULT$T:Occultism:Spirit
 $ENABLE_OHERETICISM$T:Occultism:Hereticism
-$ENABLE_OUNLIFE$T:Occultism:Unlife
 
 T:Runecraft:Light
 T:Runecraft:Darkness
