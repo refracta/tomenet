@@ -1,0 +1,36 @@
+name: upload-build
+
+on:
+  push:
+    branches: [ tomenet-ko* ]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          docker run -v $(pwd):/usr/src -w /usr/src -i --rm refracta/tomenet-builder /bin/bash -c "cd src && make -f makefile.mingw"
+
+      - name: Download TomeNET release
+        run: |
+          wget https://github.com/TomenetGame/tomenet/releases/download/v4.9.2/TomeNET-4.9.2-client-withsfx.zip
+          unzip TomeNET-4.9.2-client-withsfx.zip
+          mv tomenet.exe TomeNET/TomeNET.exe
+          mv tomenet.server.exe TomeNET/TomeNET-Server.exe
+          zip -r TomeNET-KO-4.9.2-client-withsfx.zip TomeNET
+
+      - name: Artifact upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: TomeNET-KO-4.9.2-client-withsfx
+          path: TomeNET
+
+      - name: Release upload
+        run: |
+          tomenet-builder/release.sh upload -p TomeNET-KO-4.9.2-client-withsfx.zip -n TomeNET-KO -T "TomeNET-KO-4.9.2" -b ${{ github.sha }}
+          tomenet-builder/release.sh delete -n TomeNET-KO -l 3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

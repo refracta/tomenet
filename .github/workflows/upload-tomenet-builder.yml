@@ -1,0 +1,35 @@
+name: upload-tomenet-builder
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  issue_comment:
+    types: [created]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: |
+          docker build -t refracta/tomenet-builder:latest .
+        working-directory: tomenet-builder
+
+      - name: Push image
+        run: |
+          TIMESTAMP=$(date -u +"%y%m%d%H%M")
+          docker tag refracta/tomenet-builder:latest refracta/tomenet-builder:$TIMESTAMP
+          echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+          docker push refracta/tomenet-builder:$TIMESTAMP
+          docker push refracta/tomenet-builder:latest
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        working-directory: tomenet-builder
+
+    if: |
+      github.event_name == 'schedule' ||
+      contains(github.event.comment.body, '/utb') ||
+      contains(github.event.comment.body, '/upload-tomenet-builder')
