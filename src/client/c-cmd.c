@@ -7416,6 +7416,19 @@ void cmd_check_misc(void) {
 	(void)res;
 }
 
+#ifdef DKPARK
+void __fastcall SetEngMode(void)
+{
+	HIMC himc = ImmGetContext(g_hwnd);
+	ImmSetConversionStatus(himc, IME_CMODE_ALPHANUMERIC, IME_SMODE_NONE);
+}
+void __fastcall SetHanMode(void)
+{
+    HIMC himc = ImmGetContext(g_hwnd);
+	ImmSetConversionStatus(himc, IME_CMODE_HANGEUL, IME_SMODE_NONE);
+}
+#endif
+
 void cmd_message(void) {
 	/* _hacky_: A note INCLUDES the sender name, the brackets, spaces/newlines? Ouch. - C. Blue
 	   Note: the -8 are additional world server tax (8 chars are used for world server line prefix etc.) */
