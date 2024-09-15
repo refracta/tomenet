@@ -1726,7 +1726,12 @@ static void Term_fresh_row_text_wipe(int y) {
 		nc = old_cc[x] = scr_cc[x];
 
 		/* Notice unchanged areas */
-		if (na == oa && nc == oc) {
+#ifdef DKPARK
+        if ((na == oa) && (nc == oc) && (oc>=0))
+#else
+        if ((na == oa) && (nc == oc))
+#endif
+		{
 			/* Flush as needed (see above) */
 			if (n) {
 				/* Terminate the thread */
