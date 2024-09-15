@@ -2040,6 +2040,10 @@ static void Term_fresh_row_both_wipe(int y) {
 #ifdef GRAPHICS_BG_MASK
 		    && na_back == oa_back && nc_back == oc_back
 #endif
+#ifdef DKPARK
+            && oc >= 0
+#endif
+
 		    ) {
 			/* Flush as needed (see above) */
 			if (n) {
