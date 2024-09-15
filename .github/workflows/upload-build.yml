@@ -31,6 +31,6 @@ jobs:
       - name: Release upload
         run: |
           tomenet-builder/release.sh upload -p TomeNET-KO-4.9.2-client-withsfx.zip -n TomeNET-KO -T "TomeNET-KO-4.9.2" -b ${{ github.sha }}
-          tomenet-builder/release.sh delete -n TomeNET-KO -l 3
+          tomenet-builder/release.sh delete -n TomeNET-KO -l 50
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
