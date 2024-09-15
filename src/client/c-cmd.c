@@ -7448,7 +7448,13 @@ void cmd_message(void) {
 
 	inkey_msg = TRUE;
 
+#ifdef DKPARK
+	SetHanMode();
+#endif
 	if (get_string("Message: ", buf, sizeof(buf) - 1)) {
+#ifdef DKPARK
+    SetEngMode();
+#endif
 		/* hack - screenshot - mikaelh */
 		if (prefix(buf, "/shot") || prefix(buf, "/screenshot")) {
 			char *space = strchr(buf, ' ');
