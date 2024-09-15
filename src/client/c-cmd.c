@@ -274,7 +274,11 @@ void process_command() {
 	/* Ignore mostly, but also stop automatically repeated actions */
 	case ' ': cmd_clear_actions(); break;
 	/* Ignore return */
-	case '\r': break;
+	case '\r':
+#ifdef DKPARK
+        cmd_message();
+#endif
+	break;
 	/* Clear buffer */
 	case ')': cmd_clear_buffer(); break;
 
