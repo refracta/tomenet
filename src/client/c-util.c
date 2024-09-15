@@ -3101,22 +3101,52 @@ bool askfor_aux(char *buf, int len, char mode) {
 				break;
 			}
 			/* Place character at end of line and increment k and l */
-			if (k == l) {
-				if ((k < len) && (isprint(i))) {
-					buf[k++] = i;
-					l++;
+#ifdef DKPARK
+			{
+				int next;
+				if (ishangul (i)) {
+					inkey_base = TRUE;
+					next = inkey ();
+					if (k+1 < len) {
+						buf[k++] = i;
+						l++;
+						buf[k] = next;
+						k_flag[k++] = 1;
+						l++;
+					} else
+						bell();
+				} else {
+#ifdef SJIS
+//				if(k<len && (isprint(i) || (0xa0<=i && i<=0xdf))){
+					if(k<len && (isprint(i) || (0x81<=i && i<=0xfd))){
+#else
+					if(k<len && isprint(i)){
+#endif
+						buf[k] = i;
+						l++;
+						k_flag[k++] = 0;
+					} else
+					bell();
 				}
 			}
-			/* Place character at current cursor position after moving
+#else
+			if (k == l){
+			  if ((k < len) && (isprint(i))) {
+			    buf[k++] = i;
+			    l++;
+			  }
+			}
+			/* Place character at currect cursor position after moving
 			   the rest of the line one step forward */
-			else if (k > l) {
-				if ((k < len) && (isprint(i))) {
-					for (j = k; j >= l; j--) buf[j + 1] = buf[j];
-					buf[l++] = i;
-					k++;
-				}
+			else if (k > l){
+			  if ((k < len) && (isprint(i))) {
+			    for (j = k;j>=l;j--) buf[j+1] = buf[j];
+			    buf[l++] = i;
+			    k++;
+			  }
 			}
-			else bell(); //paranoia? line length should never be < cursor position
+			else bell();
+#endif
 			break;
 		}
 
