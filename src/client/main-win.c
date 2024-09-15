@@ -3431,6 +3431,10 @@ LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			Term_keypress(wParam);
 			return(0);
 
+        case WM_IME_CHAR:
+            Term_keypress(wParam);
+            return(0);
+
 		case WM_INITMENU:
 			setup_menus();
 			return(0);
