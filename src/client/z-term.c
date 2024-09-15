@@ -523,7 +523,13 @@ static void QueueAttrChars(int x, int y, int n, byte a, char32_t *s) {
 		int oc = scr_cc[x];
 
 		/* Hack -- Ignore non-changes */
-		if (oa == a && oc == *s) continue;
+#ifdef DKPARK
+		if ((oa == a) && (oc == *s) && (oc>=0)){
+			continue;
+		}
+#else
+		if ((oa == a) && (oc == *s)) continue;
+#endif
 
 		/* Save the "literal" information */
 		scr_aa[x] = a;
