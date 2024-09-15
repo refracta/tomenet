@@ -71,6 +71,11 @@
 //#define MNU_USE
 /* #define USE_GRAPHICS */
 
+#ifdef DKPARK
+#ifndef USE_LOGFONT
+#define USE_LOGFONT
+#endif
+#endif
 #ifdef JP
 #  ifndef USE_LOGFONT
 #    define USE_LOGFONT
