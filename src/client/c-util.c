@@ -2559,6 +2559,11 @@ bool askfor_aux(char *buf, int len, char mode) {
 
 		/* Get a key */
 		i = inkey_combo(modify_allowed, &k, buf);
+#ifdef DKPARK
+		if(i=='/' && k==0){
+			SetEngMode2();
+		}
+#endif
 
 		/* Analyze the key */
 		switch (i) {
