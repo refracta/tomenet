@@ -3428,8 +3428,52 @@ LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			if (GetKeyState(VK_MENU)    & 0x8000) inkey_shift_special |= 0x4;
 #endif
 
-			Term_keypress(wParam);
+            wchar_t ch = (wchar_t)wParam;
+			Term_keypress(ch);
 			return(0);
+
+            case WM_UNICHAR:
+                if (wParam == UNICODE_NOCHAR)
+                {
+                    return TRUE;
+                }
+                else
+                {
+                    wchar_t ch = (wchar_t)wParam;
+                    Term_keypress(ch);
+                    return 0;
+                }
+
+            case WM_IME_COMPOSITION:
+            {
+                if (lParam & GCS_RESULTSTR)
+                {
+                    HIMC hIMC = ImmGetContext(hWnd);
+                    if (hIMC)
+                    {
+                        DWORD dwSize = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR, NULL, 0);
+                        if (dwSize > 0)
+                        {
+                            wchar_t* wszCompStr = (wchar_t*)malloc(dwSize + sizeof(wchar_t));
+                            if (wszCompStr)
+                            {
+                                ImmGetCompositionStringW(hIMC, GCS_RESULTSTR, wszCompStr, dwSize);
+                                wszCompStr[dwSize / sizeof(wchar_t)] = L'\0';
+
+                                // Process the composed string
+                                for (int i = 0; wszCompStr[i] != L'\0'; ++i)
+                                {
+                                    Term_keypress(wszCompStr[i]);
+                                }
+
+                                free(wszCompStr);
+                            }
+                        }
+                        ImmReleaseContext(hWnd, hIMC);
+                    }
+                }
+                return 0;
+            }
 
         case WM_IME_CHAR:
             Term_keypress(wParam);
