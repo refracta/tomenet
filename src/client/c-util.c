@@ -4601,6 +4601,26 @@ void c_message_add_impscroll(cptr str) {
  * XXX XXX XXX Note that "msg_print(NULL)" will clear the top line
  * even if no messages are pending.  This is probably a hack.
  */
+#ifdef DKPARK
+void remove255code(char* in, char* out)
+{
+	int len;
+	while(*in)
+	{
+		if(*in==-1)
+		{
+			in+=2;
+		}
+		else
+		{
+			*out = *in;
+			in++;
+			out++;
+		}
+	}
+	*out  = 0;
+}
+#endif
 void c_msg_print(cptr msg) {
 	int n, x, y;
 	char buf[1024];
