@@ -2362,6 +2362,9 @@ static void Term_fresh_row_pict(int y) {
 #ifdef GRAPHICS_BG_MASK
 		    && (use_graphics != UG_2MASK || (na_back == oa_back && nc_back == oc_back))
 #endif
+#ifdef DKPARK
+            && oc >= 0
+#endif
 		    ) continue;
 
 		/* Display this special character */
