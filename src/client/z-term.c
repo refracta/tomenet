@@ -1610,32 +1610,6 @@ void flicker() {
 
 				(void)((*tterm->text_hook)(x, y, 1, attr, &ch));
 #endif
-				/* Hack -- use "Term_pict()" always */
-				if (Term->always_pict) {
-#ifdef GRAPHICS_BG_MASK
-					if (use_graphics == UG_2MASK)
-						(void)((*Term->pict_hook_2mask)(x, y, attr, ch, attr_back, ch_back));
-					else
-#endif
-					(void)((*Term->pict_hook)(x, y, attr, ch));
-				/* Hack -- use "Term_pict()" sometimes */
-				} else if (Term->higher_pict && ch > MAX_FONT_CHAR) {
-#ifdef GRAPHICS_BG_MASK
-					if (use_graphics == UG_2MASK)
-						(void)((*Term->pict_hook_2mask)(x, y, attr, ch, attr_back, ch_back));
-					else
-#endif
-					(void)((*Term->pict_hook)(x, y, attr, ch));
-				/* Hack -- restore the actual character */
-				} else if (attr || Term->always_text) {
-					char buf[2];
-
-					buf[0] = (char)ch;
-					buf[1] = '\0';
-					(void)((*Term->text_hook)(x, y, 1, attr, buf));
-				}
-				/* Hack -- erase the grid */
-				else (void)((*Term->wipe_hook)(x, y, 1));
 			}
 		}
 
