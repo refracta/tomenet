@@ -3140,6 +3140,9 @@ errr Term_erase(int x, int y, int n) {
  #ifdef GRAPHICS_BG_MASK
 		    && (use_graphics != UG_2MASK || (oa_back == na && oc_back == nc))
  #endif
+ #ifdef DKPARK
+            && oc >= 0
+ #endif
 		    ) continue;
 
 		/* Save the "literal" information */
