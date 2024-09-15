@@ -7788,9 +7788,16 @@ void cmd_message(void) {
 			return;
 		}
 
+#ifdef DKPARK
+		if(strlen(buf)>0)
+		    Send_msg(buf);
+#else
 		Send_msg(buf);
+#endif
 	}
-
+#ifdef DKPARK
+	SetEngMode();
+#endif
 	inkey_msg = FALSE;
 }
 
