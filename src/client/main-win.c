@@ -729,6 +729,10 @@ static term_data data[MAX_TERM_DATA];
  */
 static term_data *td_ptr;
 
+#ifdef DKPARK
+HWND g_hwnd;
+#endif
+
 /*
  * Various boolean flags
  */
