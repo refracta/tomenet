@@ -2473,6 +2473,9 @@ void __fastcall SetEngMode2(void)
 
 typedef char msg_hist_var[MSG_HISTORY_MAX][MSG_LEN];
 bool askfor_aux(char *buf, int len, char mode) {
+#ifdef DKPARK
+	int	k_flag[128];
+#endif
 	int y, x;
 	int i = 0;
 	int k = 0; /* Is the end of line */
