@@ -2623,6 +2623,12 @@ bool askfor_aux(char *buf, int len, char mode) {
 				k--;
 				l--;
 				if (search) search_changed = TRUE; /* Search term was changed */
+#ifdef DKPARK
+              if (k_flag[k] != 0){
+                k--;
+                l--;
+              }
+#endif
 			}
 			else if (k > l && l > 0) { /* Pressed while cursor is somewhere in between the line */
 			  /* Move the rest of the line one back, including
