@@ -1588,7 +1588,28 @@ void flicker() {
 						break;
 					}
 #endif
+#ifdef DKPARK
+				if(ch<0){
+					if((hanCnt%2)==0){
+						attr = flick_colour(attr);
+						ch2[0] = ch;
+					}
+					else{
+						ch2[1] = ch;
+						(void)((*tterm->text_hook)(x-1, y, 2, attr, ch2));
+					}
+					hanCnt++;
+				}
+				else{
+					attr = flick_colour(attr);
+					(void)((*tterm->text_hook)(x, y, 1, attr, &ch));
+					hanCnt=0;
+				}
+#else
+				attr = flick_colour(attr);
 
+				(void)((*tterm->text_hook)(x, y, 1, attr, &ch));
+#endif
 				/* Hack -- use "Term_pict()" always */
 				if (Term->always_pict) {
 #ifdef GRAPHICS_BG_MASK
