@@ -2948,6 +2948,9 @@ static void init_windows(void) {
 	/* Create a "brush" for drawing the "cursor" */
 	hbrYellow = CreateSolidBrush(win_clr[TERM_YELLOW]);
 
+#ifdef DKPARK
+	g_hwnd = td->w;
+#endif
 
 	/* Process pending messages */
 	(void)Term_xtra_win_flush();
