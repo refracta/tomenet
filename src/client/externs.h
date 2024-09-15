@@ -73,7 +73,9 @@ extern errr init_gtk(int, char **);
 /*
  * Not-so-Automatically generated "variable" declarations
  */
-
+#ifdef DKPARK
+extern HWND g_hwnd;
+#endif
 /* c-spell.c */
 /*extern void show_browse(int book); */
 extern s32b get_school_spell(cptr do_what, int *item_book);
