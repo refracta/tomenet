@@ -2460,6 +2460,17 @@ static bool search_history_aux(const char *msg, const char *buf) {
  * Jir -- added history.
  * TODO: cursor editing (fix past terminal width extending text)
  */
+
+#ifdef DKPARK
+void __fastcall SetEngMode2(void)
+{
+	HIMC himc = ImmGetContext(g_hwnd);
+	ImmSetConversionStatus(himc, IME_CMODE_ALPHANUMERIC, IME_SMODE_NONE);
+}
+//#define ishangul(x) ((((int)(x) & 0xff) >= 0xa1 && ((int)(x) & 0xff) <= 0xfe) || ((int)(x) & 0xff) == 0x8e)
+#define ishangul(x) ((((int)(x) & 0xff) >= 0x81 && ((int)(x) & 0xff) <= 0xfe) || ((int)(x) & 0xff) == 0x8e)
+#endif
+
 typedef char msg_hist_var[MSG_HISTORY_MAX][MSG_LEN];
 bool askfor_aux(char *buf, int len, char mode) {
 	int y, x;
@@ -7302,7 +7313,7 @@ Chain_Macro:
 						case 'h': strcpy(buf2, "\\e)*tf-"); break;
 						case 'i': strcpy(buf2, "{-!=LM@m0\\r"); break;
 						case 'j': strcpy(buf2, "\\e)*tv1-"); break;
-						case 'k': strcpy(buf2, "{-!=L@v1\\r"); break; 
+						case 'k': strcpy(buf2, "{-!=L@v1\\r"); break;
 						case 'l': strcpy(buf2, ":/? "); break;
 						case 'm':
 							while (TRUE) {
